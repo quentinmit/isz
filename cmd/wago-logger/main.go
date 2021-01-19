@@ -163,7 +163,7 @@ func loop(writeApi api.WriteAPI) error {
 			log.Fatal(err)
 		}
 	} else if *device != "" {
-		f, err = serial.Open(&serial.Config{Address: *device})
+		f, err = serial.Open(&serial.Config{Address: *device, BaudRate: 9600, Parity: "N"})
 		if err != nil {
 			return err
 		}
