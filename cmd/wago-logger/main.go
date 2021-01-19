@@ -12,8 +12,11 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goburrow/serial"
+	influxdb2 "github.com/influxdata/influxdb-client-go"
+	"github.com/influxdata/influxdb-client-go/api"
 )
 
 var (
@@ -116,15 +119,32 @@ func parseFields(r io.Reader, out interface{}) error {
 				}
 			}
 		} else {
-			log.Printf("unknown field tag: %d", tag)
+			return fmt.Errorf("unknown field tag: %d", tag)
 		}
 	}
 }
 
 func main() {
 	flag.Parse()
+	// Create client
+	server := os.Getenv("INFLUX_SERVER")
+	if server == "" {
+		server = "http://localhost:9999"
+	}
+	client := influxdb2.NewClient(server, os.Getenv("INFLUX_TOKEN"))
+	defer client.Close()
+	// Get non-blocking write client
+	writeApi := client.WriteAPI("icestationzebra", "icestationzebra")
+	// Get errors channel
+	errorsCh := writeApi.Errors()
+	// Create go proc for reading and logging errors
+	go func() {
+		for err := range errorsCh {
+			log.Printf("write error: %v", err)
+		}
+	}()
 	for {
-		if err := loop(); err != nil {
+		if err := loop(writeApi); err != nil {
 			log.Fatal(err)
 		}
 		if *file != "" {
@@ -132,7 +152,8 @@ func main() {
 		}
 	}
 }
-func loop() error {
+func loop(writeApi api.WriteAPI) error {
+	defer writeApi.Flush()
 	var f io.ReadCloser
 	var err error
 	if *file != "" {
@@ -150,10 +171,10 @@ func loop() error {
 	} else {
 		log.Fatal("device or file must be specified")
 	}
-	return logData(f)
+	return logData(writeApi, f)
 }
 
-func logData(f io.Reader) error {
+func logData(writeApi api.WriteAPI, f io.Reader) error {
 	r := bufio.NewReader(f)
 	for {
 		b, err := r.ReadByte()
@@ -202,10 +223,34 @@ func logData(f io.Reader) error {
 					continue
 				}
 				copy(status.DeviceID[:], deviceID)
-				// TODO: Send status to Influx
+				status.Report(writeApi)
 				log.Printf("%s", &status)
 			}
 		}
 	}
 	return nil
+}
+
+func (s *Status) Report(writeApi api.WriteAPI) {
+	fields := make(map[string]interface{})
+	v := reflect.Indirect(reflect.ValueOf(s))
+	t := v.Type()
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		fields[f.Name] = v.Field(i).Interface()
+	}
+	p := influxdb2.NewPoint("wago.status",
+		map[string]string{
+			"host": hostname,
+		},
+		fields,
+		time.Now(),
+	)
+	writeApi.WritePoint(p)
+}
+
+var hostname string
+
+func init() {
+	hostname, _ = os.Hostname()
 }
