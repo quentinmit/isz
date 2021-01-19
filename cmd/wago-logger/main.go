@@ -2,12 +2,16 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/binary"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/goburrow/serial"
 )
@@ -17,114 +21,115 @@ var (
 	file   = flag.String("f", "", "file to read packets from")
 )
 
-type Packet struct {
-	// Packet format is:
-	// Header: ((0xE4 [\x21\x23\x25])|(0x55 0xAA 0xE5 [\x1\x11\x12] 0x03)
-	// Size < 0x5a
-	// Fields
-	// If bytes[2] == 0xE5: checksum that makes xor=0
-	// Magic is always 55 AA E5 01 03 1B
-	// Magic is always 55 AA
-	Magic [2]byte
-	// DeviceID is E5 01
+const (
+	// 1880 = normal
+	// 1980 = "hardware fault" (yellow light on solid; manual says is charging)
+	// 0084 = buffer mode
+	// Normal buffer->happy sequence
+	// 0180 - load on PSU, not charging
+	// 0880 - load on PSU, charging
+	// 1880 - load on PSU, charging
+	// 1980 - load on PSU, charging, yellow light on ("charging <85%")
+	// 1880 - load on PSU, charged
+	BufferMode = 0x0004
+	Charging   = 0x0100
+)
+
+type Status struct {
 	DeviceID [2]byte
-	Unknown  byte
-	// Size is 1B (code checks <5A)
-	// This counts the following data bytes not including checksum
-	Size byte
-	// always 0
-	Header0         byte
-	OutputMilliAmps int16
-	// always 1
-	Header1          byte
-	ChargeCentiVolts int16
-	// always 2
-	Header2         byte
-	BufferMilliAmps int16
-	// always 3
-	Header3                        byte
-	TemperatureCentiDegreesCelsius int16
-	// always 4
-	Header4          byte
-	OutputCentiVolts int16
-	// always 5
-	Header5 byte
+	// PSUMilliAmps is the power output from the internal PSU.
+	// Subtract BatteryInAmps to get the current drawn by the load.
+	PSUAmps float64 `wago:"0,1000"`
+	// BatteryVolts is the battery voltage
+	BatteryVolts float64 `wago:"1,100"`
+	// BatteryOutAmps is the amperage being drawn from the battery (in buffer mode)
+	BatteryOutAmps            float64 `wago:"2,1000"`
+	TemperatureDegreesCelsius float64 `wago:"3,100"`
+	OutputVolts               float64 `wago:"4,100"`
 	// centivolts?
-	Unknown5 int16
-	// always 6
-	Header6         byte
-	ChargeMilliAmps int16
-	// always 7
-	Header7 byte
-	// flags?
-	Status uint16
-	// always 8
-	Header8 byte
-	// always 00 03?
-	SwitchPosition uint16
-	// official software also handles 0x0a as bitfield
-	Checksum byte
+	Unknown5      int16   `wago:"5"`
+	BatteryInAmps float64 `wago:"6,1000"`
+	Status        uint16  `wago:"7"`
+	// 3 = infinite, 2 = PC mode, 4 = custom
+	SwitchPosition uint16 `wago:"8"`
 }
 
-func (p *Packet) String() string {
-	return fmt.Sprintf("Output: %0.2fV %0.2fA Battery: %0.2fV %0.2fA Charge: %0.2fV %0.2fA Temperature: %0.2f°C Status: %04x SwitchPosition: %04x 5: %x",
-		float64(p.OutputCentiVolts)/100, float64(p.OutputMilliAmps)/1000,
-		float64(p.ChargeCentiVolts)/100, float64(p.BufferMilliAmps)/1000,
-		float64(p.ChargeCentiVolts)/100, float64(p.ChargeMilliAmps)/1000,
-		float64(p.TemperatureCentiDegreesCelsius)/100, p.Status, p.SwitchPosition, p.Unknown5,
+func (s *Status) LoadAmps() float64 {
+	return s.PSUAmps - s.BatteryInAmps + s.BatteryOutAmps
+}
+
+func (s *Status) String() string {
+	return fmt.Sprintf("PSU: %0.2fA Output: %0.2fV %0.2fA Battery: %0.2fV %+0.2fA %+0.2fA Temperature: %0.2f°C Status: %04x SwitchPosition: %04x 5: %x",
+		s.PSUAmps,
+		s.OutputVolts, s.LoadAmps(),
+		s.BatteryVolts, -s.BatteryOutAmps, s.BatteryInAmps,
+		s.TemperatureDegreesCelsius, s.Status, s.SwitchPosition, s.Unknown5,
 	)
 }
 
-func (p *Packet) Validate() error {
-	if p.Magic != [2]byte{0x55, 0xAA} {
-		return fmt.Errorf("unexpected magic %v", p.Magic)
+func parseFields(r io.Reader, out interface{}) error {
+	outV := reflect.Indirect(reflect.ValueOf(out))
+	t := outV.Type()
+	type Field struct {
+		Field   int
+		Divisor int
 	}
-	if p.DeviceID != [2]byte{0xE5, 0x01} {
-		return fmt.Errorf("unexpected device ID %v", p.DeviceID)
+	tagToField := make(map[int]Field)
+	for i := 0; i < t.NumField(); i++ {
+		sf := t.Field(i)
+		if tag := sf.Tag.Get("wago"); tag != "" {
+			parts := strings.Split(tag, ",")
+			field := Field{
+				Field: i,
+			}
+			if len(parts) > 1 {
+				divisor, err := strconv.Atoi(parts[1])
+				if err == nil {
+					field.Divisor = divisor
+				}
+			}
+			wagoTag, err := strconv.Atoi(parts[0])
+			if err == nil {
+				tagToField[wagoTag] = field
+			}
+		}
 	}
-	// Unknown 0x03
-	if p.Size != 0x1B { // < 0x5A
-		return fmt.Errorf("unexpected size: %x", p.Size)
+	for {
+		var tag byte
+		if err := binary.Read(r, binary.BigEndian, &tag); err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		if f, ok := tagToField[int(tag)]; ok {
+			field := outV.Field(f.Field)
+			if f.Divisor != 0 {
+				var ival int16
+				if err := binary.Read(r, binary.BigEndian, &ival); err != nil {
+					return err
+				}
+				field.SetFloat(float64(ival) / float64(f.Divisor))
+			} else {
+				if err := binary.Read(r, binary.BigEndian, field.Addr().Interface()); err != nil {
+					return err
+				}
+			}
+		} else {
+			log.Printf("unknown field tag: %d", tag)
+		}
 	}
-	if p.Header0 != 0 {
-		return fmt.Errorf("unexpected header0: %x", p.Header0)
-	}
-	if p.Header1 != 1 {
-		return fmt.Errorf("unexpected header1: %x", p.Header1)
-	}
-	if p.Header2 != 2 {
-		return fmt.Errorf("unexpected header2: %x", p.Header2)
-	}
-	if p.Header3 != 3 {
-		return fmt.Errorf("unexpected header3: %x", p.Header3)
-	}
-	if p.Header4 != 4 {
-		return fmt.Errorf("unexpected header4: %x", p.Header4)
-	}
-	if p.Header5 != 5 {
-		return fmt.Errorf("unexpected header5: %x", p.Header5)
-	}
-	if p.Header6 != 6 {
-		return fmt.Errorf("unexpected header6: %x", p.Header6)
-	}
-	if p.Header7 != 7 {
-		return fmt.Errorf("unexpected header7: %x", p.Header7)
-	}
-	if p.Header8 != 8 {
-		return fmt.Errorf("unexpected header8: %x", p.Header8)
-	}
-	return nil
 }
-
-// wago-4 has battery voltage ~26.44 charge current ~0.02 output voltage ~23.97 output current ~0.13
 
 func main() {
 	flag.Parse()
-	if got := binary.Size(Packet{}); got != 34 {
-		panic(fmt.Sprintf("Packet has %d bytes, wanted 34", got))
-	}
-	if err := loop(); err != nil {
-		log.Fatal(err)
+	for {
+		if err := loop(); err != nil {
+			log.Fatal(err)
+		}
+		if *file != "" {
+			return
+		}
 	}
 }
 func loop() error {
@@ -161,7 +166,7 @@ func logData(f io.Reader) error {
 		}
 		if b == 0x55 {
 			r.UnreadByte()
-			magic, err := r.Peek(2)
+			header, err := r.Peek(6)
 			switch err {
 			case io.EOF:
 				return nil
@@ -169,20 +174,37 @@ func logData(f io.Reader) error {
 			default:
 				return err
 			}
-			if magic[0] != 0x55 || magic[1] != 0xAA {
+			if header[0] != 0x55 || header[1] != 0xAA {
 				r.ReadByte()
 				// Look for next 0x55
 				continue
 			}
-			var packet Packet
-			if err := binary.Read(r, binary.BigEndian, &packet); err != nil {
+			deviceID := header[2:4]
+			packetType := header[4]
+			size := header[5]
+			packet := make([]byte, len(header)+int(size)+1)
+			if _, err := io.ReadFull(r, packet); err != nil {
 				return err
 			}
-			if err := packet.Validate(); err != nil {
-				log.Printf("failed validation: %v", err)
-				log.Printf("packet: %+v", packet)
+			var checksum byte
+			for _, b := range packet {
+				checksum ^= b
 			}
-			log.Printf("%s", &packet)
+			if checksum != 0 {
+				log.Printf("failed checksum: % x", packet)
+				continue
+			}
+			switch packetType {
+			case 3:
+				var status Status
+				if err := parseFields(bytes.NewReader(packet[6:len(packet)-1]), &status); err != nil {
+					log.Printf("failed to parse packet: % x: %v", packet, err)
+					continue
+				}
+				copy(status.DeviceID[:], deviceID)
+				// TODO: Send status to Influx
+				log.Printf("%s", &status)
+			}
 		}
 	}
 	return nil
