@@ -3,10 +3,18 @@ package main
 import (
 	"bufio"
 	"encoding/binary"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+
+	"github.com/goburrow/serial"
+)
+
+var (
+	device = flag.String("d", "", "device node to connect to")
+	file   = flag.String("f", "", "file to read packets from")
 )
 
 type Packet struct {
@@ -22,6 +30,7 @@ type Packet struct {
 	DeviceID [2]byte
 	Unknown  byte
 	// Size is 1B (code checks <5A)
+	// This counts the following data bytes not including checksum
 	Size byte
 	// always 0
 	Header0         byte
@@ -110,18 +119,36 @@ func (p *Packet) Validate() error {
 // wago-4 has battery voltage ~26.44 charge current ~0.02 output voltage ~23.97 output current ~0.13
 
 func main() {
+	flag.Parse()
 	if got := binary.Size(Packet{}); got != 34 {
 		panic(fmt.Sprintf("Packet has %d bytes, wanted 34", got))
 	}
-	if err := test(); err != nil {
+	if err := loop(); err != nil {
 		log.Fatal(err)
 	}
 }
-func test() error {
-	f, err := os.Open("wago-psu-out-long-4.dat")
-	if err != nil {
-		return err
+func loop() error {
+	var f io.ReadCloser
+	var err error
+	if *file != "" {
+		f, err = os.Open(*file)
+		defer f.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if *device != "" {
+		f, err = serial.Open(&serial.Config{Address: *device})
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+	} else {
+		log.Fatal("device or file must be specified")
 	}
+	return logData(f)
+}
+
+func logData(f io.Reader) error {
 	r := bufio.NewReader(f)
 	for {
 		b, err := r.ReadByte()

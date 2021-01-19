@@ -48,7 +48,7 @@ func logData(writeApi api.WriteAPI) error {
 
 	port, err := serial.Open(&serial.Config{Address: "/dev/ttyACM0"})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer port.Close()
 	r := bufio.NewScanner(port)
