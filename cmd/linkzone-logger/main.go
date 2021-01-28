@@ -1,14 +1,20 @@
 package main
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"math/rand"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/AdamSLevy/jsonrpc2/v14"
 	influxdb2 "github.com/influxdata/influxdb-client-go"
 	"github.com/influxdata/influxdb-client-go/api"
 )
@@ -37,30 +43,86 @@ func main() {
 		}
 	}()
 	for {
-		if err := loop(writeApi); err != nil {
+		if err := loop(context.Background(), writeApi); err != nil {
 			log.Fatal(err)
 		}
 	}
 }
-func loop(writeApi api.WriteAPI) error {
+func loop(ctx context.Context, writeApi api.WriteAPI) error {
 	defer writeApi.Flush()
-	c, err := rpc.DialHTTP(fmt.Sprintf("http://%s/jrd/webapi", *address))
+	c := &jsonrpc2.Client{
+		Header: http.Header{
+			"_TclRequestVerificationKey": []string{"KSDHSDFOGQ5WERYTUIQWERTYUISDFG1HJZXCVCXBN2GDSMNDHKVKFsVBNf"},
+			"Referer":                    []string{fmt.Sprintf("http://%s/", *address)},
+		},
+	}
+	t := time.NewTicker(30 * time.Second)
+	for {
+		result := map[string]interface{}{}
+		if err := request(c, ctx, fmt.Sprintf("http://%s/jrd/webapi", *address), "GetNetworkInfo", nil, &result); err != nil {
+			return err
+		}
+		report(writeApi, "networkinfo", result)
+		select {
+		case <-t.C:
+		}
+	}
+	return nil
+}
+
+func request(c *jsonrpc2.Client, ctx context.Context, url, method string,
+	params, result interface{}) error {
+
+	// Generate a psuedo random ID for this request.
+	reqID := strconv.Itoa(rand.Int()%5000 + 1)
+
+	// Marshal the JSON RPC Request.
+	req := jsonrpc2.Request{ID: reqID, Method: method, Params: params}
+	reqData, err := req.MarshalJSON()
 	if err != nil {
 		return err
 	}
-	c.SetHeader("_TclRequestVerificationKey", "KSDHSDFOGQ5WERYTUIQWERTYUISDFG1HJZXCVCXBN2GDSMNDHKVKFsVBNf")
-	c.SetHeader("Referer", fmt.Sprintf("http://%s/", *address))
-	t := time.NewTicker(30 * time.Second)
-	for {
-		select {
-		case <-t.C:
-			result := map[string]interface{}{}
-			if err := c.Call(&result, "GetNetworkInfo", nil); err != nil {
-				return err
-			}
-			report(writeApi, "networkinfo", result)
-		}
+
+	// Compose the HTTP request.
+	httpReq, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqData))
+	if err != nil {
+		return err
 	}
+	if ctx != nil {
+		httpReq = httpReq.WithContext(ctx)
+	}
+	httpReq.Header.Add(http.CanonicalHeaderKey("Content-Type"), "application/json")
+	for k, v := range c.Header {
+		httpReq.Header[http.CanonicalHeaderKey(k)] = v
+	}
+	if c.BasicAuth {
+		httpReq.SetBasicAuth(c.User, c.Password)
+	}
+
+	// Make the request.
+	httpRes, err := c.Do(httpReq)
+	if err != nil {
+		return err
+	}
+	defer httpRes.Body.Close()
+
+	// Read the HTTP response.
+	body, err := ioutil.ReadAll(httpRes.Body)
+	if err != nil {
+		return err
+	}
+
+	// Unmarshal the HTTP response into a JSON RPC response.
+	var resID string
+	res := jsonrpc2.Response{Result: result, ID: &resID}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return err
+	}
+
+	if res.HasError() {
+		return res.Error
+	}
+
 	return nil
 }
 
@@ -80,6 +142,7 @@ func report(writeApi api.WriteAPI, name string, result map[string]interface{}) {
 			fields[k] = v
 		}
 	}
+	log.Printf("%s: %#v", name, fields)
 	p := influxdb2.NewPoint(fmt.Sprintf("linkzone.%s", name),
 		map[string]string{
 			"host": hostname,
