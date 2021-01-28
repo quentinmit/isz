@@ -20,7 +20,8 @@ import (
 )
 
 var (
-	address = flag.String("addr", "192.168.0.1", "address of the linkzone")
+	address  = flag.String("addr", "192.168.0.1", "address of the linkzone")
+	interval = flag.Duration("interval", 10*time.Second, "interval for writing")
 )
 
 func main() {
@@ -56,7 +57,7 @@ func loop(ctx context.Context, writeApi api.WriteAPI) error {
 			"Referer":                    []string{fmt.Sprintf("http://%s/", *address)},
 		},
 	}
-	t := time.NewTicker(30 * time.Second)
+	t := time.NewTicker(*interval)
 	for {
 		result := map[string]interface{}{}
 		if err := request(c, ctx, fmt.Sprintf("http://%s/jrd/webapi", *address), "GetNetworkInfo", nil, &result); err != nil {
