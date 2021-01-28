@@ -1,0 +1,65 @@
+version: '3.4'
+services:
+  influxdb:
+    container_name: influxdb
+    image: quay.io/influxdb/influxdb:nightly
+    ports:
+      - "172.30.97.32:8086:8086"
+      - "172.30.96.32:8086:8086"
+    volumes:
+      - /srv/influxdb/etc:/etc/influxdbv2
+      - /srv/influxdb/data:/influxdbv2
+    environment:
+      - TZ=America/New_York
+      - INFLUXD_CONFIG_PATH
+      - INFLUXD_BOLT_PATH=/influxdbv2/influxd.bolt
+      - INFLUXD_ENGINE_PATH=/influxdbv2/engine
+    restart: always
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    ports:
+      - "172.30.97.32:3000:3000"
+      - "172.30.96.32:3000:3000"
+    volumes:
+      - /srv/influxdb/grafana-storage:/var/lib/grafana
+    restart: always
+  pwrgate-logger:
+    build:
+      context: ../../
+      target: pwrgate-logger
+    environment:
+      - INFLUX_SERVER=http://influxdb:8086/
+    env_file: logger.env
+    devices:
+      - "/dev/ttyACM0:/dev/ttyACM0"
+    restart: always
+  linkzone-logger:
+    build:
+      context: ../../
+      target: linkzone-logger
+    hostname: workshop-pi.isz
+    env_file: logger.env
+    environment:
+      - INFLUX_SERVER=http://influxdb:8086/
+    restart: always
+  telegraf:
+    container_name: telegraf
+    image: telegraf
+    volumes:
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file: telegraf.env
+    environment:
+      - HOST_ETC=/hostfs/etc
+      - HOST_PROC=/hostfs/proc
+      - HOST_SYS=/hostfs/sys
+      - HOST_VAR=/hostfs/var
+      - HOST_RUN=/hostfs/run
+      - HOST_MOUNT_PREFIX=/hostfs
+    network_mode: host
+    entrypoint:
+      - /entrypoint.sh
+      - telegraf
+      - --config
+      - http://172.30.97.32:8086/api/v2/telegrafs/06f519251454e000
