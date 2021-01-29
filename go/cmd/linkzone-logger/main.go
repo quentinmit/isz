@@ -146,6 +146,8 @@ func report(writeApi api.WriteAPI, name string, result map[string]interface{}) {
 			}
 		case int:
 			fields[k] = v
+		case float64:
+			fields[k] = v
 		}
 	}
 	log.Printf("%s: %#v", name, fields)
