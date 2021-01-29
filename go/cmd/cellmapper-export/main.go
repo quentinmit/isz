@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/itchyny/gojq"
 )
 
@@ -31,6 +32,16 @@ func MustParse(query string) *gojq.Query {
 }
 
 func fetchAPI(c *http.Client, method string, params url.Values) (*Response, error) {
+	eb := &backoff.ExponentialBackOff{
+		InitialInterval:     30 * time.Second,
+		RandomizationFactor: backoff.DefaultRandomizationFactor,
+		Multiplier:          backoff.DefaultMultiplier,
+		MaxInterval:         10 * time.Minute,
+		MaxElapsedTime:      60 * time.Minute,
+		Stop:                backoff.Stop,
+		Clock:               backoff.SystemClock,
+	}
+	eb.Reset()
 	for {
 		resp, err := c.Get(fmt.Sprintf("https://api.cellmapper.net/v6/%s?%s", method, params.Encode()))
 		if err != nil {
@@ -46,9 +57,12 @@ func fetchAPI(c *http.Client, method string, params url.Values) (*Response, erro
 			return nil, err
 		}
 		if body.StatusCode == "NEED_RECAPTCHA" {
-			log.Print("rate limited")
-			time.Sleep(30 * time.Second)
-			continue
+			b := eb.NextBackOff()
+			if b != backoff.Stop {
+				log.Printf("rate limited; waiting %v", b)
+				time.Sleep(b)
+				continue
+			}
 		}
 		if body.StatusCode != "OKAY" {
 			return nil, fmt.Errorf("unexpected status code %s", body.StatusCode)
