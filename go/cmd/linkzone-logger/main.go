@@ -138,7 +138,7 @@ func report(writeApi api.WriteAPI, name string, result map[string]interface{}) {
 		switch v := v.(type) {
 		case string:
 			i, err := strconv.Atoi(v)
-			if err == nil {
+			if k != "CGI" && err == nil {
 				// TODO: What if the value is hex? ("CGI")
 				fields[k] = i
 			} else {
