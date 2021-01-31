@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -112,19 +111,19 @@ func request(c *jsonrpc2.Client, ctx context.Context, url, method string,
 	}
 	defer httpRes.Body.Close()
 
-	// Read the HTTP response.
-	body, err := ioutil.ReadAll(httpRes.Body)
-	if err != nil {
-		return err
-	}
-
 	// Unmarshal the HTTP response into a JSON RPC response.
 	var resID string
-	res := jsonrpc2.Response{Result: result, ID: &resID}
-	if err := json.Unmarshal(body, &res); err != nil {
+	var raw json.RawMessage
+	res := jsonrpc2.Response{Result: &raw, ID: &resID}
+	d := json.NewDecoder(httpRes.Body)
+	if err := d.Decode(&res); err != nil {
 		return err
 	}
-
+	d = json.NewDecoder(bytes.NewReader(raw))
+	d.UseNumber()
+	if err := d.Decode(result); err != nil {
+		return err
+	}
 	if res.HasError() {
 		return res.Error
 	}
@@ -136,6 +135,14 @@ func report(writeApi api.WriteAPI, name string, result map[string]interface{}) {
 	fields := make(map[string]interface{})
 	for k, v := range result {
 		switch v := v.(type) {
+		case json.Number:
+			if i, err := v.Int64(); err == nil {
+				fields[k] = i
+			} else if f, err := v.Float64(); err == nil {
+				fields[k] = f
+			} else {
+				fields[k] = v.String()
+			}
 		case string:
 			i, err := strconv.Atoi(v)
 			if k != "CGI" && err == nil {
