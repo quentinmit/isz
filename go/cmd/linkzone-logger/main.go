@@ -131,6 +131,25 @@ func request(c *jsonrpc2.Client, ctx context.Context, url, method string,
 	return nil
 }
 
+// Query to cast old data:
+// import "experimental"
+// from(bucket: "icestationzebra")
+//   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+//   |> filter(fn: (r) => r["_measurement"] == "linkzone.networkinfo" and r["host"]=="workshop-pi.isz")
+//   |> pivot(
+//       rowKey:["_time"],
+//       columnKey: ["_field"],
+//       valueColumn: "_value")
+//   |> map(fn: (r) => ({ r with _measurement: "linkzone.networkinfo6", Band: int(v: r.Band),
+//   Roaming: int(v: r.Roaming),
+//   Domestic_Roaming: int(v: r.Domestic_Roaming),
+//   LTE_state: int(v: r.LTE_state),
+//   RSCP: int(v: r.RSCP), NetworkType: int(v: r.NetworkType),
+//   SignalStrength: int(v: r.SignalStrength) }))
+//     |> experimental.to(
+//       bucket: "icestationzebra"
+//   )
+
 func report(writeApi api.WriteAPI, name string, result map[string]interface{}) {
 	fields := make(map[string]interface{})
 	for k, v := range result {
@@ -145,8 +164,8 @@ func report(writeApi api.WriteAPI, name string, result map[string]interface{}) {
 			}
 		case string:
 			i, err := strconv.Atoi(v)
+			// CGI is hex so sometimes looks like an int
 			if k != "CGI" && err == nil {
-				// TODO: What if the value is hex? ("CGI")
 				fields[k] = i
 			} else {
 				fields[k] = v
