@@ -17,7 +17,7 @@ services:
     restart: always
   grafana:
     container_name: grafana
-    image: grafana/grafana
+    image: grafana/grafana:dev
     ports:
       - "172.30.97.32:3000:3000"
       - "172.30.96.32:3000:3000"
@@ -62,4 +62,4 @@ services:
       - /entrypoint.sh
       - telegraf
       - --config
-      - http://172.30.97.32:8086/api/v2/telegrafs/06f519251454e000
+      - http://172.30.97.32:8086/api/v2/telegrafs/0702075a793e0000
