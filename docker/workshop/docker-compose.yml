@@ -63,3 +63,4 @@ services:
       - telegraf
       - --config
       - http://172.30.97.32:8086/api/v2/telegrafs/0702075a793e0000
+    restart: always
