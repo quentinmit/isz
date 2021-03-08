@@ -14,6 +14,7 @@ services:
       - INFLUXD_CONFIG_PATH
       - INFLUXD_BOLT_PATH=/influxdbv2/influxd.bolt
       - INFLUXD_ENGINE_PATH=/influxdbv2/engine
+      - INFLUXD_REPORTING_DISABLED=true
     restart: always
   grafana:
     container_name: grafana
