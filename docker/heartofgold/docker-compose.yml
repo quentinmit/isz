@@ -1,0 +1,44 @@
+version: '3'
+services:
+  influxdb:
+    container_name: influxdb
+    image: quay.io/influxdb/influxdb:v2.0.2
+    ports:
+      - "172.30.97.101:8086:8086"
+      - "172.30.96.101:8086:8086"
+    volumes:
+      - /srv/influxdb/etc:/etc/influxdbv2
+      - /srv/influxdb/data:/influxdbv2
+    environment:
+      - TZ=America/New_York
+      - INFLUXD_CONFIG_PATH
+      - INFLUXD_BOLT_PATH=/influxdbv2/influxd.bolt
+      - INFLUXD_ENGINE_PATH=/influxdbv2/engine
+    restart: always
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    ports:
+      - "172.30.97.101:3000:3000"
+      - "172.30.96.101:3000:3000"
+    volumes:
+      - /srv/influxdb/grafana-storage:/var/lib/grafana
+    restart: always
+  rtl_tcp:
+    image: bemasher/rtl-sdr
+    command: rtl_tcp -a 0.0.0.0
+    devices:
+      - "/dev/bus/usb/002/003:/dev/bus/usb/002/003"
+    restart: always
+  rtlamr:
+    build: ./rtlamr
+    env_file: rtlamr.env
+    environment:
+      - COLLECT_INFLUXDB_HOSTNAME=http://workshop-pi.isz:8086/
+      - COLLECT_INFLUXDB_DATABASE=rtlamr
+      - COLLECT_INFLUXDB_USER=rtlamr
+      - COLLECT_STRICTIDM=1
+      - RTLAMR_FORMAT=json
+      - RTLAMR_MSGTYPE=all
+      - RTLAMR_SERVER=rtl_tcp:1234
+    restart: always
