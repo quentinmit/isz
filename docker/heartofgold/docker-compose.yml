@@ -42,3 +42,23 @@ services:
       - RTLAMR_MSGTYPE=all
       - RTLAMR_SERVER=rtl_tcp:1234
     restart: always
+  telegraf:
+    container_name: telegraf
+    image: telegraf
+    volumes:
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file: telegraf.env
+    environment:
+      - HOST_ETC=/hostfs/etc
+      - HOST_PROC=/hostfs/proc
+      - HOST_SYS=/hostfs/sys
+      - HOST_VAR=/hostfs/var
+      - HOST_RUN=/hostfs/run
+      - HOST_MOUNT_PREFIX=/hostfs
+    network_mode: host
+    entrypoint:
+      - /entrypoint.sh
+      - telegraf
+      - --config
+      - http://172.30.97.32:8086/api/v2/telegrafs/06f519251454e000
