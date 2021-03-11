@@ -1,3 +1,6 @@
 aiohttp
+httpx
 influxdb-client
 routeros-api
+pyparsing
+more_itertools
