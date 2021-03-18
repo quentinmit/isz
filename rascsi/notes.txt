@@ -1,0 +1,61 @@
+#!/bin/bash
+# -*- shell-script -*-
+
+mkdir .ssh
+(cd .ssh && wget https://web.mit.edu/quentin/Public/authorized_keys)
+sudo apt update
+sudo apt install docker.io docker-compose emacs-nox
+sudo adduser pi docker.io
+sudo hostnamectl set-hostname rascsi.isz
+sudo reboot
+
+git config --global user.name Quentin\ Smith
+git config --global user.email quentin@mit.edu
+
+# Docker support
+sudo -i ssh-keygen
+# Add ssh key to github deploy keys
+sudo git clone git@github.com:quentinmit/isz.git /srv/isz
+(cd /srv/isz/docker/rascsi && docker-compose up -d)
+
+# RaSCSI
+git clone https://github.com/akuker/RASCSI.git
+cd RASCSI/src/raspberrypi
+sudo apt install \
+    libspdlog-dev genisoimage python3 python3-venv nginx hfsutils \
+    build-essential {gcc,g++}-arm-linux-gnueabihf \
+    libc6:armhf libstdc++6:armhf
+make all CONNECT_TYPE=FULLSPEC
+sudo make install CONNECT_TYPE=FULLSPEC
+sudo systemctl restart rsyslog
+sudo systemctl enable rascsi
+sudo systemctl start rascsi
+
+# RaSCSI web
+cat <<EOF | sudo tee /etc/sudoers.d/rascsi
+# Allow the web server to restart the rascsi service
+www-data ALL=NOPASSWD: /bin/systemctl restart rascsi.service
+www-data ALL=NOPASSWD: /bin/systemctl stop rascsi.service
+# Allow the web server to reboot the raspberry pi
+www-data ALL=NOPASSWD: /sbin/shutdown, /sbin/reboot
+EOF
+sudo cp -f ~/RASCSI/src/web/service-infra/nginx-default.conf /etc/nginx/sites-available/default
+sudo cp -f ~/RASCSI/src/web/service-infra/502.html /var/www/html/502.html
+
+sudo cp ~/RASCSI/src/web/service-infra/rascsi-web.service /etc/systemd/system/rascsi-web.service
+sudo systemctl daemon-reload
+sudo systemctl enable rascsi-web
+sudo systemctl start rascsi-web
+sudo systemctl restart nginx
+
+mkdir ~/images
+chmod -R 775 ~/images
+sudo chgrp www-data ~/images
+sudo adduser www-data pi
+
+# Daynaport support
+sudo apt install zlib1g-dev:armhf bridge-utils
+git checkout daynaport3
+make all CONNECT_TYPE=FULLSPEC
+sudo make install CONNECT_TYPE=FULLSPEC
+sudo cp ~/RASCSI/src/raspberrypi/os_integration/rascsi_bridge /etc/network/interfaces.d/
