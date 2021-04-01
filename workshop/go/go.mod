@@ -9,6 +9,7 @@ require (
 	github.com/influxdata/influxdb-client-go v1.4.0
 	github.com/itchyny/gojq v0.12.1
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
