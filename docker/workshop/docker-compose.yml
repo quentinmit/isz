@@ -33,7 +33,7 @@ services:
       - INFLUX_SERVER=http://influxdb:8086/
     env_file: logger.env
     devices:
-      - "/dev/ttyACM0:/dev/ttyACM0"
+      - "/dev/ttyPwrgate:/dev/ttyACM0"
     restart: always
   linkzone-logger:
     build:
