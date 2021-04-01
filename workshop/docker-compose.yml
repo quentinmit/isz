@@ -27,7 +27,7 @@ services:
     restart: always
   pwrgate-logger:
     build:
-      context: ../../
+      context: go
       target: pwrgate-logger
     environment:
       - INFLUX_SERVER=http://influxdb:8086/
@@ -37,7 +37,7 @@ services:
     restart: always
   linkzone-logger:
     build:
-      context: ../../
+      context: go
       target: linkzone-logger
     hostname: workshop-pi.isz
     env_file: logger.env

@@ -1,7 +1,7 @@
 FROM golang AS base
 
 WORKDIR /go/src/app
-COPY go .
+COPY . .
 
 RUN go install -v ./...
 
