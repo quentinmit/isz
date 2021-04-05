@@ -28,7 +28,7 @@ services:
     image: bemasher/rtl-sdr
     command: rtl_tcp -a 0.0.0.0
     devices:
-      - "/dev/bus/usb/002/003:/dev/bus/usb/002/003"
+      - "/dev/bus/usb/001/005:/dev/bus/usb/001/005"
     restart: always
   rtlamr:
     build: ./rtlamr
