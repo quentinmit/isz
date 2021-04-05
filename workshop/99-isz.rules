@@ -1,1 +1,2 @@
-ATTRS{product}=="Epic-PWRgate", RUN+="/usr/bin/ln -f $devnode /dev/ttyPwrgate"
+SUBSYSTEM=="tty", ATTRS{product}=="Epic-PWRgate", RUN+="/usr/bin/ln -f $devnode /dev/ttyPwrgate"
+SUBSYSTEM=="tty", ATTRS{idProduct}=="0200", ATTRS{idVendor}=="0658", RUN+="/usr/bin/ln -f $devnode /dev/ttyZwave"

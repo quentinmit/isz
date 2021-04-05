@@ -65,3 +65,33 @@ services:
       - --config
       - http://172.30.97.32:8086/api/v2/telegrafs/0702075a793e0000
     restart: always
+  homeassistant:
+    container_name: homeassistant
+    image: homeassistant/raspberrypi4-homeassistant:stable
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /srv/isz/workshop/homeassistant:/config
+    devices:
+      - "/dev/ttyZwave:/dev/ttyZwave"
+    network_mode: host
+  zwavejs2mqtt:
+    container_name: zwavejs2mqtt
+    image: zwavejs/zwavejs2mqtt:latest
+    ports:
+      - 8091:8091
+      - 3001:3001
+    devices:
+      - "/dev/ttyZwave:/dev/ttyZwave"
+    volumes:
+      - /srv/isz/workshop/zwavejs2mqtt:/usr/src/app/store
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - /srv/isz/workshop/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - /srv/mosquitto/data:/mosquitto/data
+      - /srv/mosquitto/log:/mosquitto/log
