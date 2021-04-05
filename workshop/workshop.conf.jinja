@@ -1,0 +1,430 @@
+# ionit -c /srv/isz/workshop/static -t /srv/isz/workshop
+# influx telegrafs -c workshop update -n workshop -i 0702075a793e0000 -f /srv/isz/workshop/workshop.conf
+#
+# Configuration for telegraf agent
+[agent]
+  ## Default data collection interval for all inputs
+  interval = "10s"
+  ## Rounds collection interval to 'interval'
+  ## ie, if interval="10s" then always collect on :00, :10, :20, etc.
+  round_interval = true
+
+  ## Telegraf will send metrics to outputs in batches of at most
+  ## metric_batch_size metrics.
+  ## This controls the size of writes that Telegraf sends to output plugins.
+  metric_batch_size = 1000
+
+  ## For failed writes, telegraf will cache metric_buffer_limit metrics for each
+  ## output, and will flush this buffer on a successful write. Oldest metrics
+  ## are dropped first when this buffer fills.
+  ## This buffer only fills when writes fail to output plugin(s).
+  metric_buffer_limit = 10000
+
+  ## Collection jitter is used to jitter the collection by a random amount.
+  ## Each plugin will sleep for a random time within jitter before collecting.
+  ## This can be used to avoid many plugins querying things like sysfs at the
+  ## same time, which can have a measurable effect on the system.
+  collection_jitter = "0s"
+
+  ## Default flushing interval for all outputs. Maximum flush_interval will be
+  ## flush_interval + flush_jitter
+  flush_interval = "10s"
+  ## Jitter the flush interval by a random amount. This is primarily to avoid
+  ## large write spikes for users running a large number of telegraf instances.
+  ## ie, a jitter of 5s and interval 10s means flushes will happen every 10-15s
+  flush_jitter = "0s"
+
+  ## By default or when set to "0s", precision will be set to the same
+  ## timestamp order as the collection interval, with the maximum being 1s.
+  ##   ie, when interval = "10s", precision will be "1s"
+  ##       when interval = "250ms", precision will be "1ms"
+  ## Precision will NOT be used for service inputs. It is up to each individual
+  ## service input to set the timestamp at the appropriate precision.
+  ## Valid time units are "ns", "us", "ms", "s".
+  precision = ""
+
+  ## Logging configuration:
+  ## Run telegraf with debug log messages.
+  debug = false
+  ## Run telegraf in quiet mode (error log messages only).
+  quiet = false
+  ## Specify the log file name. The empty string means to log to stderr.
+  logfile = ""
+
+  ## Override default hostname, if empty use os.Hostname()
+  hostname = ""
+  ## If set to true, do no set the "host" tag in the telegraf agent.
+  omit_hostname = false
+[[outputs.influxdb_v2]]
+  ## The URLs of the InfluxDB cluster nodes.
+  ##
+  ## Multiple URLs can be specified for a single cluster, only ONE of the
+  ## urls will be written to each interval.
+  ## urls exp: http://127.0.0.1:8086
+  urls = ["http://172.30.97.32:8086"]
+
+  ## Token for authentication.
+  token = "$INFLUX_TOKEN"
+
+  ## Organization is the name of the organization you wish to write to; must exist.
+  organization = "icestationzebra"
+
+  ## Destination bucket to write into.
+  bucket = "icestationzebra"
+[[inputs.cpu]]
+  ## Whether to report per-cpu stats or not
+  percpu = true
+  ## Whether to report total system cpu stats or not
+  totalcpu = true
+  ## If true, collect raw CPU time metrics.
+  collect_cpu_time = false
+  ## If true, compute and report the sum of all non-idle CPU states.
+  report_active = false
+[[inputs.disk]]
+  ## By default stats will be gathered for all mount points.
+  ## Set mount_points will restrict the stats to only the specified mount points.
+  # mount_points = ["/"]
+  ## Ignore mount points by filesystem type.
+  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "overlay", "aufs", "squashfs"]
+[[inputs.diskio]]
+[[inputs.kernel]]
+[[inputs.docker]]
+  ## Docker Endpoint
+  ##   To use TCP, set endpoint = "tcp://[ip]:[port]"
+  ##   To use environment variables (ie, docker-machine), set endpoint = "ENV"
+  ##   exp: unix:///var/run/docker.sock
+  endpoint = "unix:///var/run/docker.sock"
+
+  ## Set to true to collect Swarm metrics(desired_replicas, running_replicas)
+  gather_services = false
+
+  ## Only collect metrics for these containers, collect all if empty
+  container_names = []
+
+  ## Containers to include and exclude. Globs accepted.
+  ## Note that an empty array for both will include all containers
+  container_name_include = []
+  container_name_exclude = []
+
+  ## Container states to include and exclude. Globs accepted.
+  ## When empty only containers in the "running" state will be captured.
+  # container_state_include = []
+  # container_state_exclude = []
+
+  ## Timeout for docker list, info, and stats commands
+  timeout = "5s"
+
+  ## Whether to report for each container per-device blkio (8:0, 8:1...) and
+  ## network (eth0, eth1, ...) stats or not
+  perdevice = true
+
+  ## Whether to report for each container total blkio and network stats or not
+  total = false
+
+  ## Which environment variables should we use as a tag
+  ##tag_env = ["JAVA_HOME", "HEAP_SIZE"]
+  ## docker labels to include and exclude as tags.  Globs accepted.
+  ## Note that an empty array for both will include all labels as tags
+  docker_label_include = []
+  docker_label_exclude = []
+[[inputs.mem]]
+[[inputs.net]]
+[[inputs.netstat]]
+[[inputs.interrupts]]
+[[inputs.linux_sysctl_fs]]
+[[inputs.processes]]
+[[inputs.swap]]
+[[inputs.sensors]]
+[[inputs.system]]
+[[inputs.temp]]
+
+[[inputs.prometheus]]
+  ## An array of urls to scrape metrics from.
+  urls = ["http://influx.isz/metrics"]
+
+[[inputs.openweathermap]]
+  ## OpenWeatherMap API key.
+  app_id = "f02700b223b5b6b0816ef3af182ac81b"
+
+  ## City ID's to collect weather data from.
+  city_id = ["4931972", "4930956", "5087559"]
+
+  ## Language of the description field. Can be one of "ar", "bg",
+  ## "ca", "cz", "de", "el", "en", "fa", "fi", "fr", "gl", "hr", "hu",
+  ## "it", "ja", "kr", "la", "lt", "mk", "nl", "pl", "pt", "ro", "ru",
+  ## "se", "sk", "sl", "es", "tr", "ua", "vi", "zh_cn", "zh_tw"
+  lang = "en"
+
+  ## APIs to fetch; can contain "weather" or "forecast".
+  fetch = ["weather", "forecast"]
+
+  ## OpenWeatherMap base URL
+  # base_url = "https://api.openweathermap.org/"
+
+  ## Timeout for HTTP response.
+  # response_timeout = "5s"
+
+  ## Preferred unit system for temperature and wind speed. Can be one of
+  ## "metric", "imperial", or "standard".
+  # units = "metric"
+
+  ## Query interval; OpenWeatherMap weather data is updated every 10
+  ## minutes.
+  interval = "10m"
+
+{% for host in mikrotik_api %}
+[[inputs.execd]]
+  alias = "mikrotik_api_{{ host.ip }}"
+  command = ["chroot", "/hostfs", "/srv/isz/mikrotik/.venv/bin/python", "/srv/isz/mikrotik/mikrotik_metrics.py", "--server", "{{ host.ip }}", "--user", "{{ mikrotik_api_user }}", "--password", "{{ mikrotik_api_password }}"{% if host.plaintext %}, "--plaintext-login"{% endif %}]
+  signal = "STDIN"
+  interval = "60s"
+  restart_delay = "10s"
+  data_format = "influx"
+  name_prefix="mikrotik-"
+{% endfor %}
+{% for host in mikrotik_swos %}
+[[inputs.execd]]
+  alias = "mikrotik_swos_{{ host.ip }}"
+  command = ["chroot", "/hostfs", "/srv/isz/mikrotik/.venv/bin/python", "/srv/isz/mikrotik/mikrotik_swos_metrics.py", "--server", "{{ host.ip }}", "--user", "{{ mikrotik_swos_user }}", "--password", "{{ mikrotik_swos_password }}"]
+  signal = "STDIN"
+  interval = "60s"
+  restart_delay = "10s"
+  data_format = "influx"
+  name_prefix="mikrotik-"
+{% endfor %}
+{% for host in mikrotik_snmp %}
+[[inputs.snmp]]
+  alias = "mikrotik_snmp_{{ host.ip }}"
+  agents = [ "{{ host.ip }}:161" ]
+  timeout = "1s"
+  retries = 1
+
+  [[inputs.snmp.field]]
+    name = "hostname"
+    oid = ".1.3.6.1.2.1.1.5.0"
+    is_tag = true
+  [[inputs.snmp.field]]
+    name = "uptime"
+    oid = ".1.3.6.1.2.1.1.3.0"
+  [[inputs.snmp.field]]
+    name = "cpu-frequency"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.14.0"
+  [[inputs.snmp.field]]
+    name = "cpu-load"
+    oid = ".1.3.6.1.2.1.25.3.3.1.2.1"
+  [[inputs.snmp.field]]
+    name = "active-fan"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.9.0"
+  [[inputs.snmp.field]]
+    name = "voltage"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.8.0"
+    conversion = "float(1)"
+  [[inputs.snmp.field]]
+    name = "temperature"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.10.0"
+    conversion = "float(1)"
+  [[inputs.snmp.field]]
+    name = "processor-temperature"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.11.0"
+    conversion = "float(1)"
+  [[inputs.snmp.field]]
+    name = "current"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.13.0"
+  [[inputs.snmp.field]]
+    name = "fan-speed"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.17.0"
+  [[inputs.snmp.field]]
+    name = "fan-speed2"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.18.0"
+  [[inputs.snmp.field]]
+    name = "power-consumption"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.12.0"
+  [[inputs.snmp.field]]
+    name = "psu1-state"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.15.0"
+  [[inputs.snmp.field]]
+    name = "psu2-state"
+    oid = ".1.3.6.1.4.1.14988.1.1.3.16.0"
+
+  # Interfaces
+  [[inputs.snmp.table]]
+    name = "snmp-interfaces"
+    inherit_tags = ["hostname"]
+    [[inputs.snmp.table.field]]
+      name = "if-name"
+      oid = ".1.3.6.1.2.1.2.2.1.2"
+      is_tag = true
+    [[inputs.snmp.table.field]]
+      name = "mac-address"
+      oid = ".1.3.6.1.2.1.2.2.1.6"
+      is_tag = true
+      conversion = "hwaddr"
+
+    [[inputs.snmp.table.field]]
+      name = "actual-mtu"
+      oid = ".1.3.6.1.2.1.2.2.1.4"
+    [[inputs.snmp.table.field]]
+      name = "admin-status"
+      oid = ".1.3.6.1.2.1.2.2.1.7"
+    [[inputs.snmp.table.field]]
+      name = "oper-status"
+      oid = ".1.3.6.1.2.1.2.2.1.8"
+    [[inputs.snmp.table.field]]
+      name = "bytes-in"
+      oid = ".1.3.6.1.2.1.31.1.1.1.6"
+    [[inputs.snmp.table.field]]
+      name = "packets-in"
+      oid = ".1.3.6.1.2.1.31.1.1.1.7"
+    [[inputs.snmp.table.field]]
+      name = "discards-in"
+      oid = ".1.3.6.1.2.1.2.2.1.13"
+    [[inputs.snmp.table.field]]
+      name = "errors-in"
+      oid = ".1.3.6.1.2.1.2.2.1.14"
+    [[inputs.snmp.table.field]]
+      name = "bytes-out"
+      oid = ".1.3.6.1.2.1.31.1.1.1.10"
+    [[inputs.snmp.table.field]]
+      name = "packets-out"
+      oid = ".1.3.6.1.2.1.31.1.1.1.11"
+    [[inputs.snmp.table.field]]
+      name = "discards-out"
+      oid = ".1.3.6.1.2.1.2.2.1.19"
+    [[inputs.snmp.table.field]]
+      name= "errors-out"
+      oid= ".1.3.6.1.2.1.2.2.1.20"
+
+  # PoE (part of interfaces table above)
+    [[inputs.snmp.table.field]]
+      name = "poe-out-status"
+      oid = ".1.3.6.1.4.1.14988.1.1.15.1.1.3"
+    [[inputs.snmp.table.field]]
+      name = "poe-out-voltage"
+      oid = ".1.3.6.1.4.1.14988.1.1.15.1.1.4"
+      conversion = "float(1)"
+    [[inputs.snmp.table.field]]
+      name = "poe-out-current"
+      oid = ".1.3.6.1.4.1.14988.1.1.15.1.1.5"
+    [[inputs.snmp.table.field]]
+      name = "poe-out-power"
+      oid = ".1.3.6.1.4.1.14988.1.1.15.1.1.6"
+      conversion = "float(1)"
+
+# Wireless interfaces
+  [[inputs.snmp.table]]
+    name = "snmp-wireless-interfaces"
+    inherit_tags = ["hostname"]
+    [[inputs.snmp.table.field]]
+      name = "ssid"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.4"
+      is_tag = true
+    [[inputs.snmp.table.field]]
+      name = "bssid"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.5"
+      is_tag = true
+
+    [[inputs.snmp.table.field]]
+      name = "tx-rate"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.2"
+    [[inputs.snmp.table.field]]
+      name = "rx-rate"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.3"
+    [[inputs.snmp.table.field]]
+      name = "client-count"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.6"
+    [[inputs.snmp.table.field]]
+      name = "frequency"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.7"
+    [[inputs.snmp.table.field]]
+      name = "band"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.8"
+    [[inputs.snmp.table.field]]
+      name = "noise-floor"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.9"
+    [[inputs.snmp.table.field]]
+      name = "overall-ccq"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.10"
+    [[inputs.snmp.table.field]]
+      name = "auth-client-count"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.3.1.6"
+  # Wireless registrations
+  [[inputs.snmp.table]]
+    name = "snmp-wireless-registrations"
+    inherit_tags = ["hostname"]
+    [[inputs.snmp.table.field]]
+      name = "mac-address"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.1"
+      is_tag = true
+      conversion = "hwaddr"
+    [[inputs.snmp.table.field]]
+      name = "radio-name"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.20"
+      is_tag = true
+
+    [[inputs.snmp.table.field]]
+      name = "signal-strength"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.3"
+    [[inputs.snmp.table.field]]
+      name = "tx-bytes"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.4"
+    [[inputs.snmp.table.field]]
+      name = "rx-bytes"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.5"
+    [[inputs.snmp.table.field]]
+      name = "tx-packets"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.6"
+    [[inputs.snmp.table.field]]
+      name = "rx-packets"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.7"
+    [[inputs.snmp.table.field]]
+      name = "tx-rate"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.8"
+    [[inputs.snmp.table.field]]
+      name = "rx-rate"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.9"
+    [[inputs.snmp.table.field]]
+      name = "routeros-version"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.10"
+    [[inputs.snmp.table.field]]
+      name = "uptime"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.11"
+    [[inputs.snmp.table.field]]
+      name = "signal-to-noise"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.12"
+    [[inputs.snmp.table.field]]
+      name = "tx-signal-strength-ch0"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.13"
+    [[inputs.snmp.table.field]]
+      name = "rx-signal-strength-ch0"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.14"
+    [[inputs.snmp.table.field]]
+      name = "tx-signal-strength-ch1"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.15"
+    [[inputs.snmp.table.field]]
+      name = "rx-signal-strength-ch1"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.16"
+    [[inputs.snmp.table.field]]
+      name = "tx-signal-strength-ch2"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.17"
+    [[inputs.snmp.table.field]]
+      name = "rx-signal-strength-ch2"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.18"
+    [[inputs.snmp.table.field]]
+      name = "tx-signal-strength"
+      oid = ".1.3.6.1.4.1.14988.1.1.1.2.1.19"
+
+# Memory usage (storage/RAM)
+  [[inputs.snmp.table]]
+    name = "snmp-memory-usage"
+    inherit_tags = ["hostname"]
+    [[inputs.snmp.table.field]]
+      name = "memory-name"
+      oid = ".1.3.6.1.2.1.25.2.3.1.3"
+      is_tag = true
+    [[inputs.snmp.table.field]]
+      name = "total-memory"
+      oid = ".1.3.6.1.2.1.25.2.3.1.5"
+    [[inputs.snmp.table.field]]
+      name = "used-memory"
+      oid = ".1.3.6.1.2.1.25.2.3.1.6"
+{% endfor %}
