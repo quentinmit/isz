@@ -15,6 +15,16 @@ class MyPoint(Point):
             self.field(name, value)
         return self
 
+TAGS = {
+    "/interface/ethernet/switch/port": {
+        "name",
+    },
+    "/interface/wireless/registration-table": {
+        "interface",
+        "mac-address",
+        "last-ip",
+    },
+}
 
 async def main():
     parser = argparse.ArgumentParser(description='Extract edgeos metrics.')
@@ -43,22 +53,31 @@ async def main():
     )
     api = conn.get_api()
 
-    port = api.get_resource("/interface/ethernet/switch/port")
+    resources = {}
 
-    # Find all integer properties once
-    field_props = set()
-    for entry in port.get():
-        single_props = set()
-        for k, v in entry.items():
-            try:
-                int(v)
-                single_props.add(k)
-            except ValueError:
-                pass
-        field_props |= single_props
-    tag_props = {"name"}
-    proplist = '.id,'+','.join(list(tag_props) + list(field_props))
-    tag_props.add('id') # ".id" in .proplist but "id" in result :(
+    for name, tag_props in TAGS.items():
+        r = api.get_resource(name)
+
+        # Find all integer properties once
+        field_props = set()
+        for entry in r.get():
+            single_props = set()
+            for k, v in entry.items():
+                try:
+                    int(v)
+                    single_props.add(k)
+                except ValueError:
+                    pass
+            field_props |= single_props
+        proplist = '.id,'+','.join(list(tag_props) + list(field_props))
+        tag_props.add('id') # ".id" in .proplist but "id" in result :(
+        field_props -= tag_props
+        resources[name] = {
+            'r': r,
+            'tag_props': tag_props,
+            'field_props': field_props,
+            'proplist': proplist,
+        }
 
     # Retrieve hostname
     hostname = api.get_resource("/system/identity").get()[0]["name"]
@@ -70,17 +89,18 @@ async def main():
                 .time(t) \
                 .tag("agent_host", args.server) \
                 .tag("hostname", hostname)
-        for entry in port.call('print', {'.proplist': proplist}):
-            p = point("/interface/ethernet/switch/port")
-            for tag in tag_props:
-                if value := entry.get(tag):
-                    p.tag(tag, value)
-            for field in field_props:
-                try:
-                    p.field(field, int(entry.get(field, "")))
-                except ValueError:
-                    pass
-            print(p.to_line_protocol())
+        for measurement, m in resources.items():
+            for entry in m['r'].call('print', {'.proplist': m['proplist']}):
+                p = point(measurement)
+                for tag in m['tag_props']:
+                    if value := entry.get(tag):
+                        p.tag(tag, value)
+                for field in m['field_props']:
+                    try:
+                        p.field(field, int(entry.get(field, "")))
+                    except ValueError:
+                        pass
+                print(p.to_line_protocol())
 
 
 if __name__ == "__main__":
