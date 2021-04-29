@@ -4,6 +4,7 @@ import asyncio
 import argparse
 import functools
 import logging
+import re
 import sys
 import time
 import routeros_api
@@ -15,14 +16,108 @@ class MyPoint(Point):
             self.field(name, value)
         return self
 
+def to_int(base, value):
+    return {base: int(value)}
+
+def to_txrx(base, value):
+    tx, rx = value.split(',')
+    return {
+        'tx-'+base: int(tx),
+        'rx-'+base: int(rx),
+    }
+
+def to_bool(base: str, value: str):
+    try:
+        return {base: {
+            'true': True,
+            'false': False,
+        }[value]}
+    except KeyError:
+        raise ValueError("not bool")
+
+def to_rate(base: str, value: str):
+    if not base.endswith("-rate"):
+        raise ValueError("not rate")
+    num, name = value.split("-", 1)
+    if not num.endswith("Mbps"):
+        raise ValueError("not Mbps")
+    num = int(float(num[:-4])*1e6)
+    return {
+        base: num,
+        base+"-name": name,
+    }
+
+DURATION_RE = re.compile(r'''
+^
+(?:(?P<weeks>\d+)w)?
+(?:(?P<days>\d+)d)?
+(?:(?P<hours>\d+)[:h])?
+(?:
+  (?P<minutes>\d+):
+  (?P<seconds>\d*(?:\.\d{1,9})?)
+|
+  (?:(?P<minutes2>\d+)m)?
+  (?:(?P<seconds2>\d+|\d*\.\d{1,9})s)?
+  (?:(?P<ms>\d+|\d*\.\d{1,9})ms)?
+  (?:(?P<us>\d+|\d*\.\d{1,9})us)?
+  (?:(?P<ns>\d+|\d*\.\d{1,9})ns)?
+)
+$
+''', re.VERBOSE)
+
+def to_duration(base: str, value: str):
+    m = DURATION_RE.match(value)
+    if m:
+        seconds = 0
+        if v := m.group("weeks"):
+            seconds += int(v)*7*24*60*60
+        if v := m.group("days"):
+            seconds += int(v)*24*60*60
+        if v := m.group("hours"):
+            seconds += int(v)*60*60
+        if v := m.group("minutes"):
+            seconds += int(v)*60
+        if v := m.group("minutes2"):
+            seconds += int(v)*60
+        if v := m.group("seconds"):
+            seconds += float(v)
+        if v := m.group("seconds2"):
+            seconds += float(v)
+        if v := m.group("ms"):
+            seconds += int(v)*1e-3
+        if v := m.group("us"):
+            seconds += int(v)*1e-6
+        if v := m.group("ns"):
+            seconds += int(v)*1e-9
+        return {
+            base + "-ns": int(seconds*1e9),
+        }
+    raise ValueError("not a duration")
+
+PARSERS = [
+    to_int,
+    to_duration,
+    to_txrx,
+    to_bool,
+    to_rate,
+]
+
 TAGS = {
     "/interface/ethernet/switch/port": {
-        "name",
+        "tag_props": {
+            "name",
+            "switch",
+        },
     },
     "/interface/wireless/registration-table": {
-        "interface",
-        "mac-address",
-        "last-ip",
+        "tag_props": {
+            "interface",
+            "mac-address",
+            "last-ip",
+            "authentication-type",
+            "encryption",
+            "group-encryption"
+        },
     },
 }
 
@@ -55,19 +150,21 @@ async def main():
 
     resources = {}
 
-    for name, tag_props in TAGS.items():
+    for name, props in TAGS.items():
         r = api.get_resource(name)
 
+        tag_props = props['tag_props']
         # Find all integer properties once
         field_props = set()
         for entry in r.get():
             single_props = set()
             for k, v in entry.items():
-                try:
-                    int(v)
-                    single_props.add(k)
-                except ValueError:
-                    pass
+                for p in PARSERS:
+                    try:
+                        p(k, v)
+                        single_props.add(k)
+                    except ValueError:
+                        pass
             field_props |= single_props
         proplist = '.id,'+','.join(list(tag_props) + list(field_props))
         tag_props.add('id') # ".id" in .proplist but "id" in result :(
@@ -96,10 +193,12 @@ async def main():
                     if value := entry.get(tag):
                         p.tag(tag, value)
                 for field in m['field_props']:
-                    try:
-                        p.field(field, int(entry.get(field, "")))
-                    except ValueError:
-                        pass
+                    for parser in PARSERS:
+                        try:
+                            p.fields(parser(field, entry.get(field, "")))
+                            break
+                        except ValueError:
+                            pass
                 print(p.to_line_protocol())
 
 
