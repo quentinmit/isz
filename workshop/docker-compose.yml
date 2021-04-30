@@ -65,6 +65,19 @@ services:
       - --config
       - http://172.30.97.32:8086/api/v2/telegrafs/0702075a793e0000
     restart: always
+  speedtest:
+    restart: always
+    build: speedtest
+    links:
+      - "influxdb:influxdb"
+    env_file: speedtest.env
+    environment:
+      - "INTERVAL=3600"
+      - "SHOW_EXTERNAL_IP=true"
+      - "INFLUXDB_DB=speedtest"
+      - "INFLUXDB_USER=speedtest"
+      - "INCLUDE_READABLE_OUTPUT=true"
+#      - "SPEEDTEST_LIST_SERVERS=true"
   homeassistant:
     container_name: homeassistant
     image: homeassistant/raspberrypi4-homeassistant:stable
