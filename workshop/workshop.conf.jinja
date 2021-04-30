@@ -138,9 +138,19 @@
 [[inputs.system]]
 [[inputs.temp]]
 
+[[inputs.internal]]
+  [inputs.internal.tags]
+  app = "telegraf"
+
 [[inputs.prometheus]]
-  ## An array of urls to scrape metrics from.
-  urls = ["http://influx.isz/metrics"]
+  urls = ["http://grafana.isz:3000/metrics"]
+  [inputs.prometheus.tags]
+  app = "grafana"
+
+[[inputs.prometheus]]
+  urls = ["http://influx.isz:8086/metrics"]
+  [inputs.prometheus.tags]
+  app = "influx"
 
 [[inputs.openweathermap]]
   ## OpenWeatherMap API key.
