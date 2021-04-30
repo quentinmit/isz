@@ -144,11 +144,13 @@
 
 [[inputs.prometheus]]
   urls = ["http://grafana.isz:3000/metrics"]
+  metric_version = 2
   [inputs.prometheus.tags]
   app = "grafana"
 
 [[inputs.prometheus]]
   urls = ["http://influx.isz:8086/metrics"]
+  metric_version = 2
   [inputs.prometheus.tags]
   app = "influx"
 
