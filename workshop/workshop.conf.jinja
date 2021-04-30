@@ -152,6 +152,24 @@
   [inputs.prometheus.tags]
   app = "influx"
 
+[[inputs.ping]]
+  method = "native"
+  urls = [
+    "core1.bos1.he.net",
+    "core1.lax1.he.net",
+    "core1.nyc4.he.net",
+    "core1.oma1.he.net",
+    "core1.chi1.he.net",
+    "core1.dal1.he.net",
+    "core1.den1.he.net",
+    "core1.mia1.he.net",
+    "core1.bna1.he.net",
+    "core1.phx2.he.net",
+    "core1.sea1.he.net",
+    "core1.blp1.he.net",
+    "overwatch.mit.edu",
+  ]
+
 [[inputs.openweathermap]]
   ## OpenWeatherMap API key.
   app_id = "f02700b223b5b6b0816ef3af182ac81b"
