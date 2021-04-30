@@ -64,6 +64,11 @@ func loop(ctx context.Context, writeApi api.WriteAPI) error {
 		}
 		report(writeApi, "networkinfo", result)
 		result = map[string]interface{}{}
+		if err := request(c, ctx, fmt.Sprintf("http://%s/jrd/webapi", *address), "GetSystemStatus", nil, &result); err != nil {
+			return err
+		}
+		report(writeApi, "systemstatus", result)
+		result = map[string]interface{}{}
 		if err := request(c, ctx, fmt.Sprintf("http://%s/jrd/webapi", *address), "GetConnectionState", nil, &result); err != nil {
 			return err
 		}
