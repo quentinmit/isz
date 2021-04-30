@@ -11,10 +11,18 @@ import routeros_api
 
 
 class MyPoint(Point):
+    def tags(self, tags: dict):
+        for key, value in tags.items():
+            self.tag(key, value)
+        return self
+
     def fields(self, fields: dict):
         for name, value in fields.items():
             self.field(name, value)
         return self
+
+    def clone_with_tags(self):
+        return type(self)(self._name).tags(self._tags).time(self._time, write_precision=self._write_precision)
 
 def to_int(base, value):
     return {base: int(value)}
@@ -38,14 +46,14 @@ def to_bool(base: str, value: str):
 def to_rate(base: str, value: str):
     if not base.endswith("-rate"):
         raise ValueError("not rate")
-    num, name = value.split("-", 1)
-    if not num.endswith("Mbps"):
-        raise ValueError("not Mbps")
-    num = int(float(num[:-4])*1e6)
-    return {
-        base: num,
-        base+"-name": name,
+    d = {
+        base+"-name": value,
     }
+    parts = value.split("-", 1)
+    num = parts[0]
+    if num.endswith("Mbps"):
+        d[base] = int(float(num[:-4])*1e6)
+    return d
 
 DURATION_RE = re.compile(r'''
 ^
@@ -94,12 +102,45 @@ def to_duration(base: str, value: str):
         }
     raise ValueError("not a duration")
 
+def to_signal(base: str, value: str) -> dict:
+    if base != "signal-strength":
+        raise ValueError("wrong field")
+    rssi, rate = value.split('@', 1)
+    return to_int(base, rssi) | to_rate(base + '-rate', rate)
+
+def to_strength_at_rates(base: str, value: str) -> list:
+    if base != "strength-at-rates":
+        raise ValueError("wrong field")
+    parts = value.split(',')
+    ret = []
+    for part in parts:
+        rssi_rate, age = part.split(' ')
+        rssi, rate = rssi_rate.split('@')
+        ret.append((
+            {'rate': rate},
+            to_int(base, rssi) | to_duration(base+"-age", age)
+        ))
+    return ret
+
+STRING_FIELDS = {
+    "tx-rate-set",
+}
+
+def to_str(base: str, value: str) -> dict:
+    if base not in STRING_FIELDS:
+        raise ValueError("unknown field")
+    return {
+        base: value,
+    }
 PARSERS = [
     to_int,
     to_duration,
     to_txrx,
     to_bool,
     to_rate,
+    to_signal,
+    to_strength_at_rates,
+    to_str,
 ]
 
 TAGS = {
@@ -131,10 +172,6 @@ async def main():
                         help='password')
     parser.add_argument('--plaintext-login', action='store_true', default=False)
     parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('subscriptions', metavar='STAT', nargs='*',
-                        default="interfaces system-stats num-routes config-change".split(),
-                        # All: default="export discover pon-stats interfaces system-stats num-routes config-change users".split(),
-                        help='list of stats to collect')
 
     args = parser.parse_args()
 
@@ -157,14 +194,20 @@ async def main():
         # Find all integer properties once
         field_props = set()
         for entry in r.get():
+            logging.debug("parsing %s", entry)
             single_props = set()
             for k, v in entry.items():
+                if k in tag_props | {"id"}:
+                    continue
                 for p in PARSERS:
                     try:
                         p(k, v)
                         single_props.add(k)
+                        break
                     except ValueError:
                         pass
+                else:
+                    logging.debug("failed to find parser for %s='%s'", k, v)
             field_props |= single_props
         proplist = '.id,'+','.join(list(tag_props) + list(field_props))
         tag_props.add('id') # ".id" in .proplist but "id" in result :(
@@ -195,11 +238,22 @@ async def main():
                 for field in m['field_props']:
                     for parser in PARSERS:
                         try:
-                            p.fields(parser(field, entry.get(field, "")))
+                            parsed = parser(field, entry.get(field, ""))
+                            if isinstance(parsed, list):
+                                for tags, fields in parsed:
+                                    print(
+                                        p.clone_with_tags().tags(tags).fields(fields).to_line_protocol()
+                                    )
+                                break
+                            p.fields(parsed)
                             break
                         except ValueError:
                             pass
-                print(p.to_line_protocol())
+                try:
+                    print(p.to_line_protocol())
+                except ValueError:
+                    logging.exception("failed to print %s", p._fields)
+                    raise
 
 
 if __name__ == "__main__":
