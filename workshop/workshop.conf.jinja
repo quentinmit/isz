@@ -162,7 +162,7 @@
   urls = [
 {% for host in ping_targets %}
     "{{ host.host }}",
-{% endfor %}
+{%- endfor %}
   ]
 
 [[inputs.openweathermap]]
