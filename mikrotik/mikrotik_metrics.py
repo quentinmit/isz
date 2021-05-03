@@ -74,6 +74,8 @@ $
 ''', re.VERBOSE)
 
 def to_duration(base: str, value: str):
+    if not value:
+        raise ValueError("empty duration")
     m = DURATION_RE.match(value)
     if m:
         seconds = 0
@@ -124,6 +126,12 @@ def to_strength_at_rates(base: str, value: str) -> list:
 
 STRING_FIELDS = {
     "tx-rate-set",
+    "active-address",
+    "active-mac-address",
+    "active-client-id",
+    "active-server",
+    "status",
+    "host-name",
 }
 
 def to_str(base: str, value: str) -> dict:
@@ -158,6 +166,19 @@ TAGS = {
             "authentication-type",
             "encryption",
             "group-encryption"
+        },
+    },
+    "/ip/dhcp-server/lease": {
+        "tag_props": {
+            "blocked",
+            "disabled",
+            "dynamic",
+            "mac-address",
+            "client-id",
+            "server",
+            "address",
+            "comment",
+            "dhcp-option",
         },
     },
 }
@@ -236,9 +257,11 @@ async def main():
                     if value := entry.get(tag):
                         p.tag(tag, value)
                 for field in m['field_props']:
+                    if field not in entry:
+                        continue
                     for parser in PARSERS:
                         try:
-                            parsed = parser(field, entry.get(field, ""))
+                            parsed = parser(field, entry[field])
                             if isinstance(parsed, list):
                                 for tags, fields in parsed:
                                     print(
