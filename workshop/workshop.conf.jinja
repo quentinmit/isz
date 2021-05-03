@@ -139,19 +139,19 @@
 [[inputs.temp]]
 
 [[inputs.internal]]
-  interval = 60s
+  interval = "60s"
   [inputs.internal.tags]
   app = "telegraf"
 
 [[inputs.prometheus]]
   urls = ["http://grafana.isz:3000/metrics"]
   metric_version = 2
-  interval = 60s
+  interval = "60s"
   [inputs.prometheus.tags]
   app = "grafana"
 
 [[inputs.prometheus]]
-  interval = 60s
+  interval = "60s"
   urls = ["http://influx.isz:8086/metrics"]
   metric_version = 2
   [inputs.prometheus.tags]
