@@ -139,16 +139,19 @@
 [[inputs.temp]]
 
 [[inputs.internal]]
+  interval = 60s
   [inputs.internal.tags]
   app = "telegraf"
 
 [[inputs.prometheus]]
   urls = ["http://grafana.isz:3000/metrics"]
   metric_version = 2
+  interval = 60s
   [inputs.prometheus.tags]
   app = "grafana"
 
 [[inputs.prometheus]]
+  interval = 60s
   urls = ["http://influx.isz:8086/metrics"]
   metric_version = 2
   [inputs.prometheus.tags]
@@ -197,7 +200,7 @@
   alias = "mikrotik_api_{{ host.ip }}"
   command = ["chroot", "/hostfs", "/srv/isz/mikrotik/.venv/bin/python", "/srv/isz/mikrotik/mikrotik_metrics.py", "--server", "{{ host.ip }}", "--user", "{{ mikrotik_api_user }}", "--password", "{{ mikrotik_api_password }}"{% if host.plaintext %}, "--plaintext-login"{% endif %}]
   signal = "STDIN"
-  interval = "60s"
+  interval = "30s"
   restart_delay = "10s"
   data_format = "influx"
   name_prefix="mikrotik-"
@@ -207,7 +210,7 @@
   alias = "mikrotik_swos_{{ host.ip }}"
   command = ["chroot", "/hostfs", "/srv/isz/mikrotik/.venv/bin/python", "/srv/isz/mikrotik/mikrotik_swos_metrics.py", "--server", "{{ host.ip }}", "--user", "{{ mikrotik_swos_user }}", "--password", "{{ mikrotik_swos_password }}"]
   signal = "STDIN"
-  interval = "60s"
+  interval = "30s"
   restart_delay = "10s"
   data_format = "influx"
   name_prefix="mikrotik-"
