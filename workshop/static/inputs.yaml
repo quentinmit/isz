@@ -543,7 +543,7 @@ ping_targets:
   datacenter: Enter Milan
   exchanges: [MIX, MINAP Milan, TOP-IX, Equinix Milan]
 - host: core1.osl1.he.net
-  country: NO
+  country: "NO"
   city: Oslo
   datacenter: Digiplex Norway, Oslo
   exchanges: [FIXO, NIX]
