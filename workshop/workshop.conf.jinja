@@ -157,38 +157,9 @@
 [[inputs.ping]]
   method = "native"
   urls = [
-    "overwatch.mit.edu",
-    "core1.bos1.he.net",
-    "core1.lax1.he.net",
-    "core1.nyc4.he.net",
-    "core1.oma1.he.net",
-    "core1.chi1.he.net",
-    "core1.dal1.he.net",
-    "core1.den1.he.net",
-    "core1.mia1.he.net",
-    "core1.bna1.he.net",
-    "core1.phx1.he.net",
-    "core1.sea1.he.net",
-    "core1.blp1.he.net",
-    "core1.ams1.he.net",
-    "core1.dxb1.he.net",
-    "core1.jnb1.he.net",
-    "core1.man1.he.net",
-    "core1.rom1.he.net",
-    "core1.syd1.he.net",
-    "core1.tyo1.he.net",
-    "core1.zrh3.he.net",
-    "core2.sao1.he.net",
-    "core1.ymq1.he.net",
-    "core1.lax1.he.net",
-    "lenta.ru",
-    "core1.sin1.he.net",
-    "core1.kbp1.he.net",
-    "core1.beg1.he.net",
-    "core1.zag1.he.net",
-    "core1.sto1.he.net",
-    "core1.tpe1.he.net",
-    "core1.nbo1.he.net",
+{% for host in ping_targets %}
+    "{{ host.host }}",
+{% endfor %}
   ]
 
 [[inputs.openweathermap]]
