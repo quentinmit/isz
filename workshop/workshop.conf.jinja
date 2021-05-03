@@ -158,12 +158,31 @@
   app = "influx"
 
 [[inputs.ping]]
+  interval = "30s"
   method = "native"
   urls = [
 {% for host in ping_targets %}
     "{{ host.host }}",
 {%- endfor %}
   ]
+
+[[processors.starlark]]
+  namepass = ["ping"]
+  source = '''
+tags = {
+{% for host in ping_targets %}
+"{{ host.host }}": {{ host|tojson|safe }},
+{%- endfor %}
+}
+def apply(metric):
+  url = metric.tags.get("url")
+  extra = tags.get(url)
+  if extra:
+    extra.pop("host")
+    extra["exchanges"] = extra["exchanges"].join(", ")
+    metric.tags.update(extra)
+  return metric
+'''
 
 [[inputs.openweathermap]]
   ## OpenWeatherMap API key.
