@@ -1,3 +1,6 @@
 [submodule "workshop/speedtest"]
 	path = workshop/speedtest
 	url = https://github.com/QuadStingray/docker-speedtest-influxdb.git
+[submodule "workshop/atuin"]
+	path = workshop/atuin
+	url = https://github.com/ellie/atuin.git

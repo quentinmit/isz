@@ -108,3 +108,17 @@ services:
       - /srv/isz/workshop/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - /srv/mosquitto/data:/mosquitto/data
       - /srv/mosquitto/log:/mosquitto/log
+  postgres:
+    container_name: postgres
+    image: postgres
+    env_file: postgres.env
+    volumes:
+      - /srv/postgresql/data:/var/lib/postgresql/data
+  atuin:
+    container_name: atuin
+    image: ellieh/atuin
+    build:
+      context: atuin
+    volumes:
+      - /srv/isz/workshop/atuin-server.toml:/config/server.toml
+    command: server start
