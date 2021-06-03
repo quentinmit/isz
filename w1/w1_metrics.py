@@ -25,7 +25,7 @@ def main():
                   .field('temp', sensor.get_temperature())
                   .time(time.time_ns())
                   .to_line_protocol())
-
+        sys.stdout.flush()
 
 if __name__ == "__main__":
     main()
