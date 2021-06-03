@@ -19,5 +19,5 @@ services:
       - /entrypoint.sh
       - telegraf
       - --config
-      - http://172.30.97.32:8086/api/v2/telegrafs/06f519251454e000
+      - http://172.30.97.32:8086/api/v2/telegrafs/07a025340b041000
     restart: always
