@@ -28,15 +28,16 @@ services:
     image: bemasher/rtl-sdr
     command: rtl_tcp -a 0.0.0.0
     devices:
-      - "/dev/bus/usb/001/004:/dev/bus/usb/001/004"
+      - "/dev/bus/usb/001/016:/dev/bus/usb/001/016"
     restart: always
   rtlamr:
     build: ./rtlamr
     env_file: rtlamr.env
     environment:
       - COLLECT_INFLUXDB_HOSTNAME=http://workshop-pi.isz:8086/
-      - COLLECT_INFLUXDB_DATABASE=rtlamr
-      - COLLECT_INFLUXDB_USER=rtlamr
+      - COLLECT_INFLUXDB_ORG=44ff94dc2f766f90
+      - COLLECT_INFLUXDB_BUCKET=rtlamr
+      - COLLECT_INFLUXDB_MEASUREMENT=rtlamr
       - COLLECT_STRICTIDM=1
       - RTLAMR_FORMAT=json
       - RTLAMR_MSGTYPE=all
