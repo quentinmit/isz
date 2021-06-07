@@ -1,29 +1,14 @@
 version: '3'
 services:
-  influxdb:
-    container_name: influxdb
-    image: quay.io/influxdb/influxdb:v2.0.2
-    ports:
-      - "172.30.97.101:8086:8086"
-      - "172.30.96.101:8086:8086"
+  jellyfin:
+    image: jellyfin/jellyfin:unstable
+    container_name: jellyfin
+    network_mode: host
     volumes:
-      - /srv/influxdb/etc:/etc/influxdbv2
-      - /srv/influxdb/data:/influxdbv2
-    environment:
-      - TZ=America/New_York
-      - INFLUXD_CONFIG_PATH
-      - INFLUXD_BOLT_PATH=/influxdbv2/influxd.bolt
-      - INFLUXD_ENGINE_PATH=/influxdbv2/engine
-    restart: always
-  grafana:
-    container_name: grafana
-    image: grafana/grafana
-    ports:
-      - "172.30.97.101:3000:3000"
-      - "172.30.96.101:3000:3000"
-    volumes:
-      - /srv/influxdb/grafana-storage:/var/lib/grafana
-    restart: always
+      - /srv/jellyfin/config:/config
+      - /srv/jellyfin/cache:/cache
+      - /srv/media:/media
+    restart: unless-stopped
   rtl_tcp:
     image: bemasher/rtl-sdr
     command: rtl_tcp -a 0.0.0.0
