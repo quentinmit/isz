@@ -10,9 +10,13 @@
   vars:
     ansible_processor_cores: 4
     ansible_processor_vcpus: 4
-    pki_acme_ca: le-staging-v2
+    pki_ca_domain: isz.wtf
+    pki_acme_ca: le-live-v2
     pki_acme: True
-    pki_enabled: False
+    pki_acme_contacts: [ mailto:quentin@mit.edu ]
+    pki_enabled: True
+    pki_internal: False
+    pki_download_extra: False
     pki_realms:
     - name: grafana.isz.wtf
     - name: influx.isz.wtf
@@ -23,17 +27,22 @@
     nginx_hsts_subdomains: False
     nginx_welcome_domain: icestationzebra.isz.wtf
     nginx_default_name: welcome
+    nginx_pki: True
     nginx__servers:
     - name: [ grafana.isz.wtf, grafana.isz ]
+      pki_realm: grafana.isz.wtf
       type: proxy
       proxy_pass: http://workshop-pi.isz:3000/
     - name: [ influx.isz.wtf, influx.isz ]
+      pki_realm: influx.isz.wtf
       type: proxy
       proxy_pass: http://workshop-pi.isz:8086/
     - name: [ atuin.isz.wtf, atuin.isz ]
+      pki_realm: atuin.isz.wtf
       type: proxy
       proxy_pass: http://172.19.0.9:8888/
     - name: [ homeassistant.isz.wtf, homeassistant.isz, hass.isz.wtf, hass.isz ]
+      pki_realm: homeassistant.isz.wtf
       type: proxy
       proxy_pass: http://127.0.0.1:8123/
       options: |
@@ -42,7 +51,6 @@
         proxy_set_header Host $host;
         proxy_redirect http:// https://;
         proxy_http_version 1.1;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
     networkd_interfaces:
@@ -62,10 +70,17 @@
     - name: vlan3097
       vlan: 3097
       address: 172.30.97.32/24
+  pre_tasks:
+    - name: Prepare pki environment
+      import_role:
+        name: 'debops.debops.pki'
+        tasks_from: 'main_env'
+      tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
   roles:
   - role: networkd
   - role: debops.debops.pki
     pki_acme_default_subdomains: []
+    tags: [ 'role::pki', 'skip::pki' ]
   - role: debops.debops.python
     tags: [ 'role::python', 'skip::python' ]
     python__dependent_packages3:
