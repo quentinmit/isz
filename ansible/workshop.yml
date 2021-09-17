@@ -1,13 +1,27 @@
 # Prerequisites:
-# Configure ssh keys
 # # apt update && apt install python-is-python3
-
+# Copy in /etc/resolv.conf
+# Copy in /etc/ssh/*key* and /etc/ssh/moduli
+# Copy in /root/.ssh
+# TODO: Install 99-isz.rules
 - hosts: workshop-pi.isz
   serial: 1
   vars:
     ansible_processor_cores: 4
+    ansible_processor_vcpus: 4
+    pki_acme_ca: le-staging-v2
+    pki_acme: True
+    pki_enabled: False
+    pki_realms:
+    - name: grafana.isz.wtf
+    - name: influx.isz.wtf
+    - name: atuin.isz.wtf
+    - name: homeassistant.isz.wtf
+      acme_domains: [ hass.isz.wtf ]
     nginx_hsts_age: '{{ 60 * 60 }}'
     nginx_hsts_subdomains: False
+    nginx_welcome_domain: icestationzebra.isz.wtf
+    nginx_default_name: welcome
     nginx__servers:
     - name: [ grafana.isz.wtf, grafana.isz ]
       type: proxy
@@ -30,7 +44,27 @@
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
+    networkd_interfaces:
+    - name: br0
+      mac_address: dc:a6:32:d3:49:0c
+      address: dhcp
+      bridge_pvid: 3096
+      bridge_vlans: [ 3097, 500 ]
+      vlan_interfaces: [ vlan3097 ]
+    - name: eth0
+      bridge: br0
+      bridge_pvid: 3096
+      bridge_vlans: [ 3097, 500 ]
+    - name: usb0
+      bridge: br0
+      bridge_pvid: 500
+    - name: vlan3097
+      vlan: 3097
+      address: 172.30.97.32/24
   roles:
+  - role: networkd
+  - role: debops.debops.pki
+    pki_acme_default_subdomains: []
   - role: debops.debops.python
     tags: [ 'role::python', 'skip::python' ]
     python__dependent_packages3:
@@ -46,6 +80,7 @@
       - apt-file
       - bash-completion
       - bsdmainutils
+      - bwm-ng
       - command-not-found
       - cpuset
       - curl
@@ -62,6 +97,7 @@
       - mtr-tiny
       - ncdu
       #- rfkill
+      - rsync
       - screen
       - socat
       - sqlite3
@@ -91,6 +127,7 @@
       - net-tools
       - nginx
       - nmap
+      - python3-venv
       #- raspberrypi-kernel
       - snmp
       - snmp-mibs-downloader
@@ -136,3 +173,29 @@
          (add-hook 'before-save-hook 'gofmt-before-save))
         (add-hook 'go-mode-hook 'go-mode-setup)
       
+  - copy:
+      dest: /etc/default/raspi-firmware-custom
+      content: |
+        # Enable I2C port
+        dtparam=i2c_arm=on
+        
+        # Enable 1-wire port
+        dtoverlay=w1-gpio
+        
+        # Force HDMI out
+        hdmi_force_hotplug=1
+        disable_overscan=1
+        # Force 1080p60
+        hdmi_group=1
+        hdmi_mode=16
+  - copy:
+      dest: /root/.gitconfig
+      content: |
+        # This is Git's per-user configuration file.
+        [user]
+        # Please adapt and uncomment the following lines:
+                name = Quentin Smith
+                email = quentin@mit.edu
+        [alias]
+                up = pull --rebase
+                k = log --graph --abbrev-commit --pretty=oneline --decorate

@@ -1,0 +1,72 @@
+- name: Disable ifupdown
+  file:
+    path: /etc/network/interfaces
+    state: absent
+- name: Enable systemd-networkd
+  systemd:
+    name: systemd-networkd
+    enabled: yes
+- name: Configure interfaces
+  block:
+  - when: item.vlan | d(False)
+    with_items: '{{ networkd_interfaces | debops.debops.parse_kv_items }}'
+    copy:
+      dest: /etc/systemd/network/{{item.name}}.netdev
+      content: |
+        [NetDev]
+        Name={{item.name}}
+        Kind=vlan
+
+        [VLAN]
+        Id={{item.vlan}}
+  - when: item.name.startswith("br")
+    with_items: '{{ networkd_interfaces | debops.debops.parse_kv_items }}'
+    copy:
+      dest: /etc/systemd/network/{{item.name}}.netdev
+      content: |
+        [NetDev]
+        Name={{item.name}}
+        Kind=bridge
+        {% if item.mac_address | d('') %}
+        MACAddress={{item.mac_address}}
+        {% endif %}
+
+        [Bridge]
+        {% if item.bridge_pvid | d('') or item.bridge_vlans | d([]) %}
+        VLANFiltering=yes
+        {% endif %}
+        STP=no
+        DefaultPVID=none
+  - with_items: '{{ networkd_interfaces | debops.debops.parse_kv_items }}'
+    copy:
+      dest: /etc/systemd/network/{{item.name}}.network
+      content: |
+        [Match]
+        Name={{item.name}}
+
+        [Network]
+        {% if item.bridge | d('') %}
+        Bridge={{ item.bridge }}
+        {% endif %}
+        {% if item.address | d('') == "dhcp" %}
+        DHCP=ipv4
+        {% elif item.address | d('') %}
+        Address={{item.address}}
+        {% else %}
+        LinkLocalAddressing=none
+        {% endif %}
+
+        {% for vlan in item.vlan_interfaces | d([]) %}
+        VLAN={{vlan}}
+        {% endfor %}
+
+        {% if item.bridge_pvid | d('') %}
+        [BridgeVLAN]
+        PVID={{item.bridge_pvid}}
+        EgressUntagged={{item.bridge_pvid}}
+        {% endif %}
+
+        {% for vlan in item.bridge_vlans | d([]) %}
+        [BridgeVLAN]
+        VLAN={{vlan}}
+        {% endfor %}
