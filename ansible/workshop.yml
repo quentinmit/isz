@@ -1,0 +1,138 @@
+# Prerequisites:
+# Configure ssh keys
+# # apt update && apt install python-is-python3
+
+- hosts: workshop-pi.isz
+  serial: 1
+  vars:
+    ansible_processor_cores: 4
+    nginx_hsts_age: '{{ 60 * 60 }}'
+    nginx_hsts_subdomains: False
+    nginx__servers:
+    - name: [ grafana.isz.wtf, grafana.isz ]
+      type: proxy
+      proxy_pass: http://workshop-pi.isz:3000/
+    - name: [ influx.isz.wtf, influx.isz ]
+      type: proxy
+      proxy_pass: http://workshop-pi.isz:8086/
+    - name: [ atuin.isz.wtf, atuin.isz ]
+      type: proxy
+      proxy_pass: http://172.19.0.9:8888/
+    - name: [ homeassistant.isz.wtf, homeassistant.isz, hass.isz.wtf, hass.isz ]
+      type: proxy
+      proxy_pass: http://127.0.0.1:8123/
+      options: |
+        proxy_buffering off;
+      proxy_options: |
+        proxy_set_header Host $host;
+        proxy_redirect http:// https://;
+        proxy_http_version 1.1;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+  roles:
+  - role: debops.debops.python
+    tags: [ 'role::python', 'skip::python' ]
+    python__dependent_packages3:
+      - '{{ nginx__python__dependent_packages3 }}'
+    python__dependent_packages2:
+      - '{{ nginx__python__dependent_packages2 }}'
+  - role: debops.roles01.nginx
+    tags: [ 'role::nginx', 'skip::nginx' ]
+  tasks:
+  - name: Install utilities
+    package:
+      name:
+      - apt-file
+      - bash-completion
+      - bsdmainutils
+      - command-not-found
+      - cpuset
+      - curl
+      - debsums
+      - emacs-nox
+      - fping
+      #- glances
+      - htop
+      - info
+      - iotop
+      - lsof
+      - man-db
+      - mlocate
+      - mtr-tiny
+      - ncdu
+      #- rfkill
+      - screen
+      - socat
+      - sqlite3
+      - strace
+      - sysstat
+      - telnet
+      - tree
+      - tshark
+      - usbutils
+      - v4l-utils
+      - wget
+  - command: update-command-not-found
+    args:
+      creates: /var/lib/command-not-found/commands.db
+  - package:
+      name:
+      - bridge-utils
+      - certbot
+      - device-tree-compiler
+      - docker-compose
+      - docker.io
+      - fbset
+      - ffmpeg
+      - golang
+      - i2c-tools
+      - iptables
+      - net-tools
+      - nginx
+      - nmap
+      #- raspberrypi-kernel
+      - snmp
+      - snmp-mibs-downloader
+      - vlan
+      - wireless-regdb
+      - wireless-tools
+  - blockinfile:
+      path: /root/.bashrc
+      block: |
+        export PATH=/root/go/bin:$PATH
+
+        export HISTSIZE=100000
+  - file:
+      path: /root/.config/git
+      state: directory
+  - copy:
+      dest: /root/.config/git/ignore
+      content: |
+        *~
+  - copy:
+      dest: /root/.emacs
+      content: |
+        (require 'package)
+        (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+        (package-initialize)
+        (custom-set-variables
+         ;; custom-set-variables was added by Custom.
+         ;; If you edit it by hand, you could mess it up, so be careful.
+         ;; Your init file should contain only one such instance.
+         ;; If there is more than one, they won't work right.
+         '(gofmt-command "goimports")
+         '(ido-mode (quote both) nil (ido))
+         '(package-selected-packages (quote (dockerfile-mode go-mode yaml-mode))))
+        (custom-set-faces
+         ;; custom-set-faces was added by Custom.
+         ;; If you edit it by hand, you could mess it up, so be careful.
+         ;; Your init file should contain only one such instance.
+         ;; If there is more than one, they won't work right.
+         )
+        (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+        (defun go-mode-setup ()
+         ;(go-eldoc-setup)
+         (add-hook 'before-save-hook 'gofmt-before-save))
+        (add-hook 'go-mode-hook 'go-mode-setup)
+      

@@ -1,0 +1,5 @@
+all:
+  hosts:
+    workshop-pi.isz:
+    bedroom-pi.isz:
+    heartofgold.isz:

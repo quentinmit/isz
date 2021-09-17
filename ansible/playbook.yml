@@ -1,0 +1,13 @@
+- hosts: all
+  serial: 1
+  roles:
+  - debops.debops.etckeeper
+  tasks:
+    - name: Install playbook Python dependencies
+      package:
+        name:
+          - python3-netaddr
+          #- python3-dns{{ "python" if ansible_os_family == "Debian" else "" }}
+        state: present
+
+- import_playbook: workshop.yml
