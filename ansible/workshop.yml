@@ -4,6 +4,7 @@
 # Copy in /etc/ssh/*key* and /etc/ssh/moduli
 # Copy in /root/.ssh
 # TODO: Install 99-isz.rules
+# TODO: Create quentin user
 - hosts: workshop-pi.isz
   serial: 1
   vars:
@@ -80,6 +81,7 @@
       - apt-file
       - bash-completion
       - bsdmainutils
+      - bind9-host
       - bwm-ng
       - command-not-found
       - cpuset
@@ -96,6 +98,7 @@
       - mlocate
       - mtr-tiny
       - ncdu
+      - nmap
       #- rfkill
       - rsync
       - screen
@@ -126,7 +129,6 @@
       - iptables
       - net-tools
       - nginx
-      - nmap
       - python3-venv
       #- raspberrypi-kernel
       - snmp
