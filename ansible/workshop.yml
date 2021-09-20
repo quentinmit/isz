@@ -143,7 +143,6 @@
       - i2c-tools
       - iptables
       - net-tools
-      - nginx
       - python3-venv
       #- raspberrypi-kernel
       - snmp
