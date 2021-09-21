@@ -5,6 +5,7 @@
 # Copy in /root/.ssh
 # TODO: Install 99-isz.rules
 # TODO: Create quentin user
+# TODO: Install RPi kernel and make w1 work
 - hosts: workshop-pi.isz
   serial: 1
   vars:
