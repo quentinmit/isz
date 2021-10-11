@@ -6,7 +6,6 @@
 # TODO: Install 99-isz.rules
 # TODO: Create quentin user
 # TODO: Install RPi kernel and make w1 work
-# TODO: Block nginx startup on working DNS resolution
 - hosts: workshop-pi.isz
   serial: 1
   vars:
@@ -80,6 +79,7 @@
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
   roles:
   - role: networkd
+  - role: debops.debops.global_handlers
   - role: debops.debops.pki
     pki_acme_default_subdomains: []
     tags: [ 'role::pki', 'skip::pki' ]
@@ -152,6 +152,18 @@
       - vlan
       - wireless-regdb
       - wireless-tools
+  - file:
+      path: /etc/systemd/system/nginx.service.d
+      state: directory
+  - copy:
+      dest: /etc/systemd/system/nginx.service.d/isz.conf
+      content: |
+        [Unit]
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Restart=on-failure
+    notify: Reload service manager
   - blockinfile:
       path: /root/.bashrc
       block: |
@@ -218,7 +230,7 @@
                 up = pull --rebase
                 k = log --graph --abbrev-commit --pretty=oneline --decorate
   - when: custom_kernel | default(False)
-    block:
+    block: []
       # dpkg -i linux-{image,headers,libc-dev}-*
       # mkdir /boot/firmware/downstream
       # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/downstream/overlays
