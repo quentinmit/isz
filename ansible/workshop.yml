@@ -6,6 +6,7 @@
 # TODO: Install 99-isz.rules
 # TODO: Create quentin user
 # TODO: Install RPi kernel and make w1 work
+# TODO: Block nginx startup on working DNS resolution
 - hosts: workshop-pi.isz
   serial: 1
   vars:
@@ -197,7 +198,7 @@
         dtparam=i2c_arm=on
         
         # Enable 1-wire port
-        dtoverlay=w1-gpio
+        dtoverlay=w1-gpio,gpiopin=17
         
         # Force HDMI out
         hdmi_force_hotplug=1
@@ -216,3 +217,13 @@
         [alias]
                 up = pull --rebase
                 k = log --graph --abbrev-commit --pretty=oneline --decorate
+  - when: custom_kernel | default(False)
+    block:
+      # dpkg -i linux-{image,headers,libc-dev}-*
+      # mkdir /boot/firmware/downstream
+      # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/downstream/overlays
+      # cp /usr/lib/linux-image-5.10.63-v8-isz+/broadcom/* /boot/firmware/downstream/
+      # echo "console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rw fsck.repair=yes net.ifnames=0  rootwait" >> /boot/firmware/downstream/cmdline.txt
+      ## shouldn't be necessary
+      # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/overlays
+      ## install config.txt updates
