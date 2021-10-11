@@ -3,7 +3,6 @@
 # Copy in /etc/resolv.conf
 # Copy in /etc/ssh/*key* and /etc/ssh/moduli
 # Copy in /root/.ssh
-# TODO: Install 99-isz.rules
 # TODO: Create quentin user
 # TODO: Install RPi kernel and make w1 work
 - hosts: workshop-pi.isz
@@ -164,6 +163,11 @@
         [Service]
         Restart=on-failure
     notify: Reload service manager
+  - copy:
+      dest: /etc/udev/rules.d/99-isz.rules
+      content: |
+        SUBSYSTEM=="tty", ATTRS{product}=="Epic-PWRgate", RUN+="/usr/bin/ln -f $devnode /dev/ttyPwrgate"
+        SUBSYSTEM=="tty", ATTRS{idProduct}=="0200", ATTRS{idVendor}=="0658", RUN+="/usr/bin/ln -f $devnode /dev/ttyZwave"
   - blockinfile:
       path: /root/.bashrc
       block: |
