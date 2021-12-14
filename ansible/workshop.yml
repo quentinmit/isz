@@ -103,6 +103,7 @@
       - curl
       - debsums
       - emacs-nox
+      - exfat-utils
       - fping
       #- glances
       - htop
