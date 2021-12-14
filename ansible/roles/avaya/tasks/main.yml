@@ -1,0 +1,17 @@
+---
+- file:
+    path: "{{ avaya_root }}"
+    state: directory
+- package:
+    name:
+    - unzip
+- name: Download Avaya firmware
+  unarchive:
+    remote_src: yes
+    src: https://download.avaya.com/tsoweb/9600/05152017/96xx-IPT-SIP-R2_6_17-172303.zip
+    dest: "{{ avaya_root }}"
+    creates: "{{ avaya_root }}/96xxupgrade.txt"
+- name: Configure Avaya settings
+  template:
+    dest: "{{ avaya_root }}/46xxsettings.txt"
+    src: 46xxsettings.txt.j2

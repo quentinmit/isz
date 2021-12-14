@@ -1,0 +1,9 @@
+############################################################
+## ##
+## 96xx SIP TELEPHONE SETTINGS ##
+## ##
+############################################################
+
+{% for item in avaya__combined_sip_settings | debops.debops.parse_kv_items() %}
+SET {{ item.name }} "{{ item.value }}"
+{% endfor %}

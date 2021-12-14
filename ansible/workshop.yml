@@ -10,6 +10,7 @@
   vars:
     ansible_processor_cores: 4
     ansible_processor_vcpus: 4
+    avaya_domain: isz.wtf
     pki_ca_domain: isz.wtf
     pki_acme_ca: le-live-v2
     pki_acme: True
@@ -87,8 +88,12 @@
       - '{{ nginx__python__dependent_packages3 }}'
     python__dependent_packages2:
       - '{{ nginx__python__dependent_packages2 }}'
+  - role: avaya
+    tags: [ 'role::avaya', 'skip::avaya' ]
   - role: debops.roles01.nginx
     tags: [ 'role::nginx', 'skip::nginx' ]
+    nginx__dependent_servers:
+      - '{{ avaya__nginx__dependent_servers }}'
   tasks:
   - name: Install utilities
     package:

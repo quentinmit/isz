@@ -1,0 +1,124 @@
+---
+avaya_domain: '{{ ansible_domain }}'
+avaya_sip_domain: '{{ avaya_domain }}'
+avaya_sip_server: 'pbx.{{ avaya_domain }}'
+avaya_host: 'avaya.{{ avaya_domain }}'
+avaya_root: '/srv/www/sites/{{avaya_host}}/public'
+
+avaya__sip_settings: []
+avaya__combined_sip_settings: '{{
+  avaya__default_sip_settings
+  + avaya__sip_settings
+}}'
+
+avaya__default_sip_settings:
+- name: SIPDOMAIN
+  value: '{{ avaya_sip_domain }}'
+- name: SIPPORT
+  value: 5060
+- name: SIP_CONTROLLER_LIST
+  value: '{{ avaya_sip_server }}:5060;transport=udp'
+- name: SIPREGPROXYPOLICY
+  value: alternate
+- name: SIPPROXYSRVR
+  value: '{{ avaya_sip_server }}'
+- name: ENABLE_AVAYA_ENVIRONMENT
+  value: 0
+- name: MWISRVR
+  value: '{{ avaya_sip_server }}'
+- name: DIALPLAN
+  value: '[2-8]xxx|91xxxxxxxxxx|9[2-9]xxxxxxxxx'
+- name: PHNNUMOFSA
+  value: 6
+- name: SIPSIGNAL
+  value: 1
+- name: SNTPSRVR
+  value: pool.ntp.org
+- name: GMTOFFSET
+  value: -5:00
+- name: DSTOFFSET
+  value: 1
+- name: DSTSTART
+  value: 2SunMar2L
+- name: DSTSTOP
+  value: 1SunNov2L
+- name: TIMEZONE
+  value: America/New_York
+- name: WAIT_FOR_REGISTRATION_TIMER
+  value: 60
+- name: REGISTERWAIT
+  value: 120
+- name: RECOVERYREGISTERWAIT
+  value: 60
+- name: WAIT_FOR_UNREGISTRATION_TIMER
+  value: 32
+- name: WAIT_FOR_INVITE_RESPONSE_TIMEOUT
+  value: 60
+- name: OUTBOUND_SUBSCRIPTION_REQUEST_DURATION
+  value: 180
+- name: NO_DIGITS_TIMEOUT
+  value: 10
+- name: INTER_DIGIT_TIMEOUT
+  value: 5
+- name: ENABLE_PRESENCE
+  value: 0
+- name: ENABLE_AUTOMATIC_ON_THE_PHONE_PRESENCE
+  value: 0
+- name: SPEAKERSTAT
+  value: 2
+- name: SDPCAPNEG
+  value: 1
+- name: DISPLAY_NAME_NUMBER
+  value: 1
+- name: PLAY_TONE_UNTIL_RTP
+  value: 1
+- name: SKILLSCREENTIME
+  value: 1
+- name: UUIDISPLAYTIME
+  value: 5
+- name: ENTRYNAME
+  value: 0
+- name: ENABLE_G729
+  value: 2
+- name: SEND_DTMF_TYPE
+  value: 2
+- name: DTMF_PAYLOAD_TYPE
+  value: 101
+  # Default is 120
+- name: SYMMETRIC_RTP
+  value: 1
+- name: MATCHTYPE
+  value: 1
+- name: ENABLE_HOLD_BUTTON
+  value: 1
+- name: SIG
+  value: 2
+- name: PHNLD
+  value: ""
+  # Long distance access code
+  # Default is 1
+- name: SUBSCRIBE_SECURITY
+  value: 0
+- name: ENABLE_IPOFFICE
+  value: 1
+- name: SUBSCRIBE_LIST_NON_AVAYA
+  value: "mwi"
+- name: EXTENSION_ON_TOP_LINE
+  value: 2
+- name: PROVIDE_OPTIONS_SCREEN
+  value: 1
+- name: DATEFORMAT
+  value: "%Y/%m/%d"
+- name: TIMEFORMAT
+  value: 1
+- name: DAYLIGHT_SAVING_SETTING_MODE
+  value: 2
+- name: PSTN_VM_NUM
+  value: "*97"
+- name: ENABLE_EARLY_MEDIA
+  value: 1
+
+avaya__nginx__dependent_servers:
+- name: '{{ avaya_host }}'
+  webroot_create: yes
+  ssl: no
