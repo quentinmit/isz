@@ -5,7 +5,7 @@
 # Copy in /root/.ssh
 # TODO: Create quentin user
 # TODO: Install RPi kernel and make w1 work
-- hosts: workshop-pi.isz
+- hosts: workshop-pi.isz.wtf
   serial: 1
   vars:
     ansible_processor_cores: 4
