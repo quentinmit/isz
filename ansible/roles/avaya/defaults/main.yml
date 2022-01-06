@@ -12,17 +12,29 @@ avaya__combined_sip_settings: '{{
 }}'
 
 avaya__default_sip_settings:
+- name: CONFIG_SERVER_SECURE_MODE
+  value: 0
+- name: LOGSRVR
+  value: pbx.isz.wtf
+- name: SYSLOG_ENABLED
+  value: 1
+- name: SYSLOG_LEVEL
+  value: 5
+- name: LOG_CATEGORY
+  value: ALL
 - name: SIPDOMAIN
-  value: '{{ avaya_sip_domain }}'
+  value: '{{ avaya_sip_server }}'
 - name: SIPPORT
   value: 5060
 - name: SIP_CONTROLLER_LIST
-  value: '{{ avaya_sip_server }}:5060;transport=udp'
+  value: '{{ avaya_sip_server }}:5060;transport=tcp'
 - name: SIPREGPROXYPOLICY
   value: alternate
 - name: SIPPROXYSRVR
   value: '{{ avaya_sip_server }}'
 - name: ENABLE_AVAYA_ENVIRONMENT
+  value: 0
+- name: DISCOVER_AVAYA_ENVIRONMENT
   value: 0
 - name: MWISRVR
   value: '{{ avaya_sip_server }}'
@@ -44,18 +56,18 @@ avaya__default_sip_settings:
   value: 1SunNov2L
 - name: TIMEZONE
   value: America/New_York
-- name: WAIT_FOR_REGISTRATION_TIMER
-  value: 60
-- name: REGISTERWAIT
-  value: 120
-- name: RECOVERYREGISTERWAIT
-  value: 60
-- name: WAIT_FOR_UNREGISTRATION_TIMER
-  value: 32
-- name: WAIT_FOR_INVITE_RESPONSE_TIMEOUT
-  value: 60
-- name: OUTBOUND_SUBSCRIPTION_REQUEST_DURATION
-  value: 180
+#- name: WAIT_FOR_REGISTRATION_TIMER
+#  value: 60
+#- name: REGISTERWAIT
+#  value: 120
+#- name: RECOVERYREGISTERWAIT
+#  value: 60
+#- name: WAIT_FOR_UNREGISTRATION_TIMER
+#  value: 32
+#- name: WAIT_FOR_INVITE_RESPONSE_TIMEOUT
+#  value: 60
+#- name: OUTBOUND_SUBSCRIPTION_REQUEST_DURATION
+#  value: 180
 - name: NO_DIGITS_TIMEOUT
   value: 10
 - name: INTER_DIGIT_TIMEOUT
@@ -66,8 +78,8 @@ avaya__default_sip_settings:
   value: 0
 - name: SPEAKERSTAT
   value: 2
-- name: SDPCAPNEG
-  value: 1
+#- name: SDPCAPNEG
+#  value: 1
 - name: DISPLAY_NAME_NUMBER
   value: 1
 - name: PLAY_TONE_UNTIL_RTP
@@ -97,12 +109,12 @@ avaya__default_sip_settings:
   value: ""
   # Long distance access code
   # Default is 1
-- name: SUBSCRIBE_SECURITY
-  value: 0
-- name: ENABLE_IPOFFICE
-  value: 1
-- name: SUBSCRIBE_LIST_NON_AVAYA
-  value: "mwi"
+#- name: SUBSCRIBE_SECURITY
+#  value: 0
+#- name: ENABLE_IPOFFICE
+#  value: 1
+#- name: SUBSCRIBE_LIST_NON_AVAYA
+#  value: "mwi"
 - name: EXTENSION_ON_TOP_LINE
   value: 2
 - name: PROVIDE_OPTIONS_SCREEN

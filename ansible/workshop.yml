@@ -24,6 +24,7 @@
     - name: atuin.isz.wtf
     - name: homeassistant.isz.wtf
       acme_domains: [ hass.isz.wtf ]
+    - name: pbx.isz.wtf
     nginx_hsts_age: '{{ 60 * 60 }}'
     nginx_hsts_subdomains: False
     nginx_welcome_domain: icestationzebra.isz.wtf
@@ -53,6 +54,10 @@
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
+    - name: pbx.isz.wtf
+      pki_realm: pbx.isz.wtf
+      type: proxy
+      proxy_pass: http://172.18.0.100:80/
     networkd_interfaces:
     - name: br0
       mac_address: dc:a6:32:d3:49:0c
