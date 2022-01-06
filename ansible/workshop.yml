@@ -119,11 +119,13 @@
       - htop
       - info
       - iotop
+      - jq
       - lsof
       - man-db
       - mlocate
       - mtr-tiny
       - ncdu
+      - netcat
       - nmap
       #- rfkill
       - rsync
@@ -138,6 +140,11 @@
       - usbutils
       - v4l-utils
       - wget
+      # For isdttool
+      - python3-hidapi
+      - libusb-dev
+      - libusb-1.0-0-dev
+      - libudev-dev
   - command: update-command-not-found
     args:
       creates: /var/lib/command-not-found/commands.db
@@ -154,6 +161,7 @@
       - i2c-tools
       - iptables
       - net-tools
+      - podman
       - python3-venv
       #- raspberrypi-kernel
       - snmp
