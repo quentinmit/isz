@@ -1,0 +1,98 @@
+$ORIGIN isz.wtf.
+$TTL 10m
+
+; Split-horizon hosts
+
+; Serve important services from management IPs so they continue working if DHCP is broken.
+icestationzebra  CNAME workshop-pi.mgmt
+grafana          CNAME workshop-pi.mgmt
+influx           CNAME workshop-pi.mgmt
+homeassistant    CNAME workshop-pi.mgmt
+hass             CNAME workshop-pi.mgmt
+atuin            CNAME workshop-pi.mgmt
+avaya            CNAME workshop-pi.mgmt
+pbx              CNAME workshop-pi.mgmt
+jellyfin         CNAME heartofgold
+
+; Internal hosts
+
+router           A 172.30.96.1
+workshop-pi      A 172.30.96.32
+                 EUI48 DC-A6-32-D3-49-0C ; workshop-pi
+bedroom-pi       A 172.30.96.33
+                 EUI48 DC-A6-32-98-38-A8 ; bedroom-pi
+
+; What is this?
+workshop-pi1     A 172.30.96.34
+                 EUI48 B8-27-EB-2B-B9-F6 ; workshop-pi1
+
+rascsi           A 172.30.96.35
+                 EUI48 DC-A6-32-75-54-DC ; rascsi.isz
+macIIsi          A 172.30.96.36
+
+; DHCP range is 96.50-200
+
+mac              A 172.30.96.100
+                 EUI48 D4-5D-64-55-59-3E ; quentin hackintosh
+heartofgold      A 172.30.96.101
+                 EUI48 8C-89-A5-1B-60-B2 ; heartofgold (public 8C:89:A5:1B:60:B2)
+
+pap2t            CNAME pap2t.guest
+bedroom-tasmota  CNAME bedroom-tasmota.guest
+
+; Management hosts
+$ORIGIN mgmt.isz.wtf.
+
+quentin-ap-1     A 172.30.97.1
+quentin-client-1 A 172.30.97.2
+router           A 172.30.97.3
+
+bedroom-sw       A 172.30.97.16
+livingroom-sw    A 172.30.97.17
+workshop-sw      A 172.30.97.18
+
+workshop-pi      A 172.30.97.32
+bedroom-pi       A 172.30.97.33
+
+mac              A 172.30.97.100
+heartofgold      A 172.30.97.101
+
+; Guest hosts
+
+$ORIGIN guest.isz.wtf.
+
+pap2t            A 192.168.88.2
+                 EUI48 00-18-F8-83-F8-3F ; quentin bedroom PAP2T
+bedroom-tasmota  A 192.168.88.3
+                 EUI48 BC-FF-4D-4D-D4-33
+keylight-air     A 192.168.88.4
+                 EUI48 3C-6A-9D-1A-C2-F3
+
+; DHCP range is 88.50-254
+
+mac              A 192.168.88.100
+                 EUI48 D4-5D-64-55-59-3E ; quentin hackintosh
+heartofgold      A 192.168.88.101
+                 EUI48 8C-89-A5-1B-60-B2 ; heartofgold guest
+
+; Personal devices
+dukrat-phone EUI48 38-78-62-01-F9-99 ; dukrat phone
+dukrat-windows-tablet EUI48 44-2C-05-AF-B3-48 ; dukrat Windows tablet
+quentin-macbookpro2 EUI48 F0-18-98-75-79-C0 ; quentin quentin-macbookpro2
+quentin-pixel-2-xl EUI48 10-F1-F2-81-CB-C8 ; quentin Pixel 2 XL
+quentin-pixel-4a-5g EUI48 58-24-29-72-A4-EE ; quentin Pixel 4a 5G
+
+; IOT devices
+kitchen-google-home-hub EUI48 3C-8D-20-67-B2-45 ; kitchen Google Home Hub
+livingroom-chromecast-googletv EUI48 14-C1-4E-4A-F6-D7 ; livingroom Chromecast with Google TV
+livingroom-chromecast-ultra-wifi EUI48 F4-F5-D8-EF-7B-B9 ; livingroom Chromecast Ultra (wifi)
+livingroom-google-nest-audio EUI48 D8-8C-79-35-BB-34 ; livingroom Google Nest Audio
+livingroom-led-bulb EUI48 D8-F1-5B-95-99-46 ; livingroom LED bulb
+livingroom-nexus-player EUI48 AC-9E-17-E5-0A-9A ; livingroom Nexus Player
+livingroom-traintrackr EUI48 40-F5-20-0D-F4-BA ; livingroom traintrackr
+
+; Experimental/deprecated devices
+
+livingroom-google-home-mini EUI48 20-DF-B9-6E-E4-F2 ; livingroom Google Home Mini (old)
+workshop-canon-printer EUI48 D8-49-2F-25-17-FD ; workshop Canon MG5500 printer (old)
+avaya-phone EUI48 3C-B1-5B-4A-C8-D9 ; Avaya phone

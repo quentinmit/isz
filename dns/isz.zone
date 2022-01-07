@@ -1,0 +1,24 @@
+$ORIGIN isz.
+$TTL 10m
+
+*.mit.edu. A 18.0.70.160 ; FWD mit
+
+quentin-ap-1     CNAME quentin-ap-1.mgmt.isz.wtf.
+quentin-client-1 CNAME quentin-client-1.mgmt.isz.wtf.
+icestationzebra  CNAME router.mgmt.isz.wtf.
+
+bedroom          CNAME bedroom-sw.mgmt.isz.wtf.
+livingroom       CNAME livingroom-sw.mgmt.isz.wtf.
+workshop         CNAME workshop-sw.mgmt.isz.wtf.
+
+workshop-pi      CNAME workshop-pi.mgmt.isz.wtf.
+bedroom-pi       CNAME bedroom-pi.mgmt.isz.wtf.
+grafana          CNAME grafana.isz.wtf.
+influx           CNAME influx.isz.wtf.
+homeassistant    CNAME homeassistant.isz.wtf.
+hass             CNAME hass.isz.wtf.
+avaya            CNAME avaya.isz.wtf.
+pbx              CNAME pbx.isz.wtf.
+
+mac              CNAME mac.isz.wtf.
+heartofgold      CNAME heartofgold.isz.wtf.
