@@ -25,6 +25,7 @@
     - name: homeassistant.isz.wtf
       acme_domains: [ hass.isz.wtf ]
     - name: pbx.isz.wtf
+    - name: mqtt.isz.wtf
     nginx_hsts_age: '{{ 60 * 60 }}'
     nginx_hsts_subdomains: False
     nginx_welcome_domain: icestationzebra.isz.wtf
@@ -58,6 +59,16 @@
       pki_realm: pbx.isz.wtf
       type: proxy
       proxy_pass: http://172.18.0.100:80/
+    mosquitto__allow:
+    - 172.30.96.0/24
+    - 192.168.88.0/24
+    mosquitto__websockets_packages:
+    - libwebsockets16
+    mosquitto__pki_broker_realm: '{{ mosquitto__fqdn }}'
+    mosquitto__nginx_extra_config:
+      pki_realm: '{{ mosquitto__fqdn }}'
+      hsts_enabled: false
+      redirect_to_ssl: false
     networkd_interfaces:
     - name: br0
       mac_address: dc:a6:32:d3:49:0c
@@ -86,19 +97,28 @@
   - role: debops.debops.global_handlers
   - role: debops.debops.pki
     pki_acme_default_subdomains: []
-    tags: [ 'role::pki', 'skip::pki' ]
+    tags: [ 'role::pki', 'skip::pki', 'role::nginx', 'role::mosquitto' ]
   - role: debops.debops.python
-    tags: [ 'role::python', 'skip::python' ]
+    tags: [ 'role::python', 'skip::python', 'role::nginx', 'role::mosquitto' ]
     python__dependent_packages3:
       - '{{ nginx__python__dependent_packages3 }}'
+      - '{{ mosquitto__python__dependent_packages3 }}'
     python__dependent_packages2:
       - '{{ nginx__python__dependent_packages2 }}'
+      - '{{ mosquitto__python__dependent_packages2 }}'
   - role: avaya
     tags: [ 'role::avaya', 'skip::avaya' ]
   - role: debops.roles01.nginx
     tags: [ 'role::nginx', 'skip::nginx' ]
     nginx__dependent_servers:
       - '{{ avaya__nginx__dependent_servers }}'
+      - '{{ [mosquitto__nginx__dependent_servers[0] | combine(mosquitto__nginx_extra_config)] }}'
+    nginx__dependent_upstreams:
+      - '{{ mosquitto__nginx__dependent_upstreams }}'
+  - role: debops.roles02.mosquitto
+    tags: [ 'role::mosquitto', 'skip::mosquitto' ]
+  - role: podman
+    tags: [ 'role::podman', 'skip::podman' ]
   tasks:
   - name: Install utilities
     package:

@@ -98,16 +98,6 @@ services:
       - "/dev/ttyZwave:/dev/ttyZwave"
     volumes:
       - /srv/isz/workshop/zwavejs2mqtt:/usr/src/app/store
-  mosquitto:
-    container_name: mosquitto
-    image: eclipse-mosquitto
-    ports:
-      - 1883:1883
-      - 9001:9001
-    volumes:
-      - /srv/isz/workshop/mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - /srv/mosquitto/data:/mosquitto/data
-      - /srv/mosquitto/log:/mosquitto/log
   postgres:
     container_name: postgres
     image: postgres

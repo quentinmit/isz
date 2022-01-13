@@ -12,6 +12,7 @@ hass             CNAME workshop-pi.mgmt
 atuin            CNAME workshop-pi.mgmt
 avaya            CNAME workshop-pi.mgmt
 pbx              CNAME workshop-pi.mgmt
+mqtt             CNAME workshop-pi.mgmt
 jellyfin         CNAME heartofgold
 
 ; Internal hosts
