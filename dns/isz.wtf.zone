@@ -89,6 +89,7 @@ livingroom-chromecast-googletv EUI48 14-C1-4E-4A-F6-D7 ; livingroom Chromecast w
 livingroom-chromecast-ultra-wifi EUI48 F4-F5-D8-EF-7B-B9 ; livingroom Chromecast Ultra (wifi)
 livingroom-google-nest-audio EUI48 D8-8C-79-35-BB-34 ; livingroom Google Nest Audio
 livingroom-led-bulb EUI48 D8-F1-5B-95-99-46 ; livingroom LED bulb
+livingroom-tasmota-bulb EUI48 D8-F1-5B-95-C5-AB ; livingroom LED bulb (tasmota)
 livingroom-nexus-player EUI48 AC-9E-17-E5-0A-9A ; livingroom Nexus Player
 livingroom-traintrackr EUI48 40-F5-20-0D-F4-BA ; livingroom traintrackr
 
