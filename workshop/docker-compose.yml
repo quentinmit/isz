@@ -91,6 +91,8 @@ services:
   esphome:
     container_name: esphome
     image: esphome/esphome
+    command: dashboard --address=127.0.0.1 /config
+    env_file: esphome.env
     volumes:
       - /srv/isz/workshop/esphome:/config
     network_mode: host

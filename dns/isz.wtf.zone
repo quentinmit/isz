@@ -8,6 +8,7 @@ icestationzebra  CNAME workshop-pi.mgmt
 grafana          CNAME workshop-pi.mgmt
 influx           CNAME workshop-pi.mgmt
 homeassistant    CNAME workshop-pi.mgmt
+esphome          CNAME workshop-pi.mgmt
 hass             CNAME workshop-pi.mgmt
 atuin            CNAME workshop-pi.mgmt
 avaya            CNAME workshop-pi.mgmt

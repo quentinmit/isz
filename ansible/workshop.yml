@@ -26,6 +26,7 @@
       acme_domains: [ hass.isz.wtf ]
     - name: pbx.isz.wtf
     - name: mqtt.isz.wtf
+    - name: esphome.isz.wtf
     nginx_hsts_age: '{{ 60 * 60 }}'
     nginx_hsts_subdomains: False
     nginx_welcome_domain: icestationzebra.isz.wtf
@@ -55,6 +56,10 @@
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
+    - name: esphome.isz.wtf
+      pki_realm: esphome.isz.wtf
+      type: proxy
+      proxy_pass: http://127.0.0.1:6052/
     - name: pbx.isz.wtf
       pki_realm: pbx.isz.wtf
       type: proxy
