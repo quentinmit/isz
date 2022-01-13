@@ -88,9 +88,16 @@ services:
     devices:
       - "/dev/ttyZwave:/dev/ttyZwave"
     network_mode: host
+  esphome:
+    container_name: esphome
+    image: esphome/esphome
+    volumes:
+      - /srv/isz/workshop/esphome:/config
+    network_mode: host
   zwavejs2mqtt:
     container_name: zwavejs2mqtt
     image: zwavejs/zwavejs2mqtt:latest
+    restart: unless-stopped
     ports:
       - 8091:8091
       - 3001:3001
@@ -101,6 +108,7 @@ services:
   postgres:
     container_name: postgres
     image: postgres
+    restart: unless-stopped
     env_file: postgres.env
     volumes:
       - /srv/postgresql/data:/var/lib/postgresql/data
