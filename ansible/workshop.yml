@@ -60,6 +60,13 @@
       pki_realm: esphome.isz.wtf
       type: proxy
       proxy_pass: http://127.0.0.1:6052/
+      options: |
+        proxy_buffering off;
+      proxy_options: |
+        proxy_redirect http:// https://;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
     - name: pbx.isz.wtf
       pki_realm: pbx.isz.wtf
       type: proxy
