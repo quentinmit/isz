@@ -98,6 +98,11 @@
     - name: vlan3097
       vlan: 3097
       address: 172.30.97.32/24
+    locales__default_list:
+    - en_US.UTF-8
+    - en_US.ISO-8859-1
+    - en_US.ISO-8859-15
+    locales__system_lang: en_US.UTF-8
   pre_tasks:
     - name: Prepare pki environment
       import_role:
@@ -107,6 +112,8 @@
   roles:
   - role: networkd
   - role: debops.debops.global_handlers
+  - role: debops.debops.locales
+    tags: [ 'role::locales', 'skip::locales' ]
   - role: debops.debops.pki
     pki_acme_default_subdomains: []
     tags: [ 'role::pki', 'skip::pki', 'role::nginx', 'role::mosquitto' ]
