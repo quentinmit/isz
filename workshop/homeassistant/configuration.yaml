@@ -1,0 +1,59 @@
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies: 127.0.0.1
+
+influxdb:
+  api_version: 2
+  ssl: true
+  host: influx.isz.wtf
+  port: 443
+  token: !secret ha_influx_write_token
+  organization: 44ff94dc2f766f90
+  bucket: home_assistant
+  tags:
+    source: HA
+  tags_attributes:
+    - friendly_name
+    - device_class
+
+sensor:
+  - platform: influxdb
+    api_version: 2
+    ssl: true
+    host: influx.isz.wtf
+    port: 443
+    token: !secret ha_influx_read_token
+    organization: 44ff94dc2f766f90
+    bucket: icestationzebra
+    queries_flux:
+    - name: "Workshop Temperature"
+      unit_of_measurement: °F
+      query: >
+        filter(fn: (r) => r._measurement == "temp" and r.chip == "w1" and r.sensor == "00000284b00d")
+        |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
+      group_function: last
+    - name: "Bedroom Bed Temperature"
+      unit_of_measurement: °F
+      query: >
+        filter(fn: (r) => r._measurement == "temp" and r.chip == "w1" and r.sensor == "00000284c7a7")
+        |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
+      group_function: last
+    - name: "Outdoor Temperature"
+      unit_of_measurement: °F
+      query: >
+        filter(fn: (r) => r._measurement == "temp" and r.chip == "w1" and r.sensor == "0120541bbaa7")
+        |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
+      group_function: last
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
