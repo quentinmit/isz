@@ -2,6 +2,15 @@
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
+homeassistant:
+  name: Ice Station Zebra
+  latitude: 42.36878992741952
+  longitude: -71.09414972830565
+  elevation: 3
+  unit_system: imperial
+  currency: USD
+  time_zone: America/New_York
+
 http:
   use_x_forwarded_for: true
   trusted_proxies: 127.0.0.1
@@ -48,6 +57,74 @@ sensor:
         filter(fn: (r) => r._measurement == "temp" and r.chip == "w1" and r.sensor == "0120541bbaa7")
         |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
       group_function: last
+
+switch:
+- platform: template
+  switches:
+    receiver_power:
+      friendly_name: Receiver Power
+      unique_id: livingroom.receiver_power
+      value_template: "{{ (states('sensor.receiver_power_electric_consumed_w') | float ) > 10 }}"
+      turn_on:
+      - condition: state
+        entity_id: switch.receiver_power
+        state: "off"
+      - service: mqtt.publish
+        data:
+          topic: livingroom/ir/tx
+          payload: |
+            {
+              "type": "nec",
+              "d": 81,
+              "s": 16,
+              "f": 192
+            }
+      turn_off:
+      - condition: state
+        entity_id: switch.receiver_power
+        state: "on"
+      - service: mqtt.publish
+        data:
+          topic: livingroom/ir/tx
+          payload: |
+            {
+              "type": "nec",
+              "d": 81,
+              "s": 16,
+              "f": 192
+            }
+    tv_power:
+      friendly_name: TV Power
+      unique_id: livingroom.tv_power
+      value_template: "{{ (states('sensor.tv_power_electric_consumed_w') | float ) > 10 }}"
+      turn_on:
+      - condition: state
+        entity_id: switch.tv_power
+        state: "off"
+      - service: mqtt.publish
+        data:
+          topic: livingroom/ir/tx
+          payload: |
+            {
+              "type": "nec",
+              "d": 0,
+              "s": 127,
+              "f": 10
+            }
+      turn_off:
+      - condition: state
+        entity_id: switch.tv_power
+        state: "on"
+      - service: mqtt.publish
+        data:
+          topic: livingroom/ir/tx
+          payload: |
+            {
+              "type": "nec",
+              "d": 0,
+              "s": 127,
+              "f": 10
+            }
 
 # Text to speech
 tts:
