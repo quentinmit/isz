@@ -15,6 +15,24 @@ http:
   use_x_forwarded_for: true
   trusted_proxies: 127.0.0.1
 
+google_assistant:
+  project_id: api-project-64499786246
+  service_account: !include service-account.json
+  report_state: true
+  exposed_domains:
+    - scene
+    - switch
+    - light
+#  entity_config:
+#    switch.kitchen:
+#      name: CUSTOM_NAME_FOR_GOOGLE_ASSISTANT
+#      aliases:
+#        - BRIGHT_LIGHTS
+#        - ENTRY_LIGHTS
+#    light.living_room:
+#      expose: false
+#      room: LIVING_ROOM
+
 influxdb:
   api_version: 2
   ssl: true
