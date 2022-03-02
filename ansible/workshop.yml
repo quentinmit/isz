@@ -160,6 +160,7 @@
       #- glances
       - htop
       - info
+      - ionit
       - iotop
       - jq
       - lsof
