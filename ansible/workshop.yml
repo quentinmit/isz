@@ -86,18 +86,21 @@
       mac_address: dc:a6:32:d3:49:0c
       address: dhcp
       bridge_pvid: 3096
-      bridge_vlans: [ 3097, 500 ]
-      vlan_interfaces: [ vlan3097 ]
+      bridge_vlans: [ 3097, 500, 88 ]
+      vlan_interfaces: [ vlan3097, vlan88 ]
     - name: eth0
       bridge: br0
       bridge_pvid: 3096
-      bridge_vlans: [ 3097, 500 ]
+      bridge_vlans: [ 3097, 500, 88 ]
     - name: usb0
       bridge: br0
       bridge_pvid: 500
     - name: vlan3097
       vlan: 3097
       address: 172.30.97.32/24
+    - name: vlan88
+      vlan: 88
+      address: 192.168.88.32
     locales__default_list:
     - en_US.UTF-8
     - en_US.ISO-8859-1
