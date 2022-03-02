@@ -23,6 +23,11 @@ google_assistant:
     - scene
     - switch
     - light
+  entity_config:
+    media_player.tv:
+      expose: true
+    media_player.receiver:
+      expose: true
 #  entity_config:
 #    switch.kitchen:
 #      name: CUSTOM_NAME_FOR_GOOGLE_ASSISTANT
@@ -87,30 +92,16 @@ switch:
       - condition: state
         entity_id: switch.receiver_power
         state: "off"
-      - service: mqtt.publish
-        data:
-          topic: livingroom/ir/tx
-          payload: |
-            {
-              "type": "nec",
-              "d": 81,
-              "s": 16,
-              "f": 192
-            }
+      - service: button.push
+        target:
+          entity_id: button.receiver_power
       turn_off:
       - condition: state
         entity_id: switch.receiver_power
         state: "on"
-      - service: mqtt.publish
-        data:
-          topic: livingroom/ir/tx
-          payload: |
-            {
-              "type": "nec",
-              "d": 81,
-              "s": 16,
-              "f": 192
-            }
+      - service: button.push
+        target:
+          entity_id: button.receiver_power
     tv_power:
       friendly_name: TV Power
       unique_id: livingroom.tv_power
@@ -119,30 +110,94 @@ switch:
       - condition: state
         entity_id: switch.tv_power
         state: "off"
-      - service: mqtt.publish
-        data:
-          topic: livingroom/ir/tx
-          payload: |
-            {
-              "type": "nec",
-              "d": 0,
-              "s": 127,
-              "f": 10
-            }
+      - service: button.push
+        target:
+          entity_id: button.tv_power
       turn_off:
       - condition: state
         entity_id: switch.tv_power
         state: "on"
-      - service: mqtt.publish
-        data:
-          topic: livingroom/ir/tx
-          payload: |
-            {
-              "type": "nec",
-              "d": 0,
-              "s": 127,
-              "f": 10
-            }
+      - service: button.push
+        target:
+          entity_id: button.tv_power
+#      - service: mqtt.publish
+#        data:
+#          topic: livingroom/ir/tx
+#          payload: |
+#            {
+#              "type": "nec",
+#              "d": 0,
+#              "s": 127,
+#              "f": 10
+#            }
+
+media_player:
+- platform: universal
+  name: TV
+  device_class: tv
+  commands:
+    turn_on:
+      service: switch.turn_on
+      target:
+        entity_id:
+        - switch.tv_power
+        - switch.receiver_power
+    turn_off:
+      service: switch.turn_off
+      target:
+        entity_id:
+        - switch.tv_power
+        - switch.receiver_power
+    volume_up:
+      service: button.press
+      target:
+        entity_id: button.receiver_vol_up
+    volume_down:
+      service: button.press
+      target:
+        entity_id: button.receiver_vol_down
+    volume_mute:
+      service: button.press
+      target:
+        entity_id: button.receiver_mute
+  attributes:
+    state: switch.tv_power
+- platform: universal
+  name: Receiver
+  device_class: receiver
+  commands:
+    turn_on:
+      service: switch.turn_on
+      target:
+        entity_id:
+        - switch.receiver_power
+    turn_off:
+      service: switch.turn_off
+      target:
+        entity_id:
+        - switch.receiver_power
+    volume_up:
+      service: button.press
+      target:
+        entity_id: button.receiver_vol_up
+    volume_down:
+      service: button.press
+      target:
+        entity_id: button.receiver_vol_down
+    volume_mute:
+      service: button.press
+      target:
+        entity_id: button.receiver_mute
+    select_source:
+      service: select.select_option
+      data:
+        option: "{{ source }}"
+      target:
+        entity_id: select.receiver_source
+  attributes:
+    state: switch.receiver_power
+    source: select.receiver_source
+    source_list: select.receiver_source|options
 
 # Text to speech
 tts:
