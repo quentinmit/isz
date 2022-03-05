@@ -65,12 +65,14 @@ $ORIGIN guest.isz.wtf.
 
 pap2t            A 192.168.88.2
                  EUI48 00-18-F8-83-F8-3F ; quentin bedroom PAP2T
-bedroom-tasmota  A 192.168.88.3
+bedroom-lights   A 192.168.88.3
                  EUI48 BC-FF-4D-4D-D4-33
 keylight-air     A 192.168.88.4
                  EUI48 3C-6A-9D-1A-C2-F3
 livingroom-esphome A 192.168.88.5
                    EUI48 58-BF-25-9A-6D-1C
+inkplate6plus    A 192.168.88.6
+                 EUI48 84-0D-8E-39-1A-B4
 
 ; DHCP range is 88.50-254
 
