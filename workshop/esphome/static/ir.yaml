@@ -1,0 +1,220 @@
+tv_ir:
+  d: 0
+  s: 127
+  functions:
+    # 0:
+    1: playpause
+    2: 8
+    3: "-"
+    4: rewind
+    5: stop
+    6: 2
+    7: 5
+    8: rep
+    9: temp
+    10: power
+    11: mute
+    # 12: red blink, noop?
+    13: ffw
+    14: 1
+    15: 3
+    16: freeze
+    #17: red blink, noop?
+    18: 4
+    19: 6
+    # 20, 21: red blink, noop?
+    22: 7
+    23: 9
+    # 24: red blink, noop?
+    25: return
+    26: 0
+    27: last
+    # 28, 29: red blink, noop?
+    30: vol+
+    31: channel+
+    # 32-50: red blink, noop?
+    # 64-73: red blink, noop?
+    74: ch.list
+    75: audio
+    76: exit
+    # 77 noop
+    78: picture
+    # 79 noop
+    80: enter
+    81: ccd
+    82: mts
+    83: input
+    84: fav
+    85: sleep
+    86: down
+    87: aspect
+    88: right
+    89: display
+    90: menu
+    91: left
+    92: channel-
+    93: guide
+    94: up
+    95: vol-
+    # 96-100 noop
+
+receiver_ir:
+  d: 81
+  s: 16
+  functions:
+    128: memory
+    129: right
+    130: 3
+    131: 4
+    132: 5
+    133: 6
+    134: test
+    135: vcr2
+    136: 0
+    137: dimmer
+    138: 2
+    139: mute
+    140: 1
+    141: left
+    142: digital
+    # 143:
+    144: sat
+    145: dvd6ch
+    146: vcr1
+    147: cd
+    148: tape
+    149: tv
+    150: preset eq
+    # 151:
+    152: sleep
+    153: tune-
+    # 154:
+    155: 6ch # UNTESTED
+    # 156:
+    157: channel+
+    # 158-191
+    192: power
+    # 193:
+    194: vol+
+    195: vol-
+    196: tune+
+    197: channel-
+    198: tuner
+    # 199:
+    # 200:
+    # 201:
+    # 202:
+    203: 9
+    204: 8
+    205: 7
+    206: fm mode
+    # 207-216
+    217: level
+    218: surr mode
+
+receiver_sources:
+  "Off":
+    - homeassistant.service:
+        service: switch.turn_off
+        data:
+          entity_id: switch.receiver_power
+  6CH:
+    - button.press: ir_receiver_tv
+    - delay: 200ms
+    - button.press: ir_receiver_dvd6ch
+    - delay: 200ms
+    - button.press: ir_receiver_dvd6ch
+  TV: tv
+  Tuner: tuner
+  Sat: sat
+  DVD:
+    - button.press: ir_receiver_tv
+    - delay: 200ms
+    - button.press: ir_receiver_dvd6ch
+  VCR 1: vcr1
+  VCR 2: vcr2
+  CD: cd
+  Tape: tape
+
+tv_sources:
+- TV
+- AV
+- Component
+- HDMI1 PC
+- HDMI2 Chromecast
+- HDMI3 Blu-Ray
+- - HDMI4-1
+  - HDMI4-2
+  - HDMI4-3
+  - HDMI4-4
+  - HDMI4-5
+- Media
+
+ir_icons:
+  # arrow
+  left: mdi:keyboard-arrow-left
+  right: mdi:keyboard-arrow-right
+  up: mdi:keyboard-arrow-up
+  down: mdi:keyboard-arrow-down
+  # tuning
+  0: mdi:numeric-0
+  1: mdi:numeric-1
+  2: mdi:numeric-2
+  3: mdi:numeric-3
+  4: mdi:numeric-4
+  5: mdi:numeric-5
+  6: mdi:numeric-6
+  7: mdi:numeric-7
+  8: mdi:numeric-8
+  9: mdi:numeric-9
+  fm mode: mdi:radio-fm
+  memory: mdi:memory
+  tune+: mdi:plus
+  tune-: mdi:minus
+  channel+: mdi:skip-next
+  channel-: mdi:skip-previous
+  # volume
+  vol+: mdi:volume-plus
+  vol-: mdi:volume-minus
+  mute: mdi:volume-mute
+  # sources
+  sat: mdi:satellite-variant
+  dvd6ch: mdi:disc-player
+  6ch: mdi:surround-sound-5-1
+  vcr1: mdi:audio-input-rca
+  vcr2: mdi:record-player
+  cd: mdi:disc
+  tape: mdi:cassette
+  tv: mdi:television-classic
+  tuner: mdi:radio
+  # audio settings
+  preset eq: mdi:equalizer
+  test: mdi:speaker-wireless
+  surr mode: mdi:surround-sound
+  level: mdi:scale-unbalanced
+  digital: 
+  # power
+  power: mdi:power
+  sleep: mdi:power-sleep
+  dimmer: mdi:brightness-6
+  # media control
+  playpause: mdi:play-pause
+  "-": mdi:horizontal-line
+  rewind: mdi:rewind
+  stop: mdi:stop
+  ffw: mdi:fast-forward
+  guide: mdi:television-guide
+  last: mdi:swap-horizontal-variant
+  mts: mdi:language
+  # picture
+  freeze: mdi:monitor-screenshot
+  aspect: mdi:aspect-ratio
+  ccd: mdi:closed-caption
+  # source
+  input: mdi:video-input-hdmi
+  # menu
+  menu: mdi:menu
+  enter: mdi:keyboard-return
+  exit: mdi:exit-to-app
+  return: mdi:arrow-back
+  display: mdi:information

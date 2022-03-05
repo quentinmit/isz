@@ -1,0 +1,60 @@
+{%- macro sanitize(name) -%}
+{{ name | replace(" ", "_") | replace("+", "_up") | replace("-", "_down") | replace(".","_") }}
+{%- endmacro -%}
+{%- macro nec_button(address, function, device_name, name, icon) -%}
+- platform: template
+  name: {{ device_name }} - {{ name }}
+  id: ir_{{ device_name | lower }}_{{ sanitize(name) }}
+  {%- if icon %}
+  icon: {{ icon }}
+  {%- endif %}
+  on_press:
+    then:
+    - remote_transmitter.transmit_nec:
+        address: {{ address }}
+        command: {{ necformat(function) }}
+{% endmacro -%}
+{%- macro device_buttons(device_name, device) -%}
+{%- set address = necformat(device.d, device.s|d(None)) -%}
+{%- for function, name in device.functions.items(): %}
+{{ nec_button(address, function, device_name, name, ir_icons.get(name)) }}
+{% endfor -%}
+{%- endmacro -%}
+{%- macro device_mqtt(device_name, device) -%}
+{% for name in device.functions.values() %}
+  - topic: livingroom/ir/{{ device_name | lower }}/tx
+    payload: {{ name | tojson }}
+    then:
+    - button.press: ir_{{ device_name | lower }}_{{ sanitize(name) }}
+{% endfor %}
+{%- endmacro -%}
+
+{#
+# Doesn't work and the button component auto-generates MQTT buttons.
+mqtt:
+  on_message:
+  {{ device_mqtt("Receiver", receiver_ir) }}
+  {{ device_mqtt("TV", tv_ir) }}
+#}
+
+button:
+{{ device_buttons("Receiver", receiver_ir) }}
+{{ device_buttons("TV", tv_ir) }}
+
+select:
+- platform: template
+  name: "Receiver Source"
+  optimistic: true
+  options: {{ receiver_sources.keys() | list | tojson }}
+  set_action:
+  {% for key, value in receiver_sources.items() %}
+  - if:
+      condition:
+        lambda: |-
+          return x == "{{ key }}";
+      then: {% if value is string -%}
+      { button.press: ir_receiver_{{value}} }
+      {%- else -%}
+      {{ value | tojson }}
+      {%- endif %}
+  {% endfor %}
