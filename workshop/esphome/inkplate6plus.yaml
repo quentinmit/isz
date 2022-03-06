@@ -81,6 +81,9 @@ sensor:
       return adc;
     filters:
       - multiply: 2
+  - platform: wifi_signal
+    id: wifi_signal_dBm
+    update_interval: 120s
   - platform: homeassistant
     entity_id: weather.accuweather
     attribute: temperature
@@ -104,6 +107,12 @@ sensor:
   - platform: homeassistant
     entity_id: sensor.bedroom_bed_temperature
     id: bedroom_bed_temp
+  - platform: homeassistant
+    entity_id: sensor.eversource_power
+    id: eversource_power
+  - platform: homeassistant
+    entity_id: sensor.download_speed
+    id: download_speed
 
 text_sensor:
 - platform: homeassistant
@@ -170,7 +179,7 @@ font:
     size: 48
 
   - file: 'fonts/Google_Sans_Bold.ttf'
-    id: clock_font
+    id: font_clock
     size: 120
     glyphs:
       ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
@@ -182,14 +191,14 @@ font:
         'è']
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
-    id: sun_states
+    id: font_icon_sun
     size: 50
     glyphs:
       - "\U000F00DE" # SunRise
       - "\U000F00DD" # SunSet
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
-    id: display_icons
+    id: font_icon
     size: 50
     glyphs:
       - "\U000F0F55" # Home
@@ -208,10 +217,11 @@ font:
       - "\U000F0665" # Spray
       - "\U000F0E02" # Temperature Low
       - "\U000F0E03" # Temperature High
-      - "\U000F08BE" # 3 Line
-      - "\U000F08BD" # 2 Line
-      - "\U000F08BC" # 1 Line F08BF
-      - "\U000F08BF" # 0 Line
+      - "\U000F08BE" # 3 signal
+      - "\U000F08BD" # 2 signal
+      - "\U000F08BC" # 1 signal
+      - "\U000F08BF" # 0 signal
+      - "\U000F0783" # X signal
       - "\U000F070E" # Motion
       - "\U000F11DB" # Window
       - "\U000F081C" # Door
@@ -220,8 +230,8 @@ font:
       - "\U000F0425" # On/Off İcon
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
-    id: display_icons_20
-    size: 20
+    id: font_icon_small
+    size: 40
     glyphs:
       - "\U000F0F55" # Home
       - "\U000F181D" # Kitchen
@@ -238,10 +248,11 @@ font:
       - "\U000F0665" # Spray
       - "\U000F0E02" # Temperature Low
       - "\U000F0E03" # Temperature High
-      - "\U000F08BE" # 3 Line
-      - "\U000F08BD" # 2 Line
-      - "\U000F08BC" # 1 Line
-      - "\U000F08BF" # 0 Line
+      - "\U000F08BE" # 3 signal
+      - "\U000F08BD" # 2 signal
+      - "\U000F08BC" # 1 signal
+      - "\U000F08BF" # 0 signal
+      - "\U000F0783" # X signal
       - "\U000F070E" # Motion
       - "\U000F11DB" # Window
       - "\U000F081C" # Door
@@ -250,38 +261,8 @@ font:
       - "\U000F0425" # On/Off İcon
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
-    id: display_icons_18
+    id: font_icon_18
     size: 18
-    glyphs:
-      - "\U000F0F55" # Home
-      - "\U000F181D" # Kitchen
-      - "\U000F18D7" # Outside Sensor
-      - "\U000F059D" # Wind
-      - "\U000F0875" # Pressure
-      - "\U000F0596" # Precipitation
-      - "\U000F0E0A" # Humidity
-      - "\U000F058E" # Humidity Percent
-      - "\U000F1806" # Humidity Circle
-      - "\U000F1786" # Printer
-      - "\U000F0D44" # Air Purifier
-      - "\U000F0DAC" # Air Horn
-      - "\U000F0665" # Spray
-      - "\U000F0E02" # Temperature Low
-      - "\U000F0E03" # Temperature High
-      - "\U000F08BE" # 3 Line
-      - "\U000F08BD" # 2 Line
-      - "\U000F08BC" # 1 Line
-      - "\U000F08BF" # 0 Line
-      - "\U000F070E" # Motion
-      - "\U000F11DB" # Window
-      - "\U000F081C" # Door
-      - "\U000F140B" # Power
-      - "\U000F0150" # Clock
-      - "\U000F0425" # On/Off İcon
-
-  - file: 'fonts/materialdesignicons-webfont.ttf'
-    id: display_icons_15
-    size: 15
     glyphs:
       - "\U000F0F55" # Home
       - "\U000F181D" # Kitchen
@@ -312,47 +293,47 @@ font:
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
     id: conditions
+    size: 200
+    glyphs:
+      - "\U000F0594" # clear-night
+      - "\U000F0590" # cloudy
+      - "\U000F0595" # partlycloudy
+      - "\U000F0591" # fog
+      - "\U000F0592" # hail
+      - "\U000F0593" # lightning
+      - "\U000F067E" # lightning-rainy
+      - "\U000F0596" # pouring
+      - "\U000F0597" # rainy
+      - "\U000F0F36" # snowy
+      - "\U000F067F" # snowy-rainy
+      - "\U000F0599" # sunny
+      - "\U000F059D" # windy
+      - "\U000F059E" # windy-variant
+      - "\U000F0F38" # exceptional
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: conditions_small
+    size: 80
+    glyphs:
+      - "\U000F0594" # clear-night
+      - "\U000F0590" # cloudy
+      - "\U000F0595" # partlycloudy
+      - "\U000F0591" # fog
+      - "\U000F0592" # hail
+      - "\U000F0593" # lightning
+      - "\U000F067E" # lightning-rainy
+      - "\U000F0596" # pouring
+      - "\U000F0597" # rainy
+      - "\U000F0F36" # snowy
+      - "\U000F067F" # snowy-rainy
+      - "\U000F0599" # sunny
+      - "\U000F059D" # windy
+      - "\U000F059E" # windy-variant
+      - "\U000F0F38" # exceptional
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: font_icon_moon
     size: 100
-    glyphs:
-      - "\U000F0594" # clear-night
-      - "\U000F0590" # cloudy
-      - "\U000F0595" # partlycloudy
-      - "\U000F0591" # fog
-      - "\U000F0592" # hail
-      - "\U000F0593" # lightning
-      - "\U000F067E" # lightning-rainy
-      - "\U000F0596" # pouring
-      - "\U000F0597" # rainy
-      - "\U000F0F36" # snowy
-      - "\U000F067F" # snowy-rainy
-      - "\U000F0599" # sunny
-      - "\U000F059D" # windy
-      - "\U000F059E" # windy-variant
-      - "\U000F0F38" # exceptional
-
-  - file: 'fonts/materialdesignicons-webfont.ttf'
-    id: conditions_40
-    size: 40
-    glyphs:
-      - "\U000F0594" # clear-night
-      - "\U000F0590" # cloudy
-      - "\U000F0595" # partlycloudy
-      - "\U000F0591" # fog
-      - "\U000F0592" # hail
-      - "\U000F0593" # lightning
-      - "\U000F067E" # lightning-rainy
-      - "\U000F0596" # pouring
-      - "\U000F0597" # rainy
-      - "\U000F0F36" # snowy
-      - "\U000F067F" # snowy-rainy
-      - "\U000F0599" # sunny
-      - "\U000F059D" # windy
-      - "\U000F059E" # windy-variant
-      - "\U000F0F38" # exceptional
-
-  - file: 'fonts/materialdesignicons-webfont.ttf'
-    id: moonphasesfont
-    size: 50
     glyphs:
       - "\U000F0F61" # First Quarter
       - "\U000F0F62" # Full Moon
@@ -535,7 +516,7 @@ display:
         - vertical: # Local temperatures
           - horizontal:
             - text: "\U000F0F55"
-              font: display_icons
+              font: font_icon
             - text: "%.1f"
               sensor: workshop_temp
               font: medium_40
@@ -543,7 +524,7 @@ display:
               font: medium_24
           - horizontal:
             - text: "\U000F0099"
-              font: display_icons
+              font: font_icon
             - text: "%.1f"
               sensor: bedroom_bed_temp
               font: medium_40
@@ -551,7 +532,7 @@ display:
               font: medium_24
           - horizontal:
             - text: "\U000F18D7"
-              font: display_icons
+              font: font_icon
             - text: "%.1f"
               sensor: outdoor_temp
               font: medium_40
@@ -578,7 +559,7 @@ display:
                   if (id(moon_phase).state == "last_quarter") { return "\U000F0F63"; }
                   if (id(moon_phase).state == "waning_crescent") { return "\U000F0F65"; }
                   return "?";
-                font: moonphasesfont
+                font: font_icon_moon
             - vertical:
               - text: !lambda |
                   char buffer[64];
@@ -587,7 +568,7 @@ display:
                     return std::string(buffer, ret);
                   }
                   return "??:??";
-                font: clock_font
+                font: font_clock
               - text: !lambda |
                   char buffer[64];
                   size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%Y/%m/%d");
@@ -618,7 +599,7 @@ display:
             - vertical:
               - text: "%2.1f°"
                 sensor: weather_temp
-                font: clock_font
+                font: font_clock
               - horizontal:
                 - text: "%2.0f°"
                   sensor: weather_temp_low
@@ -632,13 +613,13 @@ display:
               text_sensor: sunrise
               font: medium_40
             - text: "\U000F00DE"
-              font: sun_states
+              font: font_icon_sun
           - horizontal:
             - text: "%s"
               text_sensor: sunset
               font: medium_40
             - text: "\U000F00DD"
-              font: sun_states
+              font: font_icon_sun
 #          - sensor: "precipitation"
 #          - sensor: "wind"
 #          - sensor: "pressure"
@@ -650,11 +631,28 @@ display:
 #        - button: "night"
 #        - button: "night+"
 #        - button: "TV mode"
-#      - horizontal:
-#        - sensor: "power consumption"
+      - horizontal:
+        - text: "\U000F140B"
+          font: font_icon_small
+        - text: "%4.0fW"
+          sensor: eversource_power
+          font: medium_32
 #        - sensor: "local uptime"
-#        - sensor: "download speed"
-#        - sensor: "wifi connection strength icon"
+        - text: "%5.1f"
+          sensor: download_speed
+          font: medium_32
+        - text: "Mbps"
+          font: medium_20
+        - text: !lambda |
+            if (wifi::global_wifi_component->is_connected()) {
+              float rssi = id(wifi_signal_dBm).state;
+              if (rssi >= -50) { return "\U000F08BE"; } // 3 bars
+              else if (rssi >= -60) { return "\U000F08BD"; } // 2 bars
+              else if (rssi >= -70) { return "\U000F08BC"; } // 1 bar
+              return "\U000F08BF"; // 0 bars
+            }
+            return "\U000F0783"; // X bars
+          font: font_icon_small
 
 touchscreen:
   - platform: ektf2232
