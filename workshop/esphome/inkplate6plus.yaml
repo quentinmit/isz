@@ -117,11 +117,11 @@ text_sensor:
   id: weather_icon
   internal: true
 - platform: homeassistant
-  entity_id: sensor.sunrise_text
+  entity_id: sensor.sun_rising_text
   id: sunrise
   internal: true
 - platform: homeassistant
-  entity_id: sensor.sunset_text
+  entity_id: sensor.sun_setting_text
   id: sunset
   internal: true
 
@@ -171,9 +171,9 @@ font:
 
   - file: 'fonts/Google_Sans_Bold.ttf'
     id: clock_font
-    size: 60
+    size: 120
     glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
         'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
         'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
@@ -183,14 +183,14 @@ font:
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
     id: sun_states
-    size: 25
+    size: 50
     glyphs:
       - "\U000F00DE" # SunRise
       - "\U000F00DD" # SunSet
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
     id: display_icons
-    size: 25
+    size: 50
     glyphs:
       - "\U000F0F55" # Home
       - "\U000F181D" # Kitchen
@@ -364,10 +364,10 @@ font:
       - "\U000F0F68" # Waxing Gibbous
 
   - file: 'fonts/Google_Sans_Bold.ttf'
-    id: bold_14
-    size: 14
+    id: bold_28
+    size: 28
     glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
         'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
         'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
@@ -376,10 +376,10 @@ font:
         'è']
 
   - file: 'fonts/Google_Sans_Bold.ttf'
-    id: bold_16
-    size: 16
+    id: bold_32
+    size: 32
     glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
         'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
         'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
@@ -388,10 +388,10 @@ font:
         'è']
 
   - file: 'fonts/Google_Sans_Bold.ttf'
-    id: bold_20
-    size: 20
+    id: bold_40
+    size: 40
     glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
         'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
         'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
@@ -400,58 +400,10 @@ font:
         'è']
 
   - file: 'fonts/Google_Sans_Bold.ttf'
-    id: bold_24
-    size: 24
+    id: bold_48
+    size: 48
     glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
-
-  - file: 'fonts/Google_Sans_Medium.ttf'
-    id: medium_8
-    size: 8
-    glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
-
-  - file: 'fonts/Google_Sans_Medium.ttf'
-    id: medium_10
-    size: 10
-    glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
-
-  - file: 'fonts/Google_Sans_Medium.ttf'
-    id: medium_12
-    size: 12
-    glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
-
-  - file: 'fonts/Google_Sans_Medium.ttf'
-    id: medium_14
-    size: 14
-    glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
         'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
         'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
@@ -463,19 +415,7 @@ font:
     id: medium_16
     size: 16
     glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
-
-  - file: 'fonts/Google_Sans_Medium.ttf'
-    id: medium_18
-    size: 18
-    glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
         'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
         'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
@@ -487,7 +427,67 @@ font:
     id: medium_20
     size: 20
     glyphs:
-      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_24
+    size: 24
+    glyphs:
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_28
+    size: 28
+    glyphs:
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_32
+    size: 32
+    glyphs:
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_36
+    size: 36
+    glyphs:
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_40
+    size: 40
+    glyphs:
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
         'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
         'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
@@ -538,30 +538,36 @@ display:
               font: display_icons
             - text: "%.1f"
               sensor: workshop_temp
-              font: medium_20
+              font: medium_40
             - text: "°F"
-              font: medium_12
+              font: medium_24
           - horizontal:
             - text: "\U000F0099"
               font: display_icons
             - text: "%.1f"
               sensor: bedroom_bed_temp
-              font: medium_20
+              font: medium_40
             - text: "°F"
-              font: medium_12
+              font: medium_24
           - horizontal:
             - text: "\U000F18D7"
               font: display_icons
             - text: "%.1f"
               sensor: outdoor_temp
-              font: medium_20
+              font: medium_40
             - text: "°F"
-              font: medium_12
+              font: medium_24
         - vertical: # Main weather
           - horizontal:
             - vertical:
-              - text: "dayname"
-                font: bold_16
+              - text: !lambda |
+                  char buffer[64];
+                  size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%a");
+                  if (ret > 0) {
+                    return std::string(buffer, ret);
+                  }
+                  return " ";
+                font: bold_32
               - text: !lambda |
                   if (id(moon_phase).state == "new_moon") { return "\U000F0F64"; }
                   if (id(moon_phase).state == "waxing_crescent") { return "\U000F0F67"; }
@@ -588,8 +594,8 @@ display:
                   if (ret > 0) {
                     return std::string(buffer, ret);
                   }
-                  return "????/??/??";
-                font: bold_20
+                  return "????" "/?" "?/??";
+                font: bold_40
           - horizontal:
             - text: !lambda |
                 if (id(weather_icon).state == "clear-night") { return "\U000F0594"; }
@@ -616,21 +622,21 @@ display:
               - horizontal:
                 - text: "%2.0f°"
                   sensor: weather_temp_low
-                  font: medium_20
+                  font: medium_40
                 - text: "%2.0f°"
                   sensor: weather_temp_high
-                  font: medium_20
+                  font: medium_40
         - vertical: # Extra weather data
           - horizontal:
             - text: "%s"
               text_sensor: sunrise
-              font: medium_20
+              font: medium_40
             - text: "\U000F00DE"
               font: sun_states
           - horizontal:
             - text: "%s"
               text_sensor: sunset
-              font: medium_20
+              font: medium_40
             - text: "\U000F00DD"
               font: sun_states
 #          - sensor: "precipitation"
@@ -662,3 +668,4 @@ touchscreen:
           args:
             - touch.x
             - touch.y
+      - component.update: inkplate_display
