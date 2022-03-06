@@ -8,6 +8,7 @@ esp32:
 
 # Enable logging
 logger:
+#  level: VERBOSE
 
 # Enable Home Assistant API
 api:
@@ -63,7 +64,7 @@ switch:
       mcp23xxx: mcp23017_hub
       number: 12
       inverted: true
-      
+
 sensor:
   - platform: adc
     id: battery_voltage
@@ -154,11 +155,12 @@ binary_sensor:
   - platform: status
     name: "Inkplate Status"
     id: system_status
-    
+
 time:
   - platform: sntp
+    timezone: America/New_York
     id: esptime
-    
+
 font:
   - file: "fonts/Helvetica.ttf"
     id: helvetica_96
@@ -166,6 +168,332 @@ font:
   - file: "fonts/Helvetica.ttf"
     id: helvetica_48
     size: 48
+
+  - file: 'fonts/Google_Sans_Bold.ttf'
+    id: clock_font
+    size: 60
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: sun_states
+    size: 25
+    glyphs:
+      - "\U000F00DE" # SunRise
+      - "\U000F00DD" # SunSet
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: display_icons
+    size: 25
+    glyphs:
+      - "\U000F0F55" # Home
+      - "\U000F181D" # Kitchen
+      - "\U000F0099" # Bedroom Bed
+      - "\U000F18D7" # Outside Sensor
+      - "\U000F059D" # Wind
+      - "\U000F0875" # Pressure
+      - "\U000F0596" # Precipitation
+      - "\U000F0E0A" # Humidity
+      - "\U000F058E" # Humidity Percent
+      - "\U000F1806" # Humidity Circle
+      - "\U000F1786" # Printer
+      - "\U000F0D44" # Air Purifier
+      - "\U000F0DAC" # Air Horn
+      - "\U000F0665" # Spray
+      - "\U000F0E02" # Temperature Low
+      - "\U000F0E03" # Temperature High
+      - "\U000F08BE" # 3 Line
+      - "\U000F08BD" # 2 Line
+      - "\U000F08BC" # 1 Line F08BF
+      - "\U000F08BF" # 0 Line
+      - "\U000F070E" # Motion
+      - "\U000F11DB" # Window
+      - "\U000F081C" # Door
+      - "\U000F140B" # Power
+      - "\U000F0150" # Clock
+      - "\U000F0425" # On/Off İcon
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: display_icons_20
+    size: 20
+    glyphs:
+      - "\U000F0F55" # Home
+      - "\U000F181D" # Kitchen
+      - "\U000F18D7" # Outside Sensor
+      - "\U000F059D" # Wind
+      - "\U000F0875" # Pressure
+      - "\U000F0596" # Precipitation
+      - "\U000F0E0A" # Humidity
+      - "\U000F058E" # Humidity Percent
+      - "\U000F1806" # Humidity Circle
+      - "\U000F1786" # Printer
+      - "\U000F0D44" # Air Purifier
+      - "\U000F0DAC" # Air Horn
+      - "\U000F0665" # Spray
+      - "\U000F0E02" # Temperature Low
+      - "\U000F0E03" # Temperature High
+      - "\U000F08BE" # 3 Line
+      - "\U000F08BD" # 2 Line
+      - "\U000F08BC" # 1 Line
+      - "\U000F08BF" # 0 Line
+      - "\U000F070E" # Motion
+      - "\U000F11DB" # Window
+      - "\U000F081C" # Door
+      - "\U000F140B" # Power
+      - "\U000F0150" # Clock
+      - "\U000F0425" # On/Off İcon
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: display_icons_18
+    size: 18
+    glyphs:
+      - "\U000F0F55" # Home
+      - "\U000F181D" # Kitchen
+      - "\U000F18D7" # Outside Sensor
+      - "\U000F059D" # Wind
+      - "\U000F0875" # Pressure
+      - "\U000F0596" # Precipitation
+      - "\U000F0E0A" # Humidity
+      - "\U000F058E" # Humidity Percent
+      - "\U000F1806" # Humidity Circle
+      - "\U000F1786" # Printer
+      - "\U000F0D44" # Air Purifier
+      - "\U000F0DAC" # Air Horn
+      - "\U000F0665" # Spray
+      - "\U000F0E02" # Temperature Low
+      - "\U000F0E03" # Temperature High
+      - "\U000F08BE" # 3 Line
+      - "\U000F08BD" # 2 Line
+      - "\U000F08BC" # 1 Line
+      - "\U000F08BF" # 0 Line
+      - "\U000F070E" # Motion
+      - "\U000F11DB" # Window
+      - "\U000F081C" # Door
+      - "\U000F140B" # Power
+      - "\U000F0150" # Clock
+      - "\U000F0425" # On/Off İcon
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: display_icons_15
+    size: 15
+    glyphs:
+      - "\U000F0F55" # Home
+      - "\U000F181D" # Kitchen
+      - "\U000F18D7" # Outside Sensor
+      - "\U000F059D" # Wind
+      - "\U000F0875" # Pressure
+      - "\U000F0596" # Precipitation
+      - "\U000F0E0A" # Humidity
+      - "\U000F058E" # Humidity Percent
+      - "\U000F1806" # Humidity Circle
+      - "\U000F1786" # Printer
+      - "\U000F0D44" # Air Purifier
+      - "\U000F0DAC" # Air Horn
+      - "\U000F0665" # Spray
+      - "\U000F0E02" # Temperature Low
+      - "\U000F0E03" # Temperature High
+      - "\U000F08BE" # 3 Line
+      - "\U000F08BD" # 2 Line
+      - "\U000F08BC" # 1 Line
+      - "\U000F08BF" # 0 Line
+      - "\U000F070E" # Motion
+      - "\U000F11DB" # Window
+      - "\U000F081C" # Door
+      - "\U000F140B" # Power
+      - "\U000F0150" # Clock
+      - "\U000F0425" # On/Off İcon
+
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: conditions
+    size: 100
+    glyphs:
+      - "\U000F0594" # clear-night
+      - "\U000F0590" # cloudy
+      - "\U000F0595" # partlycloudy
+      - "\U000F0591" # fog
+      - "\U000F0592" # hail
+      - "\U000F0593" # lightning
+      - "\U000F067E" # lightning-rainy
+      - "\U000F0596" # pouring
+      - "\U000F0597" # rainy
+      - "\U000F0F36" # snowy
+      - "\U000F067F" # snowy-rainy
+      - "\U000F0599" # sunny
+      - "\U000F059D" # windy
+      - "\U000F059E" # windy-variant
+      - "\U000F0F38" # exceptional
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: conditions_40
+    size: 40
+    glyphs:
+      - "\U000F0594" # clear-night
+      - "\U000F0590" # cloudy
+      - "\U000F0595" # partlycloudy
+      - "\U000F0591" # fog
+      - "\U000F0592" # hail
+      - "\U000F0593" # lightning
+      - "\U000F067E" # lightning-rainy
+      - "\U000F0596" # pouring
+      - "\U000F0597" # rainy
+      - "\U000F0F36" # snowy
+      - "\U000F067F" # snowy-rainy
+      - "\U000F0599" # sunny
+      - "\U000F059D" # windy
+      - "\U000F059E" # windy-variant
+      - "\U000F0F38" # exceptional
+
+  - file: 'fonts/materialdesignicons-webfont.ttf'
+    id: moonphasesfont
+    size: 50
+    glyphs:
+      - "\U000F0F61" # First Quarter
+      - "\U000F0F62" # Full Moon
+      - "\U000F0F63" # Last Quarter
+      - "\U000F0F64" # New Moon
+      - "\U000F0F65" # Waning Crescent
+      - "\U000F0F66" # Waning Gibbous
+      - "\U000F0F67" # Waxing Crescent
+      - "\U000F0F68" # Waxing Gibbous
+
+  - file: 'fonts/Google_Sans_Bold.ttf'
+    id: bold_14
+    size: 14
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Bold.ttf'
+    id: bold_16
+    size: 16
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Bold.ttf'
+    id: bold_20
+    size: 20
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Bold.ttf'
+    id: bold_24
+    size: 24
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_8
+    size: 8
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_10
+    size: 10
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_12
+    size: 12
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_14
+    size: 14
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_16
+    size: 16
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_18
+    size: 18
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
+
+  - file: 'fonts/Google_Sans_Medium.ttf'
+    id: medium_20
+    size: 20
+    glyphs:
+      ['&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
+        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
+        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
+        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
+        'è']
 
 display:
 - platform: inkplate6
@@ -198,18 +526,139 @@ display:
   vcom_pin:
     mcp23xxx: mcp23017_hub
     number: 5
-    
-    
-  lambda: |-
-    it.fill(COLOR_ON);
 
-    it.print(100, 100, id(helvetica_48), COLOR_OFF, TextAlign::TOP_LEFT, "ESPHome");
+  pages:
+  - id: weather
+    widgets:
+      vertical:
+      - horizontal: # Weather
+        - vertical: # Local temperatures
+          - horizontal:
+            - text: "\U000F0F55"
+              font: display_icons
+            - text: "%.1f"
+              sensor: workshop_temp
+              font: medium_20
+            - text: "°F"
+              font: medium_12
+          - horizontal:
+            - text: "\U000F0099"
+              font: display_icons
+            - text: "%.1f"
+              sensor: bedroom_bed_temp
+              font: medium_20
+            - text: "°F"
+              font: medium_12
+          - horizontal:
+            - text: "\U000F18D7"
+              font: display_icons
+            - text: "%.1f"
+              sensor: outdoor_temp
+              font: medium_20
+            - text: "°F"
+              font: medium_12
+        - vertical: # Main weather
+          - horizontal:
+            - vertical:
+              - text: "dayname"
+                font: bold_16
+              - text: !lambda |
+                  if (id(moon_phase).state == "new_moon") { return "\U000F0F64"; }
+                  if (id(moon_phase).state == "waxing_crescent") { return "\U000F0F67"; }
+                  if (id(moon_phase).state == "first_quarter") { return "\U000F0F61"; }
+                  if (id(moon_phase).state == "waxing_gibbous") { return "\U000F0F68"; }
+                  if (id(moon_phase).state == "full_moon") { return "\U000F0F62"; }
+                  if (id(moon_phase).state == "waning_gibbous") { return "\U000F0F66"; }
+                  if (id(moon_phase).state == "last_quarter") { return "\U000F0F63"; }
+                  if (id(moon_phase).state == "waning_crescent") { return "\U000F0F65"; }
+                  return "?";
+                font: moonphasesfont
+            - vertical:
+              - text: !lambda |
+                  char buffer[64];
+                  size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%H:%M");
+                  if (ret > 0) {
+                    return std::string(buffer, ret);
+                  }
+                  return "??:??";
+                font: clock_font
+              - text: !lambda |
+                  char buffer[64];
+                  size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%Y/%m/%d");
+                  if (ret > 0) {
+                    return std::string(buffer, ret);
+                  }
+                  return "????/??/??";
+                font: bold_20
+          - horizontal:
+            - text: !lambda |
+                if (id(weather_icon).state == "clear-night") { return "\U000F0594"; }
+                if (id(weather_icon).state == "cloudy") { return "\U000F0590"; }
+                if (id(weather_icon).state == "partlycloudy") { return "\U000F0595"; }
+                if (id(weather_icon).state == "fog") { return "\U000F0591"; }
+                if (id(weather_icon).state == "hail") { return "\U000F0592"; }
+                if (id(weather_icon).state == "lightning") { return "\U000F0593"; }
+                if (id(weather_icon).state == "lightning-rainy") { return "\U000F067E"; }
+                if (id(weather_icon).state == "pouring") { return "\U000F0596"; }
+                if (id(weather_icon).state == "rainy") { return "\U000F0597"; }
+                if (id(weather_icon).state == "snowy") { return "\U000F0F36"; }
+                if (id(weather_icon).state == "snowy-rainy") { return "\U000F067F"; }
+                if (id(weather_icon).state == "sunny") { return "\U000F0599"; }
+                if (id(weather_icon).state == "windy") { return "\U000F059D"; }
+                if (id(weather_icon).state == "windy-variant") { return "\U000F059E"; }
+                if (id(weather_icon).state == "exceptional") { return "\U000F0F38";}
+                return "?";
+              font: conditions
+            - vertical:
+              - text: "%2.1f°"
+                sensor: weather_temp
+                font: clock_font
+              - horizontal:
+                - text: "%2.0f°"
+                  sensor: weather_temp_low
+                  font: medium_20
+                - text: "%2.0f°"
+                  sensor: weather_temp_high
+                  font: medium_20
+        - vertical: # Extra weather data
+          - horizontal:
+            - text: "%s"
+              text_sensor: sunrise
+              font: medium_20
+            - text: "\U000F00DE"
+              font: sun_states
+          - horizontal:
+            - text: "%s"
+              text_sensor: sunset
+              font: medium_20
+            - text: "\U000F00DD"
+              font: sun_states
+#          - sensor: "precipitation"
+#          - sensor: "wind"
+#          - sensor: "pressure"
+#      - horizontal:
+#        - forecast: day1
+#        - forecast: day2
+#        - forecast: day3
+#      - horizontal:
+#        - button: "night"
+#        - button: "night+"
+#        - button: "TV mode"
+#      - horizontal:
+#        - sensor: "power consumption"
+#        - sensor: "local uptime"
+#        - sensor: "download speed"
+#        - sensor: "wifi connection strength icon"
 
-    it.strftime(400, 300, id(helvetica_48), COLOR_OFF, TextAlign::CENTER, "%Y-%m-%d", id(esptime).now());
-    it.strftime(400, 400, id(helvetica_96), COLOR_OFF, TextAlign::CENTER, "%H:%M", id(esptime).now());
-
-    if (id(system_status).state) {
-      it.print(700, 100, id(helvetica_48), COLOR_OFF, TextAlign::TOP_RIGHT, "Online");
-    } else {
-      it.print(700, 100, id(helvetica_48), COLOR_OFF, TextAlign::TOP_RIGHT, "Offline");
-    }
+touchscreen:
+  - platform: ektf2232
+    interrupt_pin: GPIO36
+    rts_pin:
+      mcp23xxx: mcp23017_hub
+      number: 10
+    on_touch:
+      - logger.log:
+          format: "Touch: %d, %d"
+          args:
+            - touch.x
+            - touch.y
