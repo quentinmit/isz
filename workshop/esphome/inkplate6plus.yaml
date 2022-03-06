@@ -310,6 +310,7 @@ font:
       - "\U000F059D" # windy
       - "\U000F059E" # windy-variant
       - "\U000F0F38" # exceptional
+      - "\U000F1531" # thermometer-off
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
     id: conditions_small
@@ -330,6 +331,7 @@ font:
       - "\U000F059D" # windy
       - "\U000F059E" # windy-variant
       - "\U000F0F38" # exceptional
+      - "\U000F1531" # thermometer-off
 
   - file: 'fonts/materialdesignicons-webfont.ttf'
     id: font_icon_moon
@@ -343,6 +345,7 @@ font:
       - "\U000F0F66" # Waning Gibbous
       - "\U000F0F67" # Waxing Crescent
       - "\U000F0F68" # Waxing Gibbous
+      - "\U000F05CE" # Clock Alert
 
   - file: 'fonts/Google_Sans_Bold.ttf'
     id: bold_28
@@ -549,6 +552,7 @@ display:
                   }
                   return " ";
                 font: bold_32
+                align: top center
               - text: !lambda |
                   if (id(moon_phase).state == "new_moon") { return "\U000F0F64"; }
                   if (id(moon_phase).state == "waxing_crescent") { return "\U000F0F67"; }
@@ -558,8 +562,9 @@ display:
                   if (id(moon_phase).state == "waning_gibbous") { return "\U000F0F66"; }
                   if (id(moon_phase).state == "last_quarter") { return "\U000F0F63"; }
                   if (id(moon_phase).state == "waning_crescent") { return "\U000F0F65"; }
-                  return "?";
+                  return "\U000F05CE";
                 font: font_icon_moon
+                align: top center
             - vertical:
               - text: !lambda |
                   char buffer[64];
@@ -569,6 +574,7 @@ display:
                   }
                   return "??:??";
                 font: font_clock
+                align: top center
               - text: !lambda |
                   char buffer[64];
                   size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%Y/%m/%d");
@@ -577,6 +583,7 @@ display:
                   }
                   return "????" "/?" "?/??";
                 font: bold_40
+                align: top center
           - horizontal:
             - text: !lambda |
                 if (id(weather_icon).state == "clear-night") { return "\U000F0594"; }
@@ -594,7 +601,7 @@ display:
                 if (id(weather_icon).state == "windy") { return "\U000F059D"; }
                 if (id(weather_icon).state == "windy-variant") { return "\U000F059E"; }
                 if (id(weather_icon).state == "exceptional") { return "\U000F0F38";}
-                return "?";
+                return "\U000F1531";
               font: conditions
             - vertical:
               - text: "%2.1f°"
@@ -637,12 +644,15 @@ display:
         - text: "%4.0fW"
           sensor: eversource_power
           font: medium_32
+          align: baseline left
 #        - sensor: "local uptime"
         - text: "%5.1f"
           sensor: download_speed
           font: medium_32
+          align: baseline left
         - text: "Mbps"
           font: medium_20
+          align: baseline left
         - text: !lambda |
             if (wifi::global_wifi_component->is_connected()) {
               float rssi = id(wifi_signal_dBm).state;
