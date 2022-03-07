@@ -38,7 +38,6 @@ switch:
     pin:
       mcp23xxx: mcp23017_hub
       number: 9
-      inverted: true
     restore_mode: ALWAYS_OFF
 
   - platform: template
@@ -81,6 +80,7 @@ sensor:
       return adc;
     filters:
       - multiply: 2
+    unit_of_measurement: V
   - platform: wifi_signal
     id: wifi_signal_dBm
     update_interval: 120s
@@ -146,6 +146,10 @@ light:
     - output.turn_off: backlight_enable
 
 i2c:
+  # 0x20 - mcp23017 IO Expander 1
+  # 0x22 - mcp23017 IO Expander 2
+  # 0x2E - mcp47a1 DAC
+  # 0x51 - PCF85063A RTC
 
 mcp23017:
   - id: mcp23017_hub
@@ -159,11 +163,16 @@ output:
       number: 11
   - platform: mcp47a1
     id: backlight_level
+    # address: 0x2E
 
 binary_sensor:
   - platform: status
     name: "Inkplate Status"
     id: system_status
+# TODO: Figure out why there are so many extra triggers of the touch/wake pin.
+#  - platform: gpio
+#    pin: GPIO36
+#    id: wake_button
 
 time:
   - platform: sntp
