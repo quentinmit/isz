@@ -93,6 +93,32 @@ sensor:
         filter(fn: (r) => r._measurement == "temp" and r.chip == "w1" and r.sensor == "0120541bbaa7")
         |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
       group_function: last
+    - name: "Eversource Power"
+      unit_of_measurement: W
+      bucket: rtlamr
+      query: >
+        filter(fn: (r) => r["_measurement"] == "rtlamr")
+        |> filter(fn: (r) => r["_field"] == "consumption")
+        |> filter(fn: (r) => r["endpoint_id"] == "21583380")
+        |> filter(fn: (r) => r["msg_type"] == "differential")
+        |> map(fn: (r) => ({r with _value: float(v: r._value * 10 * 12)}))
+      group_function: mean
+    - name: "Download Speed"
+      unit_of_measurement: Mbps
+      bucket: speedtest
+      range_start: -6h
+      query: >-
+        filter(fn: (r) => r["_measurement"] == "speedtest")
+        |> filter(fn: (r) => r["_field"] == "download_mbs")
+      group_function: last
+    - name: "Upload Speed"
+      unit_of_measurement: Mbps
+      bucket: speedtest
+      range_start: -6h
+      query: >-
+        filter(fn: (r) => r["_measurement"] == "speedtest")
+        |> filter(fn: (r) => r["_field"] == "upload_mbs")
+      group_function: last
 
 switch:
 - platform: template
@@ -105,14 +131,14 @@ switch:
       - condition: state
         entity_id: switch.receiver_power
         state: "off"
-      - service: button.push
+      - service: button.press
         target:
           entity_id: button.receiver_power
       turn_off:
       - condition: state
         entity_id: switch.receiver_power
         state: "on"
-      - service: button.push
+      - service: button.press
         target:
           entity_id: button.receiver_power
     tv_power:
@@ -123,14 +149,14 @@ switch:
       - condition: state
         entity_id: switch.tv_power
         state: "off"
-      - service: button.push
+      - service: button.press
         target:
           entity_id: button.tv_power
       turn_off:
       - condition: state
         entity_id: switch.tv_power
         state: "on"
-      - service: button.push
+      - service: button.press
         target:
           entity_id: button.tv_power
 #      - service: mqtt.publish
