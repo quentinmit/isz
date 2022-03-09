@@ -28,11 +28,12 @@ wifi:
 
 captive_portal:
 
-switch:
+button:
   - platform: restart
     name: "Inkplate Reboot"
     id: reboot
 
+switch:
   - platform: gpio
     id: battery_read_mosfet
     pin:
@@ -521,124 +522,179 @@ display:
     number: 5
 
   pages:
+  # - id: test_page
+  #   widgets:
+  #     - vertical:
+  #       - text:
+  #           text: "top"
+  #           font: medium_40
+  #       - horizontal:
+  #         - text:
+  #             text: "middle left"
+  #             font: medium_40
+  #         - text:
+  #             text: "middle right"
+  #             font: medium_40
+  #       - text:
+  #           text: "bottom"
+  #           font: medium_40
   - id: weather
     widgets:
       vertical:
       - horizontal: # Weather
-        - vertical: # Local temperatures
+        - maximum_size: preferred
+          vertical: # Local temperatures
           - horizontal:
-            - text: "\U000F0F55"
-              font: font_icon
-            - text: "%.1f"
-              sensor: workshop_temp
-              font: medium_40
-            - text: "°F"
-              font: medium_24
+            - text:
+                text: "\U000F0F55"
+                font: font_icon
+            - text:
+                format: "%.1f"
+                sensor: workshop_temp
+                font: medium_40
+            - text:
+                text: "°F"
+                font: medium_24
           - horizontal:
-            - text: "\U000F0099"
-              font: font_icon
-            - text: "%.1f"
-              sensor: bedroom_bed_temp
-              font: medium_40
-            - text: "°F"
-              font: medium_24
+            - text:
+                text: "\U000F0099"
+                font: font_icon
+            - text:
+                format: "%.1f"
+                sensor: bedroom_bed_temp
+                font: medium_40
+            - text:
+                text: "°F"
+                font: medium_24
           - horizontal:
-            - text: "\U000F18D7"
-              font: font_icon
-            - text: "%.1f"
-              sensor: outdoor_temp
-              font: medium_40
-            - text: "°F"
-              font: medium_24
+            - text:
+                text: "\U000F18D7"
+                font: font_icon
+            - text:
+                format: "%.1f"
+                sensor: outdoor_temp
+                font: medium_40
+            - text:
+                text: "°F"
+                font: medium_24
         - vertical: # Main weather
           - horizontal:
             - vertical:
-              - text: !lambda |
-                  char buffer[64];
-                  size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%a");
-                  if (ret > 0) {
-                    return std::string(buffer, ret);
-                  }
-                  return " ";
-                font: bold_32
-                align: top center
-              - text: !lambda |
-                  if (id(moon_phase).state == "new_moon") { return "\U000F0F64"; }
-                  if (id(moon_phase).state == "waxing_crescent") { return "\U000F0F67"; }
-                  if (id(moon_phase).state == "first_quarter") { return "\U000F0F61"; }
-                  if (id(moon_phase).state == "waxing_gibbous") { return "\U000F0F68"; }
-                  if (id(moon_phase).state == "full_moon") { return "\U000F0F62"; }
-                  if (id(moon_phase).state == "waning_gibbous") { return "\U000F0F66"; }
-                  if (id(moon_phase).state == "last_quarter") { return "\U000F0F63"; }
-                  if (id(moon_phase).state == "waning_crescent") { return "\U000F0F65"; }
-                  return "\U000F05CE";
-                font: font_icon_moon
-                align: top center
+              - text:
+                  text: !lambda |
+                    char buffer[64];
+                    size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%a");
+                    if (ret > 0) {
+                      return std::string(buffer, ret);
+                    }
+                    return " ";
+                  font: bold_32
+                  align: top center
+              - text:
+                  text: !lambda |
+                    if (id(moon_phase).state == "new_moon") { return "\U000F0F64"; }
+                    if (id(moon_phase).state == "waxing_crescent") { return "\U000F0F67"; }
+                    if (id(moon_phase).state == "first_quarter") { return "\U000F0F61"; }
+                    if (id(moon_phase).state == "waxing_gibbous") { return "\U000F0F68"; }
+                    if (id(moon_phase).state == "full_moon") { return "\U000F0F62"; }
+                    if (id(moon_phase).state == "waning_gibbous") { return "\U000F0F66"; }
+                    if (id(moon_phase).state == "last_quarter") { return "\U000F0F63"; }
+                    if (id(moon_phase).state == "waning_crescent") { return "\U000F0F65"; }
+                    return "\U000F05CE";
+                  font: font_icon_moon
+                  align: top center
             - vertical:
-              - text: !lambda |
-                  char buffer[64];
-                  size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%H:%M");
-                  if (ret > 0) {
-                    return std::string(buffer, ret);
-                  }
-                  return "??:??";
-                font: font_clock
-                align: top center
-              - text: !lambda |
-                  char buffer[64];
-                  size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%Y/%m/%d");
-                  if (ret > 0) {
-                    return std::string(buffer, ret);
-                  }
-                  return "????" "/?" "?/??";
-                font: bold_40
-                align: top center
+              - text:
+                  text: !lambda |
+                    char buffer[64];
+                    size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%H:%M");
+                    if (ret > 0) {
+                      return std::string(buffer, ret);
+                    }
+                    return "??:??";
+                  font: font_clock
+                  align: top center
+              - text:
+                  text: !lambda |
+                    char buffer[64];
+                    size_t ret = id(esptime).now().strftime(buffer, sizeof(buffer), "%Y/%m/%d");
+                    if (ret > 0) {
+                      return std::string(buffer, ret);
+                    }
+                    return "????" "/?" "?/??";
+                  font: bold_40
+                  align: top center
           - horizontal:
-            - text: !lambda |
-                if (id(weather_icon).state == "clear-night") { return "\U000F0594"; }
-                if (id(weather_icon).state == "cloudy") { return "\U000F0590"; }
-                if (id(weather_icon).state == "partlycloudy") { return "\U000F0595"; }
-                if (id(weather_icon).state == "fog") { return "\U000F0591"; }
-                if (id(weather_icon).state == "hail") { return "\U000F0592"; }
-                if (id(weather_icon).state == "lightning") { return "\U000F0593"; }
-                if (id(weather_icon).state == "lightning-rainy") { return "\U000F067E"; }
-                if (id(weather_icon).state == "pouring") { return "\U000F0596"; }
-                if (id(weather_icon).state == "rainy") { return "\U000F0597"; }
-                if (id(weather_icon).state == "snowy") { return "\U000F0F36"; }
-                if (id(weather_icon).state == "snowy-rainy") { return "\U000F067F"; }
-                if (id(weather_icon).state == "sunny") { return "\U000F0599"; }
-                if (id(weather_icon).state == "windy") { return "\U000F059D"; }
-                if (id(weather_icon).state == "windy-variant") { return "\U000F059E"; }
-                if (id(weather_icon).state == "exceptional") { return "\U000F0F38";}
-                return "\U000F1531";
-              font: conditions
+            - text:
+                text: !lambda |
+                  if (id(weather_icon).state == "clear-night") { return "\U000F0594"; }
+                  if (id(weather_icon).state == "cloudy") { return "\U000F0590"; }
+                  if (id(weather_icon).state == "partlycloudy") { return "\U000F0595"; }
+                  if (id(weather_icon).state == "fog") { return "\U000F0591"; }
+                  if (id(weather_icon).state == "hail") { return "\U000F0592"; }
+                  if (id(weather_icon).state == "lightning") { return "\U000F0593"; }
+                  if (id(weather_icon).state == "lightning-rainy") { return "\U000F067E"; }
+                  if (id(weather_icon).state == "pouring") { return "\U000F0596"; }
+                  if (id(weather_icon).state == "rainy") { return "\U000F0597"; }
+                  if (id(weather_icon).state == "snowy") { return "\U000F0F36"; }
+                  if (id(weather_icon).state == "snowy-rainy") { return "\U000F067F"; }
+                  if (id(weather_icon).state == "sunny") { return "\U000F0599"; }
+                  if (id(weather_icon).state == "windy") { return "\U000F059D"; }
+                  if (id(weather_icon).state == "windy-variant") { return "\U000F059E"; }
+                  if (id(weather_icon).state == "exceptional") { return "\U000F0F38";}
+                  return "\U000F1531";
+                font: conditions
             - vertical:
-              - text: "%2.1f°"
-                sensor: weather_temp
-                font: font_clock
+              - text:
+                  format: "%2.0f°"
+                  sensor: weather_temp
+                  font: font_clock
               - horizontal:
-                - text: "%2.0f°"
-                  sensor: weather_temp_low
-                  font: medium_40
-                - text: "%2.0f°"
-                  sensor: weather_temp_high
-                  font: medium_40
-        - vertical: # Extra weather data
+                - text:
+                    format: "%2.0f°"
+                    sensor: weather_temp_low
+                    font: medium_40
+                - text:
+                    format: "%2.0f°"
+                    sensor: weather_temp_high
+                    font: medium_40
+        - maximum_size: preferred
+          vertical: # Extra weather data
           - horizontal:
-            - text: "%s"
-              text_sensor: sunrise
-              font: medium_40
-            - text: "\U000F00DE"
-              font: font_icon_sun
+            - text:
+                text_sensor: sunrise
+                font: medium_40
+                align: center
+            - text:
+                text: "\U000F00DE"
+                font: font_icon_sun
+              maximum_size: preferred
           - horizontal:
-            - text: "%s"
-              text_sensor: sunset
-              font: medium_40
-            - text: "\U000F00DD"
-              font: font_icon_sun
+            - text:
+                text_sensor: sunset
+                font: medium_40
+                align: center
+            - text:
+                text: "\U000F00DD"
+                font: font_icon_sun
+              maximum_size: preferred
 #          - sensor: "precipitation"
 #          - sensor: "wind"
 #          - sensor: "pressure"
+      - horizontal:
+        - button:
+            content:
+              text:
+                text: "Left"
+                align: center
+                font: medium_40
+        - button:
+            content:
+              text:
+                text: "Right"
+                align: center
+                font: medium_40
+
 #      - horizontal:
 #        - forecast: day1
 #        - forecast: day2
@@ -647,31 +703,45 @@ display:
 #        - button: "night"
 #        - button: "night+"
 #        - button: "TV mode"
-      - horizontal:
-        - text: "\U000F140B"
-          font: font_icon_small
-        - text: "%4.0fW"
-          sensor: eversource_power
-          font: medium_32
-          align: baseline left
-#        - sensor: "local uptime"
-        - text: "%5.1f"
-          sensor: download_speed
-          font: medium_32
-          align: baseline left
-        - text: "Mbps"
-          font: medium_20
-          align: baseline left
-        - text: !lambda |
-            if (wifi::global_wifi_component->is_connected()) {
-              float rssi = id(wifi_signal_dBm).state;
-              if (rssi >= -50) { return "\U000F08BE"; } // 3 bars
-              else if (rssi >= -60) { return "\U000F08BD"; } // 2 bars
-              else if (rssi >= -70) { return "\U000F08BC"; } // 1 bar
-              return "\U000F08BF"; // 0 bars
-            }
-            return "\U000F0783"; // X bars
-          font: font_icon_small
+      - maximum_size: [infinite, preferred]
+        horizontal:
+        - maximum_size: preferred
+          horizontal:
+          - text:
+              text: "\U000F140B"
+              font: font_icon_small
+          - text:
+              format: "%4.0fW"
+              sensor: eversource_power
+              font: medium_32
+              align: baseline left
+        - text:
+            text: "local uptime"
+            font: medium_32
+            align: center
+        - horizontal:
+          - text:
+              format: "%5.1f"
+              sensor: download_speed
+              font: medium_32
+              align: baseline left
+          - text:
+              format: "Mbps"
+              font: medium_20
+              align: baseline left
+          maximum_size: preferred
+        - text:
+            text: !lambda |
+              if (wifi::global_wifi_component->is_connected()) {
+                float rssi = id(wifi_signal_dBm).state;
+                if (rssi >= -50) { return "\U000F08BE"; } // 3 bars
+                else if (rssi >= -60) { return "\U000F08BD"; } // 2 bars
+                else if (rssi >= -70) { return "\U000F08BC"; } // 1 bar
+                return "\U000F08BF"; // 0 bars
+              }
+              return "\U000F0783"; // X bars
+            font: font_icon_small
+          maximum_size: preferred
 
 touchscreen:
   - platform: ektf2232
