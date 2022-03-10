@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import math
-from PIL import Image, ImageDraw
+import os.path
+from PIL import Image, ImageDraw, ImageFont
 from itertools import chain, pairwise, islice
 from more_itertools import flatten, split_before, unique_justseen
 
@@ -164,6 +165,8 @@ class RendererPIL(RendererBase):
         self.im = im
         self.draw = DashedImageDraw(self.im)
         self.dpi = dpi
+        self.font_dirs = ["fonts/"]
+        self.font_cache = dict()
 
     def draw_path(self, gc, path, transform, rgbFace=None):
         #transform += FLIPY
@@ -180,7 +183,8 @@ class RendererPIL(RendererBase):
         if width < 1:
             width = 1
         _, dashes = gc.get_dashes()
-        print(dashes)
+        # "dotted" defaults to [0.8,1.32]
+        #print(dashes)
         for poly in split_before(
                 path.iter_segments(transform, snap=True, simplify=True, curves=False, clip=clip),
                 lambda pc: pc[1] == Path.MOVETO,
@@ -219,6 +223,27 @@ class RendererPIL(RendererBase):
     def draw_image(self, gc, x, y, im):
         pass
 
+    def _load_font(self, family):
+        if family in self.font_cache:
+            return self.font_cache[family]
+        for dir in self.font_dirs:
+            try:
+                font = ImageFont.load(os.path.join(dir, family+".pil"))
+                self.font_cache[family] = font
+                return font
+            except OSError:
+                return None
+
+    def _get_font(self, prop):
+        families = prop.get_family()
+        for family in families:
+            font = self._load_font(family)
+            if font:
+                break
+        else:
+            font = self.draw.getfont()
+        return font
+
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
         """
         Draw the text instance.
@@ -239,7 +264,8 @@ class RendererPIL(RendererBase):
         mtext : `matplotlib.text.Text`
             The original text object to be rendered.
         """
-        mask = self.draw.getfont().getmask(s, self.draw.fontmode)
+        font = self._get_font(prop)
+        mask = font.getmask(s, self.draw.fontmode)
         angle = round(angle/90)
         if angle != 0:
             mask = mask.transpose(1+angle)
@@ -260,7 +286,8 @@ class RendererPIL(RendererBase):
         return self.im.width, self.im.height
 
     def get_text_width_height_descent(self, s, prop, ismath):
-        width, height = self.draw.textsize(s)
+        font = self._get_font(prop)
+        width, height = self.draw.textsize(s, font=font)
         return width, height, 0.2*height
         #bbox = self.draw.textbbox((0,0), s)
         #return bbox[2]-bbox[0], bbox[3]-bbox[2], 0.2*(bbox[2]-bbox[0])

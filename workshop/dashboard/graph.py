@@ -104,6 +104,7 @@ ax.axis["top"].major_ticklabels.set_visible(True)
 ax.axis["top"].major_ticklabels.set_ha("left")
 ax.axis["top"].major_ticklabels.set_pad(0)
 ax.axis["bottom"].major_ticklabels.set_visible(False)
+ax.axis["top"].major_ticklabels.set_fontfamily("knxt")
 for table in tables:
     result = table.records[0]['result']
     if result == "local":
