@@ -5,11 +5,22 @@ import io
 import logging
 import os
 import sys
+from zoneinfo import ZoneInfo
 
-import delorean
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import mpl_toolkits.axisartist as axisartist
+import numpy as mp
+
 from influxdb_client import InfluxDBClient, Point, Dialect
 
 logging.basicConfig(level=logging.DEBUG)
+
+mpl.use("module://backend_pil")
+mpl.rc("axes", unicode_minus=False)
+
+TZ = ZoneInfo('America/New_York')
 
 client = InfluxDBClient(url="https://influx.isz.wtf", token=os.getenv("INFLUX_TOKEN"), org="icestationzebra")
 
@@ -73,45 +84,37 @@ for table in tables:
 
 
 timestamps = [record["_time"] for table in tables for record in table]
-start = min(timestamps).astimezone().date()
-stop = max(timestamps).astimezone().date()
-
-tics = []
-mtics = []
-while start <= stop:
-    tics.append((start.strftime("%A %m/%d"), start.strftime("%s")))
-    for hour in (0, 6, 12, 18):
-        tics.append(("", datetime.combine(start, time(hour=hour)).strftime("%s 1")))
-        mtics.append((f"{hour}", datetime.combine(start, time(hour=hour)).strftime("%s 0")))
-    start = start + timedelta(days=1)
-
-#start = delorean.Delorean(min(timestamps)).shift('US/Eastern')
-#stop = delorean.Delorean(max(timestamps)).shift('US/Eastern')
-logging.debug("time = %s - %s", start, stop)
-
-#tics = delorean.stops(freq=delorean.DAILY, start=start.naive, stop=stop.naive, timezone='US/Eastern')
-#tics = ", ".join('"%s" %d' % (d.format_datetime(""), d.start_of_day.timestamp()) for d in tics)
-mtics = ", ".join('"%s" %s' % d for d in mtics)
-tics = ", ".join('"%s" %s' % d for d in tics)
-logging.debug("tics = %s", tics)
+logging.debug("time = %s - %s", min(timestamps), max(timestamps))
 
 xmin = datetime.now() - timedelta(hours=24)
 
-gp.write(f"""
-set xdata time
-set timefmt "%s"
-unset xtics
-set ytics format "%.0fF" border in offset character 2, 0 left
-set xtics ({mtics}) border in offset character 1,character 1.6 left
-set x2tics ({tics}) border in offset character 0.5,character -2 left mirror
-set xrange [{xmin:%s}:*]
-set grid x2tics
-set margins 0, 0, 0, 0
-unset key
-plot $awtemperature using 1:2 with lines, $localtemp using 1:2 with lines linetype 1 linewidth 2
-""")
-
-print(gp.getvalue())
-#     print(table)
-#     for record in table.records:
-#         print(record.values)
+fig = plt.figure(subplotpars=mpl.figure.SubplotParams(0,0,1,1))
+ax = fig.add_axes((0,0,1,1), axes_class=axisartist.Axes)
+ax.set_xlim(left=xmin, right=max(timestamps))
+ax.xaxis.set_major_locator(mdates.DayLocator(tz=TZ))
+ax.xaxis.set_minor_locator(mdates.HourLocator(interval=6, tz=TZ))
+ax.xaxis.set_major_formatter(mdates.DateFormatter(' %A'))
+ax.yaxis.set_major_formatter("{x:.0f}°C")
+ax.axis[:].invert_ticklabel_direction()
+ax.axis[:].major_ticks.set_tick_out(True)
+ax.axis[:].minor_ticks.set_tick_out(True)
+ax.axis[:].major_ticks.set_ticksize(6)
+ax.axis[:].minor_ticks.set_ticksize(6)
+ax.axis["top"].major_ticklabels.set_visible(True)
+ax.axis["top"].major_ticklabels.set_ha("left")
+ax.axis["top"].major_ticklabels.set_pad(0)
+ax.axis["bottom"].major_ticklabels.set_visible(False)
+for table in tables:
+    result = table.records[0]['result']
+    if result == "local":
+        name = "localtemp"
+    elif result == "accuweather":
+        name = "aw"+table.records[0]['_field']
+    times = []
+    values = []
+    for record in table.records:
+        times.append(record["_time"])#.timestamp(),
+        values.append(record["_value"])
+    ax.plot(times, values)
+ax.grid(axis='x')
+plt.savefig("out.pbm", format='pbm')

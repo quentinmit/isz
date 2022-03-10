@@ -21,4 +21,8 @@ ax.set(xlabel='time (s)', ylabel='voltage (mV)',
 ax.grid()
 
 fig.savefig("test.pbm")
+import io
+w = io.BytesIO()
+fig.savefig(w, format='pbm')
+print(len(w.getvalue()))
 plt.show()
