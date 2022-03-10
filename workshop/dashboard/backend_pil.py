@@ -35,11 +35,7 @@ class RendererPIL(RendererBase):
                 lambda pc: pc[1] == Path.MOVETO,
         ):
             points = [(points[0], self.im.height-points[1]) for points,_ in poly]
-            print(points)
             self.draw.line(points, fill=0)
-            #for points, code in 
-            #print(points, code)
-        print("done")
 
     # draw_markers is optional, and we get more correct relative
     # timings by leaving it out.  backend implementers concerned with
@@ -88,8 +84,17 @@ class RendererPIL(RendererBase):
         mtext : `matplotlib.text.Text`
             The original text object to be rendered.
         """
-        width, height = self.draw.textsize(s)
-        self.draw.text((x,y-(1*height)), s, fill=0)
+        mask = self.draw.getfont().getmask(s, self.draw.fontmode)
+        angle = round(angle/90)
+        if angle != 0:
+            mask = mask.transpose(1+angle)
+        bbox = mask.getbbox()
+        width = bbox[2]-bbox[0]
+        height = bbox[3]-bbox[1]
+        y -= height
+        if angle in (1,3):
+            x -= width
+        self.draw.draw.draw_bitmap((x,y), mask, 0)
 
     def flipy(self):
         # docstring inherited
@@ -218,7 +223,7 @@ class FigureCanvasPIL(FigureCanvasBase):
         im.save(filename, format='ppm')
 
     def get_default_filetype(self):
-        return 'foo'
+        return 'pbm'
 
 
 class FigureManagerPIL(FigureManagerBase):
