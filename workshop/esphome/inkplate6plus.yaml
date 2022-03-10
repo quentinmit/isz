@@ -649,6 +649,7 @@ display:
                   format: "%2.0f°"
                   sensor: weather_temp
                   font: font_clock
+                  align: center
               - horizontal:
                 - text:
                     format: "%2.0f°"
