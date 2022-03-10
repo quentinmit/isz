@@ -142,10 +142,21 @@ class DashedImageDraw(ImageDraw.ImageDraw):
     def _lines_points(self, xys):
         return unique_justseen(chain.from_iterable(self._line_points(x0, y0, x1, y1) for (x0, y0), (x1, y1) in pairwise(xys)))
 
-    def dotted_line(self, xy, fill=None, width=0):
+    def dotted_line(self, xy, dashes=(1,1), fill=None, width=0):
         if not width:
             width = 1
-        self.point(list(islice(self._lines_points(xy), 0, None, 2)), fill=fill)
+        width = int(width)
+        points = self._lines_points(xy)
+        dashes = (round(x) for x in dashes)
+        #if dashes == (1,1):
+        if width == 1:
+            self.point(list(islice(points, 0, None, 2)), fill=fill)
+        else:
+            # Draw rectangles of size width every width*2 points
+            #points = ((x*width, y*width) for x,y in islice(unique_justseen((x//width,y//width) for x,y in points), 0, None, 2))
+            points = islice(points, 0, None, 2*width)
+            self.point(list(chain.from_iterable((x+dx,y+dy) for x,y in points for dx in range(width) for dy in range(width))))
+        # Have to do more complicated stuff
 
 class RendererPIL(RendererBase):
     def __init__(self, im, dpi):
@@ -176,7 +187,7 @@ class RendererPIL(RendererBase):
         ):
             points = [(points[0], self.im.height-points[1]) for points,_ in poly]
             if dashes:
-                self.draw.dotted_line(points, width=0)
+                self.draw.dotted_line(points, width=width)
                 #self.draw.dashed_line(points, dash=dashes, width=width)
             else:
                 self.draw.line(points, fill=0, width=width)
