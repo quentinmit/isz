@@ -115,6 +115,6 @@ for table in tables:
     for record in table.records:
         times.append(record["_time"])#.timestamp(),
         values.append(record["_value"])
-    ax.plot(times, values)
-ax.grid(axis='x')
+    ax.plot(times, values, linewidth=1.5 if name == "localtemp" else 0.8)
+ax.grid(axis='x', linestyle='dotted')
 plt.savefig("out.pbm", format='pbm')

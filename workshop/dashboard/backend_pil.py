@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import math
 from PIL import Image, ImageDraw
-from more_itertools import flatten, split_before
+from itertools import chain, pairwise, islice
+from more_itertools import flatten, split_before, unique_justseen
 
 from matplotlib import _api
 from matplotlib._pylab_helpers import Gcf
@@ -13,11 +15,143 @@ from matplotlib.transforms import Affine2D
 
 FLIPY = Affine2D.identity().scale(1, -1)
 
+class DashedImageDraw(ImageDraw.ImageDraw):
+
+    def thick_line(self, xy, direction, fill=None, width=0):
+        #xy – Sequence of 2-tuples like [(x, y), (x, y), ...]
+        #direction – Sequence of 2-tuples like [(x, y), (x, y), ...]
+        if xy[0] != xy[1]:
+            self.line(xy, fill = fill, width = width)
+        else:
+            x1, y1 = xy[0]
+            dx1, dy1 = direction[0]
+            dx2, dy2 = direction[1]
+            if dy2 - dy1 < 0:
+                x1 -= 1
+            if dx2 - dx1 < 0:
+                y1 -= 1
+            if dy2 - dy1 != 0:
+                if dx2 - dx1 != 0:
+                    k = - (dx2 - dx1)/(dy2 - dy1)
+                    a = 1/math.sqrt(1 + k**2)
+                    b = (width*a - 1) /2
+                else:
+                    k = 0
+                    b = (width - 1)/2
+                x3 = x1 - math.floor(b)
+                y3 = y1 - int(k*b)
+                x4 = x1 + math.ceil(b)
+                y4 = y1 + int(k*b)
+            else:
+                x3 = x1
+                y3 = y1 - math.floor((width - 1)/2)
+                x4 = x1
+                y4 = y1 + math.ceil((width - 1)/2)
+            self.line([(x3, y3), (x4, y4)], fill = fill, width = 1)
+        return
+
+    def dashed_line(self, xy, dash=(2,2), fill=None, width=0):
+        #xy – Sequence of 2-tuples like [(x, y), (x, y), ...]
+        for i in range(len(xy) - 1):
+            x1, y1 = xy[i]
+            x2, y2 = xy[i + 1]
+            x_length = x2 - x1
+            y_length = y2 - y1
+            length = math.sqrt(x_length**2 + y_length**2)
+            if not length:
+                continue
+            dash_enabled = True
+            postion = 0
+            while postion <= length:
+                for dash_step in dash:
+                    if postion > length:
+                        break
+                    if dash_enabled:
+                        start = postion/length
+                        end = min((postion + dash_step - 1) / length, 1)
+                        self.thick_line([(round(x1 + start*x_length),
+                                          round(y1 + start*y_length)),
+                                         (round(x1 + end*x_length),
+                                          round(y1 + end*y_length))],
+                                        xy, fill, width)
+                    dash_enabled = not dash_enabled
+                    postion += dash_step
+        return
+
+    def _line_points(self, x0, y0, x1, y1):
+        x0 = int(x0)
+        x1 = int(x1)
+        y0 = int(y0)
+        y1 = int(y1)
+        # normalize coordinates
+        dx = x1 - x0
+        if dx < 0:
+            dx = -dx
+            xs = -1
+        else:
+            xs = 1;
+
+        dy = y1 - y0
+        if dy < 0:
+            dy = -dy
+            ys = -1
+        else:
+            ys = 1
+
+        n = max(dx, dy)
+
+        if dx == 0:
+            # vertical
+            for i in range(0, dy):
+                yield x0, y0
+                y0 += ys
+        elif dy == 0:
+            # horizontal
+            for i in range(0, dx):
+                yield x0, y0
+                x0 += xs
+        elif dx > dy:
+            # bresenham, horizontal slope
+            n = dx
+            dy += dy
+            e = dy - dx
+            dx += dx
+
+            for i in range(n):
+                yield x0, y0
+                if e >= 0:
+                    y0 += ys
+                    e -= dx
+                e += dy
+                x0 += xs
+        else:
+            # bresenham, vertical slope
+            n = dy
+            dx += dx
+            e = dx - dy
+            dy += dy
+
+            for i in range(n):
+                yield x0, y0
+                if e >= 0:
+                    x0 += xs
+                    e -= dy
+                e += dx
+                y0 += ys
+
+    def _lines_points(self, xys):
+        return unique_justseen(chain.from_iterable(self._line_points(x0, y0, x1, y1) for (x0, y0), (x1, y1) in pairwise(xys)))
+
+    def dotted_line(self, xy, fill=None, width=0):
+        if not width:
+            width = 1
+        self.point(list(islice(self._lines_points(xy), 0, None, 2)), fill=fill)
+
 class RendererPIL(RendererBase):
     def __init__(self, im, dpi):
         super().__init__()
         self.im = im
-        self.draw = ImageDraw.Draw(self.im)
+        self.draw = DashedImageDraw(self.im)
         self.dpi = dpi
 
     def draw_path(self, gc, path, transform, rgbFace=None):
@@ -30,12 +164,22 @@ class RendererPIL(RendererBase):
                     min(p2[0], maxcoord), min(p2[1], maxcoord))
         else:
             clip = (-maxcoord, -maxcoord, maxcoord, maxcoord)
+
+        width = round(gc.get_linewidth() * self.dpi / 72)
+        if width < 1:
+            width = 1
+        _, dashes = gc.get_dashes()
+        print(dashes)
         for poly in split_before(
                 path.iter_segments(transform, snap=True, simplify=True, curves=False, clip=clip),
                 lambda pc: pc[1] == Path.MOVETO,
         ):
             points = [(points[0], self.im.height-points[1]) for points,_ in poly]
-            self.draw.line(points, fill=0)
+            if dashes:
+                self.draw.dotted_line(points, width=0)
+                #self.draw.dashed_line(points, dash=dashes, width=width)
+            else:
+                self.draw.line(points, fill=0, width=width)
 
     # draw_markers is optional, and we get more correct relative
     # timings by leaving it out.  backend implementers concerned with
