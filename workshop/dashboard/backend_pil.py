@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+from dataclasses import dataclass
+import logging
 import math
 import os.path
-from PIL import Image, ImageDraw, ImageFont
+import gzip
+from PIL import Image, ImageDraw, ImageFont, BdfFontFile, PcfFontFile
 from itertools import chain, pairwise, islice
 from more_itertools import flatten, split_before, unique_justseen
 
@@ -11,10 +14,150 @@ from matplotlib._pylab_helpers import Gcf
 from matplotlib.backend_bases import (
      FigureCanvasBase, FigureManagerBase, GraphicsContextBase, RendererBase)
 from matplotlib.figure import Figure
+from matplotlib.font_manager import FontManager, FontProperties, FontEntry
 from matplotlib.path import Path
 from matplotlib.transforms import Affine2D
 
+_log = logging.getLogger(__name__)
+
+
 FLIPY = Affine2D.identity().scale(1, -1)
+
+@dataclass
+class BitmapFontEntry(FontEntry):
+    xfontdesc: str = ''
+    charset_registry: str = ''
+    charset_encoding: str = ''
+
+class BitmapFontManager(FontManager):
+    def __init__(self, cache_dir, font_dirs):
+        self.cache_dir = cache_dir
+        self.font_dirs = font_dirs
+        # Has to be named ttflist for _findfont_cached
+        self.default = BitmapFontEntry(
+            name='default',
+            fname='default',
+        )
+        self.ttflist = [
+            self.default,
+        ]
+        self.fonts_by_path = {
+            self.default.fname: self.default,
+        }
+        self.font_cache = {
+            self.default.fname: ImageFont.load_default(),
+        }
+
+        for path in self.font_dirs:
+            self._load_fonts_dir(path)
+
+    defaultFamily = {'ttf': 'default'}
+
+    PROPS = """FOUNDRY
+FAMILY_NAME
+WEIGHT_NAME
+SLANT
+SETWIDTH_NAME
+ADD_STYLE_NAME
+PIXEL_SIZE
+POINT_SIZE
+RESOLUTION_X
+RESOLUTION_Y
+SPACING
+AVERAGE_WIDTH
+CHARSET_REGISTRY
+CHARSET_ENCODING""".split()
+
+    def _load_fonts_dir(self, directory):
+        try:
+            f = open(os.path.join(directory, "fonts.dir"))
+        except OSError:
+            _log.warning("Can't find fonts.dir in %s", directory)
+            return
+        count = int(f.readline().strip())
+        _log.debug("Reading %d fonts from %s", count, directory)
+        for line in f:
+            filename, fontname = line.strip().split(" ", 1)
+            filename = os.path.abspath(os.path.join(directory, filename))
+            if fontname[0] == '"':
+                fontname = fontname[1:-1]
+            parts = fontname.split("-")
+            if len(parts) < len(self.PROPS):
+                continue
+            desc = dict(zip(self.PROPS, parts[1:]))
+            if desc['ADD_STYLE_NAME']:
+                continue
+            props = BitmapFontEntry(
+                name=desc["FAMILY_NAME"],
+                style={
+                    'r': 'normal',
+                    'i': 'italic',
+                    'o': 'oblique',
+                    }.get(desc["SLANT"], 'normal'),
+                variant='normal',
+                stretch={
+                    'normal': 'normal',
+                    'semicondensed': 'semi-condensed',
+                    'condensed': 'condensed',
+                    }.get(desc["SETWIDTH_NAME"], 'normal'),
+                weight=desc["WEIGHT_NAME"] or 'normal',
+                size=int(desc["POINT_SIZE"])/10,
+                fname=filename,
+                xfontdesc=fontname,
+                charset_registry=desc["CHARSET_REGISTRY"],
+                charset_encoding=desc["CHARSET_ENCODING"],
+            )
+            props.style = (props.style, props)
+            _log.info("Found font %s", props)
+            self.ttflist.append(props)
+            self.fonts_by_path[props.fname] = props
+
+    def score_style(self, propstyle, fontstyle):
+        font = None
+        if isinstance(fontstyle, tuple):
+            fontstyle, font = fontstyle
+        score = super().score_style(propstyle, fontstyle)
+        if font:
+            score += 0.1*(font.charset_registry != 'iso8859' or font.charset_encoding != '1')
+        return score
+
+    def findfont(self, prop, fontext='ttf', directory=None,
+                 fallback_to_default=True, rebuild_if_missing=False):
+        if prop.get_family()[0] == 'default':
+            return self.default.fname
+        return super().findfont(prop, fontext, directory, fallback_to_default, rebuild_if_missing)
+
+    def loadfont(self, prop, directory=None):
+        _log.debug("looking for font for %s", prop)
+        fname = self.findfont(prop, rebuild_if_missing=False)
+        _log.debug("found %s", fname)
+        fontprops = self.fonts_by_path[fname]
+        if fname in self.font_cache:
+            return self.font_cache[fname]
+        pilpath = os.path.join(self.cache_dir, fontprops.xfontdesc+".pil")
+        try:
+            font = ImageFont.load(pilpath)
+            self.font_cache[fname] = font
+            return font
+        except OSError:
+            pass
+        _log.info("Generating PIL font for %s from %s", fontprops, fname)
+        f = open(fname, 'rb')
+        if fname.endswith('.gz'):
+            fname = fname[:-3]
+            f = gzip.open(f)
+        if fname.endswith('.pcf'):
+            p = PcfFontFile.PcfFontFile(f)
+        elif fname.endswith('.bdf'):
+            p = BdfFontFile.BdfFontFile(f)
+        else:
+            raise ValueError('unknown file format %s' % (fname,))
+        p.save(pilpath)
+        font = ImageFont.load(pilpath)
+        self.font_cache[fname] = font
+        return font
+
+fontmanager = BitmapFontManager("fonts/cache/", ["fonts/", "/opt/local/share/fonts/100dpi", "/opt/local/share/fonts/misc"])
 
 class DashedImageDraw(ImageDraw.ImageDraw):
 
@@ -166,7 +309,7 @@ class RendererPIL(RendererBase):
         self.draw = DashedImageDraw(self.im)
         self.dpi = dpi
         self.font_dirs = ["fonts/"]
-        self.font_cache = dict()
+        #self.font_cache = {}
 
     def draw_path(self, gc, path, transform, rgbFace=None):
         #transform += FLIPY
@@ -264,7 +407,8 @@ class RendererPIL(RendererBase):
         mtext : `matplotlib.text.Text`
             The original text object to be rendered.
         """
-        font = self._get_font(prop)
+        #font = self._get_font(prop)
+        font = fontmanager.loadfont(prop)
         mask = font.getmask(s, self.draw.fontmode)
         angle = round(angle/90)
         if angle != 0:
@@ -286,7 +430,8 @@ class RendererPIL(RendererBase):
         return self.im.width, self.im.height
 
     def get_text_width_height_descent(self, s, prop, ismath):
-        font = self._get_font(prop)
+        #font = self._get_font(prop)
+        font = fontmanager.loadfont(prop)
         width, height = self.draw.textsize(s, font=font)
         return width, height, 0.2*height
         #bbox = self.draw.textbbox((0,0), s)

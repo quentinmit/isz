@@ -98,13 +98,14 @@ ax.yaxis.set_major_formatter("{x:.0f}°C")
 ax.axis[:].invert_ticklabel_direction()
 ax.axis[:].major_ticks.set_tick_out(True)
 ax.axis[:].minor_ticks.set_tick_out(True)
-ax.axis[:].major_ticks.set_ticksize(6)
+ax.axis[:].major_ticks.set_ticksize(8)
 ax.axis[:].minor_ticks.set_ticksize(6)
 ax.axis["top"].major_ticklabels.set_visible(True)
 ax.axis["top"].major_ticklabels.set_ha("left")
 ax.axis["top"].major_ticklabels.set_pad(0)
 ax.axis["bottom"].major_ticklabels.set_visible(False)
 ax.axis["top"].major_ticklabels.set_fontfamily("knxt")
+ax.axis["left"].major_ticklabels.set_fontfamily("clean")
 for table in tables:
     result = table.records[0]['result']
     if result == "local":
@@ -118,4 +119,8 @@ for table in tables:
         values.append(record["_value"])
     ax.plot(times, values, linewidth=1.5 if name == "localtemp" else 0.8)
 ax.grid(axis='x', linestyle='dotted')
+
 plt.savefig("out.pbm", format='pbm')
+#b = io.BytesIO()
+#plt.savefig(b, format='pbm')
+#print(b.getvalue())
