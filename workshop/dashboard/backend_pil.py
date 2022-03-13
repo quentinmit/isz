@@ -529,6 +529,17 @@ class FigureCanvasPIL(FigureCanvasBase):
     # you should add it to the class-scope filetypes dictionary as follows:
     filetypes = {**FigureCanvasBase.filetypes, 'pbm': 'Portable Bit Map'}
 
+    def _print(self, filename, *args, **kwargs):
+        width, height = self.figure.get_size_inches()
+        dpi = self.figure.dpi
+        width = int(width * dpi)
+        height = int(height * dpi)
+
+        im = Image.new('1', (width, height), color=1)
+        renderer = RendererPIL(im, self.figure.dpi)
+        self.figure.draw(renderer)
+        return im
+
     @_api.delete_parameter("3.5", "args")
     def print_pbm(self, filename, *args, **kwargs):
         """
@@ -539,15 +550,14 @@ class FigureCanvasPIL(FigureCanvasBase):
         restore them to the original values.  Therefore, `print_foo` does not
         need to handle these settings.
         """
-        width, height = self.figure.get_size_inches()
-        dpi = self.figure.dpi
-        width = int(width * dpi)
-        height = int(height * dpi)
-
-        im = Image.new('1', (width, height), color=1)
-        renderer = RendererPIL(im, self.figure.dpi)
-        self.figure.draw(renderer)
+        im = self._print(filename, *args, **kwargs)
         im.save(filename, format='ppm')
+
+    @_api.delete_parameter("3.5", "args")
+    def print_png(self, filename, *args, **kwargs):
+        im = self._print(filename, *args, **kwargs)
+        im.save(filename, format='png')
+
 
     def get_default_filetype(self):
         return 'pbm'
