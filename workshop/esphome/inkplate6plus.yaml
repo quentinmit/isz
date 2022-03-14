@@ -6,6 +6,9 @@ esp32:
   framework:
     type: arduino
 
+external_components:
+- source: ./my_components
+
 # Enable logging
 logger:
 #  level: VERBOSE
@@ -27,6 +30,10 @@ wifi:
     password: !secret fallback_password
 
 captive_portal:
+
+mqtt:
+  broker: !secret mqtt_broker
+  discovery: false
 
 button:
   - platform: restart
@@ -489,6 +496,15 @@ font:
         'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
         'è']
 
+graph:
+- id: hometempgraph
+  sensor: outdoor_temp
+  duration: 30min
+  width: 400
+  height: 200
+
+mqtt_image:
+
 display:
 - platform: inkplate6
   id: inkplate_display
@@ -577,6 +593,8 @@ display:
             - text:
                 text: "°F"
                 font: medium_24
+          - graph:
+              graph_id: hometempgraph
         - vertical: # Main weather
           - horizontal:
             - vertical:
@@ -682,6 +700,10 @@ display:
 #          - sensor: "precipitation"
 #          - sensor: "wind"
 #          - sensor: "pressure"
+      - mqtt_image:
+          size_topic: livingroom/inkplate/meteogram/size
+          image_topic: livingroom/inkplate/meteogram/image
+        preferred_size: [200, 100]
       - horizontal:
         - button:
             content:
@@ -695,7 +717,6 @@ display:
                 text: "Right"
                 align: center
                 font: medium_40
-
 #      - horizontal:
 #        - forecast: day1
 #        - forecast: day2
