@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+import argparse
 from datetime import datetime, date, time, timedelta
 import io
 from itertools import chain
+import json
 import logging
 import os
 import sys
+import time
 from zoneinfo import ZoneInfo
 
 import matplotlib as mpl
@@ -15,6 +18,7 @@ import mpl_toolkits.axisartist as axisartist
 import numpy as mp
 
 from influxdb_client import InfluxDBClient, Point, Dialect
+import paho.mqtt.client as mqtt
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -25,9 +29,16 @@ TZ = ZoneInfo('America/New_York')
 
 class Grapher:
     def __init__(self):
-        self.client = InfluxDBClient(url="https://influx.isz.wtf", token=os.getenv("INFLUX_TOKEN"), org="icestationzebra")
+        self.influx_client = InfluxDBClient(url="https://influx.isz.wtf", token=os.getenv("INFLUX_TOKEN"), org="icestationzebra")
+        self.mqtt_client = mqtt.Client()
+        self.mqtt_client.connect("mqtt.isz.wtf")
+        self.mqtt_client.on_message = self.on_message
+        self.mqtt_client.loop_start()
 
-        self.query_api = self.client.query_api()
+        self.query_api = self.influx_client.query_api()
+
+        self.width = 1024
+        self.height = 100
 
         self.p = {
             "defaultBucket": "icestationzebra",
@@ -120,11 +131,43 @@ from(bucket: defaultBucket)
 
         return fig
 
-if __name__ == '__main__':
+    def subscribe(self):
+        self.mqtt_client.subscribe("livingroom/inkplate/meteogram/size", 0)
+
+    def on_message(self, client, userdata, msg):
+        topic = msg.topic
+        if not topic.endswith("/size"):
+            return
+        topic = topic[:-len("/size")]
+        logging.debug("Received message for %s: %s", topic, msg.payload)
+        payload = json.loads(msg.payload)
+        if "width" in payload:
+            self.width = int(payload["width"])
+        if "height" in payload:
+            self.height = int(payload["height"])
+
+    def send_graphs(self):
+        fig = self.plot_weathergram()
+        fig.set_size_inches(self.width/fig.dpi, self.height/fig.dpi)
+        b = io.BytesIO()
+        fig.savefig(b, format='png')
+        self.mqtt_client.publish("livingroom/inkplate/meteogram/image", b.getvalue(), retain=True).wait_for_publish()
+
+def main():
+    parser = argparse.ArgumentParser(description='Graph generator')
+    parser.add_argument('--test', action='store_true', help='generate one image to out.png and exit')
+    args = parser.parse_args()
     g = Grapher()
-    fig = g.plot_weathergram()
-    fig.set_size_inches(1024/fig.dpi, 100/fig.dpi)
-    plt.savefig("out.png", format='png')
-#b = io.BytesIO()
-#plt.savefig(b, format='pbm')
-#print(b.getvalue())
+    if args.test:
+        fig = g.plot_weathergram()
+        fig.set_size_inches(1024/fig.dpi, 100/fig.dpi)
+        plt.savefig("out.png", format='png')
+        return
+    g.subscribe()
+    while True:
+        g.send_graphs()
+        time.sleep(60)
+
+
+if __name__ == '__main__':
+    main()
