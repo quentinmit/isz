@@ -143,12 +143,21 @@ tv_sources:
 - HDMI1 PC
 - HDMI2 Chromecast
 - HDMI3 Blu-Ray
-- - HDMI4-1
-  - HDMI4-2
+- - HDMI4-1 Nexus Player
+  - HDMI4-2 Boreal
   - HDMI4-3
-  - HDMI4-4
-  - HDMI4-5
+  - HDMI4-4 External
+  - HDMI4-5 Fire TV
 - Media
+
+hdmi_switch_ir:
+  d: 128
+  functions:
+    5: 1
+    7: 2
+    8: 3
+    9: 4
+    27: 5
 
 ir_icons:
   # arrow

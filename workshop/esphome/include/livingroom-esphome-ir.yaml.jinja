@@ -4,7 +4,7 @@
 {%- macro nec_button(address, function, device_name, name, icon) -%}
 - platform: template
   name: {{ device_name }} - {{ name }}
-  id: ir_{{ device_name | lower }}_{{ sanitize(name) }}
+  id: ir_{{ sanitize(device_name | lower) }}_{{ sanitize(name) }}
   {%- if icon %}
   icon: {{ icon }}
   {%- endif %}
@@ -40,6 +40,7 @@ mqtt:
 button:
 {{ device_buttons("Receiver", receiver_ir) }}
 {{ device_buttons("TV", tv_ir) }}
+{{ device_buttons("HDMI Switch", hdmi_switch_ir) }}
 
 select:
 - platform: template
