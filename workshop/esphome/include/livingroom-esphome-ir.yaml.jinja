@@ -1,5 +1,5 @@
 {%- macro sanitize(name) -%}
-{{ name | replace(" ", "_") | replace("+", "_up") | replace("-", "_down") | replace(".","_") }}
+{% if name == "-" %}dash{% else %}{{ name | replace(" ", "_") | replace("+", "_up") | replace("-", "_down") | replace(".","_") }}{% endif %}
 {%- endmacro -%}
 {%- macro nec_button(address, function, device_name, name, icon) -%}
 - platform: template
@@ -42,13 +42,32 @@ button:
 {{ device_buttons("TV", tv_ir) }}
 {{ device_buttons("HDMI Switch", hdmi_switch_ir) }}
 
+{% macro tv_input(name, tv_port, switch_port=None) %}
+  - if:
+      condition:
+        lambda: |-
+          return x == "{{ name }}";
+      then:
+      - button.press: ir_tv_dash
+      - delay: 100ms
+      {%- for _ in range(tv_port) %}
+      - button.press: ir_tv_input
+      - delay: 100ms
+      {%- endfor %}
+      - button.press: ir_tv_enter
+      - delay: 100ms
+      {%- if switch_port is not none %}
+      - button.press: ir_hdmi_switch_{{ switch_port }}
+      {%- endif %}
+{% endmacro %}
+
 select:
 - platform: template
   name: "Receiver Source"
   optimistic: true
   options: {{ receiver_sources.keys() | list | tojson }}
   set_action:
-  {% for key, value in receiver_sources.items() %}
+  {%- for key, value in receiver_sources.items() %}
   - if:
       condition:
         lambda: |-
@@ -58,4 +77,19 @@ select:
       {%- else -%}
       {{ value | tojson }}
       {%- endif %}
-  {% endfor %}
+  {%- endfor %}
+- platform: template
+  name: "TV Source"
+  optimistic: true
+  options: {{ flatten(tv_sources) | tojson }}
+  set_action:
+  {%- for name in tv_sources %}
+  {%- if name is string %}
+  {{- tv_input(name, loop.index) }}
+  {%- else %}
+  {%- set tv_port = loop.index %}
+  {%- for name in name %}
+  {{- tv_input(name, tv_port, loop.index) }}
+  {%- endfor %}
+  {%- endif %}
+  {%- endfor %}
