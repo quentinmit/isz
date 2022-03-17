@@ -513,6 +513,10 @@ class FigureCanvasPIL(FigureCanvasBase):
         A high-level Figure instance
     """
 
+    def __init__(self, *args, **kwargs):
+        _log.debug("canvas created")
+        super().__init__(*args, **kwargs)
+
     def draw(self):
         """
         Draw the figure using the renderer.
@@ -523,6 +527,11 @@ class FigureCanvasPIL(FigureCanvasBase):
         """
         self.figure.draw_without_rendering()
         return super().draw()
+
+    @classmethod
+    def get_default_filetype(cls):
+        _log.debug("get_default_filetype called")
+        return "pbm"
 
     # You should provide a print_xxx function for every file format
     # you can write.

@@ -14,8 +14,9 @@ from zoneinfo import ZoneInfo
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.text as mtext
 import mpl_toolkits.axisartist as axisartist
-import numpy as mp
+import numpy as np
 
 from influxdb_client import InfluxDBClient, Point, Dialect
 import paho.mqtt.client as mqtt
@@ -26,6 +27,38 @@ mpl.use("module://backend_pil")
 mpl.rc("axes", unicode_minus=False)
 
 TZ = ZoneInfo('America/New_York')
+
+def inside(a, b):
+    ax1, ay1, ax2, ay2 = a.extents
+    bx1, by1, bx2, by2 = b.extents
+    if ax2 < ax1:
+        ax2, ax1 = ax1, ax2
+    if ay2 < ay1:
+        ay2, ay1 = ay1, ay2
+    if bx2 < bx1:
+        bx2, bx1 = bx1, bx2
+    if by2 < by1:
+        by2, by1 = by1, by2
+    return ax1 >= bx1 and ax2 <= bx2 and ay1 >= by1 and ay2 <= by2
+
+class AutoAnnotation(mtext.Annotation):
+    def __init__(self, *args, **kwargs):
+        kwargs['xytext'] = (0, 3)
+        kwargs['textcoords'] = 'offset pixels'
+        kwargs['horizontalalignment'] = 'center'
+        kwargs['verticalalignment'] = 'bottom'
+        super().__init__(*args, **kwargs)
+
+    def update_positions(self, renderer):
+        self.set_verticalalignment('bottom')
+        super().update_positions(renderer)
+        bbox = mtext.Text.get_window_extent(self, renderer)
+        axbbox = self.axes.get_window_extent(self, renderer)
+        logging.debug("Rendering %s at %s (%s) - inside %s", self.get_text(), bbox.extents, axbbox.extents, inside(bbox, axbbox))
+        if not inside(bbox, axbbox):
+            self.set_verticalalignment('top')
+            super().update_positions(renderer)
+            logging.debug("new position %s", mtext.Text.get_window_extent(self, renderer))
 
 class Grapher:
     def __init__(self):
@@ -67,7 +100,7 @@ from(bucket: defaultBucket)
   |> group(columns: ["host", "_measurement", "_field"])
   |> keep(columns: ["_measurement", "_field", "_time", "_value"])
   |> map(fn: (r) => ({r with _measurement: r._field}))
-  |> yield(name: "accuweather")
+  |> yield(name: "forecast")
 
 from(bucket: defaultBucket)
   |> range(start: timeRangeStart, stop: timeRangeStop)
@@ -87,16 +120,13 @@ from(bucket: defaultBucket)
 
         for table in tables:
             result = table.records[0]['result']
-            if result == "local":
-                name = "localtemp"
-            elif result == "accuweather":
-                name = "aw"+table.records[0]['_field']
+            name = result+table.records[0]['_field']
             times = []
             values = []
             for record in table.records:
                 times.append(record["_time"])
                 values.append(record["_value"])
-            out[name] = (times, values)
+            out[name] = (np.asarray(times), np.asarray(values))
         return out
 
     def plot_weathergram(self):
@@ -110,7 +140,7 @@ from(bucket: defaultBucket)
         ax = fig.add_axes((0,0,1,1), axes_class=axisartist.Axes)
         ax.set_xlim(left=xmin, right=max(timestamps))
         ax.xaxis.set_major_locator(mdates.DayLocator(tz=TZ))
-        ax.xaxis.set_minor_locator(mdates.HourLocator(interval=6, tz=TZ))
+        ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=range(0,24,6), tz=TZ))
         ax.xaxis.set_major_formatter(mdates.DateFormatter(' %A'))
         ax.yaxis.set_major_formatter("{x:.0f}°C")
         ax.axis[:].invert_ticklabel_direction()
@@ -123,11 +153,25 @@ from(bucket: defaultBucket)
         ax.axis["top"].major_ticklabels.set_pad(0)
         ax.axis["bottom"].major_ticklabels.set_visible(False)
         ax.axis["top"].major_ticklabels.set_fontfamily("knxt")
-        ax.axis["left"].major_ticklabels.set_fontfamily("clean")
+        #ax.axis["left"].major_ticklabels.set_fontfamily("clean")
+        ax.axis["left"].major_ticklabels.set_fontfamily("lucida")
+        ax.axis["left"].major_ticklabels.set_fontsize(11)
 
         for name, (times, values) in tables.items():
             ax.plot(times, values, linewidth=1.5 if name == "localtemp" else 0.8)
         ax.grid(axis='x', linestyle='dotted')
+
+        if "forecasttemperature" in tables:
+            times, values = tables["forecasttemperature"]
+            majorticks = ax.xaxis.get_ticklocs()
+            indices = np.searchsorted(mdates.date2num(times), majorticks)
+            logging.debug("day breaks %s", indices)
+            maxindices = [np.argmax(a) for a in np.split(values, indices)] + np.pad(indices, (1,0))
+            hightimes = times[maxindices]
+            hightemps = values[maxindices]
+            #fig.canvas.draw()
+            for time, temp in zip(hightimes, hightemps):
+                ann = ax.add_artist(AutoAnnotation(f"{temp:.0f}°C", (time, temp), fontfamily='lucida', fontsize=12))
 
         return fig
 
