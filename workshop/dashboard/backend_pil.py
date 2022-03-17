@@ -83,9 +83,11 @@ CHARSET_ENCODING""".split()
                 fontname = fontname[1:-1]
             parts = fontname.split("-")
             if len(parts) < len(self.PROPS):
+                _log.warning("Skipping font with missing props: %s", fontname)
                 continue
             desc = dict(zip(self.PROPS, parts[1:]))
-            if desc['ADD_STYLE_NAME']:
+            if desc['ADD_STYLE_NAME'] not in ('', 'sans'):
+                _log.info("Skipping font with style name: %s", fontname)
                 continue
             props = BitmapFontEntry(
                 name=desc["FAMILY_NAME"],
