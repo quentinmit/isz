@@ -42,21 +42,44 @@ def inside(a, b):
     return ax1 >= bx1 and ax2 <= bx2 and ay1 >= by1 and ay2 <= by2
 
 class AutoAnnotation(mtext.Annotation):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, horizontalalignment='center', verticalalignment='bottom', **kwargs):
+        self.default_horizontalalignment = horizontalalignment
+        self.default_verticalalignment = verticalalignment
         kwargs['xytext'] = (0, 3)
         kwargs['textcoords'] = 'offset pixels'
-        kwargs['horizontalalignment'] = 'center'
-        kwargs['verticalalignment'] = 'bottom'
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, horizontalalignment=horizontalalignment, verticalalignment=verticalalignment, **kwargs)
+
+    def _adjust_alignment(self, bbox, axbbox):
+        ax1, ay1, ax2, ay2 = bbox.extents
+        bx1, by1, bx2, by2 = axbbox.extents
+        if ax2 < ax1:
+            ax2, ax1 = ax1, ax2
+        if ay2 < ay1:
+            ay2, ay1 = ay1, ay2
+        if bx2 < bx1:
+            bx2, bx1 = bx1, bx2
+        if by2 < by1:
+            by2, by1 = by1, by2
+
+        if ax1 < bx1:
+            self.set_horizontalalignment('left')
+        elif ax2 > bx2:
+            self.set_horizontalalignment('right')
+
+        if ay1 < by1:
+            self.set_verticalalignment('bottom')
+        elif ay2 > by2:
+            self.set_verticalalignment('top')
 
     def update_positions(self, renderer):
-        self.set_verticalalignment('bottom')
+        self.set_horizontalalignment(self.default_horizontalalignment)
+        self.set_verticalalignment(self.default_verticalalignment)
         super().update_positions(renderer)
         bbox = mtext.Text.get_window_extent(self, renderer)
         axbbox = self.axes.get_window_extent(self, renderer)
         logging.debug("Rendering %s at %s (%s) - inside %s", self.get_text(), bbox.extents, axbbox.extents, inside(bbox, axbbox))
         if not inside(bbox, axbbox):
-            self.set_verticalalignment('top')
+            self._adjust_alignment(bbox, axbbox)
             super().update_positions(renderer)
             logging.debug("new position %s", mtext.Text.get_window_extent(self, renderer))
 
