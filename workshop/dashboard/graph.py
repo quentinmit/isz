@@ -11,10 +11,14 @@ import sys
 import time
 from zoneinfo import ZoneInfo
 
+from astropy import units as u
+from astropy.table import QTable
+from astropy.time import Time
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.text as mtext
+from more_itertools import bucket
 import mpl_toolkits.axisartist as axisartist
 import numpy as np
 
@@ -22,6 +26,8 @@ from influxdb_client import InfluxDBClient, Point, Dialect
 import paho.mqtt.client as mqtt
 
 logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("matplotlib").setLevel(logging.INFO)
+logging.getLogger("backend_pil").setLevel(logging.INFO)
 
 mpl.use("module://backend_pil")
 mpl.rc("axes", unicode_minus=False)
@@ -107,11 +113,14 @@ class Grapher:
         tables = self.query_api.query("""
 import "experimental"
 import "strings"
+import "dict"
+
+field_units = ["temp": "deg_C", "temperature": "deg_C", "humidity": "%"]
 
 from(bucket: defaultBucket)
   |> range(start: timeRangeStart, stop: timeRangeStop)
   |> filter(fn: (r) => r["_measurement"] == "weather")
-  |> filter(fn: (r) => r["_field"] == "temperature")// or r["_field"] == "humidity")
+  |> filter(fn: (r) => r["_field"] == "temperature" or r["_field"] == "humidity")
   |> filter(fn: (r) => r["city"] == "Cambridge")
   |> filter(fn: (r) => r["city_id"] == "4931972")
   |> group(columns: ["host", "_measurement", "_field", "_time"], mode:"by")
@@ -122,7 +131,7 @@ from(bucket: defaultBucket)
   |> first()
   |> group(columns: ["host", "_measurement", "_field"])
   |> keep(columns: ["_measurement", "_field", "_time", "_value"])
-  |> map(fn: (r) => ({r with _measurement: r._field}))
+  |> map(fn: (r) => ({r with _measurement: r._field, _unit: dict.get(dict: field_units, key: r._field, default: "")}))
   |> yield(name: "forecast")
 
 from(bucket: defaultBucket)
@@ -136,20 +145,32 @@ from(bucket: defaultBucket)
   //|> map(fn: (r) => ({r with run_name: "local"}))
   //|> group(columns: ["_start", "_stop", "_measurement", "_field"])
   //|> drop(columns: ["sensor", "name", "host"])
+  |> map(fn: (r) => ({r with _unit: dict.get(dict: field_units, key: r._field, default: "")}))
   |> yield(name: "local")
 """, params=self.p)
 
+        # First, group tables by the "result" column:
+        results = bucket(tables, lambda t: t.records[0]['result'])
+
         out = {}
 
-        for table in tables:
-            result = table.records[0]['result']
-            name = result+table.records[0]['_field']
-            times = []
-            values = []
-            for record in table.records:
-                times.append(record["_time"])
-                values.append(record["_value"])
-            out[name] = (np.asarray(times), np.asarray(values))
+        for result in results:
+            tables = results[result]
+            measurements = bucket(
+                chain.from_iterable(t.records for t in tables),
+                lambda r: r["_time"],
+            )
+            rows = []
+            for t in measurements:
+                row = {"_time": Time(t)}
+                for r in measurements[t]:
+                    value = r["_value"]
+                    if "_unit" in r.values:
+                        value *= u.Unit(r["_unit"])
+                    row[r["_field"]] = value
+                rows.append(row)
+            out[result] = QTable(rows)
+        logging.debug("Got qtables %s", out)
         return out
 
     def plot_weathergram(self):
