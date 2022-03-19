@@ -18,8 +18,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.text as mtext
+import matplotlib.ticker as mticker
+import matplotlib.units as munits
 from more_itertools import bucket
 import mpl_toolkits.axisartist as axisartist
+from mpl_toolkits.axes_grid1.parasite_axes import host_axes
 import numpy as np
 
 from influxdb_client import InfluxDBClient, Point, Dialect
@@ -88,6 +91,68 @@ class AutoAnnotation(mtext.Annotation):
             self._adjust_alignment(bbox, axbbox)
             super().update_positions(renderer)
             logging.debug("new position %s", mtext.Text.get_window_extent(self, renderer))
+
+class MplQuantityConverter(munits.ConversionInterface):
+    @staticmethod
+    def rad_fn(x, pos=None):
+        n = int((x / np.pi) * 2.0 + 0.25)
+        if n == 0:
+            return '0'
+        elif n == 1:
+            return 'π/2'
+        elif n == 2:
+            return 'π'
+        elif n % 2 == 0:
+            return f'{n // 2}π'
+        else:
+            return f'{n}π/2'
+
+    @staticmethod
+    def axisinfo(unit, axis):
+        if unit == u.radian:
+            return munits.AxisInfo(
+                majloc=mticker.MultipleLocator(base=np.pi/2),
+                majfmt=mticker.FuncFormatter(self.rad_fn),
+                label=unit.to_string(),
+            )
+        elif unit == u.degree:
+            return munits.AxisInfo(
+                majloc=mticker.AutoLocator(),
+                majfmt=mticker.FormatStrFormatter('%i°'),
+                label=unit.to_string(),
+            )
+        elif unit is not None:
+            logging.debug("Inferring format for %r", unit)
+            fmt = '%g' + (unit.to_string('unicode'))
+            return munits.AxisInfo(
+                majfmt=mticker.FormatStrFormatter(fmt),
+            )
+        return None
+
+    @staticmethod
+    def convert(val, unit, axis):
+        logging.debug("Converting %r to %r", val, unit)
+        if isinstance(val, u.Quantity):
+            return val.to_value(unit)
+        elif isinstance(val, list) and val and isinstance(val[0], u.Quantity):
+            return [v.to_value(unit) for v in val]
+        else:
+            return val
+
+    @staticmethod
+    def default_units(x, axis):
+        logging.debug("Inferring units for %r", x)
+        if hasattr(x, 'unit'):
+            logging.debug("Returning %s", x.unit)
+            return x.unit
+        return None
+munits.registry[u.Quantity] = MplQuantityConverter()
+
+
+class QuantityTickFormatter(mticker.Formatter):
+    def __call__(self, x, pos=None):
+        logging.debug("tick formatter called for %r", x)
+        return str(x)
 
 class Grapher:
     def __init__(self):
@@ -170,23 +235,20 @@ from(bucket: defaultBucket)
                     row[r["_field"]] = value
                 rows.append(row)
             out[result] = QTable(rows)
-        logging.debug("Got qtables %s", out)
         return out
 
     def plot_weathergram(self):
         tables = self.fetch_weathergram()
-        timestamps = list(chain.from_iterable(times for times,_ in tables.values()))
-        logging.debug("time = %s - %s", min(timestamps), max(timestamps))
 
         xmin = datetime.now() - timedelta(hours=24)
+        xmax = max(np.max(t["_time"]).plot_date for t in tables.values())
 
         fig = plt.figure(subplotpars=mpl.figure.SubplotParams(0,0,1,1))
-        ax = fig.add_axes((0,0,1,1), axes_class=axisartist.Axes)
-        ax.set_xlim(left=xmin, right=max(timestamps))
+        ax = host_axes((0,0,1,1), axes_class=axisartist.Axes, figure=fig)
+        ax.set_xlim(left=xmin, right=xmax)
         ax.xaxis.set_major_locator(mdates.DayLocator(tz=TZ))
         ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=range(0,24,6), tz=TZ))
         ax.xaxis.set_major_formatter(mdates.DateFormatter(' %A'))
-        ax.yaxis.set_major_formatter("{x:.0f}°C")
         ax.axis[:].invert_ticklabel_direction()
         ax.axis[:].major_ticks.set_tick_out(True)
         ax.axis[:].minor_ticks.set_tick_out(True)
@@ -201,8 +263,14 @@ from(bucket: defaultBucket)
         ax.axis["left"].major_ticklabels.set_fontfamily("lucida")
         ax.axis["left"].major_ticklabels.set_fontsize(11)
 
-        for name, (times, values) in tables.items():
-            ax.plot(times, values, linewidth=1.5 if name == "localtemp" else 0.8)
+        ax.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["temperature"], linewidth=0.8)
+        if 1 and "humidity" in tables["forecast"].colnames:
+            ax2 = ax.twinx()
+            ax2.axis["right"].major_ticklabels.set_visible(True)
+            ax2.axis["right"].invert_ticklabel_direction()
+            ax2.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["humidity"], linewidth=0.8)
+        ax.plot(tables["local"]["_time"].plot_date, tables["local"]["temp"], linewidth=1.5)
+
         ax.grid(axis='x', linestyle='dotted')
 
         if "forecasttemperature" in tables:
