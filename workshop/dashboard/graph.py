@@ -35,6 +35,9 @@ logging.getLogger("backend_pil").setLevel(logging.INFO)
 mpl.use("module://backend_pil")
 mpl.rc("axes", unicode_minus=False)
 
+u.imperial.enable()
+u.set_enabled_equivalencies(u.temperature())
+
 TZ = ZoneInfo('America/New_York')
 
 def inside(a, b):
@@ -123,7 +126,7 @@ class MplQuantityConverter(munits.ConversionInterface):
             )
         elif unit is not None:
             logging.debug("Inferring format for %r", unit)
-            fmt = '%g' + (unit.to_string('unicode'))
+            fmt = '%.0f' + (unit.to_string('unicode'))
             return munits.AxisInfo(
                 majfmt=mticker.FormatStrFormatter(fmt),
             )
@@ -249,6 +252,7 @@ from(bucket: defaultBucket)
         ax.xaxis.set_major_locator(mdates.DayLocator(tz=TZ))
         ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=range(0,24,6), tz=TZ))
         ax.xaxis.set_major_formatter(mdates.DateFormatter(' %A'))
+        ax.yaxis.set_units(u.imperial.deg_F)
         ax.axis[:].invert_ticklabel_direction()
         ax.axis[:].major_ticks.set_tick_out(True)
         ax.axis[:].minor_ticks.set_tick_out(True)
@@ -282,9 +286,10 @@ from(bucket: defaultBucket)
             for day in tg.groups:
                 for index, align in ((0, "top"), (-1, "bottom")):
                     temp = day["temperature"][index]
+                    text = ax.yaxis.get_major_formatter().format_data_short(ax.yaxis.convert_units(temp))
                     ann = ax.add_artist(
                         AutoAnnotation(
-                            f"{temp.value:.0f}{temp.unit.to_string('unicode')}",
+                            text,
                             (day["_time"][index].plot_date, temp),
                             fontfamily='lucida', fontsize=12,
                             verticalalignment=align,
