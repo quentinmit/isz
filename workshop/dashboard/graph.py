@@ -273,18 +273,23 @@ from(bucket: defaultBucket)
 
         ax.grid(axis='x', linestyle='dotted')
 
-        if "forecasttemperature" in tables:
-            times, values = tables["forecasttemperature"]
+        if forecast := tables.get("forecast"):
+            forecast.sort("temperature")
             majorticks = ax.xaxis.get_ticklocs()
-            indices = np.searchsorted(mdates.date2num(times), majorticks)
-            logging.debug("day breaks %s", indices)
-            maxindices = [np.argmax(a) for a in np.split(values, indices)] + np.pad(indices, (1,0))
-            hightimes = times[maxindices]
-            hightemps = values[maxindices]
-            #fig.canvas.draw()
-            for time, temp in zip(hightimes, hightemps):
-                ann = ax.add_artist(AutoAnnotation(f"{temp:.0f}°C", (time, temp), fontfamily='lucida', fontsize=12))
-
+            tickindices = np.searchsorted(majorticks, forecast["_time"].plot_date)
+            logging.debug("tick indices = %s", tickindices)
+            tg = forecast.group_by(tickindices)
+            for day in tg.groups:
+                for index, align in ((0, "top"), (-1, "bottom")):
+                    temp = day["temperature"][index]
+                    ann = ax.add_artist(
+                        AutoAnnotation(
+                            f"{temp.value:.0f}{temp.unit.to_string('unicode')}",
+                            (day["_time"][index].plot_date, temp),
+                            fontfamily='lucida', fontsize=12,
+                            verticalalignment=align,
+                        ),
+                    )
         return fig
 
     def subscribe(self):
