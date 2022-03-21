@@ -67,7 +67,7 @@ namespace isz {
 
   bool publish_json(const std::string &topic, const json::json_build_t &f,
                     uint8_t qos = 0, bool retain = false) {
-    std::string message = json::build_json(f);
+    std::string message = build_json(f);
     return esphome::mqtt::global_mqtt_client->publish(topic, message, qos, retain);
   }
 

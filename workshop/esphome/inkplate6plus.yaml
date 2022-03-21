@@ -555,7 +555,8 @@ display:
   - id: weather
     widgets:
       vertical:
-      - horizontal: # Weather
+      - maximum_size: [infinite, preferred]
+        horizontal: # Weather
         - maximum_size: preferred
           alignment: top left
           vertical: # Local temperatures
