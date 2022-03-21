@@ -97,6 +97,10 @@ sensor:
   - platform: wifi_signal
     id: wifi_signal_dBm
     update_interval: 120s
+  - platform: uptime
+    name: Uptime Sensor
+    id: uptime_sensor
+    update_interval: 60s
   - platform: homeassistant
     entity_id: weather.accuweather
     attribute: temperature
@@ -742,7 +746,21 @@ display:
               font: medium_32
               align: baseline left
         - text:
-            text: "local uptime"
+            text: !lambda |
+              id(uptime_sensor).update();
+              int seconds = round(id(uptime_sensor).raw_state);
+              int days = seconds / (24 * 3600);
+              seconds = seconds % (24 * 3600);
+              int hours = seconds / 3600;
+              seconds = seconds % 3600;
+              int minutes = seconds /  60;
+              seconds = seconds % 60;
+              return "Up " + (
+                (days ? to_string(days) + "d " : "") +
+                (hours ? to_string(hours) + "h " : "") +
+                (minutes ? to_string(minutes) + "m " : "") +
+                (to_string(seconds) + "s")
+              );
             font: medium_32
             align: center
         - horizontal:
