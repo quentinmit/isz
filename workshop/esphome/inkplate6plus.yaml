@@ -11,7 +11,12 @@ external_components:
 
 # Enable logging
 logger:
-#  level: VERBOSE
+  #level: VERBOSE
+  logs:
+    inkplate: DEBUG
+    esp-idf: DEBUG
+    wifi: DEBUG
+    mqtt: DEBUG
 
 # Enable Home Assistant API
 api:
@@ -496,21 +501,14 @@ font:
         'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
         'è']
 
-graph:
-- id: hometempgraph
-  sensor: outdoor_temp
-  duration: 30min
-  width: 400
-  height: 200
-
 mqtt_image:
 
 display:
 - platform: inkplate6
   id: inkplate_display
   greyscale: false
-  partial_updating: false
-  update_interval: 60s
+  partial_updating: true
+  update_interval: 600s
   model: inkplate_6_plus
 
   ckv_pin: 32
@@ -559,6 +557,7 @@ display:
       vertical:
       - horizontal: # Weather
         - maximum_size: preferred
+          alignment: top left
           vertical: # Local temperatures
           - horizontal:
             - text:
@@ -593,10 +592,10 @@ display:
             - text:
                 text: "°F"
                 font: medium_24
-          - graph:
-              graph_id: hometempgraph
-        - vertical: # Main weather
-          - horizontal:
+        - alignment: top
+          vertical: # Main weather
+          - maximum_size: preferred
+            horizontal:
             - vertical:
               - text:
                   text: !lambda |
@@ -642,7 +641,8 @@ display:
                     return "????" "/?" "?/??";
                   font: bold_40
                   align: top center
-          - horizontal:
+          - maximum_size: preferred
+            horizontal:
             - text:
                 text: !lambda |
                   if (id(weather_icon).state == "clear-night") { return "\U000F0594"; }
@@ -662,7 +662,8 @@ display:
                   if (id(weather_icon).state == "exceptional") { return "\U000F0F38";}
                   return "\U000F1531";
                 font: conditions
-            - vertical:
+            - maximum_size: preferred
+              vertical:
               - text:
                   format: "%2.0f°"
                   sensor: weather_temp
@@ -678,6 +679,7 @@ display:
                     sensor: weather_temp_high
                     font: medium_40
         - maximum_size: preferred
+          alignment: top right
           vertical: # Extra weather data
           - horizontal:
             - text:
@@ -704,7 +706,8 @@ display:
           size_topic: livingroom/inkplate/meteogram/size
           image_topic: livingroom/inkplate/meteogram/image
         preferred_size: [200, 100]
-      - horizontal:
+      - maximum_size: [infinite, preferred]
+        horizontal:
         - button:
             content:
               text:
