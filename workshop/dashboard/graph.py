@@ -174,7 +174,7 @@ class Grapher:
             "defaultBucket": "icestationzebra",
             "windowPeriod": timedelta(minutes=10),
             "timeRangeStart": timedelta(hours=-30),
-            "timeRangeStop": timedelta(days=3),
+            "timeRangeStop": timedelta(days=4),
         }
 
     def fetch_weathergram(self):
@@ -268,7 +268,7 @@ from(bucket: defaultBucket)
         ax.axis["left"].major_ticklabels.set_fontsize(11)
 
         ax.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["temperature"], linewidth=0.8)
-        if 1 and "humidity" in tables["forecast"].colnames:
+        if 0 and "humidity" in tables["forecast"].colnames:
             ax2 = ax.twinx()
             ax2.axis["right"].major_ticklabels.set_visible(True)
             ax2.axis["right"].invert_ticklabel_direction()
@@ -283,7 +283,9 @@ from(bucket: defaultBucket)
             tickindices = np.searchsorted(majorticks, forecast["_time"].plot_date)
             logging.debug("tick indices = %s", tickindices)
             tg = forecast.group_by(tickindices)
-            for day in tg.groups:
+            for i, day in enumerate(tg.groups):
+                if i == 0:
+                    continue
                 for index, align in ((0, "top"), (-1, "bottom")):
                     temp = day["temperature"][index]
                     text = ax.yaxis.get_major_formatter().format_data_short(ax.yaxis.convert_units(temp))
@@ -331,7 +333,12 @@ def main():
         return
     g.subscribe()
     while True:
-        g.send_graphs()
+        try:
+            g.send_graphs()
+        except KeyboardInterrupt:
+            raise
+        except:
+            logging.exception("Failed to generate graphs")
         time.sleep(60)
 
 
