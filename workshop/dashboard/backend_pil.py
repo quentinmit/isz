@@ -14,7 +14,7 @@ from matplotlib._pylab_helpers import Gcf
 from matplotlib.backend_bases import (
      FigureCanvasBase, FigureManagerBase, GraphicsContextBase, RendererBase)
 from matplotlib.figure import Figure
-from matplotlib.font_manager import FontManager, FontProperties, FontEntry
+from matplotlib.font_manager import FontManager, FontProperties, FontEntry, findfont
 from matplotlib.path import Path
 from matplotlib.transforms import Affine2D
 
@@ -160,6 +160,19 @@ CHARSET_ENCODING""".split()
         return font
 
 fontmanager = BitmapFontManager("fonts/cache/", ["fonts/", "/opt/local/share/fonts/100dpi", "/opt/local/share/fonts/misc"])
+
+def loadfont(prop):
+    _log.debug("Loading font for %s", prop)
+    ttfpath = prop.get_file()
+    if not ttfpath:
+        try:
+            ttfpath = findfont(prop, fallback_to_default=False)
+        except ValueError:
+            pass
+    if ttfpath:
+        _log.debug("Loading TTF font: %s", ttfpath)
+        return ImageFont.truetype(ttfpath, size=int(prop.get_size()))
+    return fontmanager.loadfont(prop)
 
 class DashedImageDraw(ImageDraw.ImageDraw):
 
@@ -409,8 +422,7 @@ class RendererPIL(RendererBase):
         mtext : `matplotlib.text.Text`
             The original text object to be rendered.
         """
-        #font = self._get_font(prop)
-        font = fontmanager.loadfont(prop)
+        font = loadfont(prop)
         mask = font.getmask(s, self.draw.fontmode)
         angle = round(angle/90)
         if angle != 0:
@@ -432,8 +444,7 @@ class RendererPIL(RendererBase):
         return self.im.width, self.im.height
 
     def get_text_width_height_descent(self, s, prop, ismath):
-        #font = self._get_font(prop)
-        font = fontmanager.loadfont(prop)
+        font = loadfont(prop)
         width, height = self.draw.textsize(s, font=font)
         return width, height, 0.2*height
         #bbox = self.draw.textbbox((0,0), s)

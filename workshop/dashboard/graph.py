@@ -6,6 +6,7 @@ import io
 from itertools import chain
 import json
 import logging
+from pathlib import Path
 import os
 import sys
 import time
@@ -157,6 +158,64 @@ class QuantityTickFormatter(mticker.Formatter):
         logging.debug("tick formatter called for %r", x)
         return str(x)
 
+_ICON_GLYPHS = {
+    "cloudy": "\U000F0590",
+    "cloudy-alert": "\U000F0F2F",
+    "cloudy-arrow-right": "\U000F0E6E",
+    "fog": "\U000F0591",
+    "hail": "\U000F0592",
+    "hazy": "\U000F0F30",
+    "hurricane": "\U000F0898",
+    "lightning": "\U000F0593",
+    "lightning-rainy": "\U000F067E",
+    "night": "\U000F0594",
+    "night-partly-cloudy": "\U000F0F31",
+    "partly-cloudy": "\U000F0595",
+    "partly-lightning": "\U000F0F32",
+    "partly-rainy": "\U000F0F33",
+    "partly-snowy": "\U000F0F34",
+    "partly-snowy-rainy": "\U000F0F35",
+    "pouring": "\U000F0596",
+    "rainy": "\U000F0597",
+    "snowy": "\U000F0598",
+    "snowy-heavy": "\U000F0F36",
+    "snowy-rainy": "\U000F067F",
+    "sunny": "\U000F0599",
+    "sunny-alert": "\U000F0F37",
+    "sunny-off": "\U000F14E4",
+    "sunset": "\U000F059A",
+    "sunset-down": "\U000F059B",
+    "sunset-up": "\U000F059C",
+    "tornado": "\U000F0F38",
+    "windy": "\U000F059D",
+    "windy-variant": "\U000F059E",
+}
+
+_CONDITION_ICON_TO_MDI_ICON = {
+    # Consider using condition codes instead
+    "01d": "sunny",
+    "01n": "night",
+    "02d": "partly-cloudy", # 11-25% clouds
+    "02n": "night-partly-cloudy",
+    "03d": "partly-cloudy", # 25-50% clouds
+    "03n": "night-partly-cloudy",
+    "04d": "cloudy", # 51%+
+    "04n": "cloudy", # 51%+
+    "09d": "rainy",
+    "09n": "rainy",
+    "10d": "partly-rainy",
+    "10n": "rainy",
+    "11d": "lightning",
+    "11n": "lightning",
+    "13d": "snowy",
+    "13n": "snowy",
+    "50d": "fog",
+    "50n": "fog",
+}
+
+_MATERIAL_ICON_FONT = "../esphome/fonts/materialdesignicons-webfont.ttf"
+
+
 class Grapher:
     def __init__(self):
         self.influx_client = InfluxDBClient(url="https://influx.isz.wtf", token=os.getenv("INFLUX_TOKEN"), org="icestationzebra")
@@ -188,7 +247,7 @@ field_units = ["temp": "deg_C", "temperature": "deg_C", "humidity": "%"]
 from(bucket: defaultBucket)
   |> range(start: timeRangeStart, stop: timeRangeStop)
   |> filter(fn: (r) => r["_measurement"] == "weather")
-  |> filter(fn: (r) => r["_field"] == "temperature" or r["_field"] == "humidity")
+  |> filter(fn: (r) => r["_field"] == "temperature" or r["_field"] == "humidity" or r["_field"] == "condition_icon")
   |> filter(fn: (r) => r["city"] == "Cambridge")
   |> filter(fn: (r) => r["city_id"] == "4931972")
   |> group(columns: ["host", "_measurement", "_field", "_time"], mode:"by")
@@ -233,8 +292,8 @@ from(bucket: defaultBucket)
                 row = {"_time": Time(t)}
                 for r in measurements[t]:
                     value = r["_value"]
-                    if "_unit" in r.values:
-                        value *= u.Unit(r["_unit"])
+                    if unit := r.values.get("_unit"):
+                        value *= u.Unit(unit)
                     row[r["_field"]] = value
                 rows.append(row)
             out[result] = QTable(rows)
@@ -297,6 +356,20 @@ from(bucket: defaultBucket)
                             verticalalignment=align,
                         ),
                     )
+            forecast.sort("_time")
+            for row in forecast:
+                icon = row["condition_icon"]
+                time = row["_time"].plot_date
+                icon = _CONDITION_ICON_TO_MDI_ICON.get(icon)
+                ax.annotate(
+                    _ICON_GLYPHS[icon],
+                    xy=(time, 0),
+                    xycoords=("data", "axes fraction"),
+                    verticalalignment="bottom",
+                    horizontalalignment="center",
+                    fontproperties=Path(_MATERIAL_ICON_FONT),
+                    fontsize=24,
+                )
         return fig
 
     def subscribe(self):
@@ -328,7 +401,7 @@ def main():
     g = Grapher()
     if args.test:
         fig = g.plot_weathergram()
-        fig.set_size_inches(1024/fig.dpi, 100/fig.dpi)
+        fig.set_size_inches(1024/fig.dpi, 200/fig.dpi)
         plt.savefig("out.png", format='png')
         return
     g.subscribe()
