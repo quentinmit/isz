@@ -20,6 +20,8 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.text as mtext
 import matplotlib.ticker as mticker
+from matplotlib.transforms import Bbox
+from matplotlib.tight_layout import get_renderer
 import matplotlib.units as munits
 from more_itertools import bucket
 import mpl_toolkits.axisartist as axisartist
@@ -299,13 +301,15 @@ from(bucket: defaultBucket)
             out[result] = QTable(rows)
         return out
 
-    def plot_weathergram(self):
+    def plot_weathergram(self, size_pixels=None):
         tables = self.fetch_weathergram()
 
         xmin = datetime.now() - timedelta(hours=24)
         xmax = max(np.max(t["_time"]).plot_date for t in tables.values())
 
         fig = plt.figure(subplotpars=mpl.figure.SubplotParams(0,0,1,1))
+        if size_pixels:
+            fig.set_size_inches((size_pixels[0]/fig.dpi, size_pixels[1]/fig.dpi))
         ax = host_axes((0,0,1,1), axes_class=axisartist.Axes, figure=fig)
         ax.set_xlim(left=xmin, right=xmax)
         ax.xaxis.set_major_locator(mdates.DayLocator(tz=TZ))
@@ -361,15 +365,28 @@ from(bucket: defaultBucket)
                 icon = row["condition_icon"]
                 time = row["_time"].plot_date
                 icon = _CONDITION_ICON_TO_MDI_ICON.get(icon)
-                ax.annotate(
+                ann = ax.annotate(
                     _ICON_GLYPHS[icon],
                     xy=(time, 0),
                     xycoords=("data", "axes fraction"),
-                    verticalalignment="bottom",
+                    verticalalignment="top",
                     horizontalalignment="center",
                     fontproperties=Path(_MATERIAL_ICON_FONT),
                     fontsize=24,
+                    xytext=(0, -6),
+                    textcoords='offset pixels',
                 )
+            width, height = fig.get_size_inches()
+            pos = ax.get_position()
+            r = get_renderer(fig)
+            logging.info("Renderer %s height %g dpi %g", r, height, fig.dpi)
+            annbbox = ann.get_window_extent(r)
+            logging.info("Axis position: %s", pos)
+            logging.info("Label position: %s", annbbox)
+            new = Bbox.from_extents(pos.xmin, pos.ymin+(1.2*annbbox.height/height/fig.dpi), pos.xmax, pos.ymax)
+            logging.info("New axis position: %s", new)
+            ax.set_position(new)
+            logging.info("New axis position: %s", ax.get_position())
         return fig
 
     def subscribe(self):
@@ -388,8 +405,7 @@ from(bucket: defaultBucket)
             self.height = int(payload["height"])
 
     def send_graphs(self):
-        fig = self.plot_weathergram()
-        fig.set_size_inches(self.width/fig.dpi, self.height/fig.dpi)
+        fig = self.plot_weathergram(size_pixels=(self.width, self.height))
         b = io.BytesIO()
         fig.savefig(b, format='png')
         self.mqtt_client.publish("livingroom/inkplate/meteogram/image", b.getvalue(), retain=True).wait_for_publish()
@@ -400,8 +416,7 @@ def main():
     args = parser.parse_args()
     g = Grapher()
     if args.test:
-        fig = g.plot_weathergram()
-        fig.set_size_inches(1024/fig.dpi, 200/fig.dpi)
+        fig = g.plot_weathergram(size_pixels=(1024, 200))
         plt.savefig("out.png", format='png')
         return
     g.subscribe()
