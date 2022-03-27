@@ -162,6 +162,7 @@ CHARSET_ENCODING""".split()
 fontmanager = BitmapFontManager("fonts/cache/", ["fonts/", "/opt/local/share/fonts/100dpi", "/opt/local/share/fonts/misc"])
 
 def loadfont(prop):
+    prop = FontProperties._from_any(prop)
     _log.debug("Loading font for %s", prop)
     ttfpath = prop.get_file()
     if not ttfpath:
@@ -348,6 +349,7 @@ class RendererPIL(RendererBase):
                 lambda pc: pc[1] == Path.MOVETO,
         ):
             points = [(points[0], self.im.height-points[1]) for points,_ in poly]
+            points = [(round(p[0]), round(p[1])) for p in points]
             if dashes:
                 self.draw.dotted_line(points, width=width)
                 #self.draw.dashed_line(points, dash=dashes, width=width)
@@ -423,17 +425,30 @@ class RendererPIL(RendererBase):
             The original text object to be rendered.
         """
         font = loadfont(prop)
-        mask = font.getmask(s, self.draw.fontmode)
+
+        coord = x,y
         angle = round(angle/90)
+        try:
+            mask, offset = font.getmask2(s, self.draw.fontmode, anchor='ls') # baseline
+        except AttributeError:
+            mask = font.getmask(s, self.draw.fontmode)
+            width, height = self.draw.textsize(s, font=font)
+            offset = 0, -0.8*height
+
+        if angle in (1,3):
+            coord = coord[0] + offset[1], coord[1] + offset[0]
+        else:
+            coord = coord[0] + offset[0], coord[1] + offset[1]
+
         if angle != 0:
             mask = mask.transpose(1+angle)
-        bbox = mask.getbbox()
-        width = bbox[2]-bbox[0]
-        height = bbox[3]-bbox[1]
-        y -= height
-        if angle in (1,3):
-            x -= width
-        self.draw.draw.draw_bitmap((x,y), mask, 0)
+
+        coord = round(coord[0]), round(coord[1])
+        if angle == 1:
+            coord = coord[0], coord[1] - mask.size[1]
+        elif angle == 2:
+            coord = coord[0] - mask.size[0], coord[1]
+        self.draw.draw.draw_bitmap(coord, mask, 0)
 
     def flipy(self):
         # docstring inherited
@@ -446,9 +461,12 @@ class RendererPIL(RendererBase):
     def get_text_width_height_descent(self, s, prop, ismath):
         font = loadfont(prop)
         width, height = self.draw.textsize(s, font=font)
+        try:
+            ascent, descent = font.getmetrics()
+            return width, ascent+descent, descent
+        except AttributeError:
+            pass
         return width, height, 0.2*height
-        #bbox = self.draw.textbbox((0,0), s)
-        #return bbox[2]-bbox[0], bbox[3]-bbox[2], 0.2*(bbox[2]-bbox[0])
 
     def new_gc(self):
         # docstring inherited
