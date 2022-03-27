@@ -18,6 +18,7 @@ from astropy.time import Time
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from matplotlib.font_manager import FontProperties
 import matplotlib.text as mtext
 import matplotlib.ticker as mticker
 from matplotlib.transforms import Bbox
@@ -26,6 +27,8 @@ import matplotlib.units as munits
 from more_itertools import bucket
 import mpl_toolkits.axisartist as axisartist
 from mpl_toolkits.axes_grid1.parasite_axes import host_axes
+from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+from mpl_toolkits.axes_grid1.axes_size import Fixed, SizeFromFunc
 import numpy as np
 
 from influxdb_client import InfluxDBClient, Point, Dialect
@@ -60,8 +63,6 @@ class AutoAnnotation(mtext.Annotation):
     def __init__(self, *args, horizontalalignment='center', verticalalignment='bottom', **kwargs):
         self.default_horizontalalignment = horizontalalignment
         self.default_verticalalignment = verticalalignment
-        kwargs['xytext'] = (0, 3)
-        kwargs['textcoords'] = 'offset pixels'
         super().__init__(*args, horizontalalignment=horizontalalignment, verticalalignment=verticalalignment, **kwargs)
 
     def _adjust_alignment(self, bbox, axbbox):
@@ -301,16 +302,15 @@ from(bucket: defaultBucket)
             out[result] = QTable(rows)
         return out
 
-    def plot_weathergram(self, size_pixels=None):
+    def plot_weathergram(self):
         tables = self.fetch_weathergram()
 
         xmin = datetime.now() - timedelta(hours=24)
         xmax = max(np.max(t["_time"]).plot_date for t in tables.values())
 
         fig = plt.figure(subplotpars=mpl.figure.SubplotParams(0,0,1,1))
-        if size_pixels:
-            fig.set_size_inches((size_pixels[0]/fig.dpi, size_pixels[1]/fig.dpi))
         ax = host_axes((0,0,1,1), axes_class=axisartist.Axes, figure=fig)
+        divider = make_axes_locatable(ax)
         ax.set_xlim(left=xmin, right=xmax)
         ax.xaxis.set_major_locator(mdates.DayLocator(tz=TZ))
         ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=range(0,24,6), tz=TZ))
@@ -361,32 +361,28 @@ from(bucket: defaultBucket)
                         ),
                     )
             forecast.sort("_time")
+            iconfont = FontProperties(size=24, fname=Path(_MATERIAL_ICON_FONT))
+            ax2 = divider.append_axes(
+                'bottom',
+                SizeFromFunc(
+                    lambda r: r.get_text_width_height_descent(_ICON_GLYPHS["night-partly-cloudy"], iconfont, False)[1]*1.2
+                ),
+                pad=0,
+                sharex=ax)
+            ax2.axis[:].major_ticks.set_visible(False)
+            ax2.axis[:].minor_ticks.set_visible(False)
             for row in forecast:
                 icon = row["condition_icon"]
                 time = row["_time"].plot_date
                 icon = _CONDITION_ICON_TO_MDI_ICON.get(icon)
-                ann = ax.annotate(
+                ann = ax2.annotate(
                     _ICON_GLYPHS[icon],
-                    xy=(time, 0),
+                    xy=(time, 0.5),
                     xycoords=("data", "axes fraction"),
-                    verticalalignment="top",
+                    verticalalignment="center",
                     horizontalalignment="center",
-                    fontproperties=Path(_MATERIAL_ICON_FONT),
-                    fontsize=24,
-                    xytext=(0, -6),
-                    textcoords='offset pixels',
+                    fontproperties=iconfont,
                 )
-            width, height = fig.get_size_inches()
-            pos = ax.get_position()
-            r = get_renderer(fig)
-            logging.info("Renderer %s height %g dpi %g", r, height, fig.dpi)
-            annbbox = ann.get_window_extent(r)
-            logging.info("Axis position: %s", pos)
-            logging.info("Label position: %s", annbbox)
-            new = Bbox.from_extents(pos.xmin, pos.ymin+(1.2*annbbox.height/height/fig.dpi), pos.xmax, pos.ymax)
-            logging.info("New axis position: %s", new)
-            ax.set_position(new)
-            logging.info("New axis position: %s", ax.get_position())
         return fig
 
     def subscribe(self):
@@ -405,7 +401,8 @@ from(bucket: defaultBucket)
             self.height = int(payload["height"])
 
     def send_graphs(self):
-        fig = self.plot_weathergram(size_pixels=(self.width, self.height))
+        fig = self.plot_weathergram()
+        fig.set_size_inches((self.width/fig.dpi, self.height/fig.dpi))
         b = io.BytesIO()
         fig.savefig(b, format='png')
         self.mqtt_client.publish("livingroom/inkplate/meteogram/image", b.getvalue(), retain=True).wait_for_publish()
@@ -416,7 +413,8 @@ def main():
     args = parser.parse_args()
     g = Grapher()
     if args.test:
-        fig = g.plot_weathergram(size_pixels=(1024, 200))
+        fig = g.plot_weathergram()
+        fig.set_size_inches((1024/fig.dpi, 200/fig.dpi))
         plt.savefig("out.png", format='png')
         return
     g.subscribe()
