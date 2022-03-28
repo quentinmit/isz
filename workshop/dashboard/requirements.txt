@@ -1,0 +1,7 @@
+Pillow
+astropy
+influxdb-client
+matplotlib
+more-itertools
+numpy
+paho-mqtt
