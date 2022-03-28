@@ -129,8 +129,7 @@ class MplQuantityConverter(munits.ConversionInterface):
                 label=unit.to_string(),
             )
         elif unit is not None:
-            logging.debug("Inferring format for %r", unit)
-            fmt = '%.0f' + (unit.to_string('unicode'))
+            fmt = '%.0f' + (unit.to_string('unicode').replace("%", "%%"))
             return munits.AxisInfo(
                 majfmt=mticker.FormatStrFormatter(fmt),
             )
@@ -138,7 +137,6 @@ class MplQuantityConverter(munits.ConversionInterface):
 
     @staticmethod
     def convert(val, unit, axis):
-        logging.debug("Converting %r to %r", val, unit)
         if isinstance(val, u.Quantity):
             return val.to_value(unit)
         elif isinstance(val, list) and val and isinstance(val[0], u.Quantity):
@@ -148,9 +146,7 @@ class MplQuantityConverter(munits.ConversionInterface):
 
     @staticmethod
     def default_units(x, axis):
-        logging.debug("Inferring units for %r", x)
         if hasattr(x, 'unit'):
-            logging.debug("Returning %s", x.unit)
             return x.unit
         return None
 munits.registry[u.Quantity] = MplQuantityConverter()
@@ -333,6 +329,7 @@ from(bucket: defaultBucket)
         ax.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["temperature"], linewidth=0.8)
         if 0 and "humidity" in tables["forecast"].colnames:
             ax2 = ax.twinx()
+            # Units don't work until https://github.com/matplotlib/matplotlib/issues/22714 is fixed
             ax2.axis["right"].major_ticklabels.set_visible(True)
             ax2.axis["right"].invert_ticklabel_direction()
             ax2.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["humidity"], linewidth=0.8)
