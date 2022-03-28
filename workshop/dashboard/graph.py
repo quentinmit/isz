@@ -91,13 +91,12 @@ class AutoAnnotation(mtext.Annotation):
         self.set_horizontalalignment(self.default_horizontalalignment)
         self.set_verticalalignment(self.default_verticalalignment)
         super().update_positions(renderer)
+
         bbox = mtext.Text.get_window_extent(self, renderer)
         axbbox = self.axes.get_window_extent(self, renderer)
-        logging.debug("Rendering %s at %s (%s) - inside %s", self.get_text(), bbox.extents, axbbox.extents, inside(bbox, axbbox))
         if not inside(bbox, axbbox):
             self._adjust_alignment(bbox, axbbox)
             super().update_positions(renderer)
-            logging.debug("new position %s", mtext.Text.get_window_extent(self, renderer))
 
 class MplQuantityConverter(munits.ConversionInterface):
     @staticmethod
