@@ -295,6 +295,10 @@
         # Force 1080p60
         hdmi_group=1
         hdmi_mode=16
+  - name: Enable memory cgroups
+    copy:
+      dest: /etc/default/raspi-extra-cmdline
+      content: cgroup_enable=memory cgroup_memory=1
   - copy:
       dest: /root/.gitconfig
       content: |
@@ -312,7 +316,7 @@
       # mkdir /boot/firmware/downstream
       # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/downstream/overlays
       # cp /usr/lib/linux-image-5.10.63-v8-isz+/broadcom/* /boot/firmware/downstream/
-      # echo "console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rw fsck.repair=yes net.ifnames=0  rootwait" >> /boot/firmware/downstream/cmdline.txt
+      # echo "console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rw fsck.repair=yes net.ifnames=0  rootwait cgroup_enable=memory cgroup_memory=1" >> /boot/firmware/downstream/cmdline.txt
       ## shouldn't be necessary
       # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/overlays
       ## install config.txt updates
