@@ -89,6 +89,7 @@
 [[inputs.diskio]]
 [[inputs.kernel]]
 [[inputs.docker]]
+interval = "60s"
   ## Docker Endpoint
   ##   To use TCP, set endpoint = "tcp://[ip]:[port]"
   ##   To use environment variables (ie, docker-machine), set endpoint = "ENV"
@@ -127,6 +128,8 @@
   ## Note that an empty array for both will include all labels as tags
   docker_label_include = []
   docker_label_exclude = []
+[[inputs.cgroup]]
+interval = "60s"
 [[inputs.mem]]
 [[inputs.net]]
 [[inputs.netstat]]
