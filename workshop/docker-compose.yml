@@ -82,6 +82,8 @@ services:
     restart: always
     build: dashboard
     env_file: dashboard.env
+    volumes:
+      - /srv/isz/workshop/esphome:/esphome
   homeassistant:
     container_name: homeassistant
     image: homeassistant/raspberrypi4-homeassistant:stable
