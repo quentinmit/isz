@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 import logging
 import math
+import os
 import os.path
 import gzip
 from PIL import Image, ImageDraw, ImageFont, BdfFontFile, PcfFontFile
@@ -32,6 +33,7 @@ class BitmapFontEntry(FontEntry):
 class BitmapFontManager(FontManager):
     def __init__(self, cache_dir, font_dirs):
         self.cache_dir = cache_dir
+        os.makedirs(self.cache_dir, exist_ok=True)
         self.font_dirs = font_dirs
         # Has to be named ttflist for _findfont_cached
         self.default = BitmapFontEntry(
