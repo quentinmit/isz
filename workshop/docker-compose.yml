@@ -47,6 +47,7 @@ services:
   telegraf:
     container_name: telegraf
     image: telegraf
+    user: root
     volumes:
       - /:/hostfs:ro
       - /var/run/docker.sock:/var/run/docker.sock
@@ -60,7 +61,6 @@ services:
       - HOST_MOUNT_PREFIX=/hostfs
     network_mode: host
     entrypoint:
-      - /entrypoint.sh
       - telegraf
       - --config
       - http://172.30.97.32:8086/api/v2/telegrafs/0702075a793e0000
