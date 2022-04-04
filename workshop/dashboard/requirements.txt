@@ -5,3 +5,5 @@ matplotlib
 more-itertools
 numpy
 paho-mqtt
+cherrypy
+Dozer

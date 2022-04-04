@@ -30,9 +30,13 @@ from mpl_toolkits.axes_grid1.parasite_axes import host_axes
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from mpl_toolkits.axes_grid1.axes_size import Fixed, SizeFromFunc
 import numpy as np
+from dozer import Dozer
+import cherrypy
 
 from influxdb_client import InfluxDBClient, Point, Dialect
 import paho.mqtt.client as mqtt
+
+from backend_pil import FigureCanvasPIL
 
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("matplotlib").setLevel(logging.INFO)
@@ -297,13 +301,14 @@ from(bucket: defaultBucket)
             out[result] = QTable(rows)
         return out
 
-    def plot_weathergram(self):
+    def plot_meteogram(self):
         tables = self.fetch_weathergram()
 
         xmin = datetime.now() - timedelta(hours=24)
         xmax = max(np.max(t["_time"]).plot_date for t in tables.values())
 
-        fig = plt.figure(subplotpars=mpl.figure.SubplotParams(0,0,1,1))
+        fig = mpl.figure.Figure(subplotpars=mpl.figure.SubplotParams(0,0,1,1))
+        FigureCanvasPIL(fig)
         ax = host_axes((0,0,1,1), axes_class=axisartist.Axes, figure=fig)
         divider = make_axes_locatable(ax)
         ax.set_xlim(left=xmin, right=xmax)
@@ -397,11 +402,28 @@ from(bucket: defaultBucket)
             self.height = int(payload["height"])
 
     def send_graphs(self):
-        fig = self.plot_weathergram()
+        fig = self.plot_meteogram()
         fig.set_size_inches((self.width/fig.dpi, self.height/fig.dpi))
         b = io.BytesIO()
         fig.savefig(b, format='png')
         self.mqtt_client.publish("livingroom/inkplate/meteogram/image", b.getvalue(), retain=True).wait_for_publish()
+
+class App:
+    def __init__(self, grapher):
+        self.grapher = grapher
+
+    @cherrypy.expose
+    def index(self):
+        return "Hello world!"
+
+    @cherrypy.expose
+    def meteogram(self):
+        fig = self.grapher.plot_meteogram()
+        #fig.set_size_inches((self.width/fig.dpi, self.height/fig.dpi))
+        b = io.BytesIO()
+        fig.savefig(b, format='png')
+        cherrypy.response.headers['Content-Type'] = 'image/png'
+        return b.getvalue()
 
 def main():
     parser = argparse.ArgumentParser(description='Graph generator')
@@ -409,20 +431,36 @@ def main():
     args = parser.parse_args()
     g = Grapher()
     if args.test:
-        fig = g.plot_weathergram()
+        fig = g.plot_meteogram()
         fig.set_size_inches((1024/fig.dpi, 200/fig.dpi))
         plt.savefig("out.png", format='png')
         return
-    g.subscribe()
-    while True:
-        try:
-            g.send_graphs()
-        except KeyboardInterrupt:
-            raise
-        except:
-            logging.exception("Failed to generate graphs")
-        time.sleep(60)
-
+    config = {
+        'environment': 'embedded',
+        'server.socket_port': '8080',
+        'global': {
+            'request.show_tracebacks': True
+        },
+    }
+    cherrypy.tree.mount(App(g), config={
+        '/': {
+            'wsgi.pipeline': [('Dozer', Dozer)]
+        },
+    })
+    cherrypy.config.update(config)
+    cherrypy.engine.start()
+    try:
+        g.subscribe()
+        while True:
+            try:
+                g.send_graphs()
+            except KeyboardInterrupt:
+                raise
+            except:
+                logging.exception("Failed to generate graphs")
+            time.sleep(60)
+    finally:
+        cherrypy.engine.exit()
 
 if __name__ == '__main__':
     main()
