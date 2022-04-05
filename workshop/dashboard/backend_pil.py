@@ -161,7 +161,15 @@ CHARSET_ENCODING""".split()
         self.font_cache[fname] = font
         return font
 
-fontmanager = BitmapFontManager("fonts/cache/", ["fonts/", "/opt/local/share/fonts/100dpi", "/opt/local/share/fonts/misc"])
+fontmanager = BitmapFontManager(
+    "fonts/cache/",
+    [
+        "fonts/",
+        "/usr/share/fonts/X11/100dpi",
+        "/usr/share/fonts/X11/misc",
+        "/opt/local/share/fonts/100dpi",
+        "/opt/local/share/fonts/misc",
+    ])
 
 def loadfont(prop):
     prop = FontProperties._from_any(prop)
