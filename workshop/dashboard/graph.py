@@ -111,12 +111,18 @@ class OverlapAnnotations(mtext.Annotation):
         super().__init__("", (0,0), *args, **kwargs)
 
     def draw(self, renderer):
+        bboxes = []
         renderer.open_group(__name__, gid=self.get_gid())
         for (x, y), text in zip(self.positions, self.labels):
             self.xyann = (x, y)
             self.set_text(text)
+            bbox = super().get_window_extent(renderer)
+            if bbox.count_overlaps(bboxes) > 0:
+                _log.debug("Skipping %s at (%s) due to overlap", self.get_text(), self.xyann)
+                continue
             _log.debug("Drawing %s at (%s)", self.get_text(), self.xyann)
             super().draw(renderer)
+            bboxes.append(bbox)
         renderer.close_group(__name__)
 
 class MplQuantityConverter(munits.ConversionInterface):
