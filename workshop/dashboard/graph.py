@@ -38,9 +38,7 @@ import paho.mqtt.client as mqtt
 
 from backend_pil import FigureCanvasPIL
 
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("matplotlib").setLevel(logging.INFO)
-logging.getLogger("backend_pil").setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 _log = logging.getLogger(__name__)
 
@@ -463,9 +461,10 @@ class App:
         return "Hello world!"
 
     @cherrypy.expose
-    def meteogram(self):
+    @cherrypy.tools.params()
+    def meteogram(self, width: int = 640, height: int = 480):
         fig = self.grapher.plot_meteogram()
-        #fig.set_size_inches((self.width/fig.dpi, self.height/fig.dpi))
+        fig.set_size_inches((width/fig.dpi, height/fig.dpi))
         b = io.BytesIO()
         fig.savefig(b, format='png')
         cherrypy.response.headers['Content-Type'] = 'image/png'
