@@ -8,7 +8,7 @@ COPY requirements.txt requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update -q
+RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && DEBIAN_FRONTEND=noninteractive apt-get update -q
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y xfonts-traditional xfonts-100dpi xfonts-base ttf-mscorefonts-installer
 
 COPY . .
