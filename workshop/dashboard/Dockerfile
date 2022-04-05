@@ -13,4 +13,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y xf
 
 COPY . .
 
-CMD [ "python3", "/app/graph.py" ]
+ENTRYPOINT [ "python3", "/app/graph.py" ]
+CMD [ "--mqtt" ]

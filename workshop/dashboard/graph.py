@@ -221,10 +221,6 @@ _MATERIAL_ICON_FONT = "../esphome/fonts/materialdesignicons-webfont.ttf"
 class Grapher:
     def __init__(self):
         self.influx_client = InfluxDBClient(url="https://influx.isz.wtf", token=os.getenv("INFLUX_TOKEN"), org="icestationzebra")
-        self.mqtt_client = mqtt.Client()
-        self.mqtt_client.connect("mqtt.isz.wtf")
-        self.mqtt_client.on_message = self.on_message
-        self.mqtt_client.loop_start()
 
         self.query_api = self.influx_client.query_api()
 
@@ -386,6 +382,23 @@ from(bucket: defaultBucket)
                 )
         return fig
 
+    def _connect_mqtt(self):
+        self.mqtt_client = mqtt.Client()
+        self.mqtt_client.connect("mqtt.isz.wtf")
+        self.mqtt_client.on_message = self.on_message
+        self.mqtt_client.loop_start()
+
+    def run_mqtt(self):
+        self.subscribe()
+        while True:
+            try:
+                self.send_graphs()
+            except KeyboardInterrupt:
+                raise
+            except:
+                logging.exception("Failed to generate graphs")
+            time.sleep(60)
+
     def subscribe(self):
         self.mqtt_client.subscribe("livingroom/inkplate/meteogram/size", 0)
 
@@ -428,6 +441,7 @@ class App:
 def main():
     parser = argparse.ArgumentParser(description='Graph generator')
     parser.add_argument('--test', action='store_true', help='generate one image to out.png and exit')
+    parser.add_argument('--mqtt', action='store_true', help='generate images on mqtt')
     args = parser.parse_args()
     g = Grapher()
     if args.test:
@@ -449,18 +463,12 @@ def main():
     })
     cherrypy.config.update(config)
     cherrypy.engine.start()
-    try:
-        g.subscribe()
-        while True:
-            try:
-                g.send_graphs()
-            except KeyboardInterrupt:
-                raise
-            except:
-                logging.exception("Failed to generate graphs")
-            time.sleep(60)
-    finally:
-        cherrypy.engine.exit()
-
+    if args.mqtt:
+        try:
+            g.run_mqtt()
+        finally:
+            cherrypy.engine.exit()
+    else:
+        cherrypy.engine.block()
 if __name__ == '__main__':
     main()
