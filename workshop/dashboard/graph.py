@@ -420,6 +420,7 @@ from(bucket: defaultBucket)
         self.mqtt_client.loop_start()
 
     def run_mqtt(self):
+        self._connect_mqtt()
         self.subscribe()
         while True:
             try:
