@@ -42,6 +42,8 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("matplotlib").setLevel(logging.INFO)
 logging.getLogger("backend_pil").setLevel(logging.INFO)
 
+_log = logging.getLogger(__name__)
+
 mpl.use("module://backend_pil")
 mpl.rc("axes", unicode_minus=False)
 
@@ -101,6 +103,21 @@ class AutoAnnotation(mtext.Annotation):
         if not inside(bbox, axbbox):
             self._adjust_alignment(bbox, axbbox)
             super().update_positions(renderer)
+
+class OverlapAnnotations(mtext.Annotation):
+    def __init__(self, positions, labels, *args, **kwargs):
+        self.positions = positions
+        self.labels = labels
+        super().__init__("", (0,0), *args, **kwargs)
+
+    def draw(self, renderer):
+        renderer.open_group(__name__, gid=self.get_gid())
+        for (x, y), text in zip(self.positions, self.labels):
+            self.xyann = (x, y)
+            self.set_text(text)
+            _log.debug("Drawing %s at (%s)", self.get_text(), self.xyann)
+            super().draw(renderer)
+        renderer.close_group(__name__)
 
 class MplQuantityConverter(munits.ConversionInterface):
     @staticmethod
@@ -368,18 +385,28 @@ from(bucket: defaultBucket)
                 sharex=ax)
             ax2.axis[:].major_ticks.set_visible(False)
             ax2.axis[:].minor_ticks.set_visible(False)
-            for row in forecast:
-                icon = row["condition_icon"]
-                time = row["_time"].plot_date
-                icon = _CONDITION_ICON_TO_MDI_ICON.get(icon)
-                ann = ax2.annotate(
-                    _ICON_GLYPHS[icon],
-                    xy=(time, 0.5),
+            ax2.add_artist(
+                OverlapAnnotations(
+                    [(x,0.5) for x in forecast["_time"].plot_date],
+                    [_ICON_GLYPHS[_CONDITION_ICON_TO_MDI_ICON.get(icon)] for icon in forecast["condition_icon"]],
                     xycoords=("data", "axes fraction"),
                     verticalalignment="center",
                     horizontalalignment="center",
                     fontproperties=iconfont,
                 )
+            )
+            # for row in forecast:
+            #     icon = row["condition_icon"]
+            #     time = row["_time"].plot_date
+            #     icon = _CONDITION_ICON_TO_MDI_ICON.get(icon)
+            #     ann = ax2.annotate(
+            #         _ICON_GLYPHS[icon],
+            #         xy=(time, 0.5),
+            #         xycoords=("data", "axes fraction"),
+            #         verticalalignment="center",
+            #         horizontalalignment="center",
+            #         fontproperties=iconfont,
+            #     )
         return fig
 
     def _connect_mqtt(self):
@@ -442,7 +469,13 @@ def main():
     parser = argparse.ArgumentParser(description='Graph generator')
     parser.add_argument('--test', action='store_true', help='generate one image to out.png and exit')
     parser.add_argument('--mqtt', action='store_true', help='generate images on mqtt')
+    parser.add_argument('--verbose', action='store_true', help='emit debug logs')
     args = parser.parse_args()
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.getLogger("matplotlib").setLevel(logging.DEBUG)
+        logging.getLogger("backend_pil").setLevel(logging.DEBUG)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.INFO)
     g = Grapher()
     if args.test:
         fig = g.plot_meteogram()
