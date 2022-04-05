@@ -248,15 +248,9 @@ class Grapher:
         self.width = 1024
         self.height = 100
 
-        self.p = {
-            "defaultBucket": "icestationzebra",
-            "windowPeriod": timedelta(minutes=10),
-            "timeRangeStart": timedelta(hours=-30),
-            "timeRangeStop": timedelta(days=4),
-        }
-
-    def fetch_weathergram(self):
-        tables = self.query_api.query("""
+    def fetch_weathergram(self, days=4):
+        tables = self.query_api.query(
+            """
 import "experimental"
 import "strings"
 import "dict"
@@ -293,7 +287,13 @@ from(bucket: defaultBucket)
   //|> drop(columns: ["sensor", "name", "host"])
   |> map(fn: (r) => ({r with _unit: dict.get(dict: field_units, key: r._field, default: "")}))
   |> yield(name: "local")
-""", params=self.p)
+""",
+            params={
+                "defaultBucket": "icestationzebra",
+                "windowPeriod": timedelta(minutes=10),
+                "timeRangeStart": timedelta(hours=-30),
+                "timeRangeStop": timedelta(days=days),
+            })
 
         # First, group tables by the "result" column:
         results = bucket(tables, lambda t: t.records[0]['result'])
@@ -318,8 +318,8 @@ from(bucket: defaultBucket)
             out[result] = QTable(rows)
         return out
 
-    def plot_meteogram(self):
-        tables = self.fetch_weathergram()
+    def plot_meteogram(self, days=4):
+        tables = self.fetch_weathergram(days)
 
         xmin = datetime.now() - timedelta(hours=24)
         xmax = max(np.max(t["_time"]).plot_date for t in tables.values())
@@ -463,8 +463,8 @@ class App:
 
     @cherrypy.expose
     @cherrypy.tools.params()
-    def meteogram(self, width: int = 640, height: int = 480):
-        fig = self.grapher.plot_meteogram()
+    def meteogram(self, width: int = 640, height: int = 480, days: int = 4):
+        fig = self.grapher.plot_meteogram(days)
         fig.set_size_inches((width/fig.dpi, height/fig.dpi))
         b = io.BytesIO()
         fig.savefig(b, format='png')
