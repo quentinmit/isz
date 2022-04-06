@@ -355,7 +355,12 @@ class RendererPIL(RendererBase):
         # "dotted" defaults to [0.8,1.32]
         #print(dashes)
         for poly in split_before(
-                path.iter_segments(transform, snap=True, simplify=True, curves=False, clip=clip),
+                path.iter_segments(
+                    transform,
+                    snap=True,
+                    simplify=True,
+                    curves=False,
+                    clip=clip),
                 lambda pc: pc[1] == Path.MOVETO,
         ):
             points = [(points[0], self.im.height-points[1]) for points,_ in poly]
@@ -364,7 +369,20 @@ class RendererPIL(RendererBase):
                 self.draw.dotted_line(points, width=width)
                 #self.draw.dashed_line(points, dash=dashes, width=width)
             else:
+                # TODO: Switch to ImageDraw.Outline
+                # o = ImageDraw.Outline()
+                # o.move, o.line, o.curve, etc.
+                # self.draw.shape(o)
                 self.draw.line(points, fill=0, width=width)
+                fill = rgbFace is not None and sum(rgbFace[:3])/3 < 0.9
+                #_log.debug("Fill color %s fill %s", rgbFace, fill)
+                if fill:
+                    _log.debug("Filling polygon %s", points)
+                    self.draw.polygon(points,
+                                      fill=0,
+                                      outline=0,
+                                      #width=width,
+                                      )
 
     # draw_markers is optional, and we get more correct relative
     # timings by leaving it out.  backend implementers concerned with

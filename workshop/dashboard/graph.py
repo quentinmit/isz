@@ -255,12 +255,12 @@ import "experimental"
 import "strings"
 import "dict"
 
-field_units = ["temp": "deg_C", "temperature": "deg_C", "humidity": "%"]
+field_units = ["temp": "deg_C", "temperature": "deg_C", "humidity": "%", "wind_degrees": "deg", "wind_speed": "m/s"]
 
 from(bucket: defaultBucket)
   |> range(start: timeRangeStart, stop: timeRangeStop)
   |> filter(fn: (r) => r["_measurement"] == "weather")
-  |> filter(fn: (r) => r["_field"] == "temperature" or r["_field"] == "humidity" or r["_field"] == "condition_icon")
+  |> filter(fn: (r) => r["_field"] == "temperature" or r["_field"] == "humidity" or r["_field"] == "condition_icon" or r._field == "wind_degrees" or r._field == "wind_speed")
   |> filter(fn: (r) => r["city"] == "Cambridge")
   |> filter(fn: (r) => r["city_id"] == "4931972")
   |> group(columns: ["_measurement", "_field", "_time"], mode:"by")
@@ -347,7 +347,6 @@ from(bucket: defaultBucket)
         ax.axis["left"].major_ticklabels.set_fontfamily("lucida")
         ax.axis["left"].major_ticklabels.set_fontsize(11)
 
-        ax.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["temperature"], linewidth=0.8)
         if 0 and "humidity" in tables["forecast"].colnames:
             ax2 = ax.twinx()
             # Units don't work until https://github.com/matplotlib/matplotlib/issues/22714 is fixed
@@ -359,6 +358,9 @@ from(bucket: defaultBucket)
         ax.grid(axis='x', linestyle='dotted')
 
         if forecast := tables.get("forecast"):
+            ax.plot(forecast["_time"].plot_date, forecast["temperature"], linewidth=0.8)
+
+            # Plot min and max temperature
             forecast.sort("temperature")
             majorticks = ax.xaxis.get_ticklocs()
             tickindices = np.searchsorted(majorticks, forecast["_time"].plot_date)
@@ -378,6 +380,33 @@ from(bucket: defaultBucket)
                             verticalalignment=align,
                         ),
                     )
+
+            # Plot wind barbs
+            if "wind_speed" in forecast.columns and "wind_degrees" in forecast.columns:
+                ax2 = divider.append_axes(
+                    'bottom',
+                    Fixed(20/72.),
+                    pad=0,
+                    sharex=ax)
+                ax2.axis[:].major_ticks.set_visible(False)
+                ax2.axis[:].minor_ticks.set_visible(False)
+                ax2.axis[:].major_ticklabels.set_visible(False)
+                ax2.axis[:].minor_ticklabels.set_visible(False)
+                ax2.axis[:].set_visible(False)
+                ax2.axis("off")
+                wind_speed = forecast["wind_speed"].to(u.imperial.mile/u.hour).value
+                # wind_angle is direction wind is blowing FROM, clockwise from north
+                wind_angle = ((450-180)*u.degree-forecast["wind_degrees"]).to(u.radian).value
+                # barbs takes the direction the shaft should point, so we subtract 180 degrees.
+                wind_u = wind_speed * np.cos(wind_angle)
+                wind_v = wind_speed * np.sin(wind_angle)
+                ax2.barbs(
+                    forecast["_time"].plot_date, np.zeros(forecast["_time"].shape),
+                    wind_u, wind_v,
+                    length=6,
+                    pivot="middle",
+                )
+            # Plot condition icons
             forecast.sort("_time")
             iconfont = FontProperties(size=24, fname=Path(_MATERIAL_ICON_FONT))
             ax2 = divider.append_axes(
@@ -389,6 +418,10 @@ from(bucket: defaultBucket)
                 sharex=ax)
             ax2.axis[:].major_ticks.set_visible(False)
             ax2.axis[:].minor_ticks.set_visible(False)
+            ax2.axis[:].major_ticklabels.set_visible(False)
+            ax2.axis[:].minor_ticklabels.set_visible(False)
+            ax2.axis[:].set_visible(False)
+            ax2.axis("off")
             ax2.add_artist(
                 OverlapAnnotations(
                     [(x,0.5) for x in forecast["_time"].plot_date],
