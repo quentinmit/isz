@@ -1,3 +1,44 @@
+# Pin configuration:
+# 3.3V
+# RESET
+# SVP/GPIO36
+# SVN/GPIO39
+# GPIO34 IR Demod RX
+# GPIO35 IR Mod RX
+# GPIO32 IR TX
+# GPIO33
+# GPIO25
+# GPIO26
+# GPIO27
+# GPIO14
+# GPIO12
+# GND IR Ground
+# GPIO13
+# SD2/GPIO9 *Internal flash
+# SD3/GPIO10 *Internal flash
+# CND/GPIO11 *Internal flash
+# 5V IR Power
+
+# GND CEC Shield
+# GPIO23
+# GPIO22
+# TX/GPIO1
+# RX/GPIO3
+# GPIO21
+# GND CEC Ground
+# GPIO19 CEC Data
+# GPIO18
+# GPIO5
+# GPIO17
+# GPIO16
+# GPIO4
+# GPIO0
+# GPIO2
+# GPIO15
+# SD1/GPIO8 *Internal flash
+# SDD/GPIO7 *Internal flash
+# CLK/GPIO6 *Internal flash
+
 esphome:
   name: livingroom-esphome
 # Until arduino-esp32 2.0.0+ is the default, add 4* to the stack size in .esphome/platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp
@@ -8,7 +49,11 @@ esphome:
 #    build_flags:
 #    - -DCONFIG_ARDUINO_LOOP_STACK_SIZE=16384
 
-#external_components:
+external_components:
+- source: github://johnboiles/esphome-hdmi-cec
+  components:
+  - hdmi_cec
+
 #  - source: github://quentinmit/esphome@remote
 #    components: [ remote_receiver ]
 #    refresh: 60s
@@ -35,6 +80,18 @@ mqtt:
   broker: !secret mqtt_broker
   discovery: false
   on_json_message:
+  - topic: livingroom/cec/tx
+    then:
+    - lambda: |
+        uint8_t destination = 0;
+        if (x.containsKey("destination")) {
+          destination = x["destination"];
+        }
+        std::vector<uint8_t> data;
+        for(JsonVariantConst v : x["data"].as<JsonArrayConst>()) {
+          data.push_back(v.as<uint8_t>());
+        }
+        id(my_hdmi_cec).send_data(5, destination, data);
   - topic: livingroom/ir/tx
     then:
     - if:
@@ -132,3 +189,41 @@ remote_transmitter:
   carrier_duty_percent: 50%
 
 <<: !include include/livingroom-esphome-ir.yaml
+
+hdmi_cec:
+  id: my_hdmi_cec
+  # The initial logical address -- corresponds to device type. This may be
+  # reassigned if there are other devices of the same type on the CEC bus.
+  address: 0x05 # Audio system
+  # Promiscuous mode can be enabled to allow receiving messages not intended for us
+  promiscuous_mode: true
+  # Typically the physical address is discovered based on the point-to-point
+  # topology of the HDMI connections using the DDC line. We don't have access
+  # to that so we just hardcode a physical address.
+  physical_address: 0x4000
+  pin: GPIO19
+  on_message:
+#    - then:
+#        - lambda: |-
+#            ESP_LOGD("mqtt-ir-trigger", "Unknown type \"%s\"", foo);
+#        - logger.log: 
+#    - opcode: 0xC3 # Request ARC start
+#      then:
+#        - hdmi_cec.send: # Report ARC started
+#            destination: 0x0
+#            data: [ 0xC1 ]
+    - opcode: 0x46 # Give OSD name
+      destination: 0x05
+      then:
+        - hdmi_cec.send:
+            destination: 0x0
+            data: [0x47, 0x65, 0x73, 0x70, 0x68, 0x6F, 0x6D, 0x65] # esphome
+#    - opcode: 0x71 # Give audio status
+#      source: 0x0 # From the TV
+#      then:
+#        - hdmi_cec.send:
+#            destination: 0x0
+#            data: [ 0x7A, 0x7F ]
+#    - data: [0x44, 0x41] # User control pressed: volume up
+#      then:
+#        - logger.log: "Volume up"
