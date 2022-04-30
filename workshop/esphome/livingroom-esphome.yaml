@@ -41,13 +41,11 @@
 
 esphome:
   name: livingroom-esphome
-# Until arduino-esp32 2.0.0+ is the default, add 4* to the stack size in .esphome/platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp
-#  platformio_options:
-#    platform: https://github.com/platformio/platform-espressif32.git#feature/arduino-upstream
-#    platform_packages:
-#    - framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#2.0.2
-#    build_flags:
-#    - -DCONFIG_ARDUINO_LOOP_STACK_SIZE=16384
+  platformio_options:
+    platform: platformio/espressif32@4.2.0
+    build_flags:
+    # 4* the default stack size
+    - -DARDUINO_LOOP_STACK_SIZE=32768
 
 external_components:
 - source: ../../../esphome/esphome/components
@@ -63,9 +61,9 @@ external_components:
 
 esp32:
   board: nodemcu-32s
-#  framework:
-#    type: arduino
-#    version: 2.0.2
+  framework:
+    type: arduino
+    version: 2.0.2
 
 # Enable logging
 logger:
