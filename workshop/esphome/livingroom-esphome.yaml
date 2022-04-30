@@ -50,9 +50,12 @@ esphome:
 #    - -DCONFIG_ARDUINO_LOOP_STACK_SIZE=16384
 
 external_components:
-- source: github://johnboiles/esphome-hdmi-cec
+- source: ../../../esphome/esphome/components
   components:
   - hdmi_cec
+#- source: github://johnboiles/esphome@hdmi-cec
+#  components:
+#  - hdmi_cec
 
 #  - source: github://quentinmit/esphome@remote
 #    components: [ remote_receiver ]
@@ -200,7 +203,7 @@ hdmi_cec:
   # Typically the physical address is discovered based on the point-to-point
   # topology of the HDMI connections using the DDC line. We don't have access
   # to that so we just hardcode a physical address.
-  physical_address: 0x4000
+  physical_address: 0x4001
   pin: GPIO19
   on_message:
 #    - then:

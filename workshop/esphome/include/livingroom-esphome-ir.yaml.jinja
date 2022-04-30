@@ -38,6 +38,8 @@ mqtt:
 #}
 
 button:
+- platform: safe_mode
+  name: "Living Room Restart (Safe Mode)"
 {{ device_buttons("Receiver", receiver_ir) }}
 {{ device_buttons("TV", tv_ir) }}
 {{ device_buttons("HDMI Switch", hdmi_switch_ir) }}
