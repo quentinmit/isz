@@ -85,14 +85,18 @@ mqtt:
     then:
     - lambda: |
         uint8_t destination = 0;
+        uint8_t source = 5;
         if (x.containsKey("destination")) {
           destination = x["destination"];
+        }
+        if (x.containsKey("source")) {
+          source = x["source"];
         }
         std::vector<uint8_t> data;
         for(JsonVariantConst v : x["data"].as<JsonArrayConst>()) {
           data.push_back(v.as<uint8_t>());
         }
-        id(my_hdmi_cec).send_data(5, destination, data);
+        id(my_hdmi_cec).send_data(source, destination, data);
   - topic: livingroom/ir/tx
     then:
     - if:
@@ -201,9 +205,28 @@ hdmi_cec:
   # Typically the physical address is discovered based on the point-to-point
   # topology of the HDMI connections using the DDC line. We don't have access
   # to that so we just hardcode a physical address.
-  physical_address: 0x4001
+  physical_address: 0x1000
   pin: GPIO19
   on_message:
+    - then:
+      - mqtt.publish_json:
+          topic: livingroom/cec/rx
+          payload: |-
+            root["source"] = source;
+            root["destination"] = destination;
+            JsonArray array = root.createNestedArray("data");
+            for (int n: data) {
+              array.add(n);
+            }
+            if (data.size() >= 1) {
+              root["opcode"] = data[0];
+            }
+    - data: [0x44, 0x41] # Press: volume up
+      then:
+      - button.press: ir_receiver_vol_up
+    - data: [0x44, 0x42] # Press: volume down
+      then:
+      - button.press: ir_receiver_vol_down
 #    - then:
 #        - lambda: |-
 #            ESP_LOGD("mqtt-ir-trigger", "Unknown type \"%s\"", foo);
