@@ -17,6 +17,14 @@
       friendly_name: Underlight L
       supported_features: 40
       state: 'on'
+    light.underlight_c:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 255
+      friendly_name: Underlight C
+      supported_features: 40
+      state: 'on'
 - id: '1642699468234'
   name: Night
   entities:
@@ -31,9 +39,15 @@
     light.underlight_l:
       supported_color_modes:
       - brightness
-      color_mode: brightness
-      brightness: 13
       friendly_name: Underlight L
+      supported_features: 40
+      state: 'off'
+    light.underlight_c:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 20
+      friendly_name: Underlight C
       supported_features: 40
       state: 'on'
 - id: '1644127210350'
@@ -53,5 +67,13 @@
       color_mode: brightness
       brightness: 128
       friendly_name: Underlight L
+      supported_features: 40
+      state: 'on'
+    light.underlight_c:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 128
+      friendly_name: Underlight C
       supported_features: 40
       state: 'on'
