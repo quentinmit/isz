@@ -1,3 +1,23 @@
+# Pin configuration:
+# GPIO 00 - #FLASH
+# GPIO 01 - Green LED
+# GPIO 02 - "RX" (UART1 TX)
+# GPIO 03 - "TX" (UART0 RX) PIR Sensor
+# GPIO 04 - W2 MOSFET
+# GPIO 05 - Red LED
+# GPIO 06 - SD_CLK
+# GPIO 07 - SD_D0
+# GPIO 08 - SD_D1
+# GPIO 09 - SD_D2
+# GPIO 10 - SD_D3
+# GPIO 11 - SD_CMD
+# GPIO 12 - B MOSFET
+# GPIO 13 - G MOSFET
+# GPIO 14 - W1 MOSFET
+# GPIO 15 - R MOSFET
+# GPIO 16/XPD_DCDC
+# TOUT
+
 esphome:
   name: bedroom-lights
 
@@ -6,6 +26,7 @@ esp8266:
 
 # Enable logging
 logger:
+  hardware_uart: UART1
 
 # Enable Home Assistant API
 api:
@@ -25,6 +46,12 @@ wifi:
 
 captive_portal:
 
+status_led:
+  # Red LED
+  pin:
+    number: GPIO5
+    inverted: yes
+
 sensor:
   - platform: wifi_signal
     name: "WiFi Signal bedroom-lights"
@@ -43,10 +70,12 @@ output:
     id: pwm_g
     min_power: 0.0005
     zero_means_zero: true
-#  - platform: esp8266_pwm
-#    pin: 12
-#    frequency: 1000 Hz
-#    id: pwm_b
+  - platform: esp8266_pwm
+    pin: 12
+    frequency: 1000 Hz
+    id: pwm_b
+    min_power: 0.0005
+    zero_means_zero: true
 #  - platform: esp8266_pwm
 #    pin: 14
 #    frequency: 1000 Hz
@@ -55,6 +84,11 @@ output:
 #    pin: 4
 #    frequency: 1000 Hz
 #    id: pwm_w2
+  - platform: gpio
+    id: led_green
+    pin:
+      number: GPIO1
+      inverted: yes
 
 light:
   - platform: monochromatic
@@ -65,3 +99,55 @@ light:
     id: underlight_l
     name: "Underlight L"
     output: pwm_g
+  - platform: monochromatic
+    id: underlight_c
+    name: "Underlight C"
+    output: pwm_b
+    on_state:
+    - binary_sensor.template.publish:
+        id: nightlight_auto_on
+        state: OFF
+
+binary_sensor:
+- platform: gpio
+  pin: GPIO3
+  id: bedroom_motion
+  name: "Bedroom Motion"
+  device_class: motion
+- platform: template
+  id: nightlight_auto_on
+  name: "Nightlight Auto On"
+  device_class: running
+  entity_category: diagnostic
+- platform: template
+  id: bedroom_motion_slow
+  name: "Bedroom Motion Slow"
+  device_class: motion
+  lambda: |
+    return id(bedroom_motion).state;
+  filters:
+  - delayed_off: 1min
+  on_press:
+  - if:
+      condition:
+        light.is_off: underlight_c
+      then:
+      - light.turn_on:
+          id: underlight_c
+          brightness: 5%
+      - binary_sensor.template.publish:
+          id: nightlight_auto_on
+          state: ON
+      else:
+      - binary_sensor.template.publish:
+          id: nightlight_auto_on
+          state: OFF
+  on_release:
+  - if:
+      condition:
+        binary_sensor.is_on: nightlight_auto_on
+      then:
+      - light.turn_off:
+          id: underlight_c
+- platform: template
+  id: nightlight_auto
