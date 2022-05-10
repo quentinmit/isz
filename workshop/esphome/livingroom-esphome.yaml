@@ -205,7 +205,7 @@ hdmi_cec:
   # Typically the physical address is discovered based on the point-to-point
   # topology of the HDMI connections using the DDC line. We don't have access
   # to that so we just hardcode a physical address.
-  physical_address: 0x1000
+  physical_address: 0x3000
   pin: GPIO19
   on_message:
     - then:
@@ -236,6 +236,14 @@ hdmi_cec:
 #        - hdmi_cec.send: # Report ARC started
 #            destination: 0x0
 #            data: [ 0xC1 ]
+    - destination: 0x05
+      opcode: 0x8F # Give Power Status
+      then:
+      - lambda: |
+          std::vector<uint8_t> out_data;
+          out_data.push_back(0x90); // Report Power Status
+          out_data.push_back(0x00); // On
+          id(my_hdmi_cec).send_data(5, source, out_data);
     - opcode: 0x46 # Give OSD name
       destination: 0x05
       then:
