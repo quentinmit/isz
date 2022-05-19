@@ -227,3 +227,47 @@ ir_icons:
   exit: mdi:exit-to-app
   return: mdi:arrow-back
   display: mdi:information
+
+frigidaire_ac:
+  # address: 0xF508
+  d: 8
+  s: 245
+  functions:
+    0: sleep
+    1: fan+
+    2: mode esave
+    # 3
+    4: fan-
+    # 5
+    6: timer
+    7: mode fan
+    # 8
+    9: mode cool
+    # 10
+    # 11
+    # 12
+    13: temp-
+    14: temp+
+    15: fan auto
+    # 16
+    17: power
+
+    # remote sensing
+
+    # start sends temp in high-order byte
+    175: remote sensing start
+    
+    239: remote sensing stop
+
+    # MSB is odd parity bit
+    # f[-2::-1] is temp in .25C increments
+    # 3D6F temp 80F ~26.5C
+    # 7C6F temp 81F ~27C
+    # FD6F temp 82F ~28C
+    # 436F temp 83F ~28C
+    # C26F temp 84F ~29C
+    # A26F temp 84F ~29C
+    # 236F temp 84F
+    # C26F
+    # 83 temp 82
+    # 83AF temp 82
