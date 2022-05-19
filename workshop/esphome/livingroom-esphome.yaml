@@ -133,8 +133,12 @@ mqtt:
               return command;
         else:
         - lambda: |-
-            const char* foo = x["type"];
-            ESP_LOGD("mqtt-ir-trigger", "Unknown type \"%s\"", foo);
+            if (x.containsKey("type") {
+              const char* foo = x["type"];
+              ESP_LOGD("mqtt-ir-trigger", "Unknown type \"%s\"", foo);
+            } else {
+              ESP_LOGD("mqtt-ir-trigger", "Missing type field");
+            }
 #          - logger.log:
 #              format: Unknown type "%s"
 #              args: [ 'x["type"].as<const String&>().c_str()' ]
@@ -221,6 +225,7 @@ hdmi_cec:
             if (data.size() >= 1) {
               root["opcode"] = data[0];
             }
+            root["ack"] = ack;
     - data: [0x44, 0x41] # Press: volume up
       then:
       - button.press: ir_receiver_vol_up
