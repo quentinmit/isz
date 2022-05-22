@@ -77,6 +77,9 @@ api:
 ota:
   password: !secret ota_password
 
+packages:
+  ir: !include include/livingroom-esphome-ir.yaml
+
 mqtt:
   broker: !secret mqtt_broker
   discovery: false
@@ -133,7 +136,7 @@ mqtt:
               return command;
         else:
         - lambda: |-
-            if (x.containsKey("type") {
+            if (x.containsKey("type")) {
               const char* foo = x["type"];
               ESP_LOGD("mqtt-ir-trigger", "Unknown type \"%s\"", foo);
             } else {
@@ -154,6 +157,10 @@ wifi:
     password: !secret fallback_password
 
 captive_portal:
+
+button:
+- platform: safe_mode
+  name: "Living Room Restart (Safe Mode)"
 
 remote_receiver:
   pin: GPIO34
@@ -196,8 +203,6 @@ remote_transmitter:
     mode:
       output: true
   carrier_duty_percent: 50%
-
-<<: !include include/livingroom-esphome-ir.yaml
 
 hdmi_cec:
   id: my_hdmi_cec
