@@ -46,6 +46,14 @@ wifi:
 
 captive_portal:
 
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+sun:
+  latitude: !secret latitude
+  longitude: !secret longitude
+
 status_led:
   # Red LED
   pin:
@@ -132,9 +140,17 @@ binary_sensor:
       condition:
         light.is_off: underlight_c
       then:
-      - light.turn_on:
-          id: underlight_c
-          brightness: 5%
+      - if:
+          condition:
+          - sun.is_above_horizon:
+          then:
+            - light.turn_on:
+                id: underlight_c
+                brightness: 50%
+          else:
+            - light.turn_on:
+                id: underlight_c
+                brightness: 5%
       - binary_sensor.template.publish:
           id: nightlight_auto_on
           state: ON
