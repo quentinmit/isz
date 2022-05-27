@@ -1,0 +1,64 @@
+# GPIO 0 - Red LED, active low
+# GPIO 1 - "RX" (UART0 TX)
+# GPIO 2 - Blue LED, active low
+# GPIO 3 - "TX" (UART0 RX)
+# GPIO 4 - Relay output, active high
+# GPIO 5 - Power monitoring CF pin
+# GPIO 12 - Power monitoring SEL pin
+# GPIO 13 - Button input, requires pullup R
+# GPIO 14 - Power monitoring CF1 pin
+# GPIO 15
+
+# Module pinout
+# Voltage sense?
+# Current sense -
+# Current sense +
+# Gnd / 1.5V?
+# GPIO 15 / RST?
+# GPIO 1 "RX" / GPIO 3 "TX"
+# GPIO 13 button / GPIO 2 blue LED
+# 3.3V? / GPIO 4 relay
+# GPIO 0 red LED / Vcc 3.3V
+
+
+substitutions:
+  name: kauf-plug-f6dafc
+packages:
+  kauf.plf10: github://KaufHA/PLF10/kauf-plug.yaml
+esphome:
+  name_add_mac_suffix: false
+
+#binary_sensor:
+#- platform: gpio
+#  pin: GPIO1
+#  name: GPIO1
+#- platform: gpio
+#  pin: GPIO3
+#  name: GPIO3
+#- platform: gpio
+#  pin: GPIO15
+#  name: GPIO15
+
+output:
+  - platform: esp8266_pwm
+    id: gpio15_pwm
+    frequency: 1000 Hz
+    pin: GPIO15
+    inverted: true
+
+light:
+  - platform: monochromatic
+    name: $friendly_name GPIO15
+    id: gpio15
+    output: gpio15_pwm
+    entity_category: config
+    default_transition_length: 0s
+    effects:
+      - flicker:
+          name: Flicker
+          alpha: 90%
+          intensity: 10%
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
