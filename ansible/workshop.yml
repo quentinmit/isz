@@ -38,6 +38,13 @@
       pki_realm: grafana.isz.wtf
       type: proxy
       proxy_pass: http://workshop-pi.isz:3000/
+      options: |
+        proxy_buffering off;
+      proxy_options: |
+        proxy_redirect http:// https://;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
     - name: [ influx.isz.wtf, influx.isz ]
       pki_realm: influx.isz.wtf
       type: proxy
