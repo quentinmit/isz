@@ -243,6 +243,9 @@ frigidaire_ac_ir:
   d: 8
   s: 245
   functions:
+    # When this mode is enabled, the selected temperature will increase by 2 °F 30 minutes after the mode is selected.
+    # The temperature will then increase by another 2 °F after an additional 30 minutes. This new temperature will be maintained for 7 hours before returning to the originally selected temperature.
+    # This ends the “Sleep” mode and the unit will continue to operate as originally programmed. You may also cancel sleep mode at any time by again pressing the sleep button.
     0: sleep
     1: fan+
     2: mode esave
