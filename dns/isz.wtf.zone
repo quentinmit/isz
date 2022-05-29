@@ -73,6 +73,8 @@ livingroom-esphome A 192.168.88.5
                    EUI48 58-BF-25-9A-6D-1C
 inkplate6plus    A 192.168.88.6
                  EUI48 84-0D-8E-39-1A-B4
+livingroom-ac    A 192.168.88.7
+                 EUI48 3C-61-05-F6-DA-FC
 
 ; DHCP range is 88.50-254
 
