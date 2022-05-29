@@ -76,24 +76,28 @@ sensor:
     bucket: icestationzebra
     queries_flux:
     - name: "Workshop Temperature"
+      unique_id: sensor.workshop_temperature
       unit_of_measurement: °F
       query: >
         filter(fn: (r) => r._measurement == "temp" and r.chip == "w1" and r.sensor == "00000284b00d")
         |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
       group_function: last
     - name: "Bedroom Bed Temperature"
+      unique_id: sensor.bedroom_bed_temperature
       unit_of_measurement: °F
       query: >
         filter(fn: (r) => r._measurement == "temp" and r.chip == "w1" and r.sensor == "00000284c7a7")
         |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
       group_function: last
     - name: "Outdoor Temperature"
+      unique_id: sensor.outdoor_temperature
       unit_of_measurement: °F
       query: >
         filter(fn: (r) => r._measurement == "temp" and r.chip == "w1" and r.sensor == "0120541bbaa7")
         |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
       group_function: last
     - name: "Eversource Power"
+      unique_id: sensor.eversource_power
       unit_of_measurement: W
       bucket: rtlamr
       query: >
@@ -104,6 +108,7 @@ sensor:
         |> map(fn: (r) => ({r with _value: float(v: r._value * 10 * 12)}))
       group_function: mean
     - name: "Download Speed"
+      unique_id: sensor.download_speed
       unit_of_measurement: Mbps
       bucket: speedtest
       range_start: -6h
@@ -112,6 +117,7 @@ sensor:
         |> filter(fn: (r) => r["_field"] == "download_mbs")
       group_function: last
     - name: "Upload Speed"
+      unique_id: sensor.upload_speed
       unit_of_measurement: Mbps
       bucket: speedtest
       range_start: -6h
