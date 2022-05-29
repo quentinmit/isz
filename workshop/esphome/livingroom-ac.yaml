@@ -25,6 +25,7 @@ substitutions:
 
 esphome:
   name: livingroom-ac
+  # N.B. DO NOT attempt to increase stack size beyond 4K. https://github.com/esp8266/Arduino/issues/6166
 
 esp8266:
   board: esp01_1m
@@ -34,8 +35,13 @@ logger:
   # Disable UART logging so we can reuse the pins.
   baud_rate: 0
 
+packages:
+  frigidaire_ac_ir: !include include/frigidaire-ac-ir.yaml
+
 # Enable Home Assistant API
 api:
+  # Don't reboot automatically.
+  reboot_timeout: 0s
 
 ota:
   password: !secret ota_password
@@ -77,21 +83,15 @@ binary_sensor:
   filters:
     - delayed_on: 10ms
 
-  on_press:
-    then:
-      switch.toggle: relay
+#  on_press:
+#    then:
+#      switch.toggle: relay
 
 button:
 - platform: safe_mode
   name: ${friendly_name} Restart (Safe Mode)
 - platform: restart
   name: ${friendly_name} Restart
-- platform: template
-  name: Living Room AC - Power
-  on_press:
-  - remote_transmitter.transmit_nec:
-      address: 0xF508
-      command: 0xEE11
 
 switch:
   # blue LED follows relay power state
@@ -106,7 +106,7 @@ switch:
   id: relay
   name: ${friendly_name} Power Outlet
   pin: GPIO4
-  restore_mode: RESTORE_DEFAULT_OFF
+  restore_mode: ALWAYS_ON
 
   # automatically make blue led equal relay state
   on_turn_on:
@@ -121,7 +121,7 @@ sensor:   # Power monitoring sensors output to Home Assistant
     inverted: True
   cf_pin: GPIO5
   cf1_pin: GPIO14
-  model: bl0937 # Actually HJL-01, but behaves more like BL0937 than HLW8012.
+  model: bl0937
   current_resistor: 0.001 # The value of the shunt resistor for current measurement.
   voltage_divider: 2078 #2401   # The value of the voltage divider on the board as (R_upstream + R_downstream) / R_downstream.
   power:
@@ -156,6 +156,25 @@ sensor:   # Power monitoring sensors output to Home Assistant
 - platform: dallas
   address: 0x6600000284ba8b28
   name: Living Room AC Temperature
+
+select:
+- platform: template
+  name: "Living Room AC Status"
+  optimistic: false
+  update_interval: 5s
+  options:
+  - Standby # 0.7W
+  - Fan On # 112W
+  - Cool On # 500W
+  set_action: []
+  lambda: !lambda |-
+    float power = id(wattage).state;
+    if (power > 150) {
+    return std::string("Cool On");
+    } else if (power > 100) {
+    return std::string("Fan On");
+    }
+    return std::string("Standby");
 
 remote_transmitter:
   pin: GPIO3

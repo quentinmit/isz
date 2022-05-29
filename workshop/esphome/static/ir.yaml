@@ -227,8 +227,18 @@ ir_icons:
   exit: mdi:exit-to-app
   return: mdi:arrow-back
   display: mdi:information
+  # AC
+  fan+: mdi:fan-plus
+  fan-: mdi:fan-minus
+  fan auto: mdi:fan
+  temp+: mdi:thermometer-plus
+  temp-: mdi:thermometer-minus
+  mode cool: mdi:snowflake
+  mode fan: mdi:fan
+  mode esave: mdi:brightness-auto
+  timer: mdi:timer
 
-frigidaire_ac:
+frigidaire_ac_ir:
   # address: 0xF508
   d: 8
   s: 245
