@@ -121,33 +121,28 @@ sensor:   # Power monitoring sensors output to Home Assistant
     inverted: True
   cf_pin: GPIO5
   cf1_pin: GPIO14
+  model: bl0937 # Actually HJL-01, but behaves more like BL0937 than HLW8012.
   current_resistor: 0.001 # The value of the shunt resistor for current measurement.
-  voltage_divider: 2401   # The value of the voltage divider on the board as (R_upstream + R_downstream) / R_downstream.
+  voltage_divider: 2078 #2401   # The value of the voltage divider on the board as (R_upstream + R_downstream) / R_downstream.
   power:
     name: ${friendly_name} Power
     unit_of_measurement: W
+    accuracy_decimals: 2
     id: wattage
-    filters:
-    - calibrate_linear:
-      - 0.0 -> 0.0
-      - 333.8 -> 60 # value with 60W bulb.
   current:
     name: ${friendly_name} Current
     unit_of_measurement: A
-    filters:
-    - calibrate_linear:
-      - 0.0 -> 0.0
-      - 0.6 -> 0.515  # value with 60W bulb.
+    accuracy_decimals: 3
   voltage:
     name: ${friendly_name} Voltage
     unit_of_measurement: V
-    filters:
-    - calibrate_linear:
-      - 0.0 -> 0.0
-      - 302.1 -> 118.85
-      # voltage scale: 101.5% of KAUF upstream scale
-  change_mode_every: 1
-  update_interval: 10s # 20 second effective update rate for Power, 40 second for Current and Voltage.
+    accuracy_decimals: 2
+  energy:
+    name: ${friendly_name} Total Energy
+    unit_of_measurement: Wh
+    accuracy_decimals: 2
+  change_mode_every: 2
+  update_interval: 5s # 20 second effective update rate for Power, 40 second for Current and Voltage.
 
 # Reports the total Power so-far each day, resets at midnight
 # See https://esphome.io/components/sensor/total_daily_energy.html
