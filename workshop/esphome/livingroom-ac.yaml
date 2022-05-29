@@ -65,7 +65,7 @@ status_led:
 
 binary_sensor:
 - platform: gpio
-  id: button
+  id: front_button
   name: Living Room AC Button
   pin:
     number: GPIO13
@@ -80,8 +80,14 @@ binary_sensor:
   on_press:
     then:
       switch.toggle: relay
+
+button:
+- platform: safe_mode
+  name: ${friendly_name} Restart (Safe Mode)
+- platform: restart
+  name: ${friendly_name} Restart
 - platform: template
-  name: Living Room AC Power
+  name: Living Room AC - Power
   on_press:
   - remote_transmitter.transmit_nec:
       address: 0xF508
