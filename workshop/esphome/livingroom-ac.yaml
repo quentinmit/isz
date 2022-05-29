@@ -1,13 +1,13 @@
 # GPIO 0 - Red LED, active low
-# GPIO 1 - "RX" (UART0 TX)
+# GPIO 1 - "RX" (UART0 TX) / 1-Wire
 # GPIO 2 - Blue LED, active low
-# GPIO 3 - "TX" (UART0 RX)
+# GPIO 3 - "TX" (UART0 RX) / IR LED
 # GPIO 4 - Relay output, active high
 # GPIO 5 - Power monitoring CF pin
 # GPIO 12 - Power monitoring SEL pin
 # GPIO 13 - Button input, requires pullup R
 # GPIO 14 - Power monitoring CF1 pin
-# GPIO 15
+# GPIO 15 - ??? (3.2V, resistor pulldown to ground)
 
 # Module pinout
 # Voltage sense?
@@ -22,42 +22,36 @@
 
 
 substitutions:
-  name: kauf-plug-f6dafc
+  name: livingroom-ac
 packages:
   kauf.plf10: github://KaufHA/PLF10/kauf-plug.yaml
 esphome:
   name_add_mac_suffix: false
+logger:
+  # Disable UART logging so we can reuse the pins.
+  baud_rate: 0
 
-#binary_sensor:
-#- platform: gpio
-#  pin: GPIO1
-#  name: GPIO1
-#- platform: gpio
-#  pin: GPIO3
-#  name: GPIO3
-#- platform: gpio
-#  pin: GPIO15
-#  name: GPIO15
+# voltage scale: 101.5%
 
-output:
-  - platform: esp8266_pwm
-    id: gpio15_pwm
-    frequency: 1000 Hz
-    pin: GPIO15
-    inverted: true
+remote_transmitter:
+  pin: GPIO3
+  carrier_duty_percent: 50%
 
-light:
-  - platform: monochromatic
-    name: $friendly_name GPIO15
-    id: gpio15
-    output: gpio15_pwm
-    entity_category: config
-    default_transition_length: 0s
-    effects:
-      - flicker:
-          name: Flicker
-          alpha: 90%
-          intensity: 10%
+dallas:
+- pin: GPIO1
+
+sensor:
+- platform: dallas
+  address: 0x6600000284ba8b28
+  name: Living Room AC Temperature
+
+button:
+- platform: template
+  name: AC Power
+  on_press:
+  - remote_transmitter.transmit_nec:
+      address: 0xF508
+      command: 0xEE11
 
 wifi:
   ssid: !secret wifi_ssid
