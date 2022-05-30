@@ -42,6 +42,19 @@ packages:
 api:
   # Don't reboot automatically.
   reboot_timeout: 0s
+  services:
+  - service: ir_tx_nec
+    variables:
+      address: int
+      f: int
+    then:
+      remote_transmitter.transmit_nec:
+        address: !lambda 'return address;'
+        command: !lambda |-
+          int command = 0;
+          uint8_t f8 = f;
+          command = f8 | (~f8) << 8;
+          return command;
 
 ota:
   password: !secret ota_password
