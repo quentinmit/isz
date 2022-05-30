@@ -169,6 +169,7 @@ sensor:   # Power monitoring sensors output to Home Assistant
 - platform: dallas
   address: 0x6600000284ba8b28
   name: Living Room AC Temperature
+  update_interval: 10s
 
 text_sensor:
 - platform: template
