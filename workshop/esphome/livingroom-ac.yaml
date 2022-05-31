@@ -39,6 +39,9 @@ logger:
 packages:
   frigidaire_ac_ir: !include include/frigidaire-ac-ir.yaml
 
+external_components:
+- source: ./my_components
+
 # Enable Home Assistant API
 api:
   # Don't reboot automatically.
@@ -170,6 +173,7 @@ sensor:   # Power monitoring sensors output to Home Assistant
 - platform: dallas
   address: 0x6600000284ba8b28
   name: Living Room AC Temperature
+  id: ac_output_temperature
   accuracy_decimals: 4
 
 text_sensor:
@@ -192,3 +196,9 @@ remote_transmitter:
 dallas:
 - pin: GPIO1
   update_interval: 10s
+
+climate:
+- platform: frigidaire_ac
+  name: Living Room AC
+  temperature_sensor: ac_output_temperature
+  power_sensor: wattage
