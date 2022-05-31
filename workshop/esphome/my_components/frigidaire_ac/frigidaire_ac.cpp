@@ -71,6 +71,7 @@ void FrigidaireACClimate::control(const climate::ClimateCall &call) {
     // Send mode to hardware
     if (this->mode == climate::CLIMATE_MODE_OFF) {
       send_ir_(IR::POWER);
+      this->target_temperature_f = 0;
     }
     if (new_preset == climate::CLIMATE_PRESET_ECO) {
       send_ir_(IR::MODE_ESAVE);
@@ -81,8 +82,10 @@ void FrigidaireACClimate::control(const climate::ClimateCall &call) {
         break;
       case climate::CLIMATE_MODE_FAN_ONLY:
         send_ir_(IR::MODE_FAN);
+        this->target_temperature_f = 0;
         break;
       case climate::CLIMATE_MODE_OFF:
+        this->target_temperature_f = 0;
         send_ir_(IR::POWER);
         break;
       default:
@@ -98,7 +101,11 @@ void FrigidaireACClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     // User requested target temperature change
     float temp = *call.get_target_temperature();
-    int8_t tempf = celsius_to_fahrenheit(temp);
+    this->target_temperature = fahrenheit_to_celsius((uint8_t)celsius_to_fahrenheit(temp));
+    changed = true;
+  }
+  int8_t tempf = celsius_to_fahrenheit(this->target_temperature);
+  if (this->mode == climate::CLIMATE_MODE_COOL && tempf != this->target_temperature_f) {
     // Send target temp to climate
     if (this->target_temperature_f > 0) {
       // Send delta
@@ -144,7 +151,6 @@ void FrigidaireACClimate::control(const climate::ClimateCall &call) {
     };
     this->fan_mode = fan_mode;
     changed = true;
-    ESP_LOGD(TAG, "fan_mode after: 0x%02X", *(this->fan_mode));
   }
   if (changed) {
     this->last_change_time_ = millis();
