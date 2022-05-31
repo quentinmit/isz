@@ -18,6 +18,8 @@ void FrigidaireACClimate::setup() {
   this->preset = climate::CLIMATE_PRESET_NONE;
   if (this->power_sensor_) {
     this->power_sensor_->add_on_state_callback([this](float power) {
+      climate::ClimateAction old_action = this->action;
+      climate::ClimateMode old_mode = this->mode;
       bool update_mode = millis() > (last_change_time_ + power_settling_time_);
       if (power > 150) {
         this->action = climate::CLIMATE_ACTION_COOLING;
@@ -32,7 +34,9 @@ void FrigidaireACClimate::setup() {
       } else {
         this->action = climate::CLIMATE_ACTION_IDLE;
       }
-      this->publish_state();
+      if (mode != old_mode || action != old_action) {
+        this->publish_state();
+      }
     });
   }
   auto restore = this->restore_state_();
@@ -96,8 +100,16 @@ void FrigidaireACClimate::control(const climate::ClimateCall &call) {
     float temp = *call.get_target_temperature();
     int8_t tempf = celsius_to_fahrenheit(temp);
     // Send target temp to climate
-    if (0) {
+    if (this->target_temperature_f > 0) {
       // Send delta
+      int32_t tempf_delta = tempf - this->target_temperature_f;
+      if (tempf_delta > 0) {
+        ESP_LOGD(TAG, "temp up %d steps", tempf_delta);
+        send_ir_(IR::TEMP_UP, tempf_delta, 50000);
+      } else if (tempf_delta < 0) {
+        ESP_LOGD(TAG, "temp down %d steps", -tempf_delta);
+        send_ir_(IR::TEMP_DOWN, -tempf_delta, 50000);
+      }
     } else {
       send_ir_(IR::TEMP_DOWN, TEMPF_MAX-TEMPF_MIN, 50000);
       uint8_t up_steps = tempf-TEMPF_MIN;

@@ -184,7 +184,7 @@ text_sensor:
     float power = id(wattage).state;
     if (power > 150) {
     return std::string("Cool On"); // 500W
-    } else if (power > 100) {
+    } else if (power > 50) {
     return std::string("Fan On"); // 112W
     }
     return std::string("Standby"); // 0.7W
