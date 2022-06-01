@@ -31,6 +31,8 @@ void FrigidaireACClimate::setup() {
         if (update_mode && this->mode == climate::CLIMATE_MODE_OFF) {
           this->mode = climate::CLIMATE_MODE_FAN_ONLY;
         }
+      } else if (this->mode == climate::CLIMATE_MODE_OFF) {
+        this->action = climate::CLIMATE_ACTION_OFF;
       } else {
         this->action = climate::CLIMATE_ACTION_IDLE;
       }
