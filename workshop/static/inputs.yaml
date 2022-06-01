@@ -1,6 +1,6 @@
 mikrotik_api:
-  - ip: 172.30.97.1
-    plaintext: True
+#  - ip: 172.30.97.1
+#    plaintext: True
   - ip: 172.30.97.2
     plaintext: True
   - ip: 172.30.97.3
@@ -10,7 +10,7 @@ mikrotik_swos:
   - ip: 172.30.97.17
   - ip: 172.30.97.18
 mikrotik_snmp:
-  - ip: 172.30.97.1
+#  - ip: 172.30.97.1
   - ip: 172.30.97.2
   - ip: 172.30.97.3
   - ip: 172.30.97.16
