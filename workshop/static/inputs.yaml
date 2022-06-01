@@ -20,7 +20,7 @@ ping_targets:
 - { host: overwatch.mit.edu }
 # Load https://lg.he.net/ in Chrome
 # Console run copy($x('//li[./input[@name="routers[]"]]').map(e => {const x = {'host': $x('input/@value', e)[0].value, 'country': $x('./label/span/img/@alt', e)[0].value, 'city': $x('./label/span',e)[0].innerText.slice(0, -5), 'datacenter': $x('./label', e)[0].firstChild.textContent.trim()}; if (x['country'] == 'US') {x['state'] = x['city'].slice(-2); x['city'] = x['city'].slice(0, -4);} if ((i = (t = $x('./label/@title',e)[0].value).indexOf(' - ')) > 0) {x['exchanges'] = t.slice(i+3).split(', ')} return x}))
-# $ pbpaste | yq eval '... style="" | (.[] | select(.exchanges) | .exchanges) style="flow"' - | pbcopy
+# $ pbpaste | yq eval '... style="" | (.[] | select(.exchanges) | .exchanges) style="flow" | (.[].country | select(. == "NO")) style="double"' - | pbcopy
 - host: core2.abq1.he.net
   country: US
   city: Albuquerque
@@ -695,7 +695,7 @@ ping_targets:
   datacenter: Enter Milan
   exchanges: [MIX, MINAP Milan, TOP-IX, Equinix Milan]
 - host: core1.osl1.he.net
-  country: NO
+  country: "NO"
   city: Oslo
   datacenter: STACK Infrastructure / Digiplex Norway, Oslo
   exchanges: [FIXO, NIX Oslo]
