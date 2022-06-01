@@ -21,7 +21,7 @@ ping_targets:
 # Load https://lg.he.net/ in Chrome
 # Console run copy($x('//li[./input[@name="routers[]"]]').map(e => {const x = {'host': $x('input/@value', e)[0].value, 'country': $x('./label/span/img/@alt', e)[0].value, 'city': $x('./label/span',e)[0].innerText.slice(0, -5), 'datacenter': $x('./label', e)[0].firstChild.textContent.trim()}; if (x['country'] == 'US') {x['state'] = x['city'].slice(-2); x['city'] = x['city'].slice(0, -4);} if ((i = (t = $x('./label/@title',e)[0].value).indexOf(' - ')) > 0) {x['exchanges'] = t.slice(i+3).split(', ')} return x}))
 # $ pbpaste | yq eval '... style="" | (.[] | select(.exchanges) | .exchanges) style="flow"' - | pbcopy
-- host: core1.abq1.he.net
+- host: core2.abq1.he.net
   country: US
   city: Albuquerque
   datacenter: H5 Data Centers ABQ 1, Albuquerque
@@ -33,12 +33,6 @@ ping_targets:
   datacenter: Equinix Ashburn (DC2)
   state: VA
   exchanges: [Equinix Ashburn, MegaIX Ashburn, DACS-IX East]
-- host: core1.atl1.he.net
-  country: US
-  city: Atlanta
-  datacenter: Digital Realty / Telx Atlanta (ATL1), 56 Marietta
-  state: GA
-  exchanges: [Digital Realty Atlanta IX (Telx-TIE)]
 - host: core1.aus1.he.net
   country: US
   city: Austin
@@ -49,13 +43,17 @@ ping_targets:
   city: Belle Plaine
   datacenter: Zayo NP MSP1, Belle Plaine
   state: MN
-  exchanges: [MICE]
 - host: core1.bos1.he.net
   country: US
   city: Boston
   datacenter: One Summer Boston
   state: MA
-  exchanges: [Boston Internet Exchange, Mass-IX]
+  exchanges: [Boston IX, Mass-IX]
+- host: core1.buf1.he.net
+  country: US
+  city: Buffalo
+  datacenter: 365 Data Centers BU1, Buffalo
+  state: NY
 - host: core2.yyc1.he.net
   country: CA
   city: Calgary, AB
@@ -66,12 +64,24 @@ ping_targets:
   city: Charlotte
   datacenter: Lumos / DC74 Data Center CLT-2 Charlotte
   state: NC
-- host: core1.cys1.he.net
+- host: core2.cys1.he.net
   country: US
   city: Cheyenne
   datacenter: ACT Cheyenne
   state: WY
 - host: core1.chi1.he.net
+  country: US
+  city: Chicago
+  datacenter: Equinix Chicago (CH1/CH2)
+  state: IL
+  exchanges: [Equinix Chicago, AMS-IX Chicago]
+- host: core2.chi1.he.net
+  country: US
+  city: Chicago
+  datacenter: Equinix Chicago (CH1/CH2)
+  state: IL
+  exchanges: [Equinix Chicago, AMS-IX Chicago]
+- host: core3.chi1.he.net
   country: US
   city: Chicago
   datacenter: Equinix Chicago (CH1/CH2)
@@ -95,19 +105,41 @@ ping_targets:
   datacenter: Equinix Dallas (DA1)
   state: TX
   exchanges: [Equinix Dallas, CyrusOne, MegaIX Dallas]
+- host: core1.dal2.he.net
+  country: US
+  city: Dallas
+  datacenter: Cologix DAL1, Dallas
+  state: TX
+- host: core1.dvn1.he.net
+  country: US
+  city: Davenport
+  datacenter: SFN IA, Davenport
+  state: IA
+  exchanges: [QCIX]
 - host: core1.den1.he.net
   country: US
   city: Denver
   datacenter: CoreSite Denver
   state: CO
   exchanges: [Any2 Denver, IX-Denver]
+- host: core1.den3.he.net
+  country: US
+  city: Denver
+  datacenter: 910Telecom, Denver
+  state: CO
+- host: core1.dsm1.he.net
+  country: US
+  city: Des Moines
+  datacenter: Connect, Des Moines
+  state: IA
+  exchanges: [' ']
 - host: core2.det1.he.net
   country: US
   city: Southfield
   datacenter: 123NET Detroit
   state: MI
   exchanges: [DET-IX]
-- host: core1.yeg1.he.net
+- host: core2.yeg1.he.net
   country: CA
   city: Edmonton, AB
   datacenter: Wolfpaw, Edmonton
@@ -117,6 +149,7 @@ ping_targets:
   city: Fargo
   datacenter: 702 Communications, Fargo
   state: ND
+  exchanges: [FMIX]
 - host: core3.fmt1.he.net
   country: US
   city: Fremont
@@ -127,24 +160,35 @@ ping_targets:
   city: Fremont
   datacenter: Hurricane Electric Fremont 2
   state: CA
-  exchanges: [FCIX, SFMIX, AMS-IX Bay Area]
+  exchanges: [FCIX, SFMIX, AMS-IX Bay Area, Lambda-IX]
 - host: core1.yhz1.he.net
   country: CA
   city: Halifax, NS
   datacenter: GTT Halifax HAL2, Halifax
   exchanges: [HFXIX]
+- host: core1.pdx2.he.net
+  country: US
+  city: Hillsboro
+  datacenter: EdgeConneX POR01, Portland
+  state: OR
 - host: core1.hnl1.he.net
   country: US
   city: Honolulu
   datacenter: DRFortress Honolulu
   state: HI
   exchanges: [DRF IX]
-- host: core1.hou1.he.net
+- host: core2.hou1.he.net
   country: US
   city: Houston
   datacenter: Consolidated Houston
   state: TX
-- host: core1.ind1.he.net
+- host: core2.hou2.he.net
+  country: US
+  city: Houston
+  datacenter: Netrality 1301 Fannin Houston
+  state: TX
+  exchanges: [HOUIX]
+- host: core2.ind1.he.net
   country: US
   city: Indianapolis
   datacenter: Lifeline Henry Street Indianapolis
@@ -156,6 +200,11 @@ ping_targets:
   datacenter: GoRack 421, Jacksonville
   state: FL
   exchanges: [JXIX]
+- host: core1.jax2.he.net
+  country: US
+  city: Jacksonville
+  datacenter: Cologix JAX1, Jacksonville
+  state: FL
 - host: core2.mci1.he.net
   country: US
   city: Kansas City
@@ -172,7 +221,8 @@ ping_targets:
   city: Las Vegas
   datacenter: Fiberhub Las Vegas
   state: NV
-- host: core1.lax1.he.net
+  exchanges: [Vegas-IX]
+- host: core2.lax1.he.net
   country: US
   city: Los Angeles
   datacenter: Equinix Los Angeles (LA1)
@@ -190,13 +240,24 @@ ping_targets:
   datacenter: 5NINES Madison
   state: WI
   exchanges: [MadIX]
-- host: core1.mia1.he.net
+- host: core1.mnz1.he.net
+  country: US
+  city: Manassas
+  datacenter: Iron Mountain VA-1, Manassas
+  state: VA
+- host: core2.mia1.he.net
   country: US
   city: Miami
   datacenter: Equinix MI1 Miami
   state: FL
   exchanges: [FL-IX, Equinix IX Miami]
 - host: core1.msp1.he.net
+  country: US
+  city: Minneapolis
+  datacenter: Cologix Minneapolis
+  state: MN
+  exchanges: [MICE]
+- host: core2.msp1.he.net
   country: US
   city: Minneapolis
   datacenter: Cologix Minneapolis
@@ -222,7 +283,7 @@ ping_targets:
   city: Montreal, QC
   datacenter: Cologix Montreal / CANIX 3
   exchanges: [QIX Montreal]
-- host: core1.bna1.he.net
+- host: core2.bna1.he.net
   country: US
   city: Nashville
   datacenter: 365 Data Centers NA1, Nashville
@@ -233,7 +294,12 @@ ping_targets:
   city: Garden City
   datacenter: Webair NY1, New York
   state: NY
-- host: core1.nyc4.he.net
+- host: core1.nyc3.he.net
+  country: US
+  city: New York
+  datacenter: Digital Realty NYC3 (32 AofA), New York
+  state: NY
+- host: core3.nyc4.he.net
   country: US
   city: New York
   datacenter: Equinix New York (NY9)
@@ -256,6 +322,11 @@ ping_targets:
   city: New York
   datacenter: Digital Realty / Telx 111 8th New York
   state: NY
+- host: core1.nyc8.he.net
+  country: US
+  city: New York
+  datacenter: CoreSite NY1, New York
+  state: NY
 - host: core1.nyc9.he.net
   country: US
   city: New York
@@ -272,13 +343,18 @@ ping_targets:
   datacenter: RACK59 Data Center, Oklahoma City
   state: OK
   exchanges: [iX-OKC]
-- host: core1.oma1.he.net
+- host: core2.oma1.he.net
   country: US
   city: Omaha
   datacenter: 1623 Farnam Omaha
   state: NE
   exchanges: [OmahaIX]
-- host: core1.pao1.he.net
+- host: core1.yow1.he.net
+  country: CA
+  city: Ottawa, ON
+  datacenter: PureColo, Ottawa
+  exchanges: [OGIX]
+- host: core2.pao1.he.net
   country: US
   city: Palo Alto
   datacenter: Equinix Palo Alto (SV8)
@@ -294,7 +370,7 @@ ping_targets:
   city: Phoenix
   datacenter: PhoenixNAP
   state: AZ
-  exchanges: [Phoenix IX]
+  exchanges: [Phoenix IX, DE-CIX Phoenix]
 - host: core1.pit1.he.net
   country: US
   city: Pittsburgh
@@ -307,18 +383,34 @@ ping_targets:
   datacenter: Pittock Building Portland
   state: OR
   exchanges: [NWAX]
+- host: core1.pdx3.he.net
+  country: US
+  city: Hillsboro
+  datacenter: Flexential PDX02 Hillsboro 2
+  state: OR
 - host: core1.pwm1.he.net
   country: US
   city: Portland
   datacenter: MFC Portland Regen Site, Portland
   state: ME
   exchanges: [NNENIX]
+- host: core1.yqb1.he.net
+  country: CA
+  city: Quebec City, QC
+  datacenter: Vantage, Quebec City
+  exchanges: [' ']
 - host: core1.rno1.he.net
   country: US
   city: Reno
   datacenter: Roller Network Reno
   state: NV
   exchanges: [TahoeIX]
+- host: core1.ric1.he.net
+  country: US
+  city: Ashland
+  datacenter: Pixel Factory, Ashland
+  state: VA
+  exchanges: [DE-CIX Richmond]
 - host: core1.rst1.he.net
   country: US
   city: Rochester
@@ -341,7 +433,7 @@ ping_targets:
   datacenter: H5 Data Centers SAT 1, San Antonio
   state: TX
   exchanges: [SAT-IX]
-- host: core1.sfo1.he.net
+- host: core2.sfo1.he.net
   country: US
   city: San Francisco
   datacenter: Digital Realty / Telx (SFR1) San Francisco
@@ -370,6 +462,28 @@ ping_targets:
   datacenter: Equinix Seattle (SE2), Westin Building
   state: WA
   exchanges: [Equinix Seattle, MegaIX Seattle, SIX]
+- host: core1.ewr2.he.net
+  country: US
+  city: Secaucus
+  datacenter: Equinix NY5, Secaucus
+  state: NJ
+- host: core1.fsd1.he.net
+  country: US
+  city: Sioux Falls
+  datacenter: SDN Communications, Sioux Falls
+  state: SD
+- host: core1.ska1.he.net
+  country: US
+  city: Spokane
+  datacenter: Neutron, Spokane
+  state: WA
+  exchanges: [SpokaneIX]
+- host: core2.stl1.he.net
+  country: US
+  city: St. Louis
+  datacenter: Netrality 210 N Tucker St. Louis
+  state: MO
+  exchanges: [MidWest-IX STL, STLIX]
 - host: core2.tpa1.he.net
   country: US
   city: Tampa
@@ -381,7 +495,7 @@ ping_targets:
   city: Toronto, ON
   datacenter: Equinix Toronto (TR1)
   exchanges: [Equinix Toronto, MegaIX Toronto, TorIX]
-- host: core1.yvr1.he.net
+- host: core2.yvr1.he.net
   country: CA
   city: Vancouver, BC
   datacenter: Cologix Vancouver
@@ -390,6 +504,17 @@ ping_targets:
   city: Virginia Beach
   datacenter: Globalinx, Virginia Beach
   state: VA
+- host: core1.orf2.he.net
+  country: US
+  city: Virginia Beach
+  datacenter: Telxius, Virginia Beach
+  state: VA
+  exchanges: [' ']
+- host: core1.ewr5.he.net
+  country: US
+  city: Wall
+  datacenter: NJFX, Wall
+  state: NJ
 - host: core1.ywg1.he.net
   country: CA
   city: Winnipeg, MB
@@ -399,7 +524,20 @@ ping_targets:
   country: NL
   city: Amsterdam
   datacenter: NIKHEF Amsterdam
-  exchanges: [AMS-IX, SPEED-IX, Asteroid Amsterdam IX, LSIX]
+  exchanges: [AMS-IX, Asteroid Amsterdam IX, Frys-IX, LSIX, SPEED-IX]
+- host: core2.ams2.he.net
+  country: NL
+  city: Amsterdam
+  datacenter: Equinix AM7, Amsterdam
+  exchanges: [NL-IX, Equinix Amsterdam]
+- host: core1.ams3.he.net
+  country: NL
+  city: Rozenburg
+  datacenter: Interxion AMS8, Amsterdam
+- host: core1.ams7.he.net
+  country: NL
+  city: Haarlem
+  datacenter: Iron Mountain AMS-1, Amsterdam
 - host: core1.ath1.he.net
   country: GR
   city: Koropi
@@ -409,7 +547,7 @@ ping_targets:
   country: ES
   city: Barcelona
   datacenter: Equinix BA1, Barcelona
-  exchanges: [CATNIX]
+  exchanges: [CATNIX, DE-CIX Barcelona, Equinix Barcelona]
 - host: core2.beg1.he.net
   country: RS
   city: Belgrade
@@ -419,13 +557,18 @@ ping_targets:
   country: DE
   city: Berlin
   datacenter: IPB CarrierColo Berlin
-  exchanges: [BCIX, ECIX Berlin]
+  exchanges: [BCIX, ECIX-BER]
+- host: core1.bio1.he.net
+  country: ES
+  city: Derio
+  datacenter: Telxius Derio Hub, Bilbao
+  exchanges: [' ']
 - host: core1.bts1.he.net
   country: SK
   city: Bratislava
   datacenter: Sitel, Bratislava
   exchanges: [NIX.SK, SIX.SK]
-- host: core1.bru1.he.net
+- host: core2.bru1.he.net
   country: BE
   city: Zaventem
   datacenter: Interxion Brussels
@@ -455,7 +598,7 @@ ping_targets:
   city: Dublin
   datacenter: Equinix Dublin (DB2)
   exchanges: [INEX LAN1, INEX LAN2]
-- host: core1.edi1.he.net
+- host: core2.edi1.he.net
   country: UK
   city: Edinburgh
   datacenter: Pulsant Edinburgh South Gyle, Edinburgh
@@ -486,19 +629,24 @@ ping_targets:
   datacenter: 4 Data Center, Katowice
 - host: core1.kbp1.he.net
   country: UA
-  city: Kiev
+  city: Kyiv
   datacenter: NewTelco Ukraine
-  exchanges: [DTEL-IX, GigaNET, UA-IX, PITER-IX Kiev]
+  exchanges: [DTEL-IX, GigaNET, UA-IX, PITER-IX Kyiv, 1-IX]
 - host: core1.lba1.he.net
   country: UK
   city: Leeds
   datacenter: aql Salem Church, Leeds
-  exchanges: [IX Leeds]
+  exchanges: [IX Leeds, IXBradford]
 - host: core1.lis1.he.net
   country: PT
   city: Lisbon
   datacenter: Equinix LS1, Lisbon
   exchanges: [GigaPix, Equinix Lisbon]
+- host: core3.lon1.he.net
+  country: UK
+  city: London
+  datacenter: Telehouse Docklands East
+  exchanges: [LoNAP]
 - host: core1.lon2.he.net
   country: UK
   city: London
@@ -508,6 +656,10 @@ ping_targets:
   country: UK
   city: London
   datacenter: Telehouse Docklands North
+- host: core1.lon7.he.net
+  country: UK
+  city: London
+  datacenter: Global Switch, London East
 - host: core1.lux1.he.net
   country: LU
   city: Bettembourg
@@ -523,7 +675,7 @@ ping_targets:
   city: Manchester
   datacenter: Equinix MA1, Manchester
   exchanges: [IXManchester (LINX), Equinix Manchester]
-- host: core1.mrs1.he.net
+- host: core2.mrs1.he.net
   country: FR
   city: Marseille
   datacenter: Interxion Marseille
@@ -543,15 +695,20 @@ ping_targets:
   datacenter: Enter Milan
   exchanges: [MIX, MINAP Milan, TOP-IX, Equinix Milan]
 - host: core1.osl1.he.net
-  country: "NO"
+  country: NO
   city: Oslo
-  datacenter: Digiplex Norway, Oslo
-  exchanges: [FIXO, NIX]
+  datacenter: STACK Infrastructure / Digiplex Norway, Oslo
+  exchanges: [FIXO, NIX Oslo]
 - host: core1.par2.he.net
   country: FR
   city: Paris
   datacenter: Telehouse Paris Voltaire
   exchanges: [Equinix Paris, France-IX Paris, LU-CIX]
+- host: core2.par3.he.net
+  country: FR
+  city: Paris
+  datacenter: Equinix Paris (PA2)
+  exchanges: [Equinix Paris]
 - host: core1.prg1.he.net
   country: CZ
   city: Prague
@@ -567,21 +724,25 @@ ping_targets:
   city: Roma
   datacenter: NaMeX
   exchanges: [NaMeX]
-- host: core1.sof1.he.net
+- host: core1.lon5.he.net
+  country: UK
+  city: Slough
+  datacenter: Equinix LD5, London
+- host: core2.sof1.he.net
   country: BG
   city: Sofia
   datacenter: Telepoint Colocation, Sofia
   exchanges: [BIX.BG, B-IX, NetIX, OM-NIX, T-CIX]
-- host: core1.sto1.he.net
-  country: SE
-  city: Stockholm
-  datacenter: Equinix Stockholm (SK1)
-  exchanges: [NetNod-A, NetNod-B, SOLIX, STHIX, Global-IX, DataIX, DataIX-2]
 - host: core1.tll1.he.net
   country: EE
   city: Tallinn
   datacenter: Elion Tallinn
   exchanges: [MSK-IX, RTIX, TLLIX]
+- host: core1.tia1.he.net
+  country: AL
+  city: Tirana
+  datacenter: ANIX, Tirana
+  exchanges: [ANIX]
 - host: core1.vie1.he.net
   country: AT
   city: Vienna
@@ -597,7 +758,7 @@ ping_targets:
   city: Warsaw
   datacenter: Equinix WA1 Warsaw
   exchanges: [Equinix Warsaw (PLIX), POZIX, THINX, TPIX Warsaw, IX.LODZ.PL]
-- host: core1.zag1.he.net
+- host: core2.zag1.he.net
   country: HR
   city: Zagreb
   datacenter: University of Zagreb, University Computing Centre SRCE
@@ -617,35 +778,67 @@ ping_targets:
   city: Auckland
   datacenter: DataCentre220, Auckland
   exchanges: [AKL-IX, APE, MegaIX Auckland]
+- host: core1.akl2.he.net
+  country: NZ
+  city: Auckland
+  datacenter: Vocus Albany, Auckland
+- host: core1.bne1.he.net
+  country: AU
+  city: Brisbane
+  datacenter: NEXTDC B1, Brisbane
+  exchanges: [EdgeIX Brisbane]
 - host: core1.gum1.he.net
   country: GU
   city: Mangilao, UOG STATION
   datacenter: UoG - Office of Information Technology, Guam
   exchanges: [MARIIX]
+- host: core1.mel2.he.net
+  country: AU
+  city: Melbourne
+  datacenter: NEXTDC M1, Melbourne
 - host: core1.per1.he.net
   country: AU
   city: Malaga
   datacenter: NEXTDC P1, Perth
   exchanges: [EdgeIX Perth, IX Australia WA, MegaIX Perth]
+- host: core1.mel1.he.net
+  country: AU
+  city: Melbourne
+  datacenter: Equinix ME1, Melbourne
+  exchanges: [EdgeIX Melbourne, Equinix Melbourne, MegaIX Melbourne, VIC-IX Melbourne]
 - host: core2.syd1.he.net
   country: AU
   city: Sydney
   datacenter: Equinix SY1, Sydney
   exchanges: [EdgeIX Sydney, Equinix Sydney, IX Australia NSW, MegaIX Sydney, EdgeIX Melbourne, CON-IX Brisbane]
+- host: core1.syd3.he.net
+  country: AU
+  city: Sydney
+  datacenter: NEXTDC S1, Sydney
+- host: core1.bkk1.he.net
+  country: TH
+  city: Bangkok
+  datacenter: TCC Technology Bangna, Bangkok
+  exchanges: [BKNIX]
 - host: core1.hkg1.he.net
   country: HK
   city: Hong Kong
   datacenter: MEGA-iAdvantage Hong Kong
-  exchanges: [AMS-IX HK, Equinix Hong Kong, HKIX, IAIX, BBIX Hong Kong]
+  exchanges: [AMS-IX HK, HKIX, IAIX, BBIX Hong Kong]
+- host: core2.hkg2.he.net
+  country: HK
+  city: Hong Kong
+  datacenter: Equinix Hong Kong (HK1)
+  exchanges: [Equinix Hong Kong]
 - host: core1.kul1.he.net
   country: MY
   city: Kuala Lumpur
   datacenter: AIMS, Kuala Lumpur
-  exchanges: [CSL Thai-IX Malaysia, MyIX]
+  exchanges: [CSL Thai-IX Malaysia, DE-CIX Kuala Lumpur, MyIX]
 - host: core1.mnl1.he.net
   country: PH
   city: Quezon City
-  datacenter: PLDT Diliman Manila
+  datacenter: PLDT Diliman, Manila
   exchanges: [PhOpenIX]
 - host: core2.osa1.he.net
   country: JP
@@ -653,7 +846,7 @@ ping_targets:
   datacenter: Equinix Osaka (OS1)
   exchanges: [BBIX Osaka, JPNAP Osaka]
 - host: core1.pnh1.he.net
-  country: CM
+  country: KH
   city: Phnom Penh
   datacenter: Sabay MNV, Phnom Penh
   exchanges: [CNX]
@@ -662,16 +855,21 @@ ping_targets:
   city: Seoul
   datacenter: KINX Seoul
   exchanges: [KINX]
+- host: core1.sel2.he.net
+  country: KR
+  city: Seoul
+  datacenter: Equinix SL1, Seoul
+  exchanges: [Equinix Seoul]
 - host: core1.sin1.he.net
   country: SG
   city: Singapore
   datacenter: Equinix Singapore (SG1)
-  exchanges: [Equinix Singapore, MegaIX Singapore, JBIX]
-- host: core1.tpe1.he.net
+  exchanges: [Equinix Singapore, MegaIX Singapore, DE-CIX ASEAN/JBIX, SGIX, BBIX Singapore]
+- host: core2.tpe1.he.net
   country: TW
   city: Taipei
   datacenter: Chief LY Building, Taipei
-  exchanges: [TPIX Taiwan]
+  exchanges: [STUIX, TPIX Taiwan]
 - host: core1.tyo1.he.net
   country: JP
   city: Tokyo
@@ -711,6 +909,11 @@ ping_targets:
   city: Johannesburg, GP
   datacenter: Teraco JB1, Johannesburg
   exchanges: [NAPAfrica Johannesburg, JINX]
+- host: core1.los1.he.net
+  country: NG
+  city: Lagos
+  datacenter: Rack Centre, Lagos
+  exchanges: [IXPN Lagos]
 - host: core1.mba1.he.net
   country: KE
   city: Mombasa
