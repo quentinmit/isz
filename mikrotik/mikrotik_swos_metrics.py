@@ -263,7 +263,7 @@ def merge_64bit(stats: dict) -> dict:
     keys = set(stats.keys())
     keys_high = set(k+'h' for k in keys) & keys
     for k in keys_high:
-        stats[k[:-1]] = [v1 | (v2 << 32) for v1, v2 in zip(stats[k[:-1]], stats[k])]
+        stats[k[:-1]] = [v1 | ((0 if v2 == 0xffffffff else v2) << 32) for v1, v2 in zip(stats[k[:-1]], stats[k])]
         del stats[k]
     return stats
 
