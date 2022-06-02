@@ -132,6 +132,8 @@ interval = "60s"
 interval = "60s"
 [[inputs.mem]]
 [[inputs.net]]
+[inputs.net.tagdrop]
+interface = ["veth*"]
 [[inputs.netstat]]
 [[inputs.interrupts]]
 [[inputs.linux_sysctl_fs]]
