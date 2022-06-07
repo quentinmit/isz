@@ -154,6 +154,7 @@ PARSERS = [
 TAGS = {
     "/interface/ethernet/switch/port": {
         "tag_props": {
+            "id",
             "name",
             "switch",
         },
@@ -230,8 +231,12 @@ async def main():
                 else:
                     logging.debug("failed to find parser for %s='%s'", k, v)
             field_props |= single_props
-        proplist = '.id,'+','.join(list(tag_props) + list(field_props))
-        tag_props.add('id') # ".id" in .proplist but "id" in result :(
+        proplist = tag_props | field_props
+        if 'id' in proplist:
+            # ".id" in .proplist but "id" in result :(
+            proplist.remove('id')
+            proplist.add('.id')
+        proplist = ','.join(list(tag_props) + list(field_props))
         field_props -= tag_props
         resources[name] = {
             'r': r,
