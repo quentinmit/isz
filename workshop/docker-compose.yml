@@ -4,8 +4,9 @@ services:
     container_name: influxdb
     image: influxdb:2.2.0
     ports:
-      - "172.30.97.32:8086:8086"
-      - "172.30.96.32:8086:8086"
+      - "172.30.97.34:8086:8086"
+      - "172.30.96.34:8086:8086"
+      - "127.0.1.1:8086:8086"
     volumes:
       - /srv/influxdb/etc:/etc/influxdbv2
       - /srv/influxdb/data:/influxdbv2
@@ -20,8 +21,9 @@ services:
     container_name: grafana
     image: grafana/grafana-oss:8.5.4
     ports:
-      - "172.30.97.32:3000:3000"
-      - "172.30.96.32:3000:3000"
+      - "172.30.97.34:3000:3000"
+      - "172.30.96.34:3000:3000"
+      - "127.0.1.1:3000:3000"
     volumes:
       - /srv/influxdb/grafana-storage:/var/lib/grafana
     restart: always
@@ -63,7 +65,7 @@ services:
     entrypoint:
       - telegraf
       - --config
-      - http://172.30.97.32:8086/api/v2/telegrafs/0702075a793e0000
+      - http://172.30.97.34:8086/api/v2/telegrafs/0702075a793e0000
     restart: always
   speedtest:
     restart: always
@@ -86,13 +88,11 @@ services:
       - /srv/isz/workshop/esphome:/esphome
   homeassistant:
     container_name: homeassistant
-    image: homeassistant/raspberrypi4-homeassistant:stable
+    image: homeassistant/home-assistant:stable
     restart: unless-stopped
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /srv/isz/workshop/homeassistant:/config
-    devices:
-      - "/dev/ttyZwave:/dev/ttyZwave"
     network_mode: host
   esphome:
     container_name: esphome
