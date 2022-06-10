@@ -51,7 +51,7 @@
       supported_features: 40
       state: 'on'
 - id: '1644127210350'
-  name: Night+
+  name: Evening
   entities:
     light.headboard:
       supported_color_modes:
