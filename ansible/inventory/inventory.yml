@@ -11,7 +11,7 @@ all:
     pki_download_extra: no
     locales__default_list:
     - en_US.UTF-8
-    - en_US.ISO-8859-1
+    - en_US
     - en_US.ISO-8859-15
     locales__system_lang: en_US.UTF-8
     mosquitto__allow:
