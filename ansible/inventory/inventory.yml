@@ -35,4 +35,3 @@ all:
     workshop.isz.wtf:
       isz_last_octet: 34
       macaddress: 04:42:1A:C9:93:8B
-      pki_enable: false

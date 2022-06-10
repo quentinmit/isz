@@ -29,7 +29,7 @@
     - name: [ grafana.isz.wtf, grafana.isz ]
       pki_realm: grafana.isz.wtf
       type: proxy
-      proxy_pass: http://workshop-pi.isz.wtf:3000/
+      proxy_pass: http://workshop.isz.wtf:3000/
       options: |
         proxy_buffering off;
       proxy_options: |
@@ -40,7 +40,7 @@
     - name: [ influx.isz.wtf, influx.isz ]
       pki_realm: influx.isz.wtf
       type: proxy
-      proxy_pass: http://workshop-pi.isz.wtf:8086/
+      proxy_pass: http://workshop.isz.wtf:8086/
     - name: [ atuin.isz.wtf, atuin.isz ]
       pki_realm: atuin.isz.wtf
       type: proxy
