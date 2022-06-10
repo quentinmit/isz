@@ -5,11 +5,11 @@
 # Copy in /root/.ssh
 # TODO: Create quentin user
 # TODO: Install RPi kernel and make w1 work
-- hosts: workshop-pi.isz.wtf
+- hosts:
+  - workshop-pi.isz.wtf
+  - workshop.isz.wtf
   serial: 1
   vars:
-    ansible_processor_cores: 4
-    ansible_processor_vcpus: 4
     pki_realms:
     - name: grafana.isz.wtf
     - name: influx.isz.wtf
@@ -84,12 +84,12 @@
         proxy_set_header Connection $connection_upgrade;
     networkd_interfaces:
     - name: br0
-      mac_address: dc:a6:32:d3:49:0c
+      mac_address: '{{ macaddress }}'
       address: dhcp
       bridge_pvid: 3096
       bridge_vlans: [ 3097, 500, 88 ]
       vlan_interfaces: [ vlan3097, vlan88 ]
-    - name: eth0
+    - name: '{{ ansible_interfaces | select("match", "^e") | first }}'
       bridge: br0
       bridge_pvid: 3096
       bridge_vlans: [ 3097, 500, 88 ]
@@ -136,6 +136,12 @@
       - '{{ mosquitto__nginx__dependent_upstreams }}'
   - role: debops.roles02.mosquitto
     tags: [ 'role::mosquitto', 'skip::mosquitto' ]
+#  - role: debops.roles01.tcpwrappers
+#    tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
+#    tcpwrappers__dependent_allow:
+#      - '{{ tftpd__tcpwrappers__dependent_allow }}'
+  - role: debops.roles02.tftpd
+    tags: [ 'role::tftpd', 'skip::tftpd' ]
   - role: podman
     tags: [ 'role::podman', 'skip::podman' ]
   tasks:
@@ -164,32 +170,34 @@
       content: |
         SUBSYSTEM=="tty", ATTRS{product}=="Epic-PWRgate", RUN+="/usr/bin/ln -f $devnode /dev/ttyPwrgate"
         SUBSYSTEM=="tty", ATTRS{idProduct}=="0200", ATTRS{idVendor}=="0658", RUN+="/usr/bin/ln -f $devnode /dev/ttyZwave"
-  - copy:
-      dest: /etc/default/raspi-firmware-custom
-      content: |
-        # Enable I2C port
-        dtparam=i2c_arm=on
-        
-        # Enable 1-wire port
-        dtoverlay=w1-gpio,gpiopin=17
-        
-        # Force HDMI out
-        hdmi_force_hotplug=1
-        disable_overscan=1
-        # Force 1080p60
-        hdmi_group=1
-        hdmi_mode=16
-  - name: Enable memory cgroups
-    copy:
-      dest: /etc/default/raspi-extra-cmdline
-      content: cgroup_enable=memory cgroup_memory=1
-  - when: custom_kernel | default(False)
-    block: []
-      # dpkg -i linux-{image,headers,libc-dev}-*
-      # mkdir /boot/firmware/downstream
-      # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/downstream/overlays
-      # cp /usr/lib/linux-image-5.10.63-v8-isz+/broadcom/* /boot/firmware/downstream/
-      # echo "console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rw fsck.repair=yes net.ifnames=0  rootwait cgroup_enable=memory cgroup_memory=1" >> /boot/firmware/downstream/cmdline.txt
-      ## shouldn't be necessary
-      # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/overlays
-      ## install config.txt updates
+  - when: ansible_machine == "aarch64" and ansible_chassis_vendor == ""
+    block:
+    - copy:
+        dest: /etc/default/raspi-firmware-custom
+        content: |
+          # Enable I2C port
+          dtparam=i2c_arm=on
+          
+          # Enable 1-wire port
+          dtoverlay=w1-gpio,gpiopin=17
+          
+          # Force HDMI out
+          hdmi_force_hotplug=1
+          disable_overscan=1
+          # Force 1080p60
+          hdmi_group=1
+          hdmi_mode=16
+    - name: Enable memory cgroups
+      copy:
+        dest: /etc/default/raspi-extra-cmdline
+        content: cgroup_enable=memory cgroup_memory=1
+    - when: custom_kernel | default(False)
+      block: []
+        # dpkg -i linux-{image,headers,libc-dev}-*
+        # mkdir /boot/firmware/downstream
+        # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/downstream/overlays
+        # cp /usr/lib/linux-image-5.10.63-v8-isz+/broadcom/* /boot/firmware/downstream/
+        # echo "console=serial0,115200 console=tty1 root=/dev/mmcblk0p2 rw fsck.repair=yes net.ifnames=0  rootwait cgroup_enable=memory cgroup_memory=1" >> /boot/firmware/downstream/cmdline.txt
+        ## shouldn't be necessary
+        # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/overlays
+        ## install config.txt updates

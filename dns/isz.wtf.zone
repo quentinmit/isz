@@ -24,7 +24,7 @@ workshop-pi      A 172.30.96.32
 bedroom-pi       A 172.30.96.33
                  EUI48 DC-A6-32-98-38-A8 ; bedroom-pi
 workshop         A 172.30.96.34
-                 EUI48 04:42:1A:C9:93:8B
+                 EUI48 04-42-1A-C9-93-8B
 
 rascsi           A 172.30.96.35
                  EUI48 DC-A6-32-75-54-DC ; rascsi.isz

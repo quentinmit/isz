@@ -27,7 +27,9 @@ all:
   hosts:
     workshop-pi.isz.wtf:
       isz_last_octet: 32
-      macaddress: DC-A6-32-D3-49-0C
+      macaddress: dc:a6:32:d3:49:0c
+      ansible_processor_cores: 4
+      ansible_processor_vcpus: 4
     bedroom-pi.isz.wtf:
     heartofgold.isz.wtf:
     workshop.isz.wtf:
