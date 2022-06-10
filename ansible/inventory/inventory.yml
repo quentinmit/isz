@@ -1,5 +1,36 @@
 all:
+  vars:
+    ansible_domain: isz.wtf
+    #avaya_domain: isz.wtf
+    #pki_ca_domain: isz.wtf
+    pki_acme_ca: le-live-v2
+    pki_acme: yes
+    pki_acme_contacts: [ mailto:quentin@mit.edu ]
+    #pki_enabled: yes
+    pki_internal: no
+    pki_download_extra: no
+    locales__default_list:
+    - en_US.UTF-8
+    - en_US.ISO-8859-1
+    - en_US.ISO-8859-15
+    locales__system_lang: en_US.UTF-8
+    mosquitto__allow:
+    - 172.30.96.0/24
+    - 192.168.88.0/24
+    mosquitto__websockets_packages:
+    - libwebsockets16
+    mosquitto__pki_broker_realm: '{{ mosquitto__fqdn }}'
+    mosquitto__nginx_extra_config:
+      pki_realm: '{{ mosquitto__fqdn }}'
+      hsts_enabled: false
+      redirect_to_ssl: false
   hosts:
     workshop-pi.isz.wtf:
+      isz_last_octet: 32
+      macaddress: DC-A6-32-D3-49-0C
     bedroom-pi.isz.wtf:
     heartofgold.isz.wtf:
+    workshop.isz.wtf:
+      isz_last_octet: 34
+      macaddress: 04:42:1A:C9:93:8B
+      pki_enable: false

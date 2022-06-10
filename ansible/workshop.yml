@@ -10,14 +10,6 @@
   vars:
     ansible_processor_cores: 4
     ansible_processor_vcpus: 4
-    avaya_domain: isz.wtf
-    pki_ca_domain: isz.wtf
-    pki_acme_ca: le-live-v2
-    pki_acme: True
-    pki_acme_contacts: [ mailto:quentin@mit.edu ]
-    pki_enabled: True
-    pki_internal: False
-    pki_download_extra: False
     pki_realms:
     - name: grafana.isz.wtf
     - name: influx.isz.wtf
@@ -37,7 +29,7 @@
     - name: [ grafana.isz.wtf, grafana.isz ]
       pki_realm: grafana.isz.wtf
       type: proxy
-      proxy_pass: http://workshop-pi.isz:3000/
+      proxy_pass: http://workshop-pi.isz.wtf:3000/
       options: |
         proxy_buffering off;
       proxy_options: |
@@ -48,7 +40,7 @@
     - name: [ influx.isz.wtf, influx.isz ]
       pki_realm: influx.isz.wtf
       type: proxy
-      proxy_pass: http://workshop-pi.isz:8086/
+      proxy_pass: http://workshop-pi.isz.wtf:8086/
     - name: [ atuin.isz.wtf, atuin.isz ]
       pki_realm: atuin.isz.wtf
       type: proxy
@@ -90,16 +82,6 @@
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
-    mosquitto__allow:
-    - 172.30.96.0/24
-    - 192.168.88.0/24
-    mosquitto__websockets_packages:
-    - libwebsockets16
-    mosquitto__pki_broker_realm: '{{ mosquitto__fqdn }}'
-    mosquitto__nginx_extra_config:
-      pki_realm: '{{ mosquitto__fqdn }}'
-      hsts_enabled: false
-      redirect_to_ssl: false
     networkd_interfaces:
     - name: br0
       mac_address: dc:a6:32:d3:49:0c
@@ -116,15 +98,10 @@
       bridge_pvid: 500
     - name: vlan3097
       vlan: 3097
-      address: 172.30.97.32/24
+      address: 172.30.97.{{ isz_last_octet }}/24
     - name: vlan88
       vlan: 88
-      address: 192.168.88.32
-    locales__default_list:
-    - en_US.UTF-8
-    - en_US.ISO-8859-1
-    - en_US.ISO-8859-15
-    locales__system_lang: en_US.UTF-8
+      address: 192.168.88.{{ isz_last_octet }}
   pre_tasks:
     - name: Prepare pki environment
       import_role:
@@ -132,6 +109,7 @@
         tasks_from: 'main_env'
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
   roles:
+  - role: isz-base
   - role: networkd
   - role: debops.debops.global_handlers
   - role: debops.debops.locales
@@ -161,76 +139,14 @@
   - role: podman
     tags: [ 'role::podman', 'skip::podman' ]
   tasks:
-  - name: Install utilities
+  - name: Install packages
     package:
       name:
-      - apt-file
-      - bash-completion
-      - bsdmainutils
-      - bind9-host
-      - bwm-ng
-      - command-not-found
-      - cpuset
-      - curl
-      - debsums
-      - emacs-nox
-      - exfat-utils
-      - fping
-      #- glances
-      - htop
-      - info
-      - ionit
-      - iotop
-      - jq
-      - lsof
-      - man-db
-      - mlocate
-      - mtr-tiny
-      - ncdu
-      - netcat
-      - nmap
-      #- rfkill
-      - rsync
-      - screen
-      - socat
-      - sqlite3
-      - strace
-      - sysstat
-      - telnet
-      - tree
-      - tshark
-      - usbutils
-      - v4l-utils
-      - wget
       # For isdttool
       - python3-hidapi
       - libusb-dev
       - libusb-1.0-0-dev
       - libudev-dev
-  - command: update-command-not-found
-    args:
-      creates: /var/lib/command-not-found/commands.db
-  - package:
-      name:
-      - bridge-utils
-      - certbot
-      - device-tree-compiler
-      - docker-compose
-      - docker.io
-      - fbset
-      - ffmpeg
-      - golang
-      - i2c-tools
-      - iptables
-      - net-tools
-      - podman
-      - python3-venv
-      #- raspberrypi-kernel
-      - snmp
-      - snmp-mibs-downloader
-      - vlan
-      - wireless-regdb
-      - wireless-tools
   - file:
       path: /etc/systemd/system/nginx.service.d
       state: directory
@@ -248,45 +164,6 @@
       content: |
         SUBSYSTEM=="tty", ATTRS{product}=="Epic-PWRgate", RUN+="/usr/bin/ln -f $devnode /dev/ttyPwrgate"
         SUBSYSTEM=="tty", ATTRS{idProduct}=="0200", ATTRS{idVendor}=="0658", RUN+="/usr/bin/ln -f $devnode /dev/ttyZwave"
-  - blockinfile:
-      path: /root/.bashrc
-      block: |
-        export PATH=/root/go/bin:$PATH
-
-        export HISTSIZE=100000
-  - file:
-      path: /root/.config/git
-      state: directory
-  - copy:
-      dest: /root/.config/git/ignore
-      content: |
-        *~
-  - copy:
-      dest: /root/.emacs
-      content: |
-        (require 'package)
-        (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-        (package-initialize)
-        (custom-set-variables
-         ;; custom-set-variables was added by Custom.
-         ;; If you edit it by hand, you could mess it up, so be careful.
-         ;; Your init file should contain only one such instance.
-         ;; If there is more than one, they won't work right.
-         '(gofmt-command "goimports")
-         '(ido-mode (quote both) nil (ido))
-         '(package-selected-packages (quote (dockerfile-mode go-mode yaml-mode))))
-        (custom-set-faces
-         ;; custom-set-faces was added by Custom.
-         ;; If you edit it by hand, you could mess it up, so be careful.
-         ;; Your init file should contain only one such instance.
-         ;; If there is more than one, they won't work right.
-         )
-        (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-        (defun go-mode-setup ()
-         ;(go-eldoc-setup)
-         (add-hook 'before-save-hook 'gofmt-before-save))
-        (add-hook 'go-mode-hook 'go-mode-setup)
-      
   - copy:
       dest: /etc/default/raspi-firmware-custom
       content: |
@@ -306,17 +183,6 @@
     copy:
       dest: /etc/default/raspi-extra-cmdline
       content: cgroup_enable=memory cgroup_memory=1
-  - copy:
-      dest: /root/.gitconfig
-      content: |
-        # This is Git's per-user configuration file.
-        [user]
-        # Please adapt and uncomment the following lines:
-                name = Quentin Smith
-                email = quentin@mit.edu
-        [alias]
-                up = pull --rebase
-                k = log --graph --abbrev-commit --pretty=oneline --decorate
   - when: custom_kernel | default(False)
     block: []
       # dpkg -i linux-{image,headers,libc-dev}-*
