@@ -143,6 +143,7 @@ binary_sensor:
       - if:
           condition:
           - sun.is_above_horizon:
+              elevation: 15°
           then:
             - light.turn_on:
                 id: underlight_c
