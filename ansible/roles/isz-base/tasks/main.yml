@@ -2,6 +2,7 @@
 - name: Install utilities
   package:
     name:
+    - acpica-tools
     - apt-file
     - bash-completion
     - bsdmainutils
@@ -54,6 +55,7 @@
     - golang
     - i2c-tools
     - iptables
+    - lm-sensors
     - net-tools
     - podman
     - python3-venv
