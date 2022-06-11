@@ -1,0 +1,55 @@
+# GPIO 0 - Red LED, active low
+# GPIO 1 - "RX" (UART0 TX) / 1-Wire
+# GPIO 2 - Blue LED, active low
+# GPIO 3 - "TX" (UART0 RX) / IR LED
+# GPIO 4 - Relay output, active high
+# GPIO 5 - Power monitoring CF pin
+# GPIO 12 - Power monitoring SEL pin
+# GPIO 13 - Button input, requires pullup R
+# GPIO 14 - Power monitoring CF1 pin
+# GPIO 15 - ??? (3.2V, resistor pulldown to ground)
+
+# Module pinout
+# Voltage sense?
+# Current sense -
+# Current sense +
+# Gnd / 1.5V?
+# GPIO 15 / RST?
+# GPIO 1 "RX" / GPIO 3 "TX"
+# GPIO 13 button / GPIO 2 blue LED
+# 3.3V? / GPIO 4 relay
+# GPIO 0 red LED / Vcc 3.3V
+
+substitutions:
+  name: bedroom-ac
+  friendly_name: Bedroom AC
+  voltage_divider: "2078"
+
+packages:
+  kauf_plug_base: !include include/kauf-plug-base.yaml
+
+#sensor:
+#- platform: dallas
+#  address: 0x6600000284ba8b28
+#  name: ${friendly_name} Temperature
+#  id: ac_output_temperature
+#  accuracy_decimals: 4
+
+#text_sensor:
+#- platform: template
+#  name: "Living Room AC Status"
+#  update_interval: 5s
+#  lambda: !lambda |-
+#    float power = id(wattage).state;
+#    if (power > 150) {
+#    return std::string("Cool On"); // 500W
+#    } else if (power > 50) {
+#    return std::string("Fan On"); // 112W
+#    }
+#    return std::string("Standby"); // 0.7W
+
+#climate:
+#- platform: frigidaire_ac
+#  name: ${friendly_name}
+#  temperature_sensor: ac_output_temperature
+#  power_sensor: wattage
