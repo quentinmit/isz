@@ -23,6 +23,7 @@ google_assistant:
     - scene
     - switch
     - light
+    - climate
   entity_config:
     media_player.tv:
       expose: true
