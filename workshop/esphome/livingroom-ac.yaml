@@ -29,6 +29,22 @@ packages:
   kauf_plug_base: !include include/kauf-plug-base.yaml
   frigidaire_ac_ir: !include include/frigidaire-ac-ir.yaml
 
+binary_sensor:
+- id: front_button
+  on_press:
+    then:
+      if:
+        condition:
+          lambda: return id(climate_ac).mode != CLIMATE_MODE_OFF;
+        then:
+          climate.control:
+            id: climate_ac
+            mode: "OFF"
+        else:
+          climate.control:
+            id: climate_ac
+            mode: COOL
+
 sensor:
 - platform: dallas
   address: 0x6600000284ba8b28
@@ -52,5 +68,6 @@ text_sensor:
 climate:
 - platform: frigidaire_ac
   name: ${friendly_name}
+  id: climate_ac
   temperature_sensor: ac_output_temperature
   power_sensor: wattage
