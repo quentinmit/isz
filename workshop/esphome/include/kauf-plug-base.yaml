@@ -1,0 +1,153 @@
+substitutions:
+  voltage_divider: "2078" #2401
+
+esphome:
+  name: "${name}"
+  # N.B. DO NOT attempt to increase stack size beyond 4K. https://github.com/esp8266/Arduino/issues/6166
+
+esp8266:
+  board: esp01_1m
+  early_pin_init: no
+  restore_from_flash: yes
+
+logger:
+  # Disable UART logging so we can reuse the pins.
+  baud_rate: 0
+
+external_components:
+- source: ./my_components
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  domain: .guest.isz.wtf
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "${name} Fallback Hotspot"
+    password: !secret fallback_password
+
+captive_portal:
+
+web_server:
+
+# Enable Home Assistant API
+api:
+  # Don't reboot automatically.
+  reboot_timeout: 0s
+  services:
+  - service: ir_tx_nec
+    variables:
+      address: int
+      f: int
+    then:
+      remote_transmitter.transmit_nec:
+        address: !lambda 'return address;'
+        command: !lambda |-
+          int command = 0;
+          uint8_t f8 = f;
+          command = f8 | (~f8) << 8;
+          return command;
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+binary_sensor:
+- platform: gpio
+  id: front_button
+  name: ${friendly_name} Button
+  pin:
+    number: GPIO13
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+  filters:
+    - delayed_on: 50ms
+#  on_press:
+#    then:
+#      switch.toggle: relay
+
+button:
+- platform: safe_mode
+  name: ${friendly_name} Restart (Safe Mode)
+- platform: restart
+  name: ${friendly_name} Restart
+
+status_led:
+  pin:
+    number: GPIO0
+    inverted: true
+
+switch:
+  # blue LED follows relay power state
+- platform: gpio
+  id: blue_led
+  pin:
+    number: GPIO2
+    inverted: true
+
+  # relay output
+- platform: gpio
+  id: relay
+  name: ${friendly_name} Power Outlet
+  pin: GPIO4
+  restore_mode: ALWAYS_ON
+
+  # automatically make blue led equal relay state
+  on_turn_on:
+    - switch.turn_on: blue_led
+  on_turn_off:
+    - switch.turn_off: blue_led
+
+sensor:   # Power monitoring sensors output to Home Assistant
+- platform: hlw8012
+  sel_pin:
+    number: GPIO12
+    inverted: True
+  cf_pin: GPIO5
+  cf1_pin: GPIO14
+  model: bl0937
+  current_resistor: 0.001 # The value of the shunt resistor for current measurement.
+  voltage_divider: "${voltage_divider}" #2401   # The value of the voltage divider on the board as (R_upstream + R_downstream) / R_downstream.
+  power:
+    name: ${friendly_name} Power
+    unit_of_measurement: W
+    accuracy_decimals: 2
+    id: wattage
+  current:
+    name: ${friendly_name} Current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+  voltage:
+    name: ${friendly_name} Voltage
+    unit_of_measurement: V
+    accuracy_decimals: 2
+  energy:
+    name: ${friendly_name} Total Energy
+    unit_of_measurement: Wh
+    accuracy_decimals: 2
+  change_mode_every: 2
+  update_interval: 5s # 20 second effective update rate for Power, 40 second for Current and Voltage.
+
+# Reports the total Power so-far each day, resets at midnight
+# See https://esphome.io/components/sensor/total_daily_energy.html
+- platform: total_daily_energy
+  name: ${friendly_name} Total Daily Energy
+  power_id: wattage
+  filters:
+  - multiply: 0.001  ## convert Wh to kWh
+  unit_of_measurement: kWh
+
+remote_transmitter:
+  pin: GPIO3
+  carrier_duty_percent: 50%
+
+dallas:
+- pin: GPIO1
+  update_interval: 10s
