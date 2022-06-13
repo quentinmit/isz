@@ -8,6 +8,11 @@
   {%- if icon %}
   icon: {{ icon }}
   {%- endif %}
+  {%- if kwargs %}
+  {%- for k, v in kwargs.items() %}
+  {{k}}: {{v | tojson}}
+  {%- endfor %}
+  {%- endif %}
   on_press:
     then:
     - remote_transmitter.transmit_nec:
@@ -17,7 +22,7 @@
 {%- macro device_buttons(device_name, device) -%}
 {%- set address = necformat(device.d, device.s|d(None)) -%}
 {%- for function, name in device.functions.items(): %}
-{{ nec_button(address, function, device_name, name, ir_icons.get(name)) }}
+{{ nec_button(address, function, device_name, name, ir_icons.get(name), **kwargs) }}
 {% endfor -%}
 {%- endmacro -%}
 {%- macro device_mqtt(device_name, device) -%}
