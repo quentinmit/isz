@@ -120,10 +120,21 @@ void FrigidaireACClimate::control(const climate::ClimateCall &call) {
         send_ir_(IR::TEMP_DOWN, -tempf_delta, 50000);
       }
     } else {
-      send_ir_(IR::TEMP_DOWN, TEMPF_MAX-TEMPF_MIN, 50000);
-      uint8_t up_steps = tempf-TEMPF_MIN;
-      ESP_LOGD(TAG, "sending %d UP steps", up_steps);
-      send_ir_(IR::TEMP_UP, up_steps, 50000);
+      if (this->action == climate::CLIMATE_ACTION_COOLING) {
+        // If we're already cooling, start by lowering the temperature so we
+        // don't interrupt the cooling.
+        send_ir_(IR::TEMP_DOWN, TEMPF_MAX-TEMPF_MIN, 50000);
+        uint8_t up_steps = tempf-TEMPF_MIN;
+        ESP_LOGD(TAG, "sending %d UP steps", up_steps);
+        send_ir_(IR::TEMP_UP, up_steps, 50000);
+      } else {
+        // If we're not cooling, start by raising the temperature so we don't
+        // accidentally start cooling.
+        send_ir_(IR::TEMP_UP, TEMPF_MAX-TEMPF_MIN, 50000);
+        uint8_t down_steps = TEMPF_MAX-tempf;
+        ESP_LOGD(TAG, "sending %d DOWN steps", down_steps);
+        send_ir_(IR::TEMP_DOWN, down_steps, 50000);
+      }
     }
     this->target_temperature = fahrenheit_to_celsius(tempf);
     this->target_temperature_f = tempf;
