@@ -19,7 +19,7 @@ services:
     build: ./rtlamr
     env_file: rtlamr.env
     environment:
-      - COLLECT_INFLUXDB_HOSTNAME=http://workshop-pi.isz:8086/
+      - COLLECT_INFLUXDB_HOSTNAME=http://influx.isz.wtf:8086/
       - COLLECT_INFLUXDB_ORG=44ff94dc2f766f90
       - COLLECT_INFLUXDB_BUCKET=rtlamr
       - COLLECT_INFLUXDB_MEASUREMENT=rtlamr
@@ -47,5 +47,5 @@ services:
       - /entrypoint.sh
       - telegraf
       - --config
-      - http://172.30.97.32:8086/api/v2/telegrafs/06f519251454e000
+      - http://influx.isz.wtf:8086/api/v2/telegrafs/06f519251454e000
     restart: always

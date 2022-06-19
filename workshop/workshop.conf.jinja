@@ -61,7 +61,7 @@
   ## Multiple URLs can be specified for a single cluster, only ONE of the
   ## urls will be written to each interval.
   ## urls exp: http://127.0.0.1:8086
-  urls = ["http://172.30.97.32:8086"]
+  urls = ["http://172.30.97.34:8086"]
 
   ## Token for authentication.
   token = "$INFLUX_TOKEN"
@@ -75,11 +75,13 @@
   ## Whether to report per-cpu stats or not
   percpu = true
   ## Whether to report total system cpu stats or not
-  totalcpu = true
+  totalcpu = false
   ## If true, collect raw CPU time metrics.
-  collect_cpu_time = false
+  collect_cpu_time = true
   ## If true, compute and report the sum of all non-idle CPU states.
   report_active = false
+  ## If true and the info is available then add core_id and physical_id tags
+  #core_tags = true
 [[inputs.disk]]
   ## By default stats will be gathered for all mount points.
   ## Set mount_points will restrict the stats to only the specified mount points.
@@ -174,6 +176,7 @@ sensor = ["w1_slave_temp_input"]
     "{{ host.host }}",
 {%- endfor %}
   ]
+  ipv6 = false
 
 [[processors.starlark]]
   namepass = ["ping"]
@@ -482,9 +485,11 @@ def apply(metric):
       oid = ".1.3.6.1.2.1.25.2.3.1.6"
 {% endfor %}
 
+{#
 [[inputs.execd]]
   alias = "w1"
   command = ["chroot", "/hostfs", "/srv/isz/w1/.venv/bin/python", "/srv/isz/w1/w1_metrics.py"]
   signal = "STDIN"
   restart_delay = "10s"
   data_format = "influx"
+#}
