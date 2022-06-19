@@ -1,0 +1,9 @@
+{% extends"base.conf.jinja" %}
+{% block extra %}
+[[inputs.execd]]
+  alias = "w1"
+  command = ["chroot", "/hostfs", "/srv/isz/w1/.venv/bin/python", "/srv/isz/w1/w1_metrics.py"]
+  signal = "STDIN"
+  restart_delay = "10s"
+  data_format = "influx"
+{% endblock %}

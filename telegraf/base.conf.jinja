@@ -9,13 +9,13 @@
   ## Telegraf will send metrics to outputs in batches of at most
   ## metric_batch_size metrics.
   ## This controls the size of writes that Telegraf sends to output plugins.
-  metric_batch_size = 1000
+  metric_batch_size = 5000
 
   ## For failed writes, telegraf will cache metric_buffer_limit metrics for each
   ## output, and will flush this buffer on a successful write. Oldest metrics
   ## are dropped first when this buffer fills.
   ## This buffer only fills when writes fail to output plugin(s).
-  metric_buffer_limit = 10000
+  metric_buffer_limit = 50000
 
   ## Collection jitter is used to jitter the collection by a random amount.
   ## Each plugin will sleep for a random time within jitter before collecting.
@@ -52,13 +52,13 @@
   hostname = ""
   ## If set to true, do no set the "host" tag in the telegraf agent.
   omit_hostname = false
-[[outputs.influxdb_v2]]	
+[[outputs.influxdb_v2]]
   ## The URLs of the InfluxDB cluster nodes.
   ##
   ## Multiple URLs can be specified for a single cluster, only ONE of the
   ## urls will be written to each interval.
   ## urls exp: http://127.0.0.1:8086
-  urls = ["http://172.30.97.34:8086"]
+  urls = ["http://influx.isz.wtf:8086"]
 
   ## Token for authentication.
   token = "$INFLUX_TOKEN"
@@ -77,6 +77,8 @@
   collect_cpu_time = true
   ## If true, compute and report the sum of all non-idle CPU states.
   report_active = false
+  ## If true and the info is available then add core_id and physical_id tags
+  #core_tags = true
 [[inputs.disk]]
   ## By default stats will be gathered for all mount points.
   ## Set mount_points will restrict the stats to only the specified mount points.
@@ -85,7 +87,9 @@
   ignore_fs = ["tmpfs", "devtmpfs", "devfs", "overlay", "aufs", "squashfs"]
 [[inputs.diskio]]
 [[inputs.kernel]]
-[[inputs.docker]]	
+{% if docker|default(True) %}
+[[inputs.docker]]
+interval = "60s"
   ## Docker Endpoint
   ##   To use TCP, set endpoint = "tcp://[ip]:[port]"
   ##   To use environment variables (ie, docker-machine), set endpoint = "ENV"
@@ -117,19 +121,37 @@
 
   ## Whether to report for each container total blkio and network stats or not
   total = false
-  
+
   ## Which environment variables should we use as a tag
   ##tag_env = ["JAVA_HOME", "HEAP_SIZE"]
   ## docker labels to include and exclude as tags.  Globs accepted.
   ## Note that an empty array for both will include all labels as tags
   docker_label_include = []
   docker_label_exclude = []
+{% endif %}
+[[inputs.cgroup]]
+interval = "60s"
 [[inputs.mem]]
 [[inputs.net]]
 [inputs.net.tagdrop]
 interface = ["veth*"]
+[[inputs.netstat]]
+[[inputs.interrupts]]
+[[inputs.linux_sysctl_fs]]
 [[inputs.processes]]
 [[inputs.swap]]
 [[inputs.sensors]]
+[inputs.sensors.tagdrop]
+chip = ["w1_slave_temp-*"]
 [[inputs.system]]
 [[inputs.temp]]
+[inputs.temp.tagdrop]
+sensor = ["w1_slave_temp_input"]
+
+[[inputs.internal]]
+  interval = "60s"
+  [inputs.internal.tags]
+  app = "telegraf"
+
+{% block extra %}
+{% endblock %}
