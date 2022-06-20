@@ -30,7 +30,7 @@ packages:
   frigidaire_ac_ir: !include include/frigidaire-ac-ir.yaml
 
 binary_sensor:
-- id: front_button
+- id: !extend front_button
   on_press:
     then:
       if:
