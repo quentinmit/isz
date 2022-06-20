@@ -62,6 +62,7 @@ services:
       - HOST_RUN=/hostfs/run
       - HOST_MOUNT_PREFIX=/hostfs
     network_mode: host
+    privileged: yes
     entrypoint:
       - telegraf
       - --config
