@@ -236,7 +236,7 @@ async def main():
             # ".id" in .proplist but "id" in result :(
             proplist.remove('id')
             proplist.add('.id')
-        proplist = ','.join(list(tag_props) + list(field_props))
+        proplist = ','.join(list(proplist))
         field_props -= tag_props
         resources[name] = {
             'r': r,
@@ -244,6 +244,8 @@ async def main():
             'field_props': field_props,
             'proplist': proplist,
         }
+
+    logging.debug("identified resources: %s", resources)
 
     # Retrieve hostname
     hostname = api.get_resource("/system/identity").get()[0]["name"]
@@ -256,6 +258,7 @@ async def main():
                 .tag("agent_host", args.server) \
                 .tag("hostname", hostname)
         for measurement, m in resources.items():
+            logging.debug("listing %s: %s", measurement, m)
             for entry in m['r'].call('print', {'.proplist': m['proplist']}):
                 p = point(measurement)
                 for tag in m['tag_props']:
