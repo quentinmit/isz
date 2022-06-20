@@ -139,6 +139,10 @@ interface = ["veth*"]
 [[inputs.interrupts]]
 [[inputs.linux_sysctl_fs]]
 [[inputs.processes]]
+[[inputs.smart]]
+path_smartctl = "/hostfs/usr/sbin/smartctl"
+path_nvme = "/hostfs/usr/sbin/nvme"
+attributes = true
 [[inputs.swap]]
 [[inputs.sensors]]
 [inputs.sensors.tagdrop]
