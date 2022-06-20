@@ -1,4 +1,6 @@
 # Configuration for telegraf agent
+{% set os = os | default("linux") -%}
+{% set docker = docker | default(os == "linux") -%}
 [agent]
   ## Default data collection interval for all inputs
   interval = "10s"
@@ -86,8 +88,17 @@
   ## Ignore mount points by filesystem type.
   ignore_fs = ["tmpfs", "devtmpfs", "devfs", "overlay", "aufs", "squashfs"]
 [[inputs.diskio]]
+{% if os == "linux" %}
 [[inputs.kernel]]
-{% if docker|default(True) %}
+[[inputs.cgroup]]
+interval = "60s"
+[[inputs.linux_sysctl_fs]]
+[[inputs.sensors]]
+[inputs.sensors.tagdrop]
+chip = ["w1_slave_temp-*"]
+[[inputs.interrupts]]
+{% endif %}
+{% if docker %}
 [[inputs.docker]]
 interval = "60s"
   ## Docker Endpoint
@@ -129,24 +140,21 @@ interval = "60s"
   docker_label_include = []
   docker_label_exclude = []
 {% endif %}
-[[inputs.cgroup]]
-interval = "60s"
 [[inputs.mem]]
 [[inputs.net]]
 [inputs.net.tagdrop]
 interface = ["veth*"]
 [[inputs.netstat]]
-[[inputs.interrupts]]
-[[inputs.linux_sysctl_fs]]
 [[inputs.processes]]
 [[inputs.smart]]
+{% if os == "linux" %}
 path_smartctl = "/hostfs/usr/sbin/smartctl"
 path_nvme = "/hostfs/usr/sbin/nvme"
+{% elif os == "darwin" %}
+path_smartctl = "/opt/local/sbin/smartctl"
+{% endif %}
 attributes = true
 [[inputs.swap]]
-[[inputs.sensors]]
-[inputs.sensors.tagdrop]
-chip = ["w1_slave_temp-*"]
 [[inputs.system]]
 [[inputs.temp]]
 [inputs.temp.tagdrop]
