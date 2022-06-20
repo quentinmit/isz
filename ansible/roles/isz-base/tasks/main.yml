@@ -55,10 +55,13 @@
     - golang
     - i2c-tools
     - iptables
+    - linux-cpupower
     - lm-sensors
     - net-tools
+    - nvme-cli
     - podman
     - python3-venv
+    - smartmontools
     - snmp
     - snmp-mibs-downloader
     - vlan
