@@ -12,12 +12,14 @@
     - cpuset
     - curl
     - debsums
+    - drm-info
     - emacs-nox
     - exfat-utils
     - fping
     #- glances
     - htop
     - info
+    - input-utils
     - ionit
     - iotop
     - jq
