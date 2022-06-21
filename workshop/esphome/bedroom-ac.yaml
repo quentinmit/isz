@@ -27,13 +27,19 @@ substitutions:
 
 packages:
   kauf_plug_base: !include include/kauf-plug-base.yaml
+  kenmore_ac_ir: !include include/kenmore-ac-ir.yaml
 
-#sensor:
-#- platform: dallas
-#  address: 0x6600000284ba8b28
-#  name: ${friendly_name} Temperature
-#  id: ac_output_temperature
-#  accuracy_decimals: 4
+sensor:
+- platform: dallas
+  address: 0xf100000284a16d28
+  name: ${friendly_name} Output Temperature
+  id: ac_output_temperature
+  accuracy_decimals: 4
+- platform: dallas
+  address: 0xa4000002849c3328
+  name: ${friendly_name} Input Temperature
+  id: ac_input_temperature
+  accuracy_decimals: 4
 
 #text_sensor:
 #- platform: template

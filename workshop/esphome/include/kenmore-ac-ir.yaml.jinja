@@ -1,0 +1,4 @@
+{% from "include/_ir-macros.yaml.jinja" import device_buttons with context %}
+
+button:
+{{ device_buttons("Bedroom AC", kenmore_ac_ir, entity_category="config") }}

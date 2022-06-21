@@ -238,6 +238,19 @@ ir_icons:
   mode esave: mdi:brightness-auto
   timer: mdi:timer
 
+kenmore_ac_ir:
+  # address: 0x6681
+  d: 129
+  s: 102
+  functions:
+    129: power
+    130: mode esave
+    133: temp+
+    138: temp-
+    153: fan speed
+    155: mode
+    159: timer
+
 frigidaire_ac_ir:
   # address: 0xF508
   d: 8
