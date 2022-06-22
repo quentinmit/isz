@@ -1,21 +1,13 @@
 #pragma once
 
-#include "esphome/components/climate/climate.h"
-#include "esphome/components/sensor/sensor.h"
-#include "esphome/components/remote_base/remote_base.h"
-#include "esphome/components/remote_transmitter/remote_transmitter.h"
-#include "esphome/components/remote_base/nec_protocol.h"
+#include "esphome/components/climate_ir_power/climate_ir_power.h"
 
 namespace esphome {
 namespace frigidaire_ac {
 
 static const char *const TAG = "climate.frigidaire_ac";
 
-class FrigidaireACClimate : public Component, public climate::Climate {
- protected:
-  const uint16_t IR_ADDRESS = 0xF508;
-  const uint8_t TEMPF_MIN = 60;
-  const uint8_t TEMPF_MAX = 90;
+class FrigidaireACClimate : public climate_ir_power::ClimateIRPower {
  private:
   enum IR : uint8_t {
     FAN_DOWN = 4,
@@ -32,21 +24,13 @@ class FrigidaireACClimate : public Component, public climate::Climate {
       POWER = 17,
       };
  public:
+ FrigidaireACClimate() : ClimateIRPower(0xF508, 60, 90) {};
+  //FrigidaireACClimate() : ir_address_(0xF508), tempf_min_(60), tempf_max_(90) {};
   void setup() override;
   void control(const climate::ClimateCall &call) override;
 
   climate::ClimateTraits traits() override {
-    // The capabilities of the climate device
-    auto traits = climate::ClimateTraits();
-    traits.set_visual_min_temperature(fahrenheit_to_celsius(TEMPF_MIN));
-    traits.set_visual_max_temperature(fahrenheit_to_celsius(TEMPF_MAX));
-    traits.set_visual_temperature_step(1);
-    if (this->temperature_sensor_) {
-      traits.set_supports_current_temperature(true);
-    }
-    if (this->power_sensor_) {
-      traits.set_supports_action(true);
-    }
+    auto traits = ClimateIRPower::traits();
     traits.set_supported_modes({
         climate::CLIMATE_MODE_OFF,
         climate::CLIMATE_MODE_COOL,
@@ -64,41 +48,6 @@ class FrigidaireACClimate : public Component, public climate::Climate {
       });
     return traits;
   }
-
-  void set_temperature_sensor(sensor::Sensor *sensor) {
-    temperature_sensor_ = sensor;
-  }
-  void set_power_sensor(sensor::Sensor *sensor) {
-    power_sensor_ = sensor;
-  }
-  void set_transmitter(remote_transmitter::RemoteTransmitterComponent *transmitter) {
-    this->transmitter_ = transmitter;
-  }
-  void set_power_settling_time(uint32_t ms) {
-    this->power_settling_time_ = ms;
-  }
- protected:
-  sensor::Sensor *temperature_sensor_ = NULL;
-  sensor::Sensor *power_sensor_ = NULL;
-  remote_transmitter::RemoteTransmitterComponent *transmitter_;
-  uint32_t last_change_time_ = 0;
-  uint32_t power_settling_time_ = 0;
-  uint32_t target_temperature_f = 0;
-
-  void send_ir_(IR cmd, uint8_t count = 1, uint32_t send_wait = 10000) {
-    if (this->transmitter_ == NULL) {
-      ESP_LOGW(TAG, "missing IR transmitter");
-      return;
-    }
-    auto call = this->transmitter_->transmit();
-    remote_base::NECData data{};
-    data.address = IR_ADDRESS;
-    data.command = (uint8_t)cmd | (~(uint8_t)cmd)<<8;
-    remote_base::NECProtocol().encode(call.get_data(), data);
-    call.set_send_times(count);
-    call.set_send_wait(send_wait); // ms
-    call.perform();
-    }
 };
 }  // namespace frigidaire_ac
 }  // namespace esphome

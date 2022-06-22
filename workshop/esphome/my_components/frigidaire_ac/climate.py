@@ -5,6 +5,8 @@ from esphome.components import (
 )
 from esphome.const import CONF_ID
 
+AUTO_LOAD = ["climate_ir_power"]
+
 frigidaire_ac_ns = cg.esphome_ns.namespace("frigidaire_ac")
 FrigidaireACClimate = frigidaire_ac_ns.class_("FrigidaireACClimate", climate_ir_power.ClimateIRPower)
 

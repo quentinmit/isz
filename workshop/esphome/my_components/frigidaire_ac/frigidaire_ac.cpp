@@ -4,18 +4,7 @@ namespace esphome {
 namespace frigidaire_ac {
 
 void FrigidaireACClimate::setup() {
-  if (this->temperature_sensor_) {
-    this->temperature_sensor_->add_on_state_callback([this](float state) {
-      this->current_temperature = state;
-      // current temperature changed, publish state
-      this->publish_state();
-    });
-    this->current_temperature = this->temperature_sensor_->state;
-  } else {
-    this->current_temperature = NAN;
-  }
-  this->mode = climate::CLIMATE_MODE_OFF;
-  this->preset = climate::CLIMATE_PRESET_NONE;
+  ClimateIRPower::setup();
   if (this->power_sensor_) {
     this->power_sensor_->add_on_state_callback([this](float power) {
       climate::ClimateAction old_action = this->action;
@@ -45,7 +34,6 @@ void FrigidaireACClimate::setup() {
   if (restore.has_value()) {
     restore->apply(this);
   }
-  // This will be called by App.setup()
 }
 void FrigidaireACClimate::control(const climate::ClimateCall &call) {
   bool changed = false;
@@ -123,15 +111,15 @@ void FrigidaireACClimate::control(const climate::ClimateCall &call) {
       if (this->action == climate::CLIMATE_ACTION_COOLING) {
         // If we're already cooling, start by lowering the temperature so we
         // don't interrupt the cooling.
-        send_ir_(IR::TEMP_DOWN, TEMPF_MAX-TEMPF_MIN, 50000);
-        uint8_t up_steps = tempf-TEMPF_MIN;
+        send_ir_(IR::TEMP_DOWN, tempf_max_-tempf_min_, 50000);
+        uint8_t up_steps = tempf-tempf_min_;
         ESP_LOGD(TAG, "sending %d UP steps", up_steps);
         send_ir_(IR::TEMP_UP, up_steps, 50000);
       } else {
         // If we're not cooling, start by raising the temperature so we don't
         // accidentally start cooling.
-        send_ir_(IR::TEMP_UP, TEMPF_MAX-TEMPF_MIN, 50000);
-        uint8_t down_steps = TEMPF_MAX-tempf;
+        send_ir_(IR::TEMP_UP, tempf_max_-tempf_min_, 50000);
+        uint8_t down_steps = tempf_max_-tempf;
         ESP_LOGD(TAG, "sending %d DOWN steps", down_steps);
         send_ir_(IR::TEMP_DOWN, down_steps, 50000);
       }
