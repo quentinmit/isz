@@ -11,11 +11,11 @@ namespace frigidaire_ac {
 
 static const char *const TAG = "climate.frigidaire_ac";
 
-const uint16_t IR_ADDRESS = 0xF508;
-const uint8_t TEMPF_MIN = 60;
-const uint8_t TEMPF_MAX = 90;
-
 class FrigidaireACClimate : public Component, public climate::Climate {
+ protected:
+  const uint16_t IR_ADDRESS = 0xF508;
+  const uint8_t TEMPF_MIN = 60;
+  const uint8_t TEMPF_MAX = 90;
  private:
   enum IR : uint8_t {
     FAN_DOWN = 4,
