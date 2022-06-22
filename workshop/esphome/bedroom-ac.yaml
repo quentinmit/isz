@@ -31,12 +31,12 @@ packages:
 
 sensor:
 - platform: dallas
-  address: 0xf100000284a16d28
+  address: 0xa4000002849c3328
   name: ${friendly_name} Output Temperature
   id: ac_output_temperature
   accuracy_decimals: 4
 - platform: dallas
-  address: 0xa4000002849c3328
+  address: 0xf100000284a16d28
   name: ${friendly_name} Input Temperature
   id: ac_input_temperature
   accuracy_decimals: 4
@@ -54,8 +54,8 @@ sensor:
 #    }
 #    return std::string("Standby"); // 0.7W
 
-#climate:
-#- platform: frigidaire_ac
-#  name: ${friendly_name}
-#  temperature_sensor: ac_output_temperature
-#  power_sensor: wattage
+climate:
+- platform: kenmore_ac
+  name: ${friendly_name}
+  temperature_sensor: ac_input_temperature
+  power_sensor: wattage

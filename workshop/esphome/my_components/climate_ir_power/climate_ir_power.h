@@ -13,9 +13,9 @@ static const char *const TAG = "climate.climate_ir_power";
 
 class ClimateIRPower : public Component, public climate::Climate {
  protected:
-  const uint16_t ir_address_ = 0;
-  const uint8_t tempf_min_ = 0;
-  const uint8_t tempf_max_ = 0;
+  const uint16_t ir_address_;
+  const uint8_t tempf_min_;
+  const uint8_t tempf_max_;
  ClimateIRPower(uint16_t ir_address, uint8_t tempf_min, uint8_t tempf_max) : ir_address_(ir_address), tempf_min_(tempf_min), tempf_max_(tempf_max) {};
  public:
   void setup() override {
