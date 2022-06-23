@@ -32,6 +32,7 @@ void KenmoreACClimate::setup() {
          this->action = climate::CLIMATE_ACTION_OFF;
         if (update_mode) {
           this->mode = climate::CLIMATE_MODE_OFF;
+          this->preset = climate::CLIMATE_PRESET_NONE;
         }
       } else if (power < 5) {
         this->action = climate::CLIMATE_ACTION_IDLE;
@@ -73,32 +74,50 @@ void KenmoreACClimate::control(const climate::ClimateCall &call) {
     }
   }
   if (new_mode != this->mode || new_preset != this->preset) {
-    /*
     // Send mode to hardware
     if (this->mode == climate::CLIMATE_MODE_OFF) {
       send_ir_(IR::POWER);
       this->target_temperature_f = 0;
+      // Restores to previous fan/cool state, but eco is turned off.
+      this->preset = climate::CLIMATE_PRESET_NONE;
+      // Assume it was in cool before.
+      this->mode = climate::CLIMATE_MODE_COOL;
     }
     if (new_preset == climate::CLIMATE_PRESET_ECO) {
-      send_ir_(IR::MODE_ESAVE);
+      if (this->mode != climate::CLIMATE_MODE_COOL) {
+        send_ir_(IR::MODE);
+      }
+      if (this->preset != climate::CLIMATE_PRESET_ECO) {
+        send_ir_(IR::ESAVE);
+      }
     } else {
       switch (new_mode) {
       case climate::CLIMATE_MODE_COOL:
-        send_ir_(IR::MODE_COOL);
+        if (this->mode != climate::CLIMATE_MODE_COOL) {
+          send_ir_(IR::MODE);
+        }
+        if (this->preset == climate::CLIMATE_PRESET_ECO) {
+          send_ir_(IR::ESAVE);
+        }
         break;
       case climate::CLIMATE_MODE_FAN_ONLY:
-        send_ir_(IR::MODE_FAN);
+        if (this->mode != climate::CLIMATE_MODE_FAN_ONLY) {
+          send_ir_(IR::MODE);
+        }
         this->target_temperature_f = 0;
         break;
       case climate::CLIMATE_MODE_OFF:
         this->target_temperature_f = 0;
+        if (this->mode == climate::CLIMATE_MODE_FAN_ONLY) {
+          // Switch to cool before powering off.
+          send_ir_(IR::MODE);
+        }
         send_ir_(IR::POWER);
         break;
       default:
         ESP_LOGW(TAG, "Unsupported mode %d", new_mode);
       }
     }
-    */
 
     // Publish updated state
     this->mode = new_mode;
@@ -146,29 +165,12 @@ void KenmoreACClimate::control(const climate::ClimateCall &call) {
     changed = true;
   }
   if (call.get_fan_mode().has_value()) {
-    climate::ClimateFanMode fan_mode = *call.get_fan_mode();
+    climate::ClimateFanMode new_fan_mode = *call.get_fan_mode();
     ESP_LOGD(TAG, "fan_mode before: 0x%02X new: 0x%02X", *this->fan_mode, fan_mode);
-    /*
-    switch (fan_mode) {
-    case climate::CLIMATE_FAN_AUTO:
-      send_ir_(IR::FAN_DOWN, 1);
-      send_ir_(IR::FAN_AUTO);
-      break;
-    case climate::CLIMATE_FAN_HIGH:
-      send_ir_(IR::FAN_UP, 3);
-      break;
-    case climate::CLIMATE_FAN_MEDIUM:
-      send_ir_(IR::FAN_DOWN, 3);
-      send_ir_(IR::FAN_UP);
-      break;
-    case climate::CLIMATE_FAN_LOW:
-      send_ir_(IR::FAN_DOWN, 3);
-      break;
-    default:
-      // Unsupported fan modes
-      break;
-      };*/
-    this->fan_mode = fan_mode;
+    if (new_fan_mode != *fan_mode) {
+      send_ir_(IR::FAN_SPEED);
+    }
+    this->fan_mode = new_fan_mode;
     changed = true;
   }
   if (changed) {
