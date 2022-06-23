@@ -4,3 +4,9 @@
 [submodule "workshop/atuin"]
 	path = workshop/atuin
 	url = https://github.com/ellie/atuin.git
+[submodule "workshop/telegraf-docker/telegraf"]
+	path = workshop/telegraf-docker/telegraf
+	url = https://github.com/influxdata/telegraf.git
+[submodule "workshop/telegraf-docker/influxdata-docker"]
+	path = workshop/telegraf-docker/influxdata-docker
+	url = https://github.com/influxdata/influxdata-docker.git
