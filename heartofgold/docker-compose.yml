@@ -24,6 +24,7 @@ services:
       - COLLECT_INFLUXDB_BUCKET=rtlamr
       - COLLECT_INFLUXDB_MEASUREMENT=rtlamr
       - COLLECT_STRICTIDM=1
+      - COLLECT_LOGLEVEL=trace
       - RTLAMR_FORMAT=json
       - RTLAMR_MSGTYPE=all
       - RTLAMR_SERVER=rtl_tcp:1234
