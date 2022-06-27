@@ -1,0 +1,2 @@
+secrets.yaml filter=git-crypt-workshop diff=git-crypt-workshop
+service-account.json filter=git-crypt-workshop diff=git-crypt-workshop
