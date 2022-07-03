@@ -355,8 +355,8 @@ font:
   - file: 'fonts/Google_Sans_Bold.ttf'
     id: bold_28
     size: 28
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
+    glyphs: &base_glyphs
+      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0', '[', ']', "'", '=', '(', ')',
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
         'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
         'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
@@ -367,124 +367,56 @@ font:
   - file: 'fonts/Google_Sans_Bold.ttf'
     id: bold_32
     size: 32
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Bold.ttf'
     id: bold_40
     size: 40
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Bold.ttf'
     id: bold_48
     size: 48
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Medium.ttf'
     id: medium_16
     size: 16
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Medium.ttf'
     id: medium_20
     size: 20
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Medium.ttf'
     id: medium_24
     size: 24
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Medium.ttf'
     id: medium_28
     size: 28
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Medium.ttf'
     id: medium_32
     size: 32
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Medium.ttf'
     id: medium_36
     size: 36
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
   - file: 'fonts/Google_Sans_Medium.ttf'
     id: medium_40
     size: 40
-    glyphs:
-      ['?', '&', '@', '!', ',', '.', '"', '%', '+', '-', '_', ':', '°', '0',
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Ç', 'D', 'E',
-        'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'Q',
-        'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'W', 'X', 'Y', 'Z', ' ', 'a', 'b', 'c',
-        'ç', 'd', 'e', 'f', 'g', 'ğ', 'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'ö', 'p', 'q', 'r', 's', 'ş', 't', 'u', 'ü', 'v', 'w', 'x', 'y', 'z', '/',
-        'è']
+    glyphs: *base_glyphs
 
 mqtt_image:
+
+log_widget:
 
 display:
 - platform: inkplate6
@@ -519,6 +451,87 @@ display:
     number: 5
 
   pages:
+  - id: log_page
+    widgets:
+      vertical:
+      - log:
+          font: medium_16
+      - maximum_size: [infinite, preferred]
+        horizontal:
+        - button:
+            content:
+              text:
+                text: "Left"
+                align: center
+                font: medium_40
+        - button:
+            content:
+              text:
+                text: "Right"
+                align: center
+                font: medium_40
+#      - horizontal:
+#        - forecast: day1
+#        - forecast: day2
+#        - forecast: day3
+#      - horizontal:
+#        - button: "night"
+#        - button: "night+"
+#        - button: "TV mode"
+      - maximum_size: [infinite, preferred]
+        horizontal:
+        - maximum_size: preferred
+          horizontal:
+          - text:
+              text: "\U000F140B"
+              font: font_icon_small
+          - text:
+              format: "%4.0fW"
+              sensor: eversource_power
+              font: medium_32
+              align: baseline left
+        - text:
+            text: !lambda |
+              id(uptime_sensor).update();
+              int seconds = round(id(uptime_sensor).raw_state);
+              int days = seconds / (24 * 3600);
+              seconds = seconds % (24 * 3600);
+              int hours = seconds / 3600;
+              seconds = seconds % 3600;
+              int minutes = seconds /  60;
+              seconds = seconds % 60;
+              return "Up " + (
+                (days ? to_string(days) + "d " : "") +
+                (hours ? to_string(hours) + "h " : "") +
+                (minutes ? to_string(minutes) + "m " : "") +
+                (to_string(seconds) + "s")
+              );
+            font: medium_32
+            align: center
+        - horizontal:
+          - text:
+              format: "%5.1f"
+              sensor: download_speed
+              font: medium_32
+              align: baseline left
+          - text:
+              format: "Mbps"
+              font: medium_20
+              align: baseline left
+          maximum_size: preferred
+        - text:
+            text: !lambda |
+              if (wifi::global_wifi_component->is_connected()) {
+                float rssi = id(wifi_signal_dBm).state;
+                if (rssi >= -50) { return "\U000F08BE"; } // 3 bars
+                else if (rssi >= -60) { return "\U000F08BD"; } // 2 bars
+                else if (rssi >= -70) { return "\U000F08BC"; } // 1 bar
+                return "\U000F08BF"; // 0 bars
+              }
+              return "\U000F0783"; // X bars
+            font: font_icon_small
+          maximum_size: preferred
+
   # - id: test_page
   #   widgets:
   #     - vertical:
