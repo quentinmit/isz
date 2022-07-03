@@ -48,12 +48,13 @@ esphome:
     - -DARDUINO_LOOP_STACK_SIZE=32768
 
 external_components:
-- source: ../../../esphome/esphome/components
+#- source: ../../../esphome/esphome/components
+- source: github://quentinmit/esphome@hdmi-cec
   components:
   - hdmi_cec
-#- source: github://johnboiles/esphome@hdmi-cec
-#  components:
-#  - hdmi_cec
+- source: github://pr#3577
+  components: wifi
+  refresh: 0s
 
 #  - source: github://quentinmit/esphome@remote
 #    components: [ remote_receiver ]
