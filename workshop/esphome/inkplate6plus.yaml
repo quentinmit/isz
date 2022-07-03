@@ -93,6 +93,7 @@ sensor:
       return adc;
     filters:
       - multiply: 2
+    accuracy_decimals: 3
     unit_of_measurement: V
   - platform: wifi_signal
     id: wifi_signal_dBm
