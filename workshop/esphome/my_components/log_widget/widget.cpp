@@ -17,6 +17,15 @@ namespace isz {
           lines_.resize(max_lines_-1);
         }
         std::string s;
+        esphome::time::ESPTime now;
+        if (time_ && (now = time_->now()).is_valid()) {
+          s = now.strftime("[%H:%M:%S]");
+        } else {
+          char buf[128];
+          uint32_t m = millis();
+          snprintf(buf, 128, "[%d.%03ds]", m / 1000, m % 1000);
+          s = buf;
+        }
         while (char c = *(message++)) {
           if (c == 0x1B) {
             // Strip escape sequences

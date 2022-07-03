@@ -7,13 +7,13 @@
 
 #include "esphome/components/display/display_buffer.h"
 #include "esphome/components/display/widgets.h"
-
-#include <PNGdec.h>
+#include "esphome/components/time/real_time_clock.h"
 
 namespace isz {
   class LogWidget : public esphome::display::Widget, public esphome::Component {
   public:
     void set_font(esphome::display::Font* font) { font_ = font; }
+    void set_time(esphome::time::RealTimeClock *time) { time_ = time; }
 
     void setup() override;
     float get_setup_priority() const override;
@@ -23,6 +23,8 @@ namespace isz {
 
   protected:
     esphome::display::Font* font_;
+    esphome::time::RealTimeClock *time_;
+
     std::deque<std::string> lines_;
     int max_lines_ = 10;
   };
