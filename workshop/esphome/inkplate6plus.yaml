@@ -1,13 +1,14 @@
-esphome:
+substitutions:
   name: inkplate6plus
+  friendly_name: Inkplate
 
 esp32:
   board: esp-wrover-kit
   framework:
     type: arduino
 
-external_components:
-- source: ./my_components
+packages:
+  isz_base: !include include/isz-base.yaml
 
 # Enable logging
 logger:
@@ -18,32 +19,9 @@ logger:
     wifi: DEBUG
     mqtt: DEBUG
 
-# Enable Home Assistant API
-api:
-
-ota:
-  password: !secret ota_password
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  domain: .guest.isz.wtf
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Inkplate6Plus Fallback Hotspot"
-    password: !secret fallback_password
-
-captive_portal:
-
 mqtt:
   broker: !secret mqtt_broker
   discovery: false
-
-button:
-  - platform: restart
-    name: "Inkplate Reboot"
-    id: reboot
 
 switch:
   - platform: gpio
