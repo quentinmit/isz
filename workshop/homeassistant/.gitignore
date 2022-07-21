@@ -1,2 +1,2 @@
-*.log
+/home-assistant.log*
 /tts
