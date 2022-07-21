@@ -116,7 +116,13 @@ class Fluke45Protocol(asyncio.Protocol):
             self._pending_response = asyncio.get_running_loop().create_future()
         self.logger.debug('write %r', command)
         self.transport.write(command)
-        return await self._pending_response
+        try:
+            return await asyncio.shield(self._pending_response)
+        except asyncio.CancelledError:
+            self.transport.write(b'\x03')
+            # The prompt will trigger cleanup
+            await self._pending_response
+            raise
 
     # *CLS Clear Status
     # *ESE <value> Event Status Enable
@@ -267,13 +273,20 @@ class Fluke45Protocol(asyncio.Protocol):
     # MEAS1?
     # MEAS2?
     # MEAS? Both measurements (comma-separated if secondary display is active)
-    async def get_value(self):
-        res = await self.ask(b"VAL?")
+    async def _get_value(self, command):
+        res = await self.ask(command)
         n, unit = res.split(b' ')
         return float(n) * _UNITS[unit]
+    async def get_next_value(self):
+        return await self._get_value(b'MEAS?')
     # VAL1?
     # VAL2?
     # VAL?
+    async def get_last_value(self):
+        return await self._get_value(b'VAL?')
+
+    async def measure(self):
+        return await self._get_value(b'*TRG;VAL?')
 
     # COMP Compare + touch hold
     # COMP? Query compare results
@@ -328,10 +341,15 @@ async def main():
     logging.info('rate: %s', await protocol.get_rate())
     await protocol.set_trigger_mode(protocol.TriggerMode.External)
     #print("both", await protocol.ask(b"*IDN?;VAL?"))
-    #for i in range(10):
-    #    await protocol.ask(b'*TRG')
-    #    print("value", await protocol.get_value())
-    print("combined", await protocol.ask(b'LOCS'))
+    try:
+        print("value", await asyncio.wait_for(protocol.get_last_value(), timeout=5.0))
+    except asyncio.TimeoutError:
+        print("timeout")
+    for i in range(10):
+        try:
+            print("value", await asyncio.wait_for(protocol.measure(), timeout=1.0))
+        except asyncio.TimeoutError:
+            print("timeout")
     await protocol.set_trigger_mode(protocol.TriggerMode.Internal)
 if __name__ == "__main__":
     asyncio.run(main())
