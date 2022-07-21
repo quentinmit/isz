@@ -119,6 +119,7 @@ class Fluke45Protocol(asyncio.Protocol):
         try:
             return await asyncio.shield(self._pending_response)
         except asyncio.CancelledError:
+            # Send a ^C to get back to a happy place
             self.transport.write(b'\x03')
             # The prompt will trigger cleanup
             await self._pending_response
@@ -180,6 +181,8 @@ class Fluke45Protocol(asyncio.Protocol):
         8000, # = 21
     ]
     # DBREF? Query dB reference impedance
+    async def get_db_reference(self):
+        return self._DB_REF_IMPEDANCES[int(await self.ask(b'DBREF?'))-1] * ureg.ohm
 
     # HOLD Touch hold
     # HOLDCLR Clear touch hold
@@ -259,7 +262,7 @@ class Fluke45Protocol(asyncio.Protocol):
             b'VDC': self._RANGE_VOLTS,
         }[func][int(range)-1]
         if rate == b'S' and str(raw)[0] == '3':
-            raw = raw / 3
+            raw = (raw.magnitude//3)*raw.units
         return raw
     # RATE <speed>
     class Rate(enum.Enum):
@@ -335,14 +338,15 @@ async def main():
         except Exception as e:
             logging.exception("command %r", cmd)
     await protocol.ask(b"OHMS")
-    logging.info('auto: %s', await protocol.get_auto_range())
-    logging.info('range 1: %s', await protocol.get_range(1))
-    #logging.info('range 2: %s', await protocol.get_range(2))
-    logging.info('rate: %s', await protocol.get_rate())
+    for name in "get_auto_range get_range get_rate get_db_reference".split():
+        try:
+            logging.info("%s: %s", name, await getattr(protocol, name)())
+        except Exception as e:
+            logging.exception("failed to %s", name)
     await protocol.set_trigger_mode(protocol.TriggerMode.External)
     #print("both", await protocol.ask(b"*IDN?;VAL?"))
     try:
-        print("value", await asyncio.wait_for(protocol.get_last_value(), timeout=5.0))
+        print("value", await asyncio.wait_for(protocol.get_last_value(), timeout=1.0))
     except asyncio.TimeoutError:
         print("timeout")
     for i in range(10):
