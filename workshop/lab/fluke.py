@@ -17,10 +17,14 @@ ureg = pint.UnitRegistry()
 _UNITS = {
     b"VDC": ureg.volt, # VDC and diode drop
     b"VAC": ureg.volt,
+    b"VACDC": ureg.volt,
     b"ADC": ureg.amp,
     b"AAC": ureg.amp,
+    b"AACDC": ureg.amp,
     b"OHMS": ureg.ohm,
     b"HZ": ureg.Hz,
+    b"DB": ureg.dBm,
+    b"W": ureg.watt
 }
 
 ConnectionState = enum.Enum('ConnectionState', 'DISCONNECTED CONNECTING INITIALIZING READY')
@@ -141,7 +145,7 @@ class Fluke45Protocol(asyncio.Protocol):
     # *WAI Wait-to-continue (noop)
 
     # AAC, AAC2 AC Current
-    # AACDC AA + DC rms current
+    # AACDC AC + DC rms current
     # ADC, ADC2 DC Current
     # , CLR2 Clear secondary display
     # CONT Continuity test
@@ -152,6 +156,31 @@ class Fluke45Protocol(asyncio.Protocol):
     # VAC, VAC2 AC volts
     # VACDC AC + DC rms volts
     # VDC, VDC2 DC volts
+
+    class Function(enum.Enum):
+        AmpsAC = b"AAC"
+        AmpsACDC = b"AACDC"
+        AmpsDC = b"ADC"
+        Continuity = b"CONT"
+        Diode = b"DIODE"
+        Frequency = b"FREQ"
+        Ohms = b"OHMS"
+        VoltsAC = b"VAC"
+        VoltsACDC = b"VACDC"
+        VoltsDC = b"VDC"
+        Clear = b"CLR"
+
+    async def get_function(self, display=1):
+        try:
+            return self.Function(await self.ask(b'FUNC%d?' % (display,)))
+        except ExecutionError:
+            return self.Function.Clear
+
+    async def set_function(self, function, display=1):
+        cmd = function.value
+        if display != 1:
+            cmd += b"%d" % (display,)
+        await self.ask(cmd)
 
     # DB Primary display decibels
     # DBCLR Clear DB, DBPOWER, REL, MIN, MAX
@@ -183,6 +212,10 @@ class Fluke45Protocol(asyncio.Protocol):
     # DBREF? Query dB reference impedance
     async def get_db_reference(self):
         return self._DB_REF_IMPEDANCES[int(await self.ask(b'DBREF?'))-1] * ureg.ohm
+    async def set_db_reference(self, value, loose=True):
+        m = value.m_as(ureg.ohm)
+        _, i = min((abs(x-m), i) for i,x in enumerate(self._DB_REF_IMPEDANCES))
+        await self.ask(b'DBREF %d' % (i+1))
 
     # HOLD Touch hold
     # HOLDCLR Clear touch hold
@@ -205,12 +238,18 @@ class Fluke45Protocol(asyncio.Protocol):
         REL = 32
         COMP = 64
 
+    async def get_modifiers(self):
+        return self.Modifiers(int(await self.ask(b'MOD?')))
+
     # REL
     # RELCLR
     # RELSET <value>
     # RELSET?
 
     # AUTO Auto-ranging
+    async def set_auto_range(self, auto):
+        await self.ask(b'AUTO' if auto else b'FIXED')
+
     # AUTO? Query auto-ranging
     async def get_auto_range(self):
         return await self.ask(b'AUTO?') == b'1'
@@ -249,6 +288,12 @@ class Fluke45Protocol(asyncio.Protocol):
     async def get_range(self, display=1):
         parts = await self.ask(b'FUNC%d?;RATE?;RANGE%d?' % (display, display))
         func, rate, range = parts.split(b';')
+        if func in (b'CONT', b'DIODE'):
+            return {
+                b'S': 999.99*ureg.millivolt,
+                b'M': 2.5*ureg.volt,
+                b'F': 2.5*ureg.volt,
+            }[rate]
         raw = {
             b'AAC': self._RANGE_AMPS,
             b'AACDC': self._RANGE_AMPS,
@@ -276,20 +321,34 @@ class Fluke45Protocol(asyncio.Protocol):
     # MEAS1?
     # MEAS2?
     # MEAS? Both measurements (comma-separated if secondary display is active)
-    async def _get_value(self, command):
+    async def _get_value(self, command, display=None):
+        if display:
+            command += b'%d?' % (display,)
+        else:
+            command += b'?'
         res = await self.ask(command)
+        parts = tuple(self._parse_value(v) for v in res.split(b', '))
+        if len(parts) == 1:
+            return parts[0]
+        return parts
+    def _parse_value(self, res):
         n, unit = res.split(b' ')
-        return float(n) * _UNITS[unit]
-    async def get_next_value(self):
-        return await self._get_value(b'MEAS?')
+        if n == b'+1E+9':
+            n = float('inf')
+        else:
+            n = float(n)
+        return pint.Quantity(n, _UNITS[unit])
+
+    async def get_next_value(self, display=None):
+        return await self._get_value(b'MEAS', display)
     # VAL1?
     # VAL2?
     # VAL?
-    async def get_last_value(self):
-        return await self._get_value(b'VAL?')
+    async def get_last_value(self, display=None):
+        return await self._get_value(b'VAL')
 
-    async def measure(self):
-        return await self._get_value(b'*TRG;VAL?')
+    async def measure(self, display=None):
+        return await self._get_value(b'*TRG;VAL')
 
     # COMP Compare + touch hold
     # COMP? Query compare results
@@ -332,17 +391,26 @@ async def main():
         Fluke45Protocol,
         '/dev/ttyFluke45',
         baudrate=9600)
-    for cmd in b"*IDN? RATE? *ESE? *ESR? *STB? FUNC1? FUNC2? *MEAS? MEASS?".split():
+    for cmd in b"*IDN? *ESE? *ESR? *STB? *MEAS? MEASS?".split():
         try:
             print(cmd, await protocol.ask(cmd))
         except Exception as e:
             logging.exception("command %r", cmd)
-    await protocol.ask(b"OHMS")
-    for name in "get_auto_range get_range get_rate get_db_reference".split():
+    for name in "get_function get_auto_range get_range get_rate get_db_reference get_modifiers".split():
         try:
             logging.info("%s: %s", name, await getattr(protocol, name)())
         except Exception as e:
             logging.exception("failed to %s", name)
+    print("display 2 function", await protocol.get_function(display=2))
+    await protocol.set_function(protocol.Function.VoltsDC)
+    #await protocol.set_function(protocol.Function.Clear, display=2)
+    #await protocol.ask(b'VDC')
+    #await protocol.set_db_reference(16*ureg.ohm)
+    #await protocol.ask(b'DBPOWER;MAX')
+    print('value', await protocol.measure())
+
+async def test_trigger(self):
+    await protocol.ask(b"OHMS")
     await protocol.set_trigger_mode(protocol.TriggerMode.External)
     #print("both", await protocol.ask(b"*IDN?;VAL?"))
     try:
