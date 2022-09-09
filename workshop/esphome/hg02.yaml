@@ -1,0 +1,73 @@
+substitutions:
+  name: hg02
+  friendly_name: HUGOAI HG02
+
+esp8266:
+  board: esp_wroom_02
+
+packages:
+  isz_base: !include include/isz-base.yaml
+
+logger:
+  baud_rate: 0
+
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 9600
+
+# Register the Tuya MCU connection
+tuya:
+  id: tuya_bus
+
+api:
+  services:
+  - service: tuya_set_boolean_dp
+    variables:
+      datapoint_id: int
+      value: bool
+    then:
+    - lambda: |
+        id(tuya_bus).set_boolean_datapoint_value(datapoint_id, value);
+  - service: tuya_set_enum_dp
+    variables:
+      datapoint_id: int
+      value: int
+    then:
+    - lambda: |
+        id(tuya_bus).set_enum_datapoint_value(datapoint_id, value);
+  - service: tuya_set_integer_dp
+    variables:
+      datapoint_id: int
+      value: int
+    then:
+    - lambda: |
+        id(tuya_bus).set_integer_datapoint_value(datapoint_id, value);
+
+# Datapoint 20: switch (value: ON)
+# switch_led
+# Datapoint 21: enum (value: 0)
+# work_mode: ["white", "colour", "scene", "music"]
+# Datapoint 22: int value (value: 500)
+# bright_value_v2: 10-1000
+# Datapoint 23: int value (value: 500)
+# temp_value_v2: 0-1000
+# Product: '{"p":"5adbusgachewfheh","v":"1.1.0","m":0}'
+# 24: colour_data_v2
+# 25: scene_data_v2
+# 26: countdown_1
+# 28: control_data
+
+light:
+  platform: hugoai_hg02
+  name: Light
+  switch_datapoint: 20
+#  work_mode_datapoint: 21
+  dimmer_datapoint: 22
+  min_value: 10
+  max_value: 1000
+  color_temperature_datapoint: 23
+  color_temperature_max_value: 1000
+  cold_white_color_temperature: 6000 K
+  warm_white_color_temperature: 2000 K
+  #hsv_datapoint: 24
