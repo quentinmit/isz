@@ -174,6 +174,7 @@
       content: |
         SUBSYSTEM=="tty", ATTRS{product}=="Epic-PWRgate", RUN+="/usr/bin/ln -f $devnode /dev/ttyPwrgate"
         SUBSYSTEM=="tty", ATTRS{idProduct}=="0200", ATTRS{idVendor}=="0658", RUN+="/usr/bin/ln -f $devnode /dev/ttyZwave"
+        SUBSYSTEM=="tty", ATTRS{idProduct}=="6011", ATTRS{idVendor}=="0403", ATTRS{bInterfaceNumber}=="00", RUN+="/usr/bin/ln -f $devnode /dev/ttyFluke45"
   - when: ansible_machine == "aarch64" and ansible_chassis_vendor == ""
     block:
     - copy:
