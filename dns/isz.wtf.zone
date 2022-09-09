@@ -76,6 +76,8 @@ livingroom-ac    A 192.168.88.7
                  EUI48 3C-61-05-F6-DA-FC
 bedroom-ac       A 192.168.88.8
                  EUI48 3C-61-05-F6-DB-9A
+hg02             A 192.168.88.9
+                 EUI48 EC-FA-BC-57-D6-2F
 
 ; DHCP range is 88.50-254
 
