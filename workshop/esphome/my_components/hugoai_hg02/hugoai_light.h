@@ -15,11 +15,7 @@ class HugoaiLight : public Component, public light::LightOutput {
   void dump_config() override;
   void set_dimmer_id(uint8_t dimmer_id) { this->dimmer_id_ = dimmer_id; }
   void set_work_mode_id(uint8_t work_mode_id) { this->work_mode_id_ = work_mode_id; }
-  void set_min_value_datapoint_id(uint8_t min_value_datapoint_id) {
-    this->min_value_datapoint_id_ = min_value_datapoint_id;
-  }
   void set_switch_id(uint8_t switch_id) { this->switch_id_ = switch_id; }
-  void set_rgb_id(uint8_t rgb_id) { this->rgb_id_ = rgb_id; }
   void set_hsv_id(uint8_t hsv_id) { this->hsv_id_ = hsv_id; }
   void set_color_temperature_id(uint8_t color_temperature_id) { this->color_temperature_id_ = color_temperature_id; }
   void set_color_temperature_invert(bool color_temperature_invert) {
@@ -52,7 +48,6 @@ class HugoaiLight : public Component, public light::LightOutput {
   optional<uint8_t> work_mode_id_{};
   optional<uint8_t> min_value_datapoint_id_{};
   optional<uint8_t> switch_id_{};
-  optional<uint8_t> rgb_id_{};
   optional<uint8_t> hsv_id_{};
   optional<uint8_t> color_temperature_id_{};
   uint32_t min_value_ = 0;

@@ -18,11 +18,9 @@ DEPENDENCIES = ["tuya"]
 
 CONF_WORK_MODE_DATAPOINT = "work_mode_datapoint"
 CONF_DIMMER_DATAPOINT = "dimmer_datapoint"
-CONF_MIN_VALUE_DATAPOINT = "min_value_datapoint"
 CONF_COLOR_TEMPERATURE_DATAPOINT = "color_temperature_datapoint"
 CONF_COLOR_TEMPERATURE_INVERT = "color_temperature_invert"
 CONF_COLOR_TEMPERATURE_MAX_VALUE = "color_temperature_max_value"
-CONF_RGB_DATAPOINT = "rgb_datapoint"
 CONF_HSV_DATAPOINT = "hsv_datapoint"
 
 hugoai_ns = cg.esphome_ns.namespace('hugoai')
@@ -35,11 +33,9 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(CONF_TUYA_ID): cv.use_id(Tuya),
             cv.Optional(CONF_WORK_MODE_DATAPOINT): cv.uint8_t,
             cv.Optional(CONF_DIMMER_DATAPOINT): cv.uint8_t,
-            cv.Optional(CONF_MIN_VALUE_DATAPOINT): cv.uint8_t,
             cv.Optional(CONF_SWITCH_DATAPOINT): cv.uint8_t,
-            cv.Exclusive(CONF_RGB_DATAPOINT, "color"): cv.uint8_t,
-            cv.Exclusive(CONF_HSV_DATAPOINT, "color"): cv.uint8_t,
-            cv.Optional(CONF_COLOR_INTERLOCK, default=False): cv.boolean,
+            cv.Optional(CONF_HSV_DATAPOINT): cv.uint8_t,
+            cv.Optional(CONF_COLOR_INTERLOCK, default=True): cv.boolean,
             cv.Inclusive(
                 CONF_COLOR_TEMPERATURE_DATAPOINT, "color_temperature"
             ): cv.uint8_t,
@@ -64,7 +60,6 @@ CONFIG_SCHEMA = cv.All(
     cv.has_at_least_one_key(
         CONF_DIMMER_DATAPOINT,
         CONF_SWITCH_DATAPOINT,
-        CONF_RGB_DATAPOINT,
         CONF_HSV_DATAPOINT,
     ),
 )
@@ -79,13 +74,9 @@ async def to_code(config):
         cg.add(var.set_work_mode_id(config[CONF_WORK_MODE_DATAPOINT]))
     if CONF_DIMMER_DATAPOINT in config:
         cg.add(var.set_dimmer_id(config[CONF_DIMMER_DATAPOINT]))
-    if CONF_MIN_VALUE_DATAPOINT in config:
-        cg.add(var.set_min_value_datapoint_id(config[CONF_MIN_VALUE_DATAPOINT]))
     if CONF_SWITCH_DATAPOINT in config:
         cg.add(var.set_switch_id(config[CONF_SWITCH_DATAPOINT]))
-    if CONF_RGB_DATAPOINT in config:
-        cg.add(var.set_rgb_id(config[CONF_RGB_DATAPOINT]))
-    elif CONF_HSV_DATAPOINT in config:
+    if CONF_HSV_DATAPOINT in config:
         cg.add(var.set_hsv_id(config[CONF_HSV_DATAPOINT]))
     if CONF_COLOR_TEMPERATURE_DATAPOINT in config:
         cg.add(var.set_color_temperature_id(config[CONF_COLOR_TEMPERATURE_DATAPOINT]))

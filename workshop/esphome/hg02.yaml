@@ -10,6 +10,7 @@ packages:
 
 logger:
   baud_rate: 0
+  #level: VERBOSE
 
 uart:
   rx_pin: GPIO3
@@ -43,6 +44,13 @@ api:
     then:
     - lambda: |
         id(tuya_bus).set_integer_datapoint_value(datapoint_id, value);
+  - service: tuya_set_string_dp
+    variables:
+      datapoint_id: int
+      value: string
+    then:
+    - lambda: |
+        id(tuya_bus).set_string_datapoint_value(datapoint_id, value);
 
 # Datapoint 20: switch (value: ON)
 # switch_led
@@ -62,7 +70,7 @@ light:
   platform: hugoai_hg02
   name: Light
   switch_datapoint: 20
-#  work_mode_datapoint: 21
+  work_mode_datapoint: 21
   dimmer_datapoint: 22
   min_value: 10
   max_value: 1000
@@ -70,4 +78,4 @@ light:
   color_temperature_max_value: 1000
   cold_white_color_temperature: 6000 K
   warm_white_color_temperature: 2000 K
-  #hsv_datapoint: 24
+  hsv_datapoint: 24

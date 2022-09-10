@@ -6,10 +6,44 @@ namespace esphome {
 namespace hugoai {
 
 using namespace esphome::tuya;
+using esphome::light::ColorMode;
 
 static const char *const TAG = "hugoai.light";
 
+/* Datapoints:
+
+   20: switch_led (bool)
+   21: work_mode (enum - white/colour/scene/music)
+   22: bright_value_v2 (int - 10-1000)
+   23: temp_value_v2 (int - 0-1000)
+   24: colour_data_v2 (string - hue 0-360, saturation 0-1000, value 0-1000, 4 char lowercase hex per value)
+   25: scene_data_v2 (string)
+   26: countdown_1 (int - 0-86400)
+   28: control_data
+*/
+
 void HugoaiLight::setup() {
+  if (this->work_mode_id_.has_value()) {
+    this->parent_->register_listener(*this->work_mode_id_, [this](const TuyaDatapoint &datapoint) {
+      if (this->state_->current_values != this->state_->remote_values) {
+        ESP_LOGD(TAG, "Light is transitioning, datapoint change ignored");
+        return;
+      }
+
+      auto datapoint_value = datapoint.value_enum;
+
+      auto mode = datapoint_value > 0 ? ColorMode::RGB : ColorMode::COLOR_TEMPERATURE;
+
+      if (this->state_->remote_values.get_color_mode() == mode) {
+        return;
+      }
+
+      this->state_->current_values.set_color_mode(mode);
+      this->state_->remote_values.set_color_mode(mode);
+      this->state_->publish_state();
+    });
+  }
+
   if (this->color_temperature_id_.has_value()) {
     this->parent_->register_listener(*this->color_temperature_id_, [this](const TuyaDatapoint &datapoint) {
       if (this->state_->current_values != this->state_->remote_values) {
@@ -33,9 +67,6 @@ void HugoaiLight::setup() {
       this->state_->current_values.set_color_temperature(color_temperature);
       this->state_->remote_values.set_color_temperature(color_temperature);
       this->state_->publish_state();
-      //auto call = this->state_->make_call();
-      //call.set_color_temperature();
-      //call.perform();
     });
   }
   if (this->dimmer_id_.has_value()) {
@@ -53,10 +84,6 @@ void HugoaiLight::setup() {
       this->state_->current_values.set_brightness(brightness);
       this->state_->remote_values.set_brightness(brightness);
       this->state_->publish_state();
-
-      //auto call = this->state_->make_call();
-      //call.set_brightness(brightness);
-      //call.perform();
     });
   }
   if (switch_id_.has_value()) {
@@ -75,29 +102,9 @@ void HugoaiLight::setup() {
       this->state_->current_values.set_state(on);
       this->state_->remote_values.set_state(on);
       this->state_->publish_state();
-
-      //auto call = this->state_->make_call();
-      //call.set_state(datapoint.value_bool);
-      //call.perform();
     });
   }
-  if (rgb_id_.has_value()) {
-    this->parent_->register_listener(*this->rgb_id_, [this](const TuyaDatapoint &datapoint) {
-      auto red = parse_hex<uint8_t>(datapoint.value_string.substr(0, 2));
-      auto green = parse_hex<uint8_t>(datapoint.value_string.substr(2, 2));
-      auto blue = parse_hex<uint8_t>(datapoint.value_string.substr(4, 2));
-      if (red.has_value() && green.has_value() && blue.has_value()) {
-        if (this->state_->current_values != this->state_->remote_values) {
-          ESP_LOGD(TAG, "Light is transitioning, datapoint change ignored");
-          return;
-        }
-
-        auto call = this->state_->make_call();
-        call.set_rgb(float(*red) / 255, float(*green) / 255, float(*blue) / 255);
-        call.perform();
-      }
-    });
-  } else if (hsv_id_.has_value()) {
+  if (hsv_id_.has_value()) {
     this->parent_->register_listener(*this->hsv_id_, [this](const TuyaDatapoint &datapoint) {
       auto hue = parse_hex<uint16_t>(datapoint.value_string.substr(0, 4));
       auto saturation = parse_hex<uint16_t>(datapoint.value_string.substr(4, 4));
@@ -109,15 +116,25 @@ void HugoaiLight::setup() {
         }
 
         float red, green, blue;
-        hsv_to_rgb(*hue, float(*saturation) / 1000, float(*value) / 1000, red, green, blue);
-        auto call = this->state_->make_call();
-        call.set_rgb(red, green, blue);
-        call.perform();
+        hsv_to_rgb(*hue, float(*saturation) / 1000, 1.0, red, green, blue);
+
+        if (this->state_->remote_values.get_red() == red
+            && this->state_->remote_values.get_green() == green
+            && this->state_->remote_values.get_blue() == blue) {
+          return;
+        }
+        ESP_LOGV(TAG, "received HSV: (%d, %d, %d) -> RGB (%f, %f, %f)", *hue, *saturation, *value, red, green, blue);
+        this->state_->current_values.set_brightness(float(*value) / 1000);
+        this->state_->current_values.set_red(red);
+        this->state_->current_values.set_green(green);
+        this->state_->current_values.set_blue(blue);
+        this->state_->remote_values.set_brightness(float(*value) / 1000);
+        this->state_->remote_values.set_red(red);
+        this->state_->remote_values.set_green(green);
+        this->state_->remote_values.set_blue(blue);
+        this->state_->publish_state();
       }
     });
-  }
-  if (min_value_datapoint_id_.has_value()) {
-    parent_->set_integer_datapoint_value(*this->min_value_datapoint_id_, this->min_value_);
   }
 }
 
@@ -127,9 +144,7 @@ void HugoaiLight::dump_config() {
     ESP_LOGCONFIG(TAG, "   Dimmer has datapoint ID %u", *this->dimmer_id_);
   if (this->switch_id_.has_value())
     ESP_LOGCONFIG(TAG, "   Switch has datapoint ID %u", *this->switch_id_);
-  if (this->rgb_id_.has_value()) {
-    ESP_LOGCONFIG(TAG, "   RGB has datapoint ID %u", *this->rgb_id_);
-  } else if (this->hsv_id_.has_value()) {
+  if (this->hsv_id_.has_value()) {
     ESP_LOGCONFIG(TAG, "   HSV has datapoint ID %u", *this->hsv_id_);
   }
 }
@@ -137,7 +152,7 @@ void HugoaiLight::dump_config() {
 light::LightTraits HugoaiLight::get_traits() {
   auto traits = light::LightTraits();
   if (this->color_temperature_id_.has_value() && this->dimmer_id_.has_value()) {
-    if (this->rgb_id_.has_value() || this->hsv_id_.has_value()) {
+    if (this->hsv_id_.has_value()) {
       if (this->color_interlock_) {
         traits.set_supported_color_modes({light::ColorMode::RGB, light::ColorMode::COLOR_TEMPERATURE});
       } else {
@@ -148,7 +163,7 @@ light::LightTraits HugoaiLight::get_traits() {
       traits.set_supported_color_modes({light::ColorMode::COLOR_TEMPERATURE});
     traits.set_min_mireds(this->cold_white_temperature_);
     traits.set_max_mireds(this->warm_white_temperature_);
-  } else if (this->rgb_id_.has_value() || this->hsv_id_.has_value()) {
+  } else if (this->hsv_id_.has_value()) {
     if (this->dimmer_id_.has_value()) {
       if (this->color_interlock_) {
         traits.set_supported_color_modes({light::ColorMode::RGB, light::ColorMode::WHITE});
@@ -171,9 +186,12 @@ void HugoaiLight::write_state(light::LightState *state) {
   float red = 0.0f, green = 0.0f, blue = 0.0f;
   float color_temperature = 0.0f, brightness = 0.0f;
 
-  if (this->rgb_id_.has_value() || this->hsv_id_.has_value()) {
+  ESP_LOGV(TAG, "write_state(brightness=%f, color_brightness=%f, r=%f, g=%f, b=%f, ct=%f)", state->remote_values.get_brightness(), state->remote_values.get_color_brightness(), state->remote_values.get_red(), state->remote_values.get_green(), state->remote_values.get_blue(), state->remote_values.get_color_temperature());
+
+  if (this->hsv_id_.has_value()) {
     if (this->color_temperature_id_.has_value()) {
       state->current_values_as_rgbct(&red, &green, &blue, &color_temperature, &brightness);
+      ESP_LOGV(TAG, "write_state(r=%f, g=%f, b=%f, ct=%f, w=%f)", red, green, blue, color_temperature, brightness);
     } else if (this->dimmer_id_.has_value()) {
       state->current_values_as_rgbw(&red, &green, &blue, &brightness);
     } else {
@@ -190,7 +208,9 @@ void HugoaiLight::write_state(light::LightState *state) {
     return;
   }
 
-  if (brightness > 0.0f || !color_interlock_) {
+  auto mode = state->current_values.get_color_mode();
+
+  if (brightness > 0.0f || !color_interlock_ || mode == ColorMode::WHITE || mode == ColorMode::COLOR_TEMPERATURE) {
     if (this->color_temperature_id_.has_value()) {
       uint32_t color_temp_int = static_cast<uint32_t>(color_temperature * this->color_temperature_max_value_);
       if (this->color_temperature_invert_) {
@@ -205,15 +225,14 @@ void HugoaiLight::write_state(light::LightState *state) {
 
       parent_->set_integer_datapoint_value(*this->dimmer_id_, brightness_int);
     }
+
+    if (this->work_mode_id_.has_value()) {
+      parent_->set_enum_datapoint_value(*this->work_mode_id_, 0);
+    }
   }
 
-  if (brightness == 0.0f || !color_interlock_) {
-    if (this->rgb_id_.has_value()) {
-      char buffer[7];
-      sprintf(buffer, "%02x%02x%02x", int(red * 255), int(green * 255), int(blue * 255));
-      std::string rgb_value = buffer;
-      this->parent_->set_string_datapoint_value(*this->rgb_id_, rgb_value);
-    } else if (this->hsv_id_.has_value()) {
+  if (brightness == 0.0f || !color_interlock_ || mode == ColorMode::RGB) {
+    if (this->hsv_id_.has_value()) {
       int hue;
       float saturation, value;
       rgb_to_hsv(red, green, blue, hue, saturation, value);
@@ -221,6 +240,10 @@ void HugoaiLight::write_state(light::LightState *state) {
       sprintf(buffer, "%04x%04x%04x", hue, int(saturation * 1000), int(value * 1000));
       std::string hsv_value = buffer;
       this->parent_->set_string_datapoint_value(*this->hsv_id_, hsv_value);
+    }
+
+    if (this->work_mode_id_.has_value()) {
+      parent_->set_enum_datapoint_value(*this->work_mode_id_, 1);
     }
   }
 
