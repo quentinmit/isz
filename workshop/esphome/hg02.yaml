@@ -68,7 +68,7 @@ api:
 
 light:
   platform: hugoai_hg02
-  name: Light
+  name: HG02
   switch_datapoint: 20
   work_mode_datapoint: 21
   dimmer_datapoint: 22
