@@ -36,6 +36,8 @@ mac              A 172.30.96.100
                  EUI48 D4-5D-64-55-59-3E ; quentin hackintosh
 heartofgold      A 172.30.96.101
                  EUI48 8C-89-A5-1B-60-B2 ; heartofgold (public 8C:89:A5:1B:60:B2)
+steamdeck        A 172.30.96.102
+                 EUI48 2C-3B-70-EF-B6-6D
 
 pap2t            CNAME pap2t.guest
 bedroom-tasmota  CNAME bedroom-tasmota.guest
