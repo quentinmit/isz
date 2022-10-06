@@ -1,0 +1,57 @@
+- hosts:
+  - steamdeck.isz.wtf
+  serial: 1
+  tasks:
+  - name: Disable password logins over SSH
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^[ #]*PasswordAuthentication '
+      line: PasswordAuthentication no
+    notify: reload sshd
+  - ansible.builtin.systemd:
+      name: sshd
+      enabled: yes
+      state: started
+  - community.general.flatpak:
+      name:
+      # Network apps
+      - com.discordapp.Discord
+      - com.github.fries1234.ncsa-mosaic
+      - com.google.Chrome
+      - com.github.unrud.RemoteTouchpad
+      - com.github.iwalton3.jellyfin-media-player
+      - de.shorsh.discord-screenaudio
+      - me.kozec.syncthingtk
+      # Graphics
+      - com.boxy_svg.BoxySVG
+      - net.scribus.Scribus
+      - org.darktable.Darktable
+      - org.freecadweb.FreeCAD
+      - org.gimp.GIMP
+      - org.inkscape.Inkscape
+      # Games
+      - com.github.k4zmu2a.spacecadetpinball
+      - com.heroicgameslauncher.hgl
+      - io.openrct2.OpenRCT2
+      - net.sourceforge.ExtremeTuxRacer
+      - net.supertuxkart.SuperTuxKart
+      - org.libretro.RetroArch
+      # Development
+      - com.github.tchx84.Flatseal
+      - com.visualstudio.code.insiders
+      - io.github.shiftey.Desktop
+      - org.gnu.emacs
+      # Multimedia
+      - com.w1hkj.fldigi
+      - com.obsproject.Studio.Plugin.InputOverlay
+      - fr.natron.Natron
+      # Utilities
+      - com.whitemagicsoftware.kmcaster
+      - org.cubocore.CoreKeyboard
+      - org.linux_hardware.hw-probe
+      method: system
+  handlers:
+  - name: reload sshd
+    ansible.builtin.service:
+      name: sshd
+      state: reloaded

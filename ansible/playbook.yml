@@ -1,7 +1,8 @@
 - hosts: all
   serial: 1
   roles:
-  - debops.debops.etckeeper
+  - role: debops.debops.etckeeper
+    when: ansible_os_family == 'Debian'
   tasks:
     - name: Install playbook Python dependencies
       package:
@@ -9,5 +10,7 @@
           - python3-netaddr
           #- python3-dns{{ "python" if ansible_os_family == "Debian" else "" }}
         state: present
+      when: ansible_connection == 'local'
 
 - import_playbook: workshop.yml
+- import_playbook: steamdeck.yml

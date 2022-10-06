@@ -35,3 +35,6 @@ all:
     workshop.isz.wtf:
       isz_last_octet: 34
       macaddress: 04:42:1A:C9:93:8B
+    steamdeck.isz.wtf:
+      isz_last_octet: 102
+      macaddress: 2C:3B:70:EF:B6:6D
