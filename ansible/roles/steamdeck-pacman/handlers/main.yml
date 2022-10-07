@@ -1,0 +1,3 @@
+- name: enable readonly
+  ansible.builtin.command: /usr/bin/steamos-readonly enable
+

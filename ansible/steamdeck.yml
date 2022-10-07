@@ -22,6 +22,7 @@
       - com.github.iwalton3.jellyfin-media-player
       - de.shorsh.discord-screenaudio
       - me.kozec.syncthingtk
+      - io.freetubeapp.FreeTube
       # Graphics
       - com.boxy_svg.BoxySVG
       - net.scribus.Scribus
@@ -29,6 +30,7 @@
       - org.freecadweb.FreeCAD
       - org.gimp.GIMP
       - org.inkscape.Inkscape
+      - org.kde.krita
       # Games
       - com.github.k4zmu2a.spacecadetpinball
       - com.heroicgameslauncher.hgl
@@ -36,20 +38,65 @@
       - net.sourceforge.ExtremeTuxRacer
       - net.supertuxkart.SuperTuxKart
       - org.libretro.RetroArch
+      - com.steamgriddb.steam-rom-manager
+      - com.dosbox.DOSBox
+      - io.github.dosbox-staging
+      - org.duckstation.DuckStation
+      - app.xemu.xemu
       # Development
       - com.github.tchx84.Flatseal
-      - com.visualstudio.code.insiders
+      - com.visualstudio.code.insiders # flathub-beta
       - io.github.shiftey.Desktop
       - org.gnu.emacs
+      - org.ghidra_sre.Ghidra
       # Multimedia
       - com.w1hkj.fldigi
-      - com.obsproject.Studio.Plugin.InputOverlay
+      - com.obsproject.Studio
+      #- com.obsproject.Studio.Plugin.InputOverlay
+      - org.videolan.VLC
       - fr.natron.Natron
       # Utilities
       - com.whitemagicsoftware.kmcaster
       - org.cubocore.CoreKeyboard
       - org.linux_hardware.hw-probe
+      - net.davidotek.pupgui2
+      - com.usebottles.bottles
+      - com.steamgriddb.SGDBoop
       method: system
+  - ansible.builtin.command: pacman -Qk {{ packages | join(' ') }}
+    check_mode: no
+    register: missing_files
+    changed_when: no
+    failed_when: missing_files.rc > 1
+    vars:
+      packages:
+      - clang
+      - gcc
+      - gcc-libs
+      - glibc
+      - lib32-glibc
+      - linux-api-headers
+      - systemd
+      - systemd-swap
+      - systemd-sysvcompat
+  - ansible.builtin.include_role:
+      name: steamdeck-pacman
+    vars:
+      packages:
+      - base-devel
+      - git-lfs
+      - cmake
+      - htop
+      - wget
+      - ncdu
+      - holo/linux-headers
+      - linux-neptune-headers
+      - holo/linux-lts-headers
+      # Other packages to consider from
+      # https://www.reddit.com/r/SteamDeck/comments/t92ozw/comment/i8qxemd/?utm_source=share&utm_medium=web2x&context=3
+      # tmux git podman yay-git mlocate
+      force_reinstall_packages: '{{ missing_files.stdout_lines | reject("match", ".* 0 missing files") | map("split", ":") | map("first") }}'
+
   handlers:
   - name: reload sshd
     ansible.builtin.service:

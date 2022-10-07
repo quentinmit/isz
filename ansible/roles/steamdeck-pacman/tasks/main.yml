@@ -1,0 +1,28 @@
+---
+- ansible.builtin.command: /usr/bin/pacman-key --init
+  args:
+    creates: /etc/pacman.d/gnupg/gpg.conf
+  register: init_keys
+- ansible.builtin.lineinfile:
+    dest: /etc/pacman.d/gnupg/gpg.conf
+    regexp: '^[ #]*keyserver '
+    line: keyserver hkps://keyserver.ubuntu.com
+- when: init_keys.changed
+  block:
+  - ansible.builtin.command: /usr/bin/pacman-key --populate
+  - ansible.builtin.command: /usr/bin/pacman-key --refresh-keys
+- name: check if changes needed
+  community.general.pacman:
+    name: "{{ packages }}"
+    state: present
+  check_mode: yes
+  register: check_packages
+- when: check_packages.changed or force_reinstall_packages
+  block:
+  - ansible.builtin.command: /usr/bin/steamos-readonly disable
+    notify: enable readonly
+  - when: force_reinstall_packages
+    ansible.builtin.command: /usr/bin/pacman -S --noconfirm --noprogressbar {{ force_reinstall_packages | join(" ") }}
+  - community.general.pacman:
+      name: "{{ packages }}"
+      state: present
