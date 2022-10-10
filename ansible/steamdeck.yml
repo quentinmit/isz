@@ -79,6 +79,7 @@
       - systemd
       - systemd-swap
       - systemd-sysvcompat
+  # TODO: --overwrite needed for /etc/ld.so.conf.d/fakeroot.conf
   - ansible.builtin.include_role:
       name: steamdeck-pacman
     vars:
@@ -95,6 +96,9 @@
       # Other packages to consider from
       # https://www.reddit.com/r/SteamDeck/comments/t92ozw/comment/i8qxemd/?utm_source=share&utm_medium=web2x&context=3
       # tmux git podman yay-git mlocate
+      - onboard
+      - fingerterm
+      - qt5-xmlpatterns # missing dependency of fingerterm
       force_reinstall_packages: '{{ missing_files.stdout_lines | reject("match", ".* 0 missing files") | map("split", ":") | map("first") }}'
 
   handlers:
