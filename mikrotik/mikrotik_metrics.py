@@ -55,6 +55,32 @@ def to_rate(base: str, value: str):
         d[base] = int(float(num[:-4])*1e6)
     return d
 
+def to_channel(base: str, value: str) -> dict:
+    if not base == 'channel':
+        raise ValueError("wrong field")
+    freq_bands_mode = value
+    if "+" in freq_bands_mode:
+        freq_bands_mode = freq_bands_mode.split("+")[0]
+    center, bands, mode = freq_bands_mode.split("/")
+    center = int(center)
+    ret = {
+        base+"-name": value,
+        base+"-center-frequency": center*1000000,
+    }
+    try:
+        width, bands = bands.split("-")
+        width = int(width)
+        before, after = bands.split("C")
+        lower = center - width * len(before) - (width // 2)
+        upper = center + width * len(after) + (width // 2)
+        ret.update({
+            base+"-lower-frequency": lower*1000000,
+            base+"-upper-frequency": upper*1000000,
+        })
+    except ValueError:
+        logging.debug("Unable to parse %s", bands)
+    return ret
+
 DURATION_RE = re.compile(r'''
 ^
 (?:(?P<weeks>\d+)w)?
@@ -164,6 +190,7 @@ PARSERS = [
     to_bool,
     to_rate,
     to_signal,
+    to_channel,
     to_strength_at_rates,
     to_current_tx_powers,
     to_str,
