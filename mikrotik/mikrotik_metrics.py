@@ -159,6 +159,20 @@ TAGS = {
             "switch",
         },
     },
+    "/interface/wireless": {
+        "tag_props": {
+            "default-name",
+            "name",
+            "mac-address",
+            "radio-name",
+            "ssid",
+            "interface-type",
+            "master-interface",
+            "mode",
+            "disabled",
+            "band",
+        },
+    },
     "/interface/wireless/registration-table": {
         "tag_props": {
             "interface",
@@ -194,6 +208,7 @@ async def main():
                         help='password')
     parser.add_argument('--plaintext-login', action='store_true', default=False)
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--resource-type', '-r', metavar='PATH', default=None)
 
     args = parser.parse_args()
 
@@ -207,9 +222,17 @@ async def main():
     )
     api = conn.get_api()
 
+    tags = TAGS
+
+    if t := args.resource_type:
+        if t in tags:
+            tags = {t: tags[t]}
+        else:
+            tags = {t: {'tag_props': set()}}
+
     resources = {}
 
-    for name, props in TAGS.items():
+    for name, props in tags.items():
         r = api.get_resource(name)
 
         tag_props = props['tag_props']
