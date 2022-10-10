@@ -124,6 +124,22 @@ def to_strength_at_rates(base: str, value: str) -> list:
         ))
     return ret
 
+def to_current_tx_powers(base: str, value: str) -> list:
+    if base != "current-tx-powers":
+        raise ValueError("wrong field")
+    parts = value.split(',')
+    ret = []
+    for part in parts:
+        # "1Mbps:25(2528"
+        # means 1Mbps rate, 25 dBm believed transmit power, 25 dBm card-reported transmit power, 28 dBm effective transmit power due to MIMO
+        rate, power = part.split(':')
+        power, _ = power.split('(')
+        ret.append((
+            {'rate': rate},
+            to_int(base, power),
+        ))
+    return ret
+
 STRING_FIELDS = {
     "tx-rate-set",
     "active-address",
@@ -132,6 +148,7 @@ STRING_FIELDS = {
     "active-server",
     "status",
     "host-name",
+    "wireless-protocol",
 }
 
 def to_str(base: str, value: str) -> dict:
@@ -148,6 +165,7 @@ PARSERS = [
     to_rate,
     to_signal,
     to_strength_at_rates,
+    to_current_tx_powers,
     to_str,
 ]
 
@@ -172,6 +190,7 @@ TAGS = {
             "disabled",
             "band",
         },
+        "monitor": True,
     },
     "/interface/wireless/registration-table": {
         "tag_props": {
@@ -238,7 +257,7 @@ async def main():
         tag_props = props['tag_props']
         # Find all integer properties once
         field_props = set()
-        for entry in r.get():
+        def parse_entry(entry):
             logging.debug("parsing %s", entry)
             single_props = set()
             for k, v in entry.items():
@@ -253,12 +272,17 @@ async def main():
                         pass
                 else:
                     logging.debug("failed to find parser for %s='%s'", k, v)
-            field_props |= single_props
+            return single_props
+        ids = set()
+        for entry in r.get():
+            if 'id' in entry:
+                ids.add(entry['id'])
+            field_props |= parse_entry(entry)
         proplist = tag_props | field_props
         if 'id' in proplist:
             # ".id" in .proplist but "id" in result :(
             proplist.remove('id')
-            proplist.add('.id')
+        proplist.add('.id')
         proplist = ','.join(list(proplist))
         field_props -= tag_props
         resources[name] = {
@@ -267,6 +291,15 @@ async def main():
             'field_props': field_props,
             'proplist': proplist,
         }
+        if props.get('monitor') and ids:
+            monitor_field_props = set()
+            logging.debug('Calling monitor on %s', ids)
+            for entry in r.call('monitor', {'.id': ','.join(ids), 'once': ''}):
+                monitor_field_props |= parse_entry(entry)
+            resources[name]['monitor'] = {
+                'field_props': monitor_field_props,
+                'proplist': ','.join(monitor_field_props | {'.id'}),
+            }
 
     logging.debug("identified resources: %s", resources)
 
@@ -282,12 +315,9 @@ async def main():
                 .tag("hostname", hostname)
         for measurement, m in resources.items():
             logging.debug("listing %s: %s", measurement, m)
-            for entry in m['r'].call('print', {'.proplist': m['proplist']}):
-                p = point(measurement)
-                for tag in m['tag_props']:
-                    if value := entry.get(tag):
-                        p.tag(tag, value)
-                for field in m['field_props']:
+            points = dict()
+            def process_field_props(p, entry, field_props):
+                for field in field_props:
                     if field not in entry:
                         continue
                     for parser in PARSERS:
@@ -303,6 +333,18 @@ async def main():
                             break
                         except ValueError:
                             pass
+            for entry in m['r'].call('print', {'.proplist': m['proplist']}):
+                p = point(measurement)
+                for tag in m['tag_props']:
+                    if value := entry.get(tag):
+                        p.tag(tag, value)
+                process_field_props(p, entry, m['field_props'])
+                points[entry['id']] = p
+            if 'monitor' in m:
+                for entry in m['r'].call('monitor', {'.proplist': m['monitor']['proplist'], '.id': ','.join(points.keys()), 'once': ''}):
+                    p = points[entry['id']]
+                    process_field_props(p, entry, m['monitor']['field_props'])
+            for p in points.values():
                 try:
                     print(p.to_line_protocol())
                 except ValueError:
