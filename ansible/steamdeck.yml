@@ -12,6 +12,7 @@
       name: sshd
       enabled: yes
       state: started
+  # TODO: Consider enabling lingering (KillUserProcesses=no)
   - community.general.flatpak:
       name:
       # Network apps
@@ -43,6 +44,8 @@
       - io.github.dosbox-staging
       - org.duckstation.DuckStation
       - app.xemu.xemu
+      - org.scummvm.ScummVM
+      - org.yuzu_emu.yuzu
       # Development
       - com.github.tchx84.Flatseal
       - com.visualstudio.code.insiders # flathub-beta
@@ -55,6 +58,9 @@
       #- com.obsproject.Studio.Plugin.InputOverlay
       - org.videolan.VLC
       - fr.natron.Natron
+      - com.github.wwmm.easyeffects
+      - org.pipewire.Helvum
+      - org.rncbc.qpwgraph
       # Utilities
       - com.whitemagicsoftware.kmcaster
       - org.cubocore.CoreKeyboard
@@ -62,6 +68,9 @@
       - net.davidotek.pupgui2
       - com.usebottles.bottles
       - com.steamgriddb.SGDBoop
+      - com.dosbox.DOSBox
+      - org.bluesabre.MenuLibre
+      - org.kde.kwalletmanager5
       method: system
   - ansible.builtin.command: pacman -Qk {{ packages | join(' ') }}
     check_mode: no
@@ -99,6 +108,9 @@
       - onboard
       - fingerterm
       - qt5-xmlpatterns # missing dependency of fingerterm
+      - dosbox
+      - inotify-tools
+      - timidity
       force_reinstall_packages: '{{ missing_files.stdout_lines | reject("match", ".* 0 missing files") | map("split", ":") | map("first") }}'
 
   handlers:
