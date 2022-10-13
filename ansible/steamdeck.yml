@@ -110,7 +110,7 @@
       - qt5-xmlpatterns # missing dependency of fingerterm
       - dosbox
       - inotify-tools
-      - timidity
+      - timidity++
       force_reinstall_packages: '{{ missing_files.stdout_lines | reject("match", ".* 0 missing files") | map("split", ":") | map("first") }}'
 
   handlers:
