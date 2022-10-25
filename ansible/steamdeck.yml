@@ -24,6 +24,13 @@
       - de.shorsh.discord-screenaudio
       - me.kozec.syncthingtk
       - io.freetubeapp.FreeTube
+      - org.netsurf_browser.NetSurf
+      - org.qgis.qgis
+      - org.remmina.Remmina
+      - org.mozilla.firefox
+      - org.signal.Signal
+      - org.wireshark.Wireshark
+      - uk.org.greenend.chiark.sgtatham.putty
       # Graphics
       - com.boxy_svg.BoxySVG
       - net.scribus.Scribus
@@ -32,6 +39,7 @@
       - org.gimp.GIMP
       - org.inkscape.Inkscape
       - org.kde.krita
+      - org.kde.digikam
       # Games
       - com.github.k4zmu2a.spacecadetpinball
       - com.heroicgameslauncher.hgl
@@ -46,14 +54,23 @@
       - app.xemu.xemu
       - org.scummvm.ScummVM
       - org.yuzu_emu.yuzu
+      - net._86box._86Box
+      - net.brinkervii.grapejuice
+      - net.cebix.basilisk
+      - org.kde.kstars
+      - org.stellarium.Stellarium
       # Development
       - com.github.tchx84.Flatseal
       - com.visualstudio.code.insiders # flathub-beta
       - io.github.shiftey.Desktop
       - org.gnu.emacs
       - org.ghidra_sre.Ghidra
+      - com.github.treagod.spectator
+      - com.gitlab.cutecom.cutecom
+      - com.google.AndroidStudio
+      - org.fritzing.Fritzing
+      - org.radare.iaito
       # Multimedia
-      - com.w1hkj.fldigi
       - com.obsproject.Studio
       #- com.obsproject.Studio.Plugin.InputOverlay
       - org.videolan.VLC
@@ -61,6 +78,16 @@
       - com.github.wwmm.easyeffects
       - org.pipewire.Helvum
       - org.rncbc.qpwgraph
+      - net.sourceforge.VMPK
+      - org.kde.kdenlive
+      # Radio
+      - com.w1hkj.fldigi
+      - com.w1hkj.flrig
+      - net.oz9aec.Gpredict
+      - be.telenet.user.QSSTV
+      - info.mumble.Mumble
+      - org.sdrangel.SDRangel
+      - org.viking.Viking
       # Utilities
       - com.whitemagicsoftware.kmcaster
       - org.cubocore.CoreKeyboard
@@ -69,8 +96,10 @@
       - com.usebottles.bottles
       - com.steamgriddb.SGDBoop
       - com.dosbox.DOSBox
-      - org.bluesabre.MenuLibre
       - org.kde.kwalletmanager5
+      - com.github.donadigo.appeditor
+      - io.gitlab.jstest_gtk.jstest_gtk
+      - io.qt.qdbusviewer
       method: system
   - ansible.builtin.command: pacman -Qk {{ packages | join(' ') }}
     check_mode: no
@@ -111,8 +140,10 @@
       - dosbox
       - inotify-tools
       - timidity++
+      - python-pyqt5
+      #- mosh # perl-io-tty is uninstallable?
       force_reinstall_packages: '{{ missing_files.stdout_lines | reject("match", ".* 0 missing files") | map("split", ":") | map("first") }}'
-
+  # TODO: Install Decky Loader
   handlers:
   - name: reload sshd
     ansible.builtin.service:
