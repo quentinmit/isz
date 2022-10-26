@@ -3,6 +3,7 @@ all:
     ansible_domain: isz.wtf
     #avaya_domain: isz.wtf
     #pki_ca_domain: isz.wtf
+    influx_server: influx.{{ ansible_domain }}
     pki_acme_ca: le-live-v2
     pki_acme: yes
     pki_acme_contacts: [ mailto:quentin@mit.edu ]
@@ -38,3 +39,4 @@ all:
     steamdeck.isz.wtf:
       isz_last_octet: 102
       macaddress: 2C:3B:70:EF:B6:6D
+      telegraf_id: 0a30c4552f055000

@@ -10,3 +10,6 @@
 [submodule "workshop/telegraf-docker/influxdata-docker"]
 	path = workshop/telegraf-docker/influxdata-docker
 	url = https://github.com/influxdata/influxdata-docker.git
+[submodule "ansible/ansible-yay"]
+	path = ansible/ansible-yay
+	url = https://github.com/mnussbaum/ansible-yay

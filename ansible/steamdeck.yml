@@ -1,6 +1,8 @@
 - hosts:
   - steamdeck.isz.wtf
   serial: 1
+  vars:
+    telegraf_config_url: https://influx.{{ansible_domain}}/api/v2/telegrafs/{{telegraf_id}}
   tasks:
   - name: Disable password logins over SSH
     lineinfile:
@@ -120,6 +122,7 @@
   # TODO: --overwrite needed for /etc/ld.so.conf.d/fakeroot.conf
   - ansible.builtin.include_role:
       name: steamdeck-pacman
+    tags: [ pacman ]
     vars:
       packages:
       - base-devel
@@ -142,9 +145,37 @@
       - timidity++
       - python-pyqt5
       #- mosh # perl-io-tty is uninstallable?
+      aur_packages:
+      - telegraf
       force_reinstall_packages: '{{ missing_files.stdout_lines | reject("match", ".* 0 missing files") | map("split", ":") | map("first") }}'
+  - file:
+      path: /etc/systemd/system/telegraf.service.d
+      state: directory
+  - copy:
+      dest: /etc/systemd/system/telegraf.service.d/isz.conf
+      content: |
+        [Service]
+        ExecStart=
+        ExecStart=/usr/bin/telegraf -config {{ telegraf_config_url }}
+    notify:
+    - reload systemd
+    - restart telegraf
+  - copy:
+      dest: /etc/default/telegraf
+      content: |
+        INFLUX_TOKEN={{ influx_token }}
+    notify:
+    - restart telegraf
   # TODO: Install Decky Loader
   handlers:
+  - name: reload systemd
+    ansible.builtin.systemd:
+      daemon_reload: yes
+  - name: restart telegraf
+    ansible.builtin.service:
+      name: telegraf
+      state: restarted
+      enabled: yes
   - name: reload sshd
     ansible.builtin.service:
       name: sshd

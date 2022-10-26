@@ -13,7 +13,7 @@
   - ansible.builtin.command: /usr/bin/pacman-key --refresh-keys
 - name: check if changes needed
   community.general.pacman:
-    name: "{{ packages | map('regex_replace', '^.*?/', '') }}"
+    name: "{{ (packages + aur_packages) | map('regex_replace', '^.*?/', '') }}"
     state: present
   check_mode: yes
   register: check_packages
@@ -26,3 +26,7 @@
   - community.general.pacman:
       name: "{{ packages }}"
       state: present
+  - yay:
+      name: "{{ aur_packages }}"
+      state: present
+    when: aur_packages
