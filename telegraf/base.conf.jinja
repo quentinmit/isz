@@ -60,7 +60,7 @@
   ## Multiple URLs can be specified for a single cluster, only ONE of the
   ## urls will be written to each interval.
   ## urls exp: http://127.0.0.1:8086
-  urls = ["http://influx.isz.wtf:8086"]
+  urls = ["{% if https | default(False) %}https://influx.isz.wtf{% else %}http://influx.isz.wtf:8086{% endif %}"]
 
   ## Token for authentication.
   token = "$INFLUX_TOKEN"
@@ -147,7 +147,7 @@ interface = ["veth*"]
 [[inputs.netstat]]
 [[inputs.processes]]
 [[inputs.smart]]
-{% if os == "linux" %}
+{% if os == "linux" and docker %}
 path_smartctl = "/hostfs/usr/sbin/smartctl"
 path_nvme = "/hostfs/usr/sbin/nvme"
 {% elif os == "darwin" %}
@@ -167,3 +167,33 @@ sensor = ["w1_slave_temp_input"]
 
 {% block extra %}
 {% endblock %}
+
+{%- if intel_rapl | default(False) %}
+[[inputs.execd]]
+alias = "intel_rapl"
+restart_delay = "10s"
+data_format = "influx"
+command = ["python3", "-c", '''
+import os
+import os.path
+import sys
+import time
+ROOT = "/sys/class/powercap"
+for line in sys.stdin:
+  for device in os.listdir(ROOT):
+    result = {}
+    for de in os.scandir(os.path.join(ROOT, device)):
+      if not de.is_file():
+        continue
+      try:
+        result[de.name] = open(de.path).read().strip()
+      except OSError:
+        pass
+      if "name" in result:
+        device += ",name=%s" % (result["name"])
+        del result["name"]
+    print("intel_rapl,device=%s %s %d" % (device, ",".join("%s=%di" % (k,int(v)) for k,v in result.items() if v), int(time.time()*1e9)))
+  sys.stdout.flush()
+''']
+signal = "STDIN"
+{% endif %}

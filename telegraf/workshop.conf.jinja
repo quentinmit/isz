@@ -1,6 +1,7 @@
 # ionit -c /srv/isz/telegraf/static -t /srv/isz/telegraf
 # influx telegrafs -c workshop update -n workshop -i 0702075a793e0000 -f /srv/isz/telegraf/workshop.conf
 #
+{% set intel_rapl = True -%}
 {% extends "base.conf.jinja" %}
 {% block extra %}
 #Broken despite AMD having powerstat files :(
@@ -344,32 +345,4 @@ def apply(metric):
   restart_delay = "10s"
   data_format = "influx"
 #}
-
-[[inputs.execd]]
-alias = "intel_rapl"
-restart_delay = "10s"
-data_format = "influx"
-command = ["python3", "-c", '''
-import os
-import os.path
-import sys
-import time
-ROOT = "/sys/class/powercap"
-for line in sys.stdin:
-  for device in os.listdir(ROOT):
-    result = {}
-    for de in os.scandir(os.path.join(ROOT, device)):
-      if not de.is_file():
-        continue
-      try:
-        result[de.name] = open(de.path).read().strip()
-      except OSError:
-        pass
-      if "name" in result:
-        device += ",name=%s" % (result["name"])
-        del result["name"]
-    print("intel_rapl,device=%s %s %d" % (device, ",".join("%s=%di" % (k,int(v)) for k,v in result.items() if v), int(time.time()*1e9)))
-  sys.stdout.flush()
-''']
-signal = "STDIN"
 {% endblock %}
