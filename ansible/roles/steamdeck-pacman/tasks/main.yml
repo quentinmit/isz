@@ -29,4 +29,6 @@
   - yay:
       name: "{{ aur_packages }}"
       state: present
+    environment:
+      SUDO_USER: deck
     when: aur_packages
