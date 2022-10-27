@@ -5,6 +5,13 @@
 {% extends "base.conf.jinja" %}
 {% block extra %}
 [[inputs.execd]]
+alias = "amdgpu"
+restart_delay = "10s"
+data_format = "influx"
+command = ["/etc/telegraf/amdgpu.py"]
+signal = "STDIN"
+
+[[inputs.execd]]
 alias = "power_supply"
 restart_delay = "10s"
 data_format = "influx"

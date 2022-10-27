@@ -1,2 +1,3 @@
 force_reinstall_packages: []
-
+packages: []
+aur_packages: []

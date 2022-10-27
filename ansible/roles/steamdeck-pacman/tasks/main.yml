@@ -21,11 +21,17 @@
   block:
   - ansible.builtin.command: /usr/bin/steamos-readonly disable
     notify: enable readonly
+  - community.general.pacman:
+      name:
+      - archlinux-keyring
+      state: latest
+      update_cache: yes
   - when: force_reinstall_packages
     ansible.builtin.command: /usr/bin/pacman -S --noconfirm --noprogressbar {{ force_reinstall_packages | join(" ") }}
   - community.general.pacman:
       name: "{{ packages }}"
       state: present
+    when: packages
   - yay:
       name: "{{ aur_packages }}"
       state: present

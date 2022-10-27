@@ -1,0 +1,33 @@
+---
+- ansible.builtin.include_role:
+    name: steamdeck-pacman
+  tags: [ pacman ]
+  vars:
+    aur_packages:
+    - telegraf-bin
+- file:
+    path: /etc/systemd/system/telegraf.service.d
+    state: directory
+- copy:
+    dest: /etc/systemd/system/telegraf.service.d/isz.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/bin/telegraf -config {{ telegraf_config_url }}
+      User=root
+  notify:
+  - reload systemd
+  - restart telegraf
+- copy:
+    dest: /etc/default/telegraf
+    content: |
+      INFLUX_TOKEN={{ influx_token }}
+  notify:
+  - restart telegraf
+- copy:
+    dest: /etc/telegraf/amdgpu.py
+    src: amdgpu.py
+    mode: preserve
+  notify:
+  - restart telegraf
+
