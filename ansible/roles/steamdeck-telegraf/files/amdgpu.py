@@ -9,6 +9,7 @@ import subprocess
 import shlex
 import sys
 import time
+import threading
 
 class c_uint8(ctypes.c_uint8): pass
 class c_uint16(ctypes.c_uint16): pass
@@ -461,6 +462,8 @@ class gpu_metrics_v2_2(BaseStructure):
 	    ("indep_throttle_status", c_uint64),
     ]
 
+METRICS_POLLING_PERIOD_MS = 5
+
 FORMATS = {
     (1, 0): gpu_metrics_v1_0,
     (1, 1): gpu_metrics_v1_1,
@@ -504,6 +507,54 @@ def debug_main():
 
         print(slot, tags, metrics)
 
+class GPU:
+    def __init__(self, path):
+        self.path = path
+        self.file = open(path, 'rb')
+        slot = os.path.basename(os.path.dirname(self.path))
+        self.tags = lspci_info(slot)
+        self._lock = threading.Lock()
+        self.samples = []
+
+    def sample(self):
+        self.file.seek(0)
+        metrics = parse_struct(self.file.read())
+        with self._lock:
+            self.samples.append(metrics)
+
+    def average(self) -> tuple[int, dict[tuple, float]]:
+        with self._lock:
+            samples = self.samples
+            self.samples = []
+        intermediate = defaultdict(list)
+        def add(attr, value, extra=tuple()):
+            if isinstance(value, ctypes._SimpleCData):
+                if value.value == value.__class__(-1).value:
+                    return
+                intermediate[(attr,) + extra].append(value.value)
+            elif isinstance(value, ctypes.Array):
+                for i, v in enumerate(value):
+                    add(attr, v, extra=(i,))
+        # TODO: Use system_clock_counter to weight samples
+        # TODO: Don't average *throttle_status
+        for metrics in samples:
+            for field in metrics._fields_:
+                attr, attrType = field[:2]
+                value = getattr(metrics, attr)
+                add(attr, value)
+        out = {}
+        for attr, values in intermediate.items():
+            out[attr] = sum(values) / len(values)
+        return len(samples), out
+
+def debug_average_main():
+    path = next(iter(find_files()))
+    g = GPU(path)
+    for i in range(100):
+        g.sample()
+        time.sleep(METRICS_POLLING_PERIOD_MS * 0.001)
+    print(g.average())
+
 def scrape_metrics():
     files = find_files()
     for f in files:
@@ -544,5 +595,42 @@ def main():
     for line in sys.stdin:
         scrape_metrics()
 
+def threaded_main():
+    gpus = []
+    for f in find_files():
+        gpus.append(GPU(f))
+
+    def loop():
+        while True:
+            for g in gpus:
+                g.sample()
+            time.sleep(METRICS_POLLING_PERIOD_MS * 0.001)
+
+    t = threading.Thread(target=loop, daemon=True)
+    t.start()
+
+    for line in sys.stdin:
+        for g in gpus:
+            samples, data = g.average()
+            if not data:
+                continue
+            tags = tag_str(g.tags)
+            out = defaultdict(dict)
+            for key, value in data.items():
+                if len(key) > 1:
+                    out[',index=%d' % (key[1],)][key[0]] = value
+                else:
+                    out[''][key[0]] = value
+            for extra_tags, fields in out.items():
+                print("amdgpu_hires,%s%s %s %d" % (
+                    tags, extra_tags,
+                    ",".join(
+                        "%s=%f" % (k,v)
+                        for k,v in fields.items()
+                    ),
+                    int(time.time()*1e9)
+                ))
+            print("amdgpu_hires,%s _samples=%di" % (tags, samples))
+
 if __name__ == '__main__':
-    main()
+    threaded_main()
