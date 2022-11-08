@@ -147,6 +147,7 @@
       #- mosh # perl-io-tty is uninstallable because gpg error
       - gnu-netcat
       - x11vnc # gpg error
+      - unarchiver
       #- wayvnc # gpg error
       aur_packages:
       - telegraf-bin

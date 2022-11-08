@@ -9,6 +9,8 @@
     line: keyserver hkps://keyserver.ubuntu.com
 - when: init_keys.changed
   block:
+  # https://archlinux.org/packages/core/any/archlinux-keyring/download
+  # pacman -U archlinux-keyring-20220713-2-any.pkg.tar.zst
   - ansible.builtin.command: /usr/bin/pacman-key --populate
   - ansible.builtin.command: /usr/bin/pacman-key --refresh-keys
 - name: check if changes needed
