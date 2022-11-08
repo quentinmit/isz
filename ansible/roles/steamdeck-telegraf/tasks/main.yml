@@ -15,6 +15,7 @@
       ExecStart=
       ExecStart=/usr/bin/telegraf -config {{ telegraf_config_url }}
       User=root
+      Restart=always
   notify:
   - reload systemd
   - restart telegraf
@@ -30,4 +31,6 @@
     mode: preserve
   notify:
   - restart telegraf
-
+- service:
+    name: telegraf
+    state: started
