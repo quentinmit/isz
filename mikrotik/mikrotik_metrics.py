@@ -175,6 +175,9 @@ STRING_FIELDS = {
     "status",
     "host-name",
     "wireless-protocol",
+    "local-address",
+    "remote-address",
+    "encoding",
 }
 
 def to_str(base: str, value: str) -> dict:
@@ -227,6 +230,37 @@ TAGS = {
             "authentication-type",
             "encryption",
             "group-encryption"
+        },
+    },
+    "/interface/pptp-client": {
+        "tag_props": {
+            "name",
+            "comment",
+            "disabled",
+            "connect-to",
+            "profile",
+            "dial-on-demand",
+            "mrru",
+            "use-peer-dns",
+            "allow",
+            "add-default-route",
+        },
+        "skip_props": {
+            "user",
+            "password",
+        },
+        "monitor": True,
+    },
+    "/interface": {
+        "tag_props": {
+            "name",
+            "default-name",
+            "type",
+            "mac-address",
+            "comment",
+            "disabled",
+            "slave",
+            "mtu",
         },
     },
     "/ip/dhcp-server/lease": {
@@ -282,6 +316,7 @@ async def main():
         r = api.get_resource(name)
 
         tag_props = props['tag_props']
+        skip_props = props.get('skip_props', set())
         # Find all integer properties once
         field_props = set()
         def parse_entry(entry):
@@ -289,6 +324,8 @@ async def main():
             single_props = set()
             for k, v in entry.items():
                 if k in tag_props | {"id"}:
+                    continue
+                if k in skip_props:
                     continue
                 for p in PARSERS:
                     try:
