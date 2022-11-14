@@ -33,10 +33,13 @@
   - community.general.pacman:
       name: "{{ packages }}"
       state: present
+      extra_args: "--overwrite /etc/ld.so.conf.d/'*' --overwrite /etc/xdg/'*'"
     when: packages
   - yay:
       name: "{{ aur_packages }}"
       state: present
     environment:
       SUDO_USER: deck
-    when: aur_packages
+    when: false
+    # TODO: yay was replaced with paru in holo-beta
+    #when: aur_packages

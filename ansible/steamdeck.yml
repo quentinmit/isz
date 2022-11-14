@@ -120,6 +120,14 @@
       - systemd-swap
       - systemd-sysvcompat
   # TODO: --overwrite needed for /etc/ld.so.conf.d/fakeroot.conf
+  - ansible.builtin.lineinfile:
+      name: /etc/pacman.conf
+      line: "[holo-beta]"
+      state: present
+    check_mode: yes
+    register: holo_beta
+  - ansible.builtin.set_fact:
+      holo_repo: "{{ 'holo' if holo_beta is changed else 'holo-beta' }}"
   - ansible.builtin.include_role:
       name: steamdeck-pacman
     tags: [ pacman ]
@@ -131,9 +139,9 @@
       - htop
       - wget
       - ncdu
-      - holo/linux-headers
+      - "{{ holo_repo }}/linux-headers"
       - linux-neptune-headers
-      - holo/linux-lts-headers
+      - "{{ holo_repo }}/linux-lts-headers"
       # Other packages to consider from
       # https://www.reddit.com/r/SteamDeck/comments/t92ozw/comment/i8qxemd/?utm_source=share&utm_medium=web2x&context=3
       # tmux git podman yay-git mlocate
