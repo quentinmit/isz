@@ -9,7 +9,9 @@ homeassistant:
   elevation: 3
   unit_system: imperial
   currency: USD
+  country: US
   time_zone: America/New_York
+  external_url: https://homeassistant.isz.wtf
 
 http:
   use_x_forwarded_for: true
@@ -54,7 +56,6 @@ influxdb:
     - device_class
 
 sensor:
-  - platform: moon
   - platform: template
     sensors:
       sun_rising_text:
