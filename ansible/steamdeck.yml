@@ -127,7 +127,7 @@
     check_mode: yes
     register: holo_beta
   - ansible.builtin.set_fact:
-      holo_repo: "{{ 'holo' if holo_beta is changed else 'holo-beta' }}"
+      holo_repo: "{{ 'holo-rel' if holo_beta is changed else 'holo-beta' }}"
   - ansible.builtin.include_role:
       name: steamdeck-pacman
     tags: [ pacman ]
