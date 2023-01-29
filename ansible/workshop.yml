@@ -104,10 +104,15 @@
       address: 192.168.88.{{ isz_last_octet }}
   pre_tasks:
     - name: Prepare pki environment
-      import_role:
+      ansible.builtin.import_role:
         name: 'debops.debops.pki'
         tasks_from: 'main_env'
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
+    - name: Prepare nullmailer environment
+      ansible.builtin.import_role:
+        name: 'debops.debops.nullmailer'
+        tasks_from: 'main_env'
+      tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
   roles:
   - role: isz-base
   - role: networkd
@@ -136,12 +141,15 @@
       - '{{ mosquitto__nginx__dependent_upstreams }}'
   - role: debops.roles02.mosquitto
     tags: [ 'role::mosquitto', 'skip::mosquitto' ]
+  - role: debops.roles02.tftpd
+    tags: [ 'role::tftpd', 'skip::tftpd' ]
 #  - role: debops.roles01.tcpwrappers
 #    tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
 #    tcpwrappers__dependent_allow:
-#      - '{{ tftpd__tcpwrappers__dependent_allow }}'
-  - role: debops.roles02.tftpd
-    tags: [ 'role::tftpd', 'skip::tftpd' ]
+#    - '{{ tftpd__tcpwrappers__dependent_allow }}'
+#    - '{{ nullmailer__tcpwrappers__dependent_allow }}'
+  - role: debops.debops.nullmailer
+    tags: [ 'role::nullmailer', 'skip::nullmailer' ]
   - role: podman
     tags: [ 'role::podman', 'skip::podman' ]
   tasks:

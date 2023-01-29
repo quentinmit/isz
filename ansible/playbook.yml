@@ -1,8 +1,13 @@
 - hosts: all
   serial: 1
+  environment: '{{ inventory__environment | d({})
+  | combine(inventory__group_environment | d({}))
+  | combine(inventory__host_environment  | d({})) }}'
   roles:
   - role: debops.debops.etckeeper
     when: ansible_os_family == 'Debian'
+  - role: debops.debops.core
+    tags: [ 'role::core', 'skip::core' ]
   tasks:
     - name: Install playbook Python dependencies
       package:
