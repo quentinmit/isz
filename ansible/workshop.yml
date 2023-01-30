@@ -102,21 +102,47 @@
     - name: vlan88
       vlan: 88
       address: 192.168.88.{{ isz_last_octet }}
+    postfix__packages:
+    - libsasl2-modules
+    postfix__mailname: '{{ postfix__domain }}'
+    postfix__lookup_tables:
+    - name: smtp_sasl_password_maps.in
+      mode: '0600'
+      options:
+      - name: "[{{ smtp_remote.host }}]:{{ smtp_remote.port | d(25) }}"
+        value: "{{ smtp_remote.user }}:{{ smtp_remote.pass }}"
+    postfix__maincf:
+    - smtp_sasl_auth_enable: True
+    - smtp_tls_security_level: encrypt
+    - smtp_sasl_tls_security_options: noanonymous
+    - relayhost: "[{{ smtp_remote.host }}]:{{ smtp_remote.port | d(25) }}"
+    - smtp_sasl_password_maps:
+      - "hash:${config_directory}/smtp_sasl_password_maps"
   pre_tasks:
     - name: Prepare pki environment
       ansible.builtin.import_role:
         name: 'debops.debops.pki'
         tasks_from: 'main_env'
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
-    - name: Prepare nullmailer environment
+    - name: Prepare etc_aliases environment
       ansible.builtin.import_role:
-        name: 'debops.debops.nullmailer'
+        name: 'debops.roles01.etc_aliases'
         tasks_from: 'main_env'
-      tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
+      tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
+    - name: Prepare postfix environment
+      ansible.builtin.import_role:
+        name: 'debops.roles01.postfix'
+        tasks_from: 'main_env'
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
   roles:
   - role: isz-base
   - role: networkd
   - role: debops.debops.global_handlers
+  - role: debops.debops.secret
+    tags: [ 'role::secret', 'role::postfix' ]
+    secret__directories:
+    - '{{ etc_aliases__secret__directories }}'
+    - '{{ postfix__secret__directories }}'
   - role: debops.debops.locales
     tags: [ 'role::locales', 'skip::locales' ]
   - role: debops.debops.pki
@@ -147,9 +173,10 @@
 #    tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
 #    tcpwrappers__dependent_allow:
 #    - '{{ tftpd__tcpwrappers__dependent_allow }}'
-#    - '{{ nullmailer__tcpwrappers__dependent_allow }}'
-  - role: debops.debops.nullmailer
-    tags: [ 'role::nullmailer', 'skip::nullmailer' ]
+  - role: debops.roles01.etc_aliases
+    tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
+  - role: debops.roles01.postfix
+    tags: [ 'role::postfix', 'skip::postfix' ]
   - role: podman
     tags: [ 'role::podman', 'skip::podman' ]
   tasks:

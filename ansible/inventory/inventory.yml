@@ -25,10 +25,6 @@ all:
       pki_realm: '{{ mosquitto__fqdn }}'
       hsts_enabled: false
       redirect_to_ssl: false
-    nullmailer__adminaddr: quentin@isz.wtf
-    nullmailer__default_remotes:
-    - '{{ smtp2go_remote }}'
-    nullmailer__allmailfrom: 'root@{{ nullmailer__domain }}'
   hosts:
     workshop-pi.isz.wtf:
       isz_last_octet: 32
