@@ -80,7 +80,8 @@ bedroom-ac       A 192.168.88.8
                  EUI48 3C-61-05-F6-DB-9A
 hg02             A 192.168.88.9
                  EUI48 EC-FA-BC-57-D6-2F
-
+imsai8080        A 192.168.88.10
+                 EUI48 30-83-98-FA-83-7C
 ; DHCP range is 88.50-254
 
 mac              A 192.168.88.100
@@ -96,8 +97,10 @@ quentin-pixel-2-xl EUI48 10-F1-F2-81-CB-C8 ; quentin Pixel 2 XL
 quentin-pixel-4a-5g EUI48 58-24-29-72-A4-EE ; quentin Pixel 4a 5G
 quentin-macbookpro3 EUI48 BC-D0-74-02-35-D9 ; quentin quentin-macbookpro3
 quentin-pixel-7-pro EUI48 D4-3A-2C-95-DC-95 ; quentin quentin-pixel-7-pro
+quentin-onyx-boox-note-3 EUI48 00-2A-E7-20-B0-0F ; quentin Onyx Boox Note 3
 jess-pixel-4a EUI48 F8-1A-2B-E1-FA-96 ; jess Pixel 4a
 jess-macbookair EUI48 00-88-65-3B-FE-24 ; jess MacBook Air
+jess-switch EUI48 5C-0C-E6-59-87-00 ; jess Nintendo Switch
 
 ; IOT devices
 kitchen-google-home-hub EUI48 3C-8D-20-67-B2-45 ; kitchen Google Home Hub
