@@ -12,5 +12,5 @@ upload-%: %.conf
 		influx telegrafs -c workshop update -n $* -i "$$id" -f $<; \
 	fi
 
-%.conf: %.conf.jinja base.conf.jinja static/*
+%.conf: %.conf.jinja base.conf.jinja static/* scripts/*
 	ionit -c static -t .
