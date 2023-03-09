@@ -20,6 +20,8 @@
   [inputs.prometheus.tags]
   app = "influx"
 
+{% set ping_targets = [{ 'host': 'overwatch.mit.edu' }] + he_lg_ping_targets %}
+
 [[inputs.ping]]
   interval = "30s"
   method = "native"
