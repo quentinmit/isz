@@ -30,6 +30,16 @@
   - condition: time
     after: '22:00:00'
     before: 06:00:00
+  - condition: or
+    conditions:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: person.jess_sheehan
+        state: home
+    - condition: state
+      entity_id: binary_sensor.jess_pixel_4a_is_charging
+      state: 'on'
   action:
   - service: light.turn_off
     target:
