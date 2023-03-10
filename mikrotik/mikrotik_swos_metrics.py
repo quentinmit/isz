@@ -284,6 +284,14 @@ def format(data: dict, id: str, desc: dict) -> object:
         value = [v / desc["scale"] for v in value]
     return value
 
+async def gather_with_concurrency(n, *coros):
+    semaphore = asyncio.Semaphore(n)
+
+    async def sem_coro(coro):
+        async with semaphore:
+            return await coro
+    return await asyncio.gather(*(sem_coro(c) for c in coros))
+
 
 async def main():
     parser = argparse.ArgumentParser(description='Extract edgeos metrics.')
@@ -303,15 +311,12 @@ async def main():
     async with httpx.AsyncClient() as client:
         async def get(path: str) -> object:
             r = await client.get(f'http://{args.server}/{path}', auth=auth)
-            return merge_64bit(parse_js(r.text))
+            return path, merge_64bit(parse_js(r.text))
         async def get_interface_metrics() -> (dict, Iterable):
             tasks = set()
             for k in FIELDS:
-                tasks.add(asyncio.create_task(get(k), name=k))
-            await asyncio.wait(tasks)
-            data = {}
-            for task in tasks:
-                data[task.get_name()] = task.result()
+                tasks.add(get(k))
+            data = dict(await gather_with_concurrency(1, *tasks))
 
             interface_tags = [{} for i in range(6)]
             interface_fields = [{} for i in range(6)]
