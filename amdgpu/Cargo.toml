@@ -5,7 +5,16 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[workspace]
+members = [
+    "macros",
+]
+
 [dependencies]
+itertools = "0.10.5"
+macros = { path = "./macros" }
+uninit = "0.5.1"
 
 [build-dependencies]
 bindgen = "0.61.0"
+itertools = "0.10.5"

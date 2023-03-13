@@ -2,6 +2,23 @@ extern crate bindgen;
 
 use std::env;
 use std::path::PathBuf;
+use itertools::Itertools;
+
+#[derive(Debug)]
+pub struct Callbacks {}
+
+impl bindgen::callbacks::ParseCallbacks for Callbacks {
+    fn include_file(&self, filename: &str) {
+        println!("cargo:rerun-if-changed={}", filename);
+    }
+
+    fn add_derives(&self, name: &str) -> Vec<String> {
+        match name.split("_").collect_tuple() {
+            Some(("gpu", "metrics", _, _)) => vec!["Metrics".into()],
+            _ => vec![]
+        }
+    }
+}
 
 fn main() {
     // Tell cargo to invalidate the built crate whenever the wrapper changes
@@ -18,7 +35,7 @@ fn main() {
         .allowlist_type("gpu_metrics_.*")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(Callbacks{}))
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.

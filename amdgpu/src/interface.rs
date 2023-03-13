@@ -1,4 +1,7 @@
-use std::mem;
+use std::{mem, fs::File, os::unix::fs::FileExt, io::Read};
+use macros::Metrics;
+use uninit::read::ReadIntoUninit;
+use uninit::extension_traits::AsOut;
 
 include!(concat!(env!("OUT_DIR"), "/kgd_pp_interface.rs"));
 
@@ -21,32 +24,18 @@ macro_rules! struct_try_from {
 }
 
 struct_try_from!(metrics_table_header);
-struct_try_from!(gpu_metrics_v1_0);
-struct_try_from!(gpu_metrics_v1_1);
-struct_try_from!(gpu_metrics_v1_2);
-struct_try_from!(gpu_metrics_v1_3);
-struct_try_from!(gpu_metrics_v2_0);
-struct_try_from!(gpu_metrics_v2_1);
-struct_try_from!(gpu_metrics_v2_2);
-struct_try_from!(gpu_metrics_v2_3);
 
 pub trait Metrics: std::fmt::Debug {
-
+    fn format_revision() -> usize where Self: Sized;
+    fn content_revision() -> usize where Self: Sized;
 }
-impl Metrics for gpu_metrics_v1_0 {}
-impl Metrics for gpu_metrics_v1_1 {}
-impl Metrics for gpu_metrics_v1_2 {}
-impl Metrics for gpu_metrics_v1_3 {}
-impl Metrics for gpu_metrics_v2_0 {}
-impl Metrics for gpu_metrics_v2_1 {}
-impl Metrics for gpu_metrics_v2_2 {}
-impl Metrics for gpu_metrics_v2_3 {}
 
 #[derive(Debug)]
 pub enum Error {
     BadHeader,
     BadVersion,
     BadLength,
+    IO,
 }
 
 pub fn parse_metrics(buf: &[u8]) -> Result<Box<dyn Metrics>, Error> {
@@ -72,4 +61,17 @@ fn test_parse_metrics() {
     let sample_data = include_bytes!("../testdata/sample.bin");
     let metrics = parse_metrics(sample_data).unwrap();
     println!("{:?}", metrics);
+}
+
+pub struct MetricsReader<T: Metrics> {
+    f: File,
+    samples: Vec<T>,
+}
+
+impl <'a, T: Metrics + std::convert::TryFrom<&'a std::fs::File, Error = Error>> MetricsReader<T> {
+    fn sample(&mut self) -> Result<(), Error> {
+        let metrics: T = (&mut self.f).try_into()?;
+        self.samples.push(metrics);
+        Ok(())
+    }
 }
