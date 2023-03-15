@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/AdamSLevy/jsonrpc2/v14"
+	"github.com/zenazn/pkcs7pad"
 )
 
 type Client struct {
@@ -67,14 +68,9 @@ func ens_a(input string, key, iv []byte) (string, error) {
 		return "", err
 	}
 	mode := cipher.NewCBCEncrypter(block, iv)
-	var buf bytes.Buffer
-	buf.WriteString(input)
-	padding := (buf.Len()-1)%16 + 1
-	for i := 0; i < padding; i++ {
-		buf.WriteByte(byte(padding))
-	}
-	ciphertext := make([]byte, buf.Len())
-	mode.CryptBlocks(ciphertext, buf.Bytes())
+	buf := pkcs7pad.Pad([]byte(input), len(key))
+	ciphertext := make([]byte, len(buf))
+	mode.CryptBlocks(ciphertext, buf)
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
