@@ -1,0 +1,45 @@
+---
+- name: Install dependencies
+  package:
+    name:
+    - systemd-container
+    - skopeo
+    - umoci
+    - python3-pyudev
+- name: Fetch image
+  block:
+  - command: buildah pull docker://{{ image }}
+    args:
+      creates: "{{ template_path }}"
+  - ansible.builtin.tempfile:
+      state: directory
+    register: unpack_dir
+  - command: skopeo copy containers-storage:{{ image }} oci:{{ unpack_dir.path }}:latest
+    args:
+      creates: "{{ template_path }}"
+  - command: umoci unpack --image {{ unpack_dir.path }} {{ template_path }}
+    args:
+      creates: "{{ template_path }}"
+  - ansible.builtin.file:
+      path: "{{ unpack_dir.path }}"
+      state: absent
+    when: unpack_dir.path is defined
+- file:
+    path: "{{ dropin_dir }}"
+    state: directory
+- name: Create systemd unit
+  copy:
+    dest: "{{ dropin_dir }}/container.conf"
+    # TODO: Use udev rules to automatically start unit when USB device is attached.
+    content: |
+      [Service]
+      WorkingDirectory={{ template_path | replace("%", "%%") }}
+      ExecStart=
+      {% if usb_devices %}
+      ExecStartPre=python -c 'import pyudev; open("%t/%n.environment", "w").write("BIND_ARGS="+" ".join("--bind=%%(DEVNAME)s --property=DeviceAllow=%%(DEVNAME)s" % d.properties for d in pyudev.Context().list_devices(subsystem="usb"){% for dev in usb_devices %}.match_property("PRODUCT","{{ dev.vendor_id | d('*') | regex_replace("^0*", "") }}/{{ dev.product_id | d('*') | regex_replace("^0*", "") }}/*"){% endfor %} if "DEVNAME" in d.properties))'
+      EnvironmentFile=-%t/%n.environment
+      {% endif %}
+      ExecStart=systemd-nspawn {% if not usb_devices %}--keep-unit{% endif %} --as-pid2 --machine=%i --oci-bundle={{ template_path | replace("%", "%%") }} --read-only --private-users=false $BIND_ARGS {% if network_mode == 'veth' %}--network-veth --capability=CAP_NET_ADMIN sh -c 'ip link set host0 up && udhcpc -i host0 && exec "$@"' - {% endif %} {{ command }}
+      #DeviceAllow=char-usb_device
+      Restart={{ restart }}
+      # For network: -n -u root --capability CAP_NET_RAW bash -c 'ip link set host0 up && udhcpc -i host0 && exec su -s /bin/bash $user -c $cmd
