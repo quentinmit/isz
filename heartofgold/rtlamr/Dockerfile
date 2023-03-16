@@ -1,6 +1,6 @@
-FROM golang
+FROM docker.io/golang
 
-RUN go get -v github.com/bemasher/rtlamr github.com/bemasher/rtlamr-collect
+RUN go install -v github.com/bemasher/rtlamr@latest && go install -v github.com/bemasher/rtlamr-collect@latest
 
 ENV RTLAMR_FORMAT=json
 
