@@ -6,20 +6,49 @@
     - skopeo
     - umoci
     - python3-pyudev
-- name: Fetch image
+    - buildah
+- command: buildah images --json
+  check_mode: no
+  changed_when: no
+  register: buildah_images
+- name: Prepare image
   block:
-  - command: buildah pull docker://{{ image }}
-    args:
-      creates: "{{ template_path }}"
+  - vars:
+      image_query: "[?contains(to_array(names), `{{ image }}`)]"
+    when: not buildah_images.stdout | from_json | community.general.json_query(image_query)
+    block:
+    - when: not build
+      command: buildah pull docker://{{ image }}
+      args:
+        creates: "{{ template_path }}"
+    - when: build
+      ignore_errors: "{{ ansible_check_mode }}"
+      block:
+      - ansible.builtin.tempfile:
+          state: directory
+        register: build_dir
+      - copy:
+          src: "{{ build }}/"
+          dest: "{{ build_dir.path }}"
+      - command: buildah bud -t "{{ image }}"
+        args:
+          chdir: "{{ build_dir.path }}"
+      always:
+      - ansible.builtin.file:
+          path: "{{ build_dir.path }}"
+          state: absent
+        when: build_dir
   - ansible.builtin.tempfile:
       state: directory
     register: unpack_dir
   - command: skopeo copy containers-storage:{{ image }} oci:{{ unpack_dir.path }}:latest
     args:
       creates: "{{ template_path }}"
+    ignore_errors: "{{ ansible_check_mode }}"
   - command: umoci unpack --image {{ unpack_dir.path }} {{ template_path }}
     args:
       creates: "{{ template_path }}"
+    ignore_errors: "{{ ansible_check_mode }}"
   - ansible.builtin.file:
       path: "{{ unpack_dir.path }}"
       state: absent
@@ -44,6 +73,8 @@
       --read-only \
       --private-users=false \
       $BIND_ARGS \
+      {% for e in environment -%}
+      --setenv="{{ e.replace('"', '\"') }}" {% endfor %} \
       {% if network_mode == 'veth' -%}
       --capability=CAP_NET_ADMIN \
       --bind-ro=/usr/share/doc/busybox-static/examples/udhcp/simple.script:/run/udhcpc.script \

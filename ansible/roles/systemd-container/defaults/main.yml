@@ -3,3 +3,5 @@ command: ""
 usb_devices: []
 restart: "no"
 network_mode: none
+environment: []
+build: false

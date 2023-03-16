@@ -248,14 +248,32 @@
   - name: Containers
     tags: [ 'role::containers' ]
     block:
-    - import_role:
+    - include_role:
         name: systemd-container
       vars:
         name: rtl-tcp
-        image: dopry/rtl-sdr
+        image: docker.io/dopry/rtl-sdr
         command: rtl_tcp -a 0.0.0.0
         usb_devices:
         - vendor_id: 0bda
           product_id: 2838
+        restart: always
+        network_mode: veth
+    - include_role:
+        name: systemd-container
+      vars:
+        name: rtlamr
+        image: rtlamr
+        build: ../heartofgold/rtlamr
+        environment:
+        - COLLECT_INFLUXDB_HOSTNAME=http://influx.isz.wtf:8086/
+        - COLLECT_INFLUXDB_ORG=44ff94dc2f766f90
+        - COLLECT_INFLUXDB_BUCKET=rtlamr
+        - COLLECT_INFLUXDB_MEASUREMENT=rtlamr
+        - COLLECT_STRICTIDM=1
+        - COLLECT_LOGLEVEL=trace
+        - RTLAMR_FORMAT=json
+        - RTLAMR_MSGTYPE=all
+        - RTLAMR_SERVER=rtl-tcp:1234
         restart: always
         network_mode: veth
