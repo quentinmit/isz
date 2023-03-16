@@ -1,3 +1,4 @@
 ---
+unit_name: systemd-nspawn@{{ name }}.service
 template_path: /var/lib/machines/.umoci-{{ image | urlencode | replace("/", "%2F") }}
-dropin_dir: /etc/systemd/system/systemd-nspawn@{{ name }}.service.d
+dropin_dir: /etc/systemd/system/{{ unit_name }}.d
