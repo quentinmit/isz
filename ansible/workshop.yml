@@ -241,3 +241,21 @@
         ## shouldn't be necessary
         # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/overlays
         ## install config.txt updates
+  - name: Install lxc
+    block: []
+    # lxc libvirt0 libpam-cgfs bridge-utils uidmap
+    # skopeo umoci # to build LXC containers from OCI images
+  - name: Containers
+    tags: [ 'role::containers' ]
+    block:
+    - import_role:
+        name: systemd-container
+      vars:
+        name: rtl-tcp
+        image: dopry/rtl-sdr
+        command: rtl_tcp -a 0.0.0.0
+        usb_devices:
+        - vendor_id: 0bda
+          product_id: 2838
+        restart: always
+        network_mode: veth
