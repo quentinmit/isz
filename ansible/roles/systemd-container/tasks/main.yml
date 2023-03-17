@@ -7,6 +7,7 @@
     - umoci
     - python3-pyudev
     - buildah
+    - busybox-static
 - command: buildah images --json
   check_mode: no
   changed_when: no
@@ -14,7 +15,7 @@
 - name: Prepare image
   block:
   - vars:
-      image_query: "[?contains(to_array(names), `{{ image }}`)]"
+      image_query: "[?contains(to_array(names), `{{ image_fq }}`)]"
     when: not buildah_images.stdout | from_json | community.general.json_query(image_query)
     block:
     - when: not build
@@ -41,7 +42,7 @@
   - ansible.builtin.tempfile:
       state: directory
     register: unpack_dir
-  - command: skopeo copy containers-storage:{{ image }} oci:{{ unpack_dir.path }}:latest
+  - command: skopeo copy containers-storage:{{ image_fq }} oci:{{ unpack_dir.path }}:latest
     args:
       creates: "{{ template_path }}"
     ignore_errors: "{{ ansible_check_mode }}"
@@ -56,11 +57,85 @@
 - file:
     path: "{{ dropin_dir }}"
     state: directory
+- when: network_mode != "none"
+  copy:
+    dest: /etc/systemd/udhcpc.script
+    src: udhcpc.script
+    mode: preserve
+- when: network_mode == "veth"
+  block:
+  - file:
+      path: /usr/local/libexec
+      state: directory
+  - copy:
+      dest: /usr/local/libexec/isz-systemd-containers-net
+      mode: 0755
+      content: |
+        #!/bin/sh -
+        rules() {
+          rule FORWARD -i ve-+ -j ACCEPT
+          rule FORWARD -o ve-+ -j ACCEPT
+        }
+        start() {
+          rule() {
+            iptables -C "$@" || iptables -A "$@"
+          }
+          rules
+        }
+        stop() {
+          rule() {
+            iptables -D "$@" || :
+          }
+          rules
+        }
+        # See how we were called.
+        case "$1" in
+            start)
+                start
+            ;;
+
+            stop)
+                stop
+            ;;
+
+            restart|reload|force-reload)
+                $0 stop
+                $0 start
+            ;;
+
+            *)
+                echo "Usage: $0 {start|stop|restart|reload|force-reload}"
+                exit 2
+        esac
+
+        exit $?
+  - copy:
+      dest: /etc/systemd/system/isz-systemd-containers-net.service
+      content: |
+        [Unit]
+        Description=ISZ systemd-containers setup
+        After=network-online.target
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/local/libexec/isz-systemd-containers-net start
+        ExecStop=/usr/local/libexec/isz-systemd-containers-net stop
+    notify: reload systemd
 - name: Create systemd unit
   copy:
     dest: "{{ dropin_dir }}/container.conf"
     # TODO: Use udev rules to automatically start unit when USB device is attached.
     content: |
+      [Unit]
+      {% for s in want_services %}
+      Requires=systemd-nspawn@{{ s }}.service
+      After=systemd-nspawn@{{ s }}.service
+      {% endfor %}
+      {% if network_mode == 'veth' %}
+      Wants=isz-systemd-containers-net.service
+      After=isz-systemd-containers-net.service
+      {% endif %}
       [Service]
       WorkingDirectory={{ template_path | replace("%", "%%") }}
       ExecStart=
@@ -68,18 +143,28 @@
       ExecStartPre=python -c 'import pyudev, subprocess; devnames = [d["DEVNAME"] for d in pyudev.Context().list_devices(subsystem="usb"){% for dev in usb_devices %}.match_property("PRODUCT","{{ dev.vendor_id | d('*') | regex_replace("^0*", "") }}/{{ dev.product_id | d('*') | regex_replace("^0*", "") }}/*"){% endfor %} if "DEVNAME" in d.properties]; open("%t/%n.environment", "w").write("BIND_ARGS="+" ".join("--bind=%%s" % d for d in devnames )); subprocess.check_call(["systemctl", "set-property", "--runtime", "%n"] + ["DeviceAllow=%%s" % (d,) for d in devnames])'
       EnvironmentFile=-%t/%n.environment
       {% endif %}
+      {% if network_mode == 'veth' %}
+      ExecStartPre=python -c 'import sys, socket, dbus; open("%t/%n.hosts", "w").write("\\n".join("{} {}".format(socket.inet_ntop(proto, bytes(addr)), name) for name in sys.argv[1:] for (proto, addr) in dbus.Interface(dbus.SystemBus().get_object("org.freedesktop.machine1", "/org/freedesktop/machine1"), "org.freedesktop.machine1.Manager").GetMachineAddresses(name)))' {{ want_services | join(" ") }}
+      {% endif %}
       ExecStart=systemd-nspawn --keep-unit --as-pid2 --machine=%i \
       --oci-bundle={{ template_path | replace("%", "%%") }} \
       --read-only \
       --private-users=false \
       $BIND_ARGS \
-      {% for e in environment -%}
+      {% for e in env -%}
       --setenv="{{ e.replace('"', '\"') }}" {% endfor %} \
+      {% for v in volumes -%}
+      --bind={{ v }} {% endfor %} \
+      {% if working_dir -%}
+      --chdir={{ working_dir }} {% endif %} \
       {% if network_mode == 'veth' -%}
       --capability=CAP_NET_ADMIN \
-      --bind-ro=/usr/share/doc/busybox-static/examples/udhcp/simple.script:/run/udhcpc.script \
+      --overlay=+/etc::/etc \
+      --bind-ro=%t/%n.hosts:/etc/hosts \
+      --bind-ro=/bin/busybox:/run/bin/busybox \
+      --bind-ro=/etc/systemd/udhcpc.script:/run/udhcpc.script \
       --network-veth \
-      sh -c 'ip link set host0 up && udhcpc -i host0 -s /run/udhcpc.script && exec "$@"' -
+      sh -c '/run/bin/busybox udhcpc -i host0 -s /run/udhcpc.script && exec "$@"' -
       {%- endif %} \
       {{ command }}
 
