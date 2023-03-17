@@ -259,13 +259,21 @@
           product_id: 2838
         restart: always
         network_mode: veth
+    - file:
+        path: /srv/rtlamr
+        state: directory
     - include_role:
         name: systemd-container
       vars:
         name: rtlamr
         image: rtlamr
+        command: bash -c "/go/bin/rtlamr | /go/bin/rtlamr-collect"
+        working_dir: /run/data
+        volumes:
+        - /srv/rtlamr:/run/data
         build: ../heartofgold/rtlamr
-        environment:
+        env:
+        - "{{ lookup('file', '../heartofgold/rtlamr.env') }}"
         - COLLECT_INFLUXDB_HOSTNAME=http://influx.isz.wtf:8086/
         - COLLECT_INFLUXDB_ORG=44ff94dc2f766f90
         - COLLECT_INFLUXDB_BUCKET=rtlamr
@@ -273,7 +281,9 @@
         - COLLECT_STRICTIDM=1
         - COLLECT_LOGLEVEL=trace
         - RTLAMR_FORMAT=json
-        - RTLAMR_MSGTYPE=all
+        - RTLAMR_MSGTYPE=scm,scm+,idm
         - RTLAMR_SERVER=rtl-tcp:1234
         restart: always
         network_mode: veth
+        want_services:
+        - rtl-tcp

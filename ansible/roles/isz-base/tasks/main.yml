@@ -17,6 +17,7 @@
     - exfat-utils
     - fping
     #- glances
+    - gawk
     - htop
     - info
     - input-utils
