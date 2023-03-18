@@ -287,3 +287,6 @@
         network_mode: veth
         want_services:
         - rtl-tcp
+        wanted_by_services:
+        # start automatically when rtl-tcp does
+        - rtl-tcp

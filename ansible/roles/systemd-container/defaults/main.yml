@@ -6,5 +6,6 @@ network_mode: none
 env: []
 build: false
 want_services: []
+wanted_by_services: []
 volumes: []
 working_dir: false

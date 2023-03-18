@@ -122,6 +122,14 @@
         ExecStart=/usr/local/libexec/isz-systemd-containers-net start
         ExecStop=/usr/local/libexec/isz-systemd-containers-net stop
     notify: reload systemd
+- name: Create udev rules
+  when: usb_devices
+  copy:
+    dest: "/etc/udev/rules.d/99-isz-systemd-container-{{ name }}.rules"
+    content: |
+      {% for dev in usb_devices %}
+      SUBSYSTEM=="usb", DRIVER=="usb", {% if dev.product_id | d(None) %}ATTR{idProduct}=="{{ dev.product_id }}", {% endif %}{%if dev.vendor_id | d(None) %}ATTR{idVendor}=="{{ dev.vendor_id }}", {% endif %}TAG+="systemd", ENV{SYSTEMD_WANTS}+="{{ unit_name }}"
+      {% endfor %}
 - name: Create systemd unit
   copy:
     dest: "{{ dropin_dir }}/container.conf"
@@ -135,6 +143,12 @@
       {% if network_mode == 'veth' %}
       Wants=isz-systemd-containers-net.service
       After=isz-systemd-containers-net.service
+      {% endif %}
+      {%- if wanted_by_services %}
+      [Install]
+      {% for s in wanted_by_services %}
+      WantedBy=systemd-nspawn@{{ s }}.service
+      {% endfor %}
       {% endif %}
       [Service]
       WorkingDirectory={{ template_path | replace("%", "%%") }}
@@ -176,5 +190,6 @@
 - name: Start unit
   ansible.builtin.systemd:
     name: "{{ unit_name }}"
-    state: "{% if systemd_unit.changed %}re{% endif %}started"
+    #state: "{% if systemd_unit.changed %}re{% endif %}started"
+    enabled: "{{ True if wanted_by_services else omit }}"
     daemon_reload: "{{ systemd_unit.changed }}"
