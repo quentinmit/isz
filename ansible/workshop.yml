@@ -271,9 +271,9 @@
         working_dir: /run/data
         volumes:
         - /srv/rtlamr:/run/data
-        build: ../heartofgold/rtlamr
+        build: ../docker/rtlamr
         env:
-        - "{{ lookup('file', '../heartofgold/rtlamr.env') }}"
+        - COLLECT_INFLUXDB_TOKEN={{ rtlamr_influx_token }}
         - COLLECT_INFLUXDB_HOSTNAME=http://influx.isz.wtf:8086/
         - COLLECT_INFLUXDB_ORG=44ff94dc2f766f90
         - COLLECT_INFLUXDB_BUCKET=rtlamr
