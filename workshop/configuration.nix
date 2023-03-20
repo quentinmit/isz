@@ -192,10 +192,10 @@
   # TODO: Configure tftp
   # TODO: Configure postfix
   # Containers?
-  # Configure rtl-sdr
-  environment.systemPackages = with pkgs; [
-    rtl-sdr
-  ];
+  # TODO: Configure rtl-sdr
+  # environment.systemPackages = with pkgs; [
+  #   rtl-sdr
+  # ];
   # TODO: Configure rtl-sdr to hotplug on udev 0bda/2838
   # TODO: Configure rtlamr
   # TODO: Configure services.influxdb2
