@@ -25,10 +25,12 @@
       Kind = "bridge";
       MACAddress = "04:42:1A:C9:93:8B";
       extraConfig = {
-        "[Bridge]";
-        "VLANFiltering=yes";
-        "STP=no";
-        "DefaultPVID=none";
+        ''
+          [Bridge]
+          VLANFiltering=yes
+          STP=no
+          DefaultPVID=none
+        '';
       };
     };
     vlan88 = {
