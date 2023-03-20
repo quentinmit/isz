@@ -61,8 +61,8 @@
       networkConfig = {
         DHCP = "ipv4";
         VLAN = [
-          3097
-          88
+          "vlan3097"
+          "vlan88"
         ];
       };
       extraConfig =
@@ -83,6 +83,7 @@
         Name = "e*";
       };
       networkConfig = {
+        Bridge = "br0";
         LinkLocalAddressing = "no";
       };
       extraConfig =
@@ -113,15 +114,13 @@
     vlan3097 = {
       name = "vlan3097";
       networkConfig = {
-        Address = "172.30.97.32/24";
-        VLAN = 3097;
+        Address = "172.30.97.34/24";
       };
     };
     vlan88 = {
       name = "vlan88";
       networkConfig = {
-        Address = "192.168.88.32";
-        VLAN = 88;
+        Address = "192.168.88.34";
       };
     };
   };
