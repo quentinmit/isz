@@ -24,14 +24,13 @@
       name = "br0";
       Kind = "bridge";
       MACAddress = "04:42:1A:C9:93:8B";
-      extraConfig = {
+      extraConfig =
         ''
           [Bridge]
           VLANFiltering=yes
           STP=no
           DefaultPVID=none
         '';
-      };
     };
     vlan88 = {
       enable = true;
@@ -60,7 +59,7 @@
           88;
         };
       };
-      extraConfig = {
+      extraConfig =
         ''
           [BridgeVLAN]
           PVID=3096
@@ -72,7 +71,6 @@
           [BridgeVLAN]
           VLAN=88
         '';
-      };
     };
     eth = {
       matchConfig = {
@@ -81,7 +79,7 @@
       networkConfig = {
         LinkLocalAddressing = "none";
       };
-      extraConfig = {
+      extraConfig =
         ''
           [BridgeVLAN]
           PVID=3096
@@ -93,20 +91,18 @@
           [BridgeVLAN]
           VLAN=88
         '';
-      };
     };
     usb0 = {
       name = "usb0";
       networkConfig = {
         Bridge = "br0";
-        extraConfig = {
-          ''
-            [BridgeVLAN]
-            PVID=500
-            EgressUntagged=500
-          '';
-        };
       };
+      extraConfig =
+        ''
+          [BridgeVLAN]
+          PVID=500
+          EgressUntagged=500
+        '';
     };
     vlan3097 = {
       name = "vlan3097";
