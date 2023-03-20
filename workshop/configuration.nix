@@ -21,8 +21,8 @@
   systemd.network.netdevs = {
     br0 = {
       enable = true;
-      name = "br0";
       netdevConfig = {
+        Name = "br0";
         Kind = "bridge";
         MACAddress = "04:42:1A:C9:93:8B";
       };
@@ -36,8 +36,8 @@
     };
     vlan88 = {
       enable = true;
-      name = "vlan88";
       netdevConfig = {
+        Name = "vlan88";
         Kind = "vlan";
       };
       vlanConfig = {
@@ -46,8 +46,10 @@
     };
     vlan3097 = {
       enable = true;
-      name = "vlan3097";
-      Kind = "vlan";
+      netdevConfig = {
+        Name = "vlan3097";
+        Kind = "vlan";
+      };
       vlanConfig = {
         Id = 3097;
       };
@@ -81,7 +83,7 @@
         Name = "e*";
       };
       networkConfig = {
-        LinkLocalAddressing = "none";
+        LinkLocalAddressing = "no";
       };
       extraConfig =
         ''
