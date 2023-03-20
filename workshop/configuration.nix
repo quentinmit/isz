@@ -54,10 +54,10 @@
       name = "br0";
       networkConfig = {
         DHCP = "ipv4";
-        VLAN = {
-          3097;
-          88;
-        };
+        VLAN = [
+          3097
+          88
+        ];
       };
       extraConfig =
         ''
