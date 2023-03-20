@@ -198,8 +198,17 @@
   # ];
   # TODO: Configure rtl-sdr to hotplug on udev 0bda/2838
   # TODO: Configure rtlamr
-  # TODO: Configure services.influxdb2
-  # TODO: Configure services.grafana
+  # Configure services.influxdb2
+  services.influxdb2 = {
+    enable = true;
+    settings = {
+      reporting-disabled = true;
+    };
+  };
+  # Configure services.grafana
+  services.grafana = {
+    enable = true;
+  };
   # TODO: Configure pwrgate-logger
   # TODO: Configure linkzone-logger
   # TODO: Configure services.telegraf
