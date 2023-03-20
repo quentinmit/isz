@@ -208,6 +208,8 @@
   # Configure services.grafana
   services.grafana = {
     enable = true;
+    settings = {
+    };
   };
   # TODO: Configure pwrgate-logger
   # TODO: Configure linkzone-logger
