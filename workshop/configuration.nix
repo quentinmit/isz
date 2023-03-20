@@ -176,4 +176,39 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "22.11"; # Did you read the comment?
 
+  # TODO: Configure nginx
+  # TODO: Configure udev for Zwave, Fluke45, PWRGate
+  # Configure mosquitto
+  services.mosquitto = {
+    enable = true;
+    listeners = [ {
+      acl = [ "pattern readwrite #" ];
+      omitPasswordAuth = true;
+      settings.allow_anonymous = true;
+      # TODO: Restrict to 172.30.96.0/24 and 192.168.88.0/24
+      # TODO: Enable SSL/WebSockets
+    } ];
+  };
+  # TODO: Configure tftp
+  # TODO: Configure postfix
+  # Containers?
+  # Configure rtl-sdr
+  environment.systemPackages = with pkgs; [
+    rtl-sdr
+  ];
+  # TODO: Configure rtl-sdr to hotplug on udev 0bda/2838
+  # TODO: Configure rtlamr
+  # TODO: Configure services.influxdb2
+  # TODO: Configure services.grafana
+  # TODO: Configure pwrgate-logger
+  # TODO: Configure linkzone-logger
+  # TODO: Configure services.telegraf
+  # TODO: Configure speedtest
+  # TODO: Configure dashboard (for esphome)
+  # TODO: Configure esphome
+  # TODO: Configure services.home-assistant
+  # TODO: Configure zwavejs2mqtt
+  # TODO: Configure postgres
+  # TODO: Configure atuin
+  # TODO: Configure freepbx-app
 }
