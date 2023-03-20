@@ -22,8 +22,10 @@
     br0 = {
       enable = true;
       name = "br0";
-      Kind = "bridge";
-      MACAddress = "04:42:1A:C9:93:8B";
+      netdevConfig = {
+        Kind = "bridge";
+        MACAddress = "04:42:1A:C9:93:8B";
+      };
       extraConfig =
         ''
           [Bridge]
@@ -35,7 +37,9 @@
     vlan88 = {
       enable = true;
       name = "vlan88";
-      Kind = "vlan";
+      netdevConfig = {
+        Kind = "vlan";
+      };
       vlanConfig = {
         Id = 88;
       };
