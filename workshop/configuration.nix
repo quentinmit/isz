@@ -198,6 +198,7 @@
   # Configure rtl-sdr to hotplug on udev 0bda/2838
   services.rtl-tcp.enable = true;
   # Configure rtlamr
+  sops.secrets.rtlamr_influx_token = {};
   services.rtlamr-collect = {
     enable = true;
     influxdb = {
@@ -210,6 +211,7 @@
     msgtype = "scm,scm+,idm";
     logLevel = "trace";
   };
+  systemd.services.rtlamr-collect.serviceConfig.SupplementaryGroups = [ config.users.groups.keys.name ];
   # Configure services.influxdb2
   services.influxdb2 = {
     enable = true;

@@ -9,14 +9,15 @@
           Start an rtl-tcp server on USB hotplug.
         '';
       };
+      # TODO: https://github.com/NixOS/nix/pull/7695
       usbVid = mkOption{
-        default = 0x0bda;
-        type = with types; nullOr (u16);
+        default = "0bda";
+        type = with types; nullOr str; # (ints.u16);
         description = ''USB VID.'';
       };
       usbPid = mkOption{
-        default = 0x2838;
-        type = with types; nullOr (u16);
+        default = "2838";
+        type = with types; nullOr str; # (ints.u16);
         description = ''USB PID.'';
       };
     };
