@@ -27,6 +27,7 @@ with lib;
     environment.systemPackages = with pkgs; [
       rtl-sdr
       rtlamr
+      rtlamr-collect
     ];
     systemd.services.rtl-tcp = mkIf config.services.rtl-tcp.enable {
       description = "RTL-SDR TCP server";
