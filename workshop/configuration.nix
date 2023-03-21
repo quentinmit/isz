@@ -9,6 +9,7 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ../nix/base.nix
+      ../nix/rtlamr.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -192,10 +193,6 @@
   # TODO: Configure tftp
   # TODO: Configure postfix
   # Containers?
-  # TODO: Configure rtl-sdr
-  # environment.systemPackages = with pkgs; [
-  #   rtl-sdr
-  # ];
   # TODO: Configure rtl-sdr to hotplug on udev 0bda/2838
   # TODO: Configure rtlamr
   # Configure services.influxdb2
