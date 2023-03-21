@@ -1,4 +1,5 @@
 { lib, pkgs, config, ... }:
+with lib;
 {
   options = {
     services.rtl-tcp = {

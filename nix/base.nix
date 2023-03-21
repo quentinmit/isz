@@ -4,6 +4,9 @@
     time.timeZone = "America/New_York";
     i18n.defaultLocale = "en_US.UTF-8";
 
+    nixpkgs.overlays = [
+      (import ./pkgs/all-packages.nix)
+    ];
     nixpkgs.config.allowUnfree = true;
     hardware.enableAllFirmware = true;
 

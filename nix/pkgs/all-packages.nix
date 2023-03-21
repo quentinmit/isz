@@ -4,4 +4,4 @@ with pkgs;
 
 {
   rtlamr = callPackage ./rtlamr {};
-};
+}
