@@ -4,7 +4,7 @@ keys:
 - &server_workshop_ssh_age: age1hjrx3z0x257weyxt5u8lcntm6k040e7e4v45y7cz33gs5tmjmu2q4kzc4s
 
 creation_rules:
-- path: workshop/secrets.yaml
+- path_regex: ^workshop/secrets\.yaml$
   key_groups:
   - pgp:
     - *admin_quentin_gpg
