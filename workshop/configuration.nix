@@ -196,7 +196,7 @@
   # Configure rtl-sdr to hotplug on udev 0bda/2838
   services.rtl-tcp.enable = true;
   # Configure rtlamr
-  services.rtlamr = {
+  services.rtlamr-collect = {
     enable = true;
     influxdb = {
       url = "http://influx.isz.wtf:8086/";
@@ -204,7 +204,7 @@
       bucket = "rtlamr";
       measurement = "rtlamr";
     };
-    msgtype = [ "scm" "scm+" "idm" ];
+    msgtype = "scm,scm+,idm";
     logLevel = "trace";
   };
   # Configure services.influxdb2

@@ -1,7 +1,6 @@
-{ lib, pkgs, config, ... }:
-with lib;
+{ lib, pkgs, config, options, ... }:
 {
-  options = {
+  options = with lib; {
     services.rtl-tcp = {
       enable = mkOption{
         default = false;
@@ -29,18 +28,18 @@ with lib;
           description = ''Path to file containing InfluxDB token'';
         };
         url = mkOption {
-          type = types.string;
+          type = types.str;
           default = "http://127.0.0.1:8086";
         };
         org = mkOption {
-          type = types.string;
+          type = types.str;
         };
         bucket = mkOption {
-          type = types.string;
+          type = types.str;
           default = "rtlamr";
         };
         measurement = mkOption {
-          type = types.string;
+          type = types.str;
           default = "rtlamr";
         };
       };
@@ -49,7 +48,7 @@ with lib;
         description = "Ignores IDM with type 8 and NetIDM with type 7.";
       };
       msgtype = mkOption {
-        type = types.comma;
+        type = types.commas;
         default = "scm,scm+,idm";
         description = "List of meter types to decode.";
       };
@@ -66,8 +65,8 @@ with lib;
     };
   };
   config = {
-    services.rtlamr.strictIdm = mkDerivedConfig options.services.rtlamr-collect.msgtype (mt:
-      let mtl = strings.splitString "," mt;
+    services.rtlamr-collect.strictIdm = lib.mkDerivedConfig options.services.rtlamr-collect.msgtype (mt:
+      let mtl = lib.strings.splitString "," mt;
       in
         (lib.lists.any (t: t == "netidm") mtl)
         && (lib.lists.any (t: t == "idm") mtl)
@@ -78,7 +77,7 @@ with lib;
       rtlamr
       rtlamr-collect
     ];
-    systemd.services.rtl-tcp = mkIf config.services.rtl-tcp.enable {
+    systemd.services.rtl-tcp = lib.mkIf config.services.rtl-tcp.enable {
       description = "RTL-SDR TCP server";
       path = [ pkgs.rtl-sdr ];
       after = [ "network.target" ];
@@ -87,21 +86,21 @@ with lib;
       };
     };
     # TODO: Put rule in a package and use services.udev.packages
-    services.udev.extraRules = mkIf config.services.rtl-tcp.enable ''
+    services.udev.extraRules = lib.mkIf config.services.rtl-tcp.enable ''
       SUBSYSTEM=="usb", DRIVER=="usb", ATTR{idProduct}=="${config.services.rtl-tcp.usbVid}", ATTR{idVendor}=="${config.services.rtl-tcp.usbPid}", TAG+="systemd", ENV{SYSTEMD_WANTS}+="rtl-tcp"
     '';
-    systemd.services.rtlamr-collect = let cfg = config.services.rtlamr-collect; in mkIf config.services.rtlamr-collect.enable {
+    systemd.services.rtlamr-collect = let cfg = config.services.rtlamr-collect; in lib.mkIf config.services.rtlamr-collect.enable {
       description = "Collect rtlamr data";
       path = [ pkgs.rtlamr pkgs.rtlamr-collect ];
       after = [ "network.target" "rtl-tcp.service" ];
       requires = [ "rtl-tcp.service" ];
       wantedBy = [ "rtl-tcp.service" ];
-      script = ''
+      script = with builtins; ''
         export COLLECT_INFLUXDB_HOSTNAME=${toJSON cfg.influxdb.url}
         export COLLECT_INFLUXDB_ORG=${toJSON cfg.influxdb.org}
         export COLLECT_INFLUXDB_BUCKET=${toJSON cfg.influxdb.bucket}
         export COLLECT_INFLUXDB_MEASUREMENT=${toJSON cfg.influxdb.measurement}
-        export COLLECT_STRICTIDM=${if cfg.strictidm then 1 else 0}
+        export COLLECT_STRICTIDM=${if cfg.strictIdm then "1" else "0"}
         export COLLECT_LOGLEVEL=${toJSON cfg.logLevel}
         export RTLAMR_FORMAT=json
         export RTLAMR_MSGTYPE=${toJSON cfg.msgtype}
