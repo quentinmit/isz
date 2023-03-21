@@ -193,8 +193,20 @@
   # TODO: Configure tftp
   # TODO: Configure postfix
   # Containers?
-  # TODO: Configure rtl-sdr to hotplug on udev 0bda/2838
-  # TODO: Configure rtlamr
+  # Configure rtl-sdr to hotplug on udev 0bda/2838
+  services.rtl-tcp.enable = true;
+  # Configure rtlamr
+  services.rtlamr = {
+    enable = true;
+    influxdb = {
+      url = "http://influx.isz.wtf:8086/";
+      org = "44ff94dc2f766f90";
+      bucket = "rtlamr";
+      measurement = "rtlamr";
+    };
+    msgtype = [ "scm" "scm+" "idm" ];
+    logLevel = "trace";
+  };
   # Configure services.influxdb2
   services.influxdb2 = {
     enable = true;
