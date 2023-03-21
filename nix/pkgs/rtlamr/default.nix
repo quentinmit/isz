@@ -12,8 +12,10 @@ buildGoModule rec {
     owner = "bemasher";
     repo = "rtlamr";
     rev = "v${version}";
-    sha256 = "xx";
+    sha256 = "0LufLU/wTmCRqTnQBNJg5UnDv0u1Thec5FSWATWqZsQ=";
   };
+
+  vendorSha256 = "";
 
   meta = with lib; {
     description = "RTL-SDR ERT receiver";
