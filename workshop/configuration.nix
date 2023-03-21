@@ -12,6 +12,8 @@
       ../nix/rtlamr.nix
     ];
 
+  sops.defaultSopsFile = ./secrets.yaml;
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -199,6 +201,7 @@
   services.rtlamr-collect = {
     enable = true;
     influxdb = {
+      tokenPath = config.sops.secrets.rtlamr_influx_token.path;
       url = "http://influx.isz.wtf:8086/";
       org = "44ff94dc2f766f90";
       bucket = "rtlamr";

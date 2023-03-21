@@ -1,7 +1,7 @@
 keys:
-- &admin_quentin_gpg: 1c71a0665400aacd142eb1a004ee05a8fcefb697
-- &server_workshop_ssh_gpg: 2b5889b9ad2facafd3e867066bbc96bb384b8c2a
-- &server_workshop_ssh_age: age1hjrx3z0x257weyxt5u8lcntm6k040e7e4v45y7cz33gs5tmjmu2q4kzc4s
+- &admin_quentin_gpg 1C71A0665400AACD142EB1A004EE05A8FCEFB697
+- &server_workshop_ssh_gpg 2b5889b9ad2facafd3e867066bbc96bb384b8c2a
+- &server_workshop_ssh_age age1hjrx3z0x257weyxt5u8lcntm6k040e7e4v45y7cz33gs5tmjmu2q4kzc4s
 
 creation_rules:
 - path_regex: ^workshop/secrets\.yaml$
