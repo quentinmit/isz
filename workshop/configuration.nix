@@ -8,6 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./nginx.nix
       ../nix/base.nix
       ../nix/rtlamr.nix
     ];
@@ -184,7 +185,6 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "22.11"; # Did you read the comment?
 
-  # TODO: Configure nginx
   # TODO: Configure udev for Zwave, Fluke45, PWRGate
   # Configure mosquitto
   services.mosquitto = {
@@ -228,6 +228,7 @@
   services.grafana = {
     enable = true;
     settings = {
+      protocol = "socket";
     };
   };
   # TODO: Configure pwrgate-logger
