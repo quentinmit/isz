@@ -46,24 +46,24 @@
       showExternalIp = mkEnableOption "show external IP";
     };
   };
-  config = let cfg = config.services.speedtest-influxdb; in with builtins; {
+  config = let cfg = config.services.speedtest-influxdb; in with lib.strings; {
     systemd.services.speedtest-influxdb = lib.mkIf cfg.enable {
       description = "Speedtest to InfluxDB";
       path = [ pkgs.speedtest-influxdb ];
       after = [ "network-online.target" ];
       script = ''
         exec speedtext-influxdb \
-          -influxHost=${toJSON cfg.influxdb.url} \
-          -influxDB=${toJSON cfg.influxdb.db} \
-          -influxUser=${toJSON cfg.influxdb.username} \
-          -influxPwd="$(cat ${toJSON cfg.influxdb.passwordPath})" \
-          -interval=${toJSON cfg.interval} \
-          -retryInterval=${toJSON cfg.retryInterval} \
-          -host=${toJSON cfg.host} \
-          -server=${toJSON cfg.speedtestServer} \
+          -influxHost=${escapeShellArg cfg.influxdb.url} \
+          -influxDB=${escapeShellArg cfg.influxdb.db} \
+          -influxUser=${escapeShellArg cfg.influxdb.username} \
+          -influxPwd="$(cat ${escapeShellArg cfg.influxdb.passwordPath})" \
+          -interval=${escapeShellArg cfg.interval} \
+          -retryInterval=${escapeShellArg cfg.retryInterval} \
+          -host=${escapeShellArg cfg.host} \
+          -server=${escapeShellArg cfg.speedtestServer} \
           -includeHumanOutput=${if cfg.includeReadableOutput then "true" else "false"} \
           -retryZeroValue=${if cfg.retryZeroValue then "true" else "false"} \
-          -distanceUnit=${toJSON cfg.distanceUnit} \
+          -distanceUnit=${escapeShellArg cfg.distanceUnit} \
           -showExternalIp=${if cfg.showExternalIp then "true" else "false"} \
           -keepProcessRunning=true \
           -saveToInfluxDb=true

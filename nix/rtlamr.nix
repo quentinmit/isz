@@ -96,17 +96,17 @@
       after = [ "network.target" "rtl-tcp.service" ];
       requires = [ "rtl-tcp.service" ];
       wantedBy = [ "rtl-tcp.service" ];
-      script = with builtins; ''
-        export COLLECT_INFLUXDB_HOSTNAME=${toJSON cfg.influxdb.url}
-        export COLLECT_INFLUXDB_ORG=${toJSON cfg.influxdb.org}
-        export COLLECT_INFLUXDB_BUCKET=${toJSON cfg.influxdb.bucket}
-        export COLLECT_INFLUXDB_MEASUREMENT=${toJSON cfg.influxdb.measurement}
+      script = with lib.strings; ''
+        export COLLECT_INFLUXDB_HOSTNAME=${escapeShellArg cfg.influxdb.url}
+        export COLLECT_INFLUXDB_ORG=${escapeShellArg cfg.influxdb.org}
+        export COLLECT_INFLUXDB_BUCKET=${escapeShellArg cfg.influxdb.bucket}
+        export COLLECT_INFLUXDB_MEASUREMENT=${escapeShellArg cfg.influxdb.measurement}
         export COLLECT_STRICTIDM=${if cfg.strictIdm then "1" else "0"}
-        export COLLECT_LOGLEVEL=${toJSON cfg.logLevel}
+        export COLLECT_LOGLEVEL=${escapeShellArg cfg.logLevel}
         export RTLAMR_FORMAT=json
-        export RTLAMR_MSGTYPE=${toJSON cfg.msgtype}
-        export RTLAMR_SERVER=${toJSON cfg.rtlTcpServer}
-        export COLLECT_INFLUXDB_TOKEN="$(cat ${toJSON cfg.influxdb.tokenPath})"
+        export RTLAMR_MSGTYPE=${escapeShellArg cfg.msgtype}
+        export RTLAMR_SERVER=${escapeShellArg cfg.rtlTcpServer}
+        export COLLECT_INFLUXDB_TOKEN="$(cat ${escapeShellArg cfg.influxdb.tokenPath})"
         set -e
         rtlamr | rtlamr-collect
       '';

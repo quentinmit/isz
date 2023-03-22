@@ -35,10 +35,10 @@ in
           src = config.sops.secrets."ssh_host_keys/${t}".path;
           dst = "/etc/ssh/ssh_host_${t}_key";
           in
-	  with builtins;
+	  with lib.strings;
           ''
-        if [ -s ${toJSON src} ]; then
-          cp -a ${toJSON src} ${toJSON dst}
+        if [ -s ${escapeShellArg src} ]; then
+          cp -a ${escapeShellArg src} ${escapeShellArg dst}
         fi
         '') cfg.hostKeyTypes;
       };
