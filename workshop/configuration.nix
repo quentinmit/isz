@@ -228,7 +228,7 @@
   services.grafana = {
     enable = true;
     settings = {
-      protocol = "socket";
+      server.protocol = "socket";
     };
   };
   # TODO: Configure pwrgate-logger
