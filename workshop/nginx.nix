@@ -40,7 +40,7 @@
           enableACME = true;
           locations."/".tryFiles = "$uri @hass";
           locations."@hass" = {
-            proxyPass = "http://[::1]:${config.services.home-assistant.config.http.server_port}/";
+            proxyPass = "http://[::1]:${toString config.services.home-assistant.config.http.server_port}/";
             proxyWebsockets = true;
             extraConfig = ''
               proxy_buffering off;

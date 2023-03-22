@@ -1,16 +1,16 @@
-{ lib, pkgs, config, unstable, ... }:
+{ lib, pkgs, config, channels, ... }:
 {
+  disabledModules = [
+    "services/home-automation/home-assistant.nix"
+  ];
+  imports = [
+    "${channels.unstable}/nixos/modules/services/home-automation/home-assistant.nix"
+  ];
   config = {
     nixpkgs.overlays = [
       (self: super: {
         inherit (pkgs.unstable) home-assistant;
       })
-    ];
-    disabledModules = [
-      "services/home-automation/home-assistant.nix"
-    ];
-    imports = [
-      "${channels.unstable}/nixos/modules/services/home-automation/home-assistant.nix"
     ];
     services.home-assistant = {
       enable = true;
