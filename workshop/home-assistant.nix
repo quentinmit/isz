@@ -66,7 +66,7 @@
         };
         sensor = [
           {
-            platform = template;
+            platform = "template";
             sensors = {
               sun_rising_text = {
                 friendly_name = "Sun Rising Text";
@@ -136,7 +136,7 @@
               }
               (speed "Download")
               (speed "Upload")
-            ]
+            ];
           }
         ];
         switch = [
@@ -161,7 +161,7 @@
                   value_template = "{{ (states('sensor.${cleanName name}_power_electric_consumed_w') | float ) > 10 }}";
                   turn_on = turnFrom "off";
                   turn_off = turnFrom "on";
-                })
+                });
             in {
               receiver_power = power "Receiver";
               tv_power = power "TV";
