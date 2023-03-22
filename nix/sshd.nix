@@ -7,7 +7,7 @@ in
     isz.openssh = {
       hostKeyTypes = mkOption {
         default = [ "ecdsa" "ed25519" ];
-        type = types.list;
+        type = with types; listOf str;
         description = "Host key types to generate/load";
       };
       useSops = mkEnableOption "use sops";
@@ -15,11 +15,33 @@ in
   };
   config = {
     services.openssh.hostKeys = map (t: { type = t; path = "/etc/ssh/ssh_host_${t}_key"; }) cfg.hostKeyTypes;
-    sops.secrets = mkIf cfg.useSops (
+    sops.secrets = lib.mkIf cfg.useSops (
       listToAttrs (
-        map (t: { name = "ssh_host_keys/${t}"; value = { path = "/etc/ssh/ssh_host_${t}_key"; }; }) cfg.hostKeyTypes
+        map (t: {
+          name = "ssh_host_keys/${t}";
+          value = {
+            # TODO: path will overwrite the key with a symlink that won't exist
+            # on next activation.
+            #path = "/etc/ssh/ssh_host_${t}_key";
+          };
+        }) cfg.hostKeyTypes
       )
     );
+
+    system.activationScripts = {
+      setupSecretsSsh = {
+        deps = [ "setupSecrets" ];
+        text = lib.strings.concatMapStringsSep "\n" (t: let
+          src = sops.secrets."ssh_host_keys/${t}".path;
+          dst = "/etc/ssh/ssh_host_${t}_key";
+          in
+          ''
+        if [ -s ${lib.toJSON src} ]; then
+          cp ${lib.toJSON src} ${lib.toJSON dst}
+        fi
+        '') cfg.hostKeyTypes;
+      };
+    };
 
     users.users."root".openssh.authorizedKeys.keys = [
       "ssh-dss AAAAB3NzaC1kc3MAAACBAKkmA85sGJjOMkH0lYj1apiCyvyBtKYJcM3sBn4lBrDV59E1FzgE2SvNnysgHVjVJtrqzt9AbYShDggAOgH3uSoc8wppETurUeTTiS59Y0WzWIHNTEAcsKvQw+2Zj3pU0vYU01cUhm2iV9Cw49gf7VwRtCoavVzsQaHMDWq4vMbpAAAAFQCtpPp74y1vTh14Z8I4/bO1/kWCNwAAAIBGCm5M6envG4iojPor4gXAIsZdlHVK/RNSl6jmisuMnx8a/e8H45LCBmEDYY7px8sSgSt85x6p6qd2UsPI1vHxd945PTKjbpiRNoCifKEBdKLVueYo2jlBIgKRYKJ4oMvyxFGuzaaMokO2AVlmeFjnQF4qIV6G2PhRIJ6+l+j3qAAAAIEAi5F+CBVmOvwazgI9aDmNXr+29Y6L7QW4EmA0pFiQG/aPhI37SeaArf7+/v2XSZMzqNa2VNiu8pDCUngU5YdZLb5DoHTSx4W5j3hgT5ken4WYd8SxxA5A/PEzLbZcEBiml5EN3EA/yymtyv34CzV5waOvyg80khraulngix5r2sY= quentins@209.177.24.26.dhcp.lightlink.com"
