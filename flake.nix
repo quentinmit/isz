@@ -13,7 +13,7 @@
     in {
       nixosConfigurations.workshop = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs.channels = { inherit nixpkgs unstable };
+        specialArgs.channels = { inherit nixpkgs unstable; };
         modules = [
           overlayModule
           ./workshop/configuration.nix
