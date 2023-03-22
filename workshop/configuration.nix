@@ -11,6 +11,7 @@
       ./nginx.nix
       ../nix/base.nix
       ../nix/rtlamr.nix
+      ../nix/speedtest.nix
     ];
 
   sops.defaultSopsFile = ./secrets.yaml;
@@ -234,7 +235,19 @@
   # TODO: Configure pwrgate-logger
   # TODO: Configure linkzone-logger
   # TODO: Configure services.telegraf
-  # TODO: Configure speedtest
+  # Configure speedtest
+  sops.secrets."speedtest_influx_password" = {};
+  services.speedtest-influxdb = {
+    enable = true;
+    influxdb = {
+      url = "http://influx.isz.wtf:8086/";
+      username = "speedtest";
+      passwordPath = config.sops.secrets.speedtest_influx_password.path;
+      db = "speedtest";
+    };
+    interval = 3600;
+    showExternalIp = true;
+  };
   # TODO: Configure dashboard (for esphome)
   # TODO: Configure esphome
   # TODO: Configure services.home-assistant

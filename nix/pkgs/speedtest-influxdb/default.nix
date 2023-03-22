@@ -5,17 +5,17 @@
 }:
 
 buildGoModule rec {
-  name = "speedtest";
+  name = "speedtest-influxdb";
   version = "1.1.0";
 
   src = fetchFromGitHub {
     owner = "QuadStingray";
     repo = "docker-speedtest-influxdb.git";
     rev = "a9f610d3464d1f98bce8452395207683f61c8983";
-    sha256 = "";
+    sha256 = "X99hXpqubbOoFnRT2Qv2S/M8nNabIL5GP+VBE+hB73c=";
   };
 
-  vendorSha256 = "";
+  vendorSha256 = "Avy04f9bBTMvp12RsgtkwmhaGv45RN2OwspPht0vKv8=";
 
   meta = with lib; {
     description = "Speedtest for InfluxDB";
@@ -23,6 +23,6 @@ buildGoModule rec {
       Speedtest results to InfluxDB for Grafana.
     '';
     homepage = "https://github.com/QuadStingray/docker-speedtest-influxdb";
-    license = with licenses; [ apache2 ];
+    license = with licenses; [ asl20 ];
   };
 }

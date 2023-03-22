@@ -5,5 +5,5 @@ with pkgs;
 {
   rtlamr = callPackage ./rtlamr {};
   rtlamr-collect = callPackage ./rtlamr-collect {};
-  speedtest = callPackage ./speedtest {};
+  speedtest-influxdb = callPackage ./speedtest-influxdb {};
 }
