@@ -24,6 +24,12 @@
     };
     services.home-assistant = {
       enable = true;
+      package = pkgs.home-assistant.overrideAttrs (old: {
+        doInstallCheck = false;
+        patches = (old.patches or []) ++ [
+          ./patches/hass-mikrotik-comment.patch
+        ];
+      });
       extraComponents = [
         "accuweather"
         "apple_tv"

@@ -1,0 +1,19 @@
+commit 6ba7fdbb53e2ac21404cf2117a4a0d088a96b927
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Thu Jan 19 20:45:05 2023 -0500
+
+    Use the device comment as the device name, if it exists
+
+diff --git a/homeassistant/components/mikrotik/device.py b/homeassistant/components/mikrotik/device.py
+index bf3cb47adc..7e352619a8 100644
+--- a/homeassistant/components/mikrotik/device.py
++++ b/homeassistant/components/mikrotik/device.py
+@@ -25,7 +25,7 @@ class Device:
+     @property
+     def name(self) -> str:
+         """Return device name."""
+-        return str(self._params.get("host-name", self.mac))
++        return str(self._params.get("comment", self._params.get("host-name", self.mac)))
+ 
+     @property
+     def ip_address(self) -> str | None:
