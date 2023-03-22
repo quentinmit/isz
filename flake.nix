@@ -2,6 +2,7 @@
   inputs = {
     unstable.url = "nixpkgs/nixos-unstable";
     sops-nix.url = "github:Mic92/sops-nix";
+    nix-npm-buildpackage = "github:serokell/nix-npm-buildpackage";
   };
   outputs = { self, nixpkgs, unstable, sops-nix }:
     let
