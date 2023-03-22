@@ -16,7 +16,7 @@ in
   config = {
     services.openssh.hostKeys = map (t: { type = t; path = "/etc/ssh/ssh_host_${t}_key"; }) cfg.hostKeyTypes;
     sops.secrets = lib.mkIf cfg.useSops (
-      listToAttrs (
+      lib.listToAttrs (
         map (t: {
           name = "ssh_host_keys/${t}";
           value = {
@@ -28,16 +28,17 @@ in
       )
     );
 
-    system.activationScripts = {
+    system.activationScripts = lib.mkIf cfg.useSops {
       setupSecretsSsh = {
         deps = [ "setupSecrets" ];
         text = lib.strings.concatMapStringsSep "\n" (t: let
-          src = sops.secrets."ssh_host_keys/${t}".path;
+          src = config.sops.secrets."ssh_host_keys/${t}".path;
           dst = "/etc/ssh/ssh_host_${t}_key";
           in
+	  with builtins;
           ''
-        if [ -s ${lib.toJSON src} ]; then
-          cp ${lib.toJSON src} ${lib.toJSON dst}
+        if [ -s ${toJSON src} ]; then
+          cp -a ${toJSON src} ${toJSON dst}
         fi
         '') cfg.hostKeyTypes;
       };
