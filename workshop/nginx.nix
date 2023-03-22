@@ -9,7 +9,7 @@
       recommendedOptimisation = true;
       recommendedGzipSettings = true;
       recommendedProxySettings = true;
-      upstreams.grafana.servers."unix:/${config.services.grafana.socket}" = {};
+      upstreams.grafana.servers."unix:/${config.services.grafana.settings.server.socket}" = {};
       virtualHosts = {
         "grafana.isz.wtf" = lib.mkIf config.services.grafana.enable {
           forceSSL = true;
