@@ -20,6 +20,11 @@
 
   networking.hostName = "workshop"; # Define your hostname.
 
+  isz.openssh = {
+    hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
+    useSops = true;
+  };
+
   networking.useDHCP = false;
   networking.useNetworkd = true;
   systemd.network.netdevs = {
