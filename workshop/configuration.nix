@@ -9,6 +9,7 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./nginx.nix
+      ./home-assistant.nix
       ../nix/base.nix
       ../nix/rtlamr.nix
       ../nix/speedtest.nix
@@ -250,7 +251,7 @@
   };
   # TODO: Configure dashboard (for esphome)
   # TODO: Configure esphome
-  # TODO: Configure services.home-assistant
+  # Configure home-assistant
   # TODO: Configure zwavejs2mqtt
   # TODO: Configure postgres
   # TODO: Configure atuin
