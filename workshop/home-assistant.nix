@@ -12,8 +12,38 @@
         inherit (pkgs.unstable) home-assistant;
       })
     ];
+    sops.secrets."home-assistant/secrets.yaml" = {
+      owner = config.systemd.services.home-assistant.serviceConfig.User;
+      path = "${config.services.home-assistant.configDir}/secrets.yaml";
+      restartUnits = [ "home-assistant.service" ];
+    };
+    sops.secrets."home-assistant/service-account.json" = {
+      owner = config.systemd.services.home-assistant.serviceConfig.User;
+      path = "${config.services.home-assistant.configDir}/service-account.json";
+      restartUnits = [ "home-assistant.service" ];
+    };
     services.home-assistant = {
       enable = true;
+      extraComponents = [
+        "accuweather"
+        "apple_tv"
+        "cast"
+        "coronavirus"
+        "default_config"
+        "elgato"
+        "esphome"
+        "google_assistant"
+        "met"
+        "mikrotik"
+        "mobile_app"
+        "moon"
+        "mqtt"
+        "person"
+        "sun"
+        "upnp"
+        "zone"
+        "zwave_js"
+      ];
       config = let
         cleanName = (name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name));
       in {
