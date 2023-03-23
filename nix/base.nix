@@ -19,6 +19,7 @@
       acpica-tools
       # apt-file # Debian
       # bash-completion # programs.bash.enableCompletion
+      file
       util-linux # already present
       host # already present
       dig

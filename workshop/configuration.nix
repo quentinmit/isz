@@ -206,20 +206,20 @@
     {
       SUBSYSTEM = "tty";
       "ATTRS{product}" = "Epic-PWRgate";
-      RUN = { op = "+="; value = "/usr/bin/ln -f $devnode /dev/ttyPwrgate"; };
+      RUN = { op = "+="; value = "${pkgs.coreutils}/bin/ln -f $devnode /dev/ttyPwrgate"; };
     }
     {
       SUBSYSTEM = "tty";
       "ATTRS{idProduct}" = "0200";
       "ATTRS{idVendor}" = "0658";
-      RUN = { op = "+="; value = "/usr/bin/ln -f $devnode /dev/ttyZwave"; };
+      RUN = { op = "+="; value = "${pkgs.coreutils}/bin/ln -f $devnode /dev/ttyZwave"; };
     }
     {
       SUBSYSTEM = "tty";
       "ATTRS{idProduct}" = "6011";
       "ATTRS{idVendor}" = "0403";
       "ATTRS{bInterfaceNumber}" = "00";
-      RUN = { op = "+="; value = "/usr/bin/ln -f $devnode /dev/ttyFluke45"; };
+      RUN = { op = "+="; value = "${pkgs.coreutils}/bin/ln -f $devnode /dev/ttyFluke45"; };
     }
   ];
   # Configure mosquitto
