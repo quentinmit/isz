@@ -18,6 +18,16 @@
       fsType = "ext4";
     };
 
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/a8148170-0326-4f06-8cc6-20d1ae466aea";
+      fsType = "ext2";
+    };
+
+  fileSystems."/boot/efi" =
+    { device = "/dev/disk/by-uuid/4763-64C6";
+      fsType = "vfat";
+    };
+
   swapDevices =
     [ { device = "/dev/disk/by-uuid/1b9fe90f-2653-43c4-976e-4364e7676f15"; }
     ];
@@ -27,20 +37,8 @@
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.br-5c79cd592a20.useDHCP = lib.mkDefault true;
   # networking.interfaces.br0.useDHCP = lib.mkDefault true;
-  # networking.interfaces.docker0.useDHCP = lib.mkDefault true;
   # networking.interfaces.enp2s0.useDHCP = lib.mkDefault true;
-  # networking.interfaces.lxcbr0.useDHCP = lib.mkDefault true;
-  # networking.interfaces.ve-rtl-tcp.useDHCP = lib.mkDefault true;
-  # networking.interfaces.ve-rtlamr.useDHCP = lib.mkDefault true;
-  # networking.interfaces.veth4b43d03.useDHCP = lib.mkDefault true;
-  # networking.interfaces.veth6c7fba7.useDHCP = lib.mkDefault true;
-  # networking.interfaces.veth8500c5e.useDHCP = lib.mkDefault true;
-  # networking.interfaces.veth8ecc4f5.useDHCP = lib.mkDefault true;
-  # networking.interfaces.veth9a50330.useDHCP = lib.mkDefault true;
-  # networking.interfaces.veth9d1a004.useDHCP = lib.mkDefault true;
-  # networking.interfaces.vethf133c99.useDHCP = lib.mkDefault true;
   # networking.interfaces.vlan3097.useDHCP = lib.mkDefault true;
   # networking.interfaces.vlan88.useDHCP = lib.mkDefault true;
   # networking.interfaces.wlp3s0.useDHCP = lib.mkDefault true;
