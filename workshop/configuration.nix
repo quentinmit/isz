@@ -10,7 +10,7 @@
       ./hardware-configuration.nix
       ./nginx.nix
       ./home-assistant.nix
-      ./zwave-js-ui.nix
+      ../nix/zwave-js-ui.nix
       ../nix/base.nix
       ../nix/rtlamr.nix
       ../nix/speedtest.nix
@@ -253,7 +253,7 @@
   # TODO: Configure dashboard (for esphome)
   # TODO: Configure esphome
   # Configure home-assistant
-  # TODO: Configure zwavejs2mqtt
+  # Configure zwave-js-ui
   services.zwave-js-ui = {
     enable = true;
   };
