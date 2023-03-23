@@ -1,8 +1,9 @@
-{ stdenv, fetchzip, glibc, gcc-unwrapped, autoPatchelfHook }:
+{ stdenv, lib, fetchzip, glibc, gcc-unwrapped, autoPatchelfHook }:
 let
   src = fetchzip {
     url = "https://github.com/zwave-js/zwave-js-ui/releases/download/v8.11.0/zwave-js-ui-v8.11.0-linux.zip";
-    sha256 = "";
+    stripRoot = false;
+    sha256 = "lh58PdF311OBs+P2c8guh4Kv6OWzwtCpueZNX31Q6Hg=";
   };
 
   version = "8.11.0";
@@ -27,7 +28,7 @@ in stdenv.mkDerivation {
 
   # Extract and copy executable in $out/bin
   installPhase = ''
-    mkdir -p $out
+    mkdir -p $out/bin
     cp -av $src/zwave-js-ui-linux $out/bin/zwave-js-ui
   '';
 
