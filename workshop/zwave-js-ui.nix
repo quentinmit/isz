@@ -26,6 +26,7 @@
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/zwave-js-ui";
         StateDirectory = "zwave-js-ui";
+        WorkingDirectory = "\${STATE_DIRECTORY}";
         User = "zwave-js-ui";
         Group = "zwave-js-ui";
         Restart = "on-failure";

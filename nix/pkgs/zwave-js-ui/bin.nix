@@ -50,7 +50,6 @@ in stdenv.mkDerivation {
       local new_length=$(wc -c $out/bin/zwave-js-ui-tmp | awk '{ print $1 }')
       local offset=$((new_length - old_length))
       echo "Adding offset $offset to payload and prelude position"
-      #echo "New length $new_length old length $old_length offset $offset"
       cat $out/bin/zwave-js-ui-tmp | addoffset PAYLOAD_POSITION "$offset" | addoffset PRELUDE_POSITION "$offset" > $out/bin/zwave-js-ui
       chmod +x $out/bin/zwave-js-ui
       rm $out/bin/zwave-js-ui-tmp
