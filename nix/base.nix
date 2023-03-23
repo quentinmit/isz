@@ -13,6 +13,10 @@
     nixpkgs.config.allowUnfree = true;
     hardware.enableAllFirmware = true;
 
+    nix.settings = {
+      extra-features = [ "nix-command" "flakes" ];
+    };
+
     networking.domain = "isz.wtf";
 
     environment.systemPackages = with pkgs; [
