@@ -14,6 +14,7 @@
       ../nix/base.nix
       ../nix/rtlamr.nix
       ../nix/speedtest.nix
+      ../nix/udev.nix
     ];
 
   sops.defaultSopsFile = ./secrets.yaml;
@@ -201,6 +202,26 @@
   system.stateVersion = "22.11"; # Did you read the comment?
 
   # TODO: Configure udev for Zwave, Fluke45, PWRGate
+  services.udev.rules = [
+    {
+      SUBSYSTEM = "tty";
+      "ATTRS{product}" = "Epic-PWRgate";
+      RUN = { op = "+="; value = "/usr/bin/ln -f $devnode /dev/ttyPwrgate"; };
+    }
+    {
+      SUBSYSTEM = "tty";
+      "ATTRS{idProduct}" = "0200";
+      "ATTRS{idVendor}" = "0658";
+      RUN = { op = "+="; value = "/usr/bin/ln -f $devnode /dev/ttyZwave"; };
+    }
+    {
+      SUBSYSTEM = "tty";
+      "ATTRS{idProduct}" = "6011";
+      "ATTRS{idVendor}" = "0403";
+      "ATTRS{bInterfaceNumber}" = "00";
+      RUN = { op = "+="; value = "/usr/bin/ln -f $devnode /dev/ttyFluke45"; };
+    }
+  ];
   # Configure mosquitto
   services.mosquitto = {
     enable = true;
