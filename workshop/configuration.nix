@@ -10,6 +10,7 @@
       ./hardware-configuration.nix
       ./nginx.nix
       ./home-assistant.nix
+      ./zwave-js-ui.nix
       ../nix/base.nix
       ../nix/rtlamr.nix
       ../nix/speedtest.nix
@@ -253,6 +254,9 @@
   # TODO: Configure esphome
   # Configure home-assistant
   # TODO: Configure zwavejs2mqtt
+  services.zwave-js-ui = {
+    enable = true;
+  };
   # TODO: Configure postgres
   # TODO: Configure atuin
   # TODO: Configure freepbx-app
