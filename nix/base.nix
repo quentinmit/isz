@@ -24,6 +24,7 @@
       # apt-file # Debian
       # bash-completion # programs.bash.enableCompletion
       file
+      bintools # FIXME: Needed for lesspipe?
       util-linux # already present
       host # already present
       dig
