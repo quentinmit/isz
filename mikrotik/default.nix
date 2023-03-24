@@ -35,4 +35,11 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   src = ./.;
+
+  format = "other";
+  buildPhase = "true";
+  installPhase = ''
+    mkdir -p $out/bin/
+    cp $src/*.py $out/bin/
+  '';
 }

@@ -1,5 +1,5 @@
 { lib, pkgs, config, options, ... }:
-let mikrotik-python = callPackage ../mikrotik {}; in
+let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
 {
   options = with lib; {
     isz.telegraf = {
@@ -28,14 +28,9 @@ let mikrotik-python = callPackage ../mikrotik {}; in
               plaintext = mkOption { type = bool; default = false; };
             };
           }; in {
-            defaults = mkOption {
-              default = {};
-              type = trg;
-            };
             targets = mkOption {
               default = [];
               type = with types; listOf (trg);
-              apply = t: config.isz.telegraf.mikrotik.api.defaults // t;
             };
           };
         swos = let trg = with types; submodule {
@@ -45,20 +40,19 @@ let mikrotik-python = callPackage ../mikrotik {}; in
               password = mkOption { type = str; };
             };
           }; in {
-            defaults = mkOption {
-              default = {};
-              type = trg;
-            };
             targets = mkOption {
               default = [];
               type = with types; listOf (trg);
-              apply = t: config.isz.telegraf.mikrotik.swos.defaults // t;
             };
           };
       };
     };
   };
   config = let cfg = config.isz.telegraf; in {
+    systemd.services.telegraf.path = [
+      pkgs.lm_sensors
+      pkgs.nvme-cli
+    ];
     services.telegraf.extraConfig = lib.mkMerge [
       {
         agent = {
@@ -73,7 +67,7 @@ let mikrotik-python = callPackage ../mikrotik {}; in
           debug = cfg.debug;
           quiet = false;
           logfile = ""; # stderr
-          hostname = ""; # os.Hostname()
+          hostname = "${config.networking.hostName}.${config.networking.domain}"; # defaults toos.Hostname()
           omit_hostname = false;
         };
         outputs = {
@@ -154,7 +148,7 @@ let mikrotik-python = callPackage ../mikrotik {}; in
           signal = "STDIN";
         }];
       })
-      (lib.mkIf (cfg.openweathermap.appId != null && cfg.openweathermap.cityIds) {
+      (lib.mkIf (cfg.openweathermap.appId != null && cfg.openweathermap.cityIds != []) {
         inputs.openweathermap = [{
           app_id = cfg.openweathermap.appId;
           city_id = cfg.openweathermap.cityIds;
@@ -180,26 +174,7 @@ let mikrotik-python = callPackage ../mikrotik {}; in
           restart_delay = "10s";
           data_format = "influx";
           name_prefix = "mikrotik-";
-        });
-      }
-      {
-        inputs.execd = map (t: {
-          alias = "mikrotik_api_${t.ip}";
-          command = [
-            "${mikrotik-python}/bin/mikrotik_metrics.py"
-            "--server"
-            t.ip
-            "--user"
-            t.user
-            "--password"
-            t.password
-          ] ++ (if t.plaintext then ["--plaintext-login"] else []);
-          signal = "STDIN";
-          interval = "30s";
-          restart_delay = "10s";
-          data_format = "influx";
-          name_prefix = "mikrotik-";
-        });
+        }) cfg.mikrotik.api.targets;
       }
       {
         inputs.execd = map (t: {
@@ -218,8 +193,8 @@ let mikrotik-python = callPackage ../mikrotik {}; in
           restart_delay = "10s";
           data_format = "influx";
           name_prefix = "mikrotik-";
-        });
+        }) cfg.mikrotik.swos.targets;
       }
     ];
-  ];
+  };
 }

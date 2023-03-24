@@ -18,11 +18,12 @@
       ''));
 
     readYAML = path: fromYAML (builtins.readFile path);
-    pingTargets = [{ host = "overwatch.mit.edu" }] ++ (readYAML ../telegraf/static/he_lg.yaml).he_lg_ping_targets;
+    pingTargets = [{ host = "overwatch.mit.edu"; }] ++ (readYAML ../telegraf/static/he_lg.yaml).he_lg_ping_targets;
   in {
     sops.secrets.telegraf = {
       owner = config.systemd.services.telegraf.serviceConfig.User;
     };
+    services.telegraf.enable = true;
     systemd.services.telegraf.serviceConfig.EnvironmentFile = [
       config.sops.secrets.telegraf.path
     ];
@@ -31,23 +32,21 @@
         appId = "$OPENWEATHERMAP_APP_ID";
         cityIds = ["4931972" "4930956" "5087559"];
       };
-      mikrotik.api = {
-        defaults = {
-          plaintext = true;
-          user = "$MIKROTIK_API_USER";
-          password = "$MIKROTIK_API_PASSWORD";
-        };
-        targets = [
+      mikrotik.api = let defaults = {
+        plaintext = true;
+        user = "$MIKROTIK_API_USER";
+        password = "$MIKROTIK_API_PASSWORD";
+      }; in {
+        targets = map (t: defaults // t) [
           { ip = "172.30.97.2"; }
           { ip = "172.30.97.3"; }
         ];
       };
-      mikrotik.swos = {
-        defaults = {
-          user = "$MIKROTIK_SWOS_USER";
-          password = "$MIKROTIK_SWOS_PASSWORD";
-        };
-        targets = [
+      mikrotik.swos = let defaults = {
+        user = "$MIKROTIK_SWOS_USER";
+        password = "$MIKROTIK_SWOS_PASSWORD";
+      }; in {
+        targets = map (t: defaults // t) [
           { ip = "172.30.97.16"; }
           { ip = "172.30.97.17"; }
           { ip = "172.30.97.18"; }
@@ -55,7 +54,7 @@
       };
     };
     services.telegraf.extraConfig = {
-      prometheus = lib.attrsets.mapAttrsToList
+      inputs.prometheus = lib.attrsets.mapAttrsToList
         (app: url: {
           urls = [url];
           metric_version = 2;
@@ -65,16 +64,16 @@
           grafana = "https://grafana.isz.wtf/metrics";
           influx = "https://influx.isz.wtf/metrics";
         };
-      ping = [{
+      inputs.ping = [{
         interval = "30s";
         method = "native";
         urls = map (t: t.host) pingTargets;
         ipv6 = false;
       }];
-      starlark = [{
+      processors.starlark = [{
         namepass = ["ping"];
         source = ''
-          tags = ${toJSON pingTargets}
+          tags = ${builtins.toJSON (builtins.listToAttrs (map (t: { name = t.host; value = t; }) pingTargets))}
           def apply(metric):
             url = metric.tags.get("url")
             extra = tags.get(url)
@@ -86,7 +85,7 @@
               metric.tags.update(extra)
             return metric
         '';
-      ]};
+      }];
     };
   };
-};
+}
