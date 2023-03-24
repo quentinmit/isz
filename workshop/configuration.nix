@@ -241,7 +241,9 @@
   # Configure rtl-sdr to hotplug on udev 0bda/2838
   services.rtl-tcp.enable = true;
   # Configure rtlamr
-  sops.secrets.rtlamr_influx_token = {};
+  sops.secrets.rtlamr_influx_token = {
+    owner = config.services.rtlamr-collect.user;
+  };
   services.rtlamr-collect = {
     enable = true;
     influxdb = {

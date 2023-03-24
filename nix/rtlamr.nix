@@ -26,6 +26,10 @@
     };
     services.rtlamr-collect = {
       enable = mkEnableOption "rtlamr-collect";
+      user = mkOption {
+        type = types.str;
+        default = "rtlamr-collect";
+      };
       influxdb = {
         tokenPath = mkOption {
           type = types.path;
@@ -103,7 +107,12 @@
     })
     (let
       cfg = config.services.rtlamr-collect;
-    in lib.mkIf config.services.rtlamr-collect.enable {
+    in lib.mkIf cfg.enable {
+      users.extraUsers.${cfg.user} = {
+        isSystemUser = true;
+        group = cfg.user;
+      };
+      users.extraGroups.${cfg.user} = {};
       systemd.services.rtlamr-collect = {
         description = "Collect rtlamr data";
         path = [ pkgs.rtlamr pkgs.rtlamr-collect ];
@@ -126,6 +135,10 @@
         '';
         serviceConfig = {
           Restart = "always";
+          User = cfg.user;
+          Group = cfg.user;
+          StateDirectory = "rtlamr-collect";
+          WorkingDirectory = "%S/rtlamr-collect";
         };
       };
     })
