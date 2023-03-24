@@ -252,7 +252,7 @@
       measurement = "rtlamr";
     };
     msgtype = "scm,scm+,idm";
-    logLevel = "trace";
+    logLevel = "debug";
   };
   systemd.services.rtlamr-collect.serviceConfig.SupplementaryGroups = [ config.users.groups.keys.name ];
   # Configure services.influxdb2
