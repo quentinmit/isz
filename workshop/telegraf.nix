@@ -53,6 +53,14 @@
           { ip = "172.30.97.18"; }
         ];
       };
+      mikrotik.snmp.targets = [
+        # { ip = "172.30.97.1"; }
+        { ip = "172.30.97.2"; }
+        { ip = "172.30.97.3"; }
+        { ip = "172.30.97.16"; }
+        { ip = "172.30.97.17"; }
+        { ip = "172.30.97.18"; }
+      ];
     };
     services.telegraf.extraConfig = {
       inputs.prometheus = lib.attrsets.mapAttrsToList
