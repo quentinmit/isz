@@ -47,8 +47,8 @@
             '';
           };
           locations."/zwave/" = {
-            proxyPass = "http://localhost:8091";
-            proxyWebSockets = true;
+            proxyPass = "http://127.0.0.1:8091";
+            proxyWebsockets = true;
             extraConfig = ''
               rewrite ^ $request_uri;
               rewrite '^/zwave(/.*)$' $1 break;
