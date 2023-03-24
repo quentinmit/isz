@@ -38,6 +38,8 @@
       ((emacsPackagesFor emacs-nox).emacsWithPackages (epkgs: [
         epkgs.nix-mode
         epkgs.magit
+        epkgs.go-mode
+        epkgs.yaml-mode
       ]))
       exfatprogs
       fping
@@ -126,13 +128,32 @@
         enable = true;
         enableBashIntegration = true;
       };
+      # Configure emacs
+      home.file.".emacs".source = pkgs.writeTextFile {
+        name = "emacs";
+        text = ''
+          (custom-set-variables
+           ;; custom-set-variables was added by Custom.
+           ;; If you edit it by hand, you could mess it up, so be careful.
+           ;; Your init file should contain only one such instance.
+           ;; If there is more than one, they won't work right.
+           ; '(gofmt-command "goimports")
+           '(ido-mode (quote both) nil (ido))
+          )
+          (custom-set-faces
+           ;; custom-set-faces was added by Custom.
+           ;; If you edit it by hand, you could mess it up, so be careful.
+           ;; Your init file should contain only one such instance.
+           ;; If there is more than one, they won't work right.
+           )
+          (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+          (defun go-mode-setup ()
+           ;;(go-eldoc-setup)
+           ; (add-hook 'before-save-hook 'gofmt-before-save)
+          )
+          (add-hook 'go-mode-hook 'go-mode-setup)
+        '';
+      };
     };
-    # TODO: Configure emacs:
-    #  - Enable MELPA
-    #  - gofmt-command = goimports
-    #  - ido-mode = both
-    #  - packages-selected-packages = dockerfile-mode go-mode yaml-mode
-    #  - go-mode-setup before-save-hook gofmt-before-save
-    #  - go-mode-hook go-mode-setup
   };
 }
