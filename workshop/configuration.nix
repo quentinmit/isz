@@ -213,6 +213,8 @@
       "ATTRS{idProduct}" = "0200";
       "ATTRS{idVendor}" = "0658";
       RUN = { op = "+="; value = "${pkgs.coreutils}/bin/ln -f $devnode /dev/ttyZwave"; };
+      OWNER = { op = "="; value = "zwave-js-ui"; };
+      GROUP = { op = "="; value = "zwave-js-ui"; };
     }
     {
       SUBSYSTEM = "tty";
