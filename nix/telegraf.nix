@@ -166,7 +166,7 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
           alias = "intel_rapl";
           restart_delay = "10s";
           data_format = "influx";
-          command = ["${pkgs.python}/bin/python" ../telegraf/scripts/intel_rapl.py];
+          command = ["${pkgs.python3}/bin/python3" ../telegraf/scripts/intel_rapl.py];
           signal = "STDIN";
         }];
       })

@@ -28,6 +28,7 @@
       config.sops.secrets.telegraf.path
     ];
     isz.telegraf = {
+      intelRapl = true;
       openweathermap = {
         appId = "$OPENWEATHERMAP_APP_ID";
         cityIds = ["4931972" "4930956" "5087559"];
