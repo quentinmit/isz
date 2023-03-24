@@ -27,12 +27,12 @@
           forceSSL = true;
           enableACME = true;
           locations."/".tryFiles = "$uri @influx";
-          locations."@influx".proxyPass = "http://localhost:8086/";
+          locations."@influx".proxyPass = "http://localhost:8086";
         };
         "atuin.isz.wtf" = lib.mkIf false {
           forceSSL = true;
           enableACME = true;
-          locations."/".proxyPass = "http://localhost:8888/";
+          locations."/".proxyPass = "http://localhost:8888";
         };
         "homeassistant.isz.wtf" = lib.mkIf config.services.home-assistant.enable {
           serverAliases = [ "hass.isz.wtf" ];
@@ -40,7 +40,7 @@
           enableACME = true;
           locations."/".tryFiles = "$uri @hass";
           locations."@hass" = {
-            proxyPass = "http://[::1]:${toString config.services.home-assistant.config.http.server_port}/";
+            proxyPass = "http://[::1]:${toString config.services.home-assistant.config.http.server_port}";
             proxyWebsockets = true;
             extraConfig = ''
               proxy_buffering off;
@@ -51,7 +51,7 @@
           forceSSL = true;
           enableACME = true;
           locations."/" = {
-            proxyPass = "http://localhost:6052/";
+            proxyPass = "http://localhost:6052";
             proxyWebsockets = true;
             extraConfig = ''
               proxy_buffering off;
@@ -63,7 +63,7 @@
           forceSSL = true;
           enableACME = true;
           locations."/" = {
-            proxyPass = "http://172.30.96.101:8096/";
+            proxyPass = "http://172.30.96.101:8096";
             proxyWebsockets = true;
             extraConfig = ''
               proxy_buffering off;
