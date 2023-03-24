@@ -13,20 +13,20 @@
     environment.systemPackages = [
       cfg.package
     ];
-    systemd.services.zwave-js-ui = {
+    systemd.services.zwave-js-ui = let stateDir = "zwave-js-ui"; in {
       description = "Z-Wave JS UI";
       path = [ cfg.package ];
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       environment = {
-        STORE_DIR = "\${STATE_DIRECTORY}/store";
-        BACKUPS_DIR = "\${STATE_DIRECTORY}/store/backups";
-        ZWAVE_JS_EXTERNAL_CONFIG = "\${STATE_DIRECTORY}/store/.config-db";
+        STORE_DIR = "%S/${stateDir}";
+        BACKUPS_DIR = "%S/${stateDir}/backups";
+        ZWAVE_JS_EXTERNAL_CONFIG = "%S/${stateDir}/.config-db";
       };
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/zwave-js-ui";
         StateDirectory = "zwave-js-ui";
-        WorkingDirectory = "\${STATE_DIRECTORY}";
+        WorkingDirectory = "%S/${stateDir}";
         User = "zwave-js-ui";
         Group = "zwave-js-ui";
         Restart = "on-failure";
