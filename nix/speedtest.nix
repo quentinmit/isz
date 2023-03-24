@@ -69,6 +69,18 @@
           -keepProcessRunning=true \
           -saveToInfluxDb=true
       '';
+      serviceConfig = {
+        User = "speedtest-influxdb";
+        Group = "speedtest-influxdb";
+        Restart = "always";
+        RestartSet = "5s";
+        StartLimitIntervalSec = "0";
+      };
     };
+    users.extraUsers.speedtest-influxdb = {
+      isSystemUser = true;
+      group = "speedtest-influxdb";
+    };
+    users.extraGroups.speedtest-influxdb = {};
   };
 }

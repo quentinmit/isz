@@ -306,7 +306,9 @@
 
   # TODO: Configure services.telegraf
   # Configure speedtest
-  sops.secrets."speedtest_influx_password" = {};
+  sops.secrets."speedtest_influx_password" = {
+    owner = "speedtest-influxdb";
+  };
   services.speedtest-influxdb = {
     enable = true;
     influxdb = {
