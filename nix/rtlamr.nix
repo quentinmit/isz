@@ -124,6 +124,9 @@
           set -e
           rtlamr | rtlamr-collect
         '';
+        serviceConfig = {
+          Restart = "always";
+        };
       };
     })
   ];
