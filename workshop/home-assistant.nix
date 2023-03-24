@@ -33,6 +33,7 @@
       extraComponents = [
         "accuweather"
         "apple_tv"
+        "backup"
         "cast"
         "coronavirus"
         "default_config"
