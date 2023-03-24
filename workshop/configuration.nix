@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =
@@ -271,7 +271,34 @@
   };
   users.users."${config.services.nginx.user}".extraGroups = [ "grafana" ];
   # TODO: Configure pwrgate-logger
-  # TODO: Configure linkzone-logger
+  # Configure linkzone-logger
+  sops.secrets.logger_influx_token = {
+    owner = "linkzone-logger";
+  };
+  systemd.services.linkzone-logger = {
+    description = "Linkzone Logger";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "network-online.target" "influxdb2.service" ];
+    after = [ "network-online.target" "influxdb2.service" ];
+    environment = {
+      INFLUX_SERVER = "http://influx.isz.wtf:8086/";
+    };
+    serviceConfig = {
+      User = "linkzone-logger";
+      Group = "linkzone-logger";
+      Restart = "always";
+    };
+    script = ''
+      export INFLUX_TOKEN="$(cat ${lib.strings.escapeShellArg config.sops.secrets.logger_influx_token.path})"
+      exec ${pkgs.callPackage ./go {}}/bin/linkzone-logger
+    '';
+  };
+  users.extraUsers.linkzone-logger = {
+    isSystemUser = true;
+    group = "linkzone-logger";
+  };
+  users.extraGroups.linkzone-logger = {};
+
   # TODO: Configure services.telegraf
   # Configure speedtest
   sops.secrets."speedtest_influx_password" = {};

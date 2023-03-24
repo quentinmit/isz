@@ -10,15 +10,6 @@ services:
     devices:
       - "/dev/ttyPwrgate:/dev/ttyACM0"
     restart: always
-  linkzone-logger:
-    build:
-      context: go
-      target: linkzone-logger
-    hostname: workshop-pi.isz
-    env_file: logger.env
-    environment:
-      - INFLUX_SERVER=http://influxdb:8086/
-    restart: always
   telegraf:
     container_name: telegraf
     build: telegraf-docker
