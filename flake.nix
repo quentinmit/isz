@@ -5,10 +5,12 @@
       flake = false;
     };
     unstable.url = "nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager/release-22.11";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
   };
-  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat }:
+  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, home-manager, ... }:
     let
       overlay = final: prev: {
         unstable = import unstable { inherit (prev) system; config.allowUnfree = true; };
@@ -32,6 +34,7 @@
         modules = [
           overlayModule
           ./workshop/configuration.nix
+          home-manager.nixosModules.home-manager
           sops-nix.nixosModules.sops
         ];
       };

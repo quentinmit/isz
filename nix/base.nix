@@ -97,7 +97,26 @@
     services.openssh.enable = true;
     # TODO: set HISTSIZE to 100000
     programs.git.enable = true;
-    # TODO: Set ~/.config/git/ignore to *~
+
+    home-manager.useGlobalPkgs = true;
+    home-manager.useUserPackages = true;
+    home-manager.users.root = {
+      home.stateVersion = "22.11";
+      programs.home-manager.enable = true;
+      # ~/.gitconfig and ~/.config/git/ignore
+      programs.git = {
+        enable = true;
+        ignores = [
+          "*~"
+        ];
+        userName = "Quentin Smith";
+        userEmail = "quentin@mit.edu";
+        aliases = {
+          up = "pull --rebase";
+          k = "log --graph --abbrev-commit --pretty=oneline --decorate";
+        };
+      };
+    };
     # TODO: Configure emacs:
     #  - Enable MELPA
     #  - gofmt-command = goimports
@@ -105,10 +124,5 @@
     #  - packages-selected-packages = dockerfile-mode go-mode yaml-mode
     #  - go-mode-setup before-save-hook gofmt-before-save
     #  - go-mode-hook go-mode-setup
-    # TODO: ~/.gitconfig
-    #  - user.name = "Quentin Smith"
-    #  - user.email = "quentin@mit.edu"
-    #  - alias.up = "pull --rebase"
-    #  - alias.k = "log --graph --abbrev-commit --pretty=oneline --decorate"
   };
 }
