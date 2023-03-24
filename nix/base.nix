@@ -34,7 +34,10 @@
       # debsums # Debian
       drm_info
       vim
-      emacs-nox
+      ((emacsPackagesFor emacs-nox).emacsWithPackages (epkgs: [
+        epkgs.nix-mode
+        epkgs.magit
+      ]))
       exfatprogs
       fping
       glances
