@@ -56,6 +56,7 @@
       ncdu
       netcat-openbsd
       nmap
+      psmisc
       # rfkill
       rsync
       screen
@@ -120,6 +121,10 @@
           up = "pull --rebase";
           k = "log --graph --abbrev-commit --pretty=oneline --decorate";
         };
+      };
+      programs.nix-index = {
+        enable = true;
+        enableBashIntegration = true;
       };
     };
     # TODO: Configure emacs:
