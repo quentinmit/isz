@@ -96,6 +96,7 @@
     services.locate.locate = pkgs.mlocate;
     services.locate.localuser = null;
     programs.mtr.enable = true;
+    programs.wireshark.enable = true;
     services.smartd.enable = true;
     # Enable the OpenSSH daemon.
     services.openssh.enable = true;
