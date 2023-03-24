@@ -51,8 +51,9 @@
       description = "Speedtest to InfluxDB";
       path = [ pkgs.speedtest-influxdb ];
       after = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
       script = ''
-        exec speedtext-influxdb \
+        exec speedtest-influxdb \
           -influxHost=${escapeShellArg cfg.influxdb.url} \
           -influxDB=${escapeShellArg cfg.influxdb.db} \
           -influxUser=${escapeShellArg cfg.influxdb.username} \
