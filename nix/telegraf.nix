@@ -123,6 +123,7 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
           sensors = [{
             tagdrop.chip = ["w1_slave_temp-*"];
           }];
+          interrupts = [{}];
         };
       })
       (lib.mkIf cfg.docker {
