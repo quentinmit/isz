@@ -95,8 +95,8 @@
       services.udev.rules = [{
         SUBSYSTEM = "usb";
         DRIVER = "usb";
-        "ATTR{idProduct}" = config.services.rtl-tcp.usbVid;
-        "ATTR{idVendor}" = config.services.rtl-tcp.usbPid;
+        "ATTR{idVendor}" = config.services.rtl-tcp.usbVid;
+        "ATTR{idProduct}" = config.services.rtl-tcp.usbPid;
         TAG = { op = "+="; value = "systemd"; };
         "ENV{SYSTEMD_WANTS}" = { op = "+="; value = "rtl-tcp"; };
       }];
