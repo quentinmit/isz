@@ -46,6 +46,15 @@
               proxy_buffering off;
             '';
           };
+          locations."/zwave/" = {
+            proxyPass = "http://localhost:8091";
+            proxyWebSockets = true;
+            extraConfig = ''
+              rewrite ^ $request_uri;
+              rewrite '^/zwave(/.*)$' $1 break;
+              proxy_set_header X-External-Path /zwave;
+            '';
+          };
         };
         "esphome.isz.wtf" = lib.mkIf false {
           forceSSL = true;
