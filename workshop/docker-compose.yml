@@ -1,32 +1,5 @@
 version: '3.4'
 services:
-  influxdb:
-    container_name: influxdb
-    image: influxdb:2.6.1
-    ports:
-      - "172.30.97.34:8086:8086"
-      - "172.30.96.34:8086:8086"
-      - "127.0.1.1:8086:8086"
-    volumes:
-      - /srv/influxdb/etc:/etc/influxdbv2
-      - /srv/influxdb/data:/influxdbv2
-    environment:
-      - TZ=America/New_York
-      - INFLUXD_CONFIG_PATH
-      - INFLUXD_BOLT_PATH=/influxdbv2/influxd.bolt
-      - INFLUXD_ENGINE_PATH=/influxdbv2/engine
-      - INFLUXD_REPORTING_DISABLED=true
-    restart: always
-  grafana:
-    container_name: grafana
-    image: grafana/grafana-oss:9.1.6
-    ports:
-      - "172.30.97.34:3000:3000"
-      - "172.30.96.34:3000:3000"
-      - "127.0.1.1:3000:3000"
-    volumes:
-      - /srv/influxdb/grafana-storage:/var/lib/grafana
-    restart: always
   pwrgate-logger:
     build:
       context: go
@@ -68,34 +41,12 @@ services:
       - --config
       - http://172.30.97.34:8086/api/v2/telegrafs/0702075a793e0000
     restart: always
-  speedtest:
-    restart: always
-    build: speedtest
-    links:
-      - "influxdb:influxdb"
-    env_file: speedtest.env
-    environment:
-      - "INTERVAL=3600"
-      - "SHOW_EXTERNAL_IP=true"
-      - "INFLUXDB_DB=speedtest"
-      - "INFLUXDB_USER=speedtest"
-      - "INCLUDE_READABLE_OUTPUT=true"
-#      - "SPEEDTEST_LIST_SERVERS=true"
   dashboard:
     restart: always
     build: dashboard
     env_file: dashboard.env
     volumes:
       - /srv/isz/workshop/esphome:/esphome
-  homeassistant:
-    container_name: homeassistant
-    image: homeassistant/home-assistant:2023.1.5
-    # 2022.6.4
-    restart: unless-stopped
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/isz/workshop/homeassistant:/config
-    network_mode: host
   esphome:
     container_name: esphome
     image: esphome/esphome
@@ -104,18 +55,6 @@ services:
     volumes:
       - /srv/isz/workshop/esphome:/config
     network_mode: host
-  zwavejs2mqtt:
-    container_name: zwavejs2mqtt
-    image: zwavejs/zwave-js-ui:latest
-    # 6.12.0
-    restart: unless-stopped
-    ports:
-      - 8091:8091
-      - 3001:3001
-    devices:
-      - "/dev/ttyZwave:/dev/ttyZwave"
-    volumes:
-      - /srv/isz/workshop/zwavejs2mqtt:/usr/src/app/store
   postgres:
     container_name: postgres
     image: postgres
