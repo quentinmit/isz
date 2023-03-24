@@ -8,7 +8,11 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
       debug = mkEnableOption "debug";
       smartctl = mkOption {
         type = types.path;
-        default = "${pkgs.smartmontools}/bin/smartctl";
+        default = "/run/wrappers/bin/smartctl_telegraf";
+      };
+      nvme = mkOption {
+        type = types.path;
+        default = "/run/wrappers/bin/nvme_telegraf";
       };
       openweathermap = {
         appId = mkOption {
@@ -49,10 +53,26 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
     };
   };
   config = let cfg = config.isz.telegraf; in {
-    systemd.services.telegraf.path = [
-      pkgs.lm_sensors
-      pkgs.nvme-cli
-    ];
+    security.wrappers.smartctl_telegraf = {
+      source = "${pkgs.smartmontools}/bin/smartctl";
+      owner = "root";
+      group = "telegraf";
+      permissions = "u+rx,g+x";
+      setuid = true;
+    };
+    security.wrappers.nvme_telegraf = {
+      source = "${pkgs.nvme-cli}/bin/nvme";
+      owner = "root";
+      group = "telegraf";
+      permissions = "u+rx,g+x";
+      setuid = true;
+    };
+    systemd.services.telegraf = {
+      path = [
+        pkgs.lm_sensors
+        pkgs.nvme-cli
+      ];
+    };
     services.telegraf.extraConfig = lib.mkMerge [
       {
         agent = {
@@ -100,6 +120,7 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
           processes = [{}];
           smart = [{
             path_smartctl = cfg.smartctl;
+            path_nvme = cfg.nvme;
             attributes = true;
           }];
           swap = [{}];

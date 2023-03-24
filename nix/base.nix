@@ -88,7 +88,7 @@
       nvme-cli
       # podman
       # python311 # pyvenv is part of python311
-      # smartmontools # services.smartd.enable
+      smartmontools
       net-snmp
       # snmp-mibs-downloader # Not found?
       vlan
