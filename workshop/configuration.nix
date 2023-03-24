@@ -267,6 +267,7 @@
       server.protocol = "socket";
     };
   };
+  users.users."${config.services.nginx.user}".extraGroups = [ "grafana" ];
   # TODO: Configure pwrgate-logger
   # TODO: Configure linkzone-logger
   # TODO: Configure services.telegraf
