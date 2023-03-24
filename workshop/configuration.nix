@@ -10,6 +10,7 @@
       ./hardware-configuration.nix
       ./nginx.nix
       ./home-assistant.nix
+      ./telegraf.nix
       ../nix/zwave-js-ui.nix
       ../nix/base.nix
       ../nix/rtlamr.nix
