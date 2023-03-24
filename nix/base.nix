@@ -14,7 +14,7 @@
     hardware.enableAllFirmware = true;
 
     nix.settings = {
-      extra-features = [ "nix-command" "flakes" ];
+      extra-experimental-features = [ "nix-command" "flakes" ];
     };
 
     networking.domain = "isz.wtf";
