@@ -63,7 +63,7 @@
       rsync
       screen
       socat
-      sqlite
+      sqlite-interactive
       strace
       sysstat
       inetutils # provides telnet
