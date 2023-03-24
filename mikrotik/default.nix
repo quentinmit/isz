@@ -3,22 +3,23 @@
 , python3
 , fetchPypi
 , pkgs
-, buildPythonPackage
 }:
 
 let
   routeros-api =
-    buildPythonPackage rec {
+    python3.pkgs.buildPythonPackage rec {
       pname = "RouterOS-api";
       version = "0.17.0";
 
       src = fetchPypi {
         inherit pname version;
-        hash = "";
+        hash = "sha256-G5iYRg7MRme1Tkd9SVt0wvJK4KrEyQ3Q5i8j7H6uglI=";
       };
 
-      nativeBuildInputs = with pkgs; [ setuptools-scm ];
-      propagatedBuildInputs = with pkgs; [ six ];
+      doCheck = false;
+
+      nativeBuildInputs = with python3.pkgs; [ setuptools-scm ];
+      propagatedBuildInputs = with python3.pkgs; [ six ];
     };
 in
 python3.pkgs.buildPythonApplication rec {
@@ -34,4 +35,4 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   src = ./.;
-};
+}
