@@ -4,6 +4,7 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
+    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-22.11";
     unstable.url = "nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager/release-22.11";
@@ -13,7 +14,7 @@
     sops-nix.url = "github:Mic92/sops-nix";
     nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
   };
-  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, home-manager, ... }:
+  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, flake-utils, home-manager, ... }:
     let
       overlay = final: prev: {
         unstable = import unstable { inherit (prev) system; config.allowUnfree = true; };
@@ -25,21 +26,25 @@
           nix-npm-buildpackage.overlays.default
         ];
       });
-    in {
-      pkgs = (import nixpkgs {
-        system = "x86_64-linux";
-        overlays = [
-        (import ./nix/pkgs/all-packages.nix)
-      ];}).pkgs;
-      nixosConfigurations.workshop = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs.channels = { inherit nixpkgs unstable; };
-        modules = [
-          overlayModule
-          ./workshop/configuration.nix
-          home-manager.nixosModules.home-manager
-          sops-nix.nixosModules.sops
-        ];
+    in flake-utils.lib.eachDefaultSystem (system:
+      let pkgs = (
+            import nixpkgs {
+              inherit system;
+              overlays = [
+                (import ./nix/pkgs/all-packages.nix)
+              ];}).pkgs;
+      in {
+        packages = pkgs;
+      }) // {
+        nixosConfigurations.workshop = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs.channels = { inherit nixpkgs unstable; };
+          modules = [
+            overlayModule
+            ./workshop/configuration.nix
+            home-manager.nixosModules.home-manager
+            sops-nix.nixosModules.sops
+          ];
+        };
       };
-    };
 }
