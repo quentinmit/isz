@@ -46,5 +46,15 @@
             sops-nix.nixosModules.sops
           ];
         };
+        nixosConfigurations.bedroom-pi = nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          specialArgs.channels = { inherit nixpkgs unstable; };
+          modules = [
+            overlayModule
+            ./bedroom/configuration.nix
+            home-manager.nixosModules.home-manager
+            sops-nix.nixosModules.sops
+          ];
+        };
       };
 }
