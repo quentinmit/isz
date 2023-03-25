@@ -103,6 +103,9 @@
     services.smartd.enable = true;
     # Enable the OpenSSH daemon.
     services.openssh.enable = true;
+    programs.ssh.extraConfig = lib.mkIf ((builtins.compareVersions config.programs.ssh.package.version "9.2p1") >= 0) ''
+      EnableEscapeCommandline yes
+    '';
     # TODO: set HISTSIZE to 100000
     programs.git.enable = true;
 
