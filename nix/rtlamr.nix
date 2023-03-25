@@ -116,7 +116,8 @@
       systemd.services.rtlamr-collect = {
         description = "Collect rtlamr data";
         path = [ pkgs.rtlamr pkgs.rtlamr-collect ];
-        after = [ "network.target" "rtl-tcp.service" ];
+        wants = [ "influxdb2.service" ];
+        after = [ "network.target" "rtl-tcp.service" "influxdb2.service" ];
         requires = [ "rtl-tcp.service" ];
         wantedBy = [ "rtl-tcp.service" ];
         script = with lib.strings; ''
@@ -135,6 +136,8 @@
         '';
         serviceConfig = {
           Restart = "always";
+          RestartSec = "5s";
+          StartLimitIntervalSec = "0";
           User = cfg.user;
           Group = cfg.user;
           StateDirectory = "rtlamr-collect";
