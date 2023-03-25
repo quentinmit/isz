@@ -4,6 +4,7 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
+    nixpkgs.url = "nixpkgs/nixos-22.11";
     unstable.url = "nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager/release-22.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
