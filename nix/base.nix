@@ -1,4 +1,4 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs, config, nix-index-database, ... }:
 {
   imports = [
     ./sshd.nix
