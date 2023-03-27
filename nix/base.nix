@@ -62,6 +62,7 @@
       # mtr # programs.mtr.enable
       ncdu
       netcat-openbsd
+      nix-tree
       nmap
       psmisc
       # rfkill
