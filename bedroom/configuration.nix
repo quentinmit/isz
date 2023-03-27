@@ -42,6 +42,11 @@
     macAddress = "dc:a6:32:98:38:a8";
   };
 
+  isz.openssh = {
+    hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
+    useSops = true;
+  };
+
   nix = {
     settings.auto-optimise-store = true;
     gc = {
