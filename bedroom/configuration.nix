@@ -26,11 +26,13 @@
       "console=tty1"
     ];
 
-    loader.raspberryPi = {
-      enable = true;
-      version = 4;
-    };
+    # Loader is configured by sd-image-aarch64.nix
+    #loader.raspberryPi = {
+    #  enable = true;
+    #  version = 4;
+    #};
     loader.grub.enable = false;
+    #loader.generic-extlinux-compatible.enable = lib.mkForce false;
   };
 
   networking.hostName = "bedroom-pi";

@@ -47,11 +47,15 @@
           ];
         };
         nixosConfigurations.bedroom-pi = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
           specialArgs.channels = { inherit nixpkgs unstable; };
           modules = [
             overlayModule
+            {
+              nixpkgs.hostPlatform = { system = "aarch64-linux"; };
+              #nixpkgs.buildPlatform = { system = "x86_64-linux"; config = "x86_64-unknown-linux-gnu"; };
+            }
             ./bedroom/configuration.nix
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             home-manager.nixosModules.home-manager
             sops-nix.nixosModules.sops
           ];

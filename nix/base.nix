@@ -35,12 +35,17 @@
       # debsums # Debian
       drm_info
       vim
-      ((emacsPackagesFor emacs-nox).emacsWithPackages (epkgs: [
-        epkgs.nix-mode
-        epkgs.magit
-        epkgs.go-mode
-        epkgs.yaml-mode
-      ]))
+      (
+        if config.nixpkgs.buildPlatform.config != config.nixpkgs.hostPlatform.config then
+          emacs-nox
+        else
+          ((emacsPackagesFor emacs-nox).emacsWithPackages (epkgs: [
+            epkgs.nix-mode
+            epkgs.magit
+            epkgs.go-mode
+            epkgs.yaml-mode
+          ]))
+      )
       exfatprogs
       fping
       glances
