@@ -72,6 +72,8 @@
   environment.systemPackages = with pkgs; [
   ];
 
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.gnupg.agent = {
