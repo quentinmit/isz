@@ -35,6 +35,17 @@
     #loader.generic-extlinux-compatible.enable = lib.mkForce false;
   };
 
+  # Skip building HTML manual, but still install other docs.
+  documentation.doc.enable = false;
+  environment.pathsToLink = [ "/share/doc" ];
+  environment.extraOutputsToInstall = [ "doc" ];
+
+  # Use x86-64 qemu for run-vm
+  virtualisation.vmVariant = {
+    virtualisation.qemu.package = pkgs.pkgsNativeGnu64.qemu;
+    virtualisation.graphics = false;
+  };
+
   networking.hostName = "bedroom-pi";
 
   isz.networking = {

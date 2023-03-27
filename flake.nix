@@ -17,6 +17,7 @@
   outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, flake-utils, home-manager, ... }:
     let
       overlay = final: prev: {
+        pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
         unstable = import unstable { inherit (prev) system; config.allowUnfree = true; };
       };
       # Overlays-module makes "pkgs.unstable" available in configuration.nix
@@ -26,7 +27,7 @@
           nix-npm-buildpackage.overlays.default
         ];
       });
-    in flake-utils.lib.eachDefaultSystem (system:
+    in (flake-utils.lib.eachDefaultSystem (system:
       let pkgs = (
             import nixpkgs {
               inherit system;
@@ -34,8 +35,8 @@
                 (import ./nix/pkgs/all-packages.nix)
               ];}).pkgs;
       in {
-        packages = pkgs;
-      }) // {
+        legacyPackages = pkgs;
+      })) // {
         nixosConfigurations.workshop = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs.channels = { inherit nixpkgs unstable; };
@@ -49,16 +50,16 @@
         nixosConfigurations.bedroom-pi = nixpkgs.lib.nixosSystem {
           specialArgs.channels = { inherit nixpkgs unstable; };
           modules = [
-            overlayModule
             {
               nixpkgs.hostPlatform = { system = "aarch64-linux"; };
               #nixpkgs.buildPlatform = { system = "x86_64-linux"; config = "x86_64-unknown-linux-gnu"; };
             }
+            overlayModule
             ./bedroom/configuration.nix
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             home-manager.nixosModules.home-manager
             sops-nix.nixosModules.sops
           ];
         };
-      };
+    };
 }
