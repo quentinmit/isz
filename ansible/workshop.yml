@@ -1,107 +1,11 @@
-# Prerequisites:
-# # apt update && apt install python-is-python3
-# Copy in /etc/resolv.conf
-# Copy in /etc/ssh/*key* and /etc/ssh/moduli
-# Copy in /root/.ssh
 # TODO: Create quentin user
 # TODO: Install RPi kernel and make w1 work
 - hosts:
-  - workshop-pi.isz.wtf
   - workshop.isz.wtf
   serial: 1
   vars:
-    pki_realms:
-    - name: grafana.isz.wtf
-    - name: influx.isz.wtf
-    - name: atuin.isz.wtf
-    - name: homeassistant.isz.wtf
-      acme_domains: [ hass.isz.wtf ]
-    - name: pbx.isz.wtf
-    - name: mqtt.isz.wtf
-    - name: esphome.isz.wtf
-    - name: jellyfin.isz.wtf
     nginx_hsts_age: '{{ 60 * 60 }}'
     nginx_hsts_subdomains: False
-    nginx_welcome_domain: icestationzebra.isz.wtf
-    nginx_default_name: welcome
-    nginx_pki: True
-    nginx__servers:
-    - name: [ grafana.isz.wtf, grafana.isz ]
-      pki_realm: grafana.isz.wtf
-      type: proxy
-      proxy_pass: http://workshop.isz.wtf:3000/
-      options: |
-        proxy_buffering off;
-      proxy_options: |
-        proxy_redirect http:// https://;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-    - name: [ influx.isz.wtf, influx.isz ]
-      pki_realm: influx.isz.wtf
-      type: proxy
-      proxy_pass: http://workshop.isz.wtf:8086/
-    - name: [ atuin.isz.wtf, atuin.isz ]
-      pki_realm: atuin.isz.wtf
-      type: proxy
-      proxy_pass: http://172.19.0.9:8888/
-    - name: [ homeassistant.isz.wtf, homeassistant.isz, hass.isz.wtf, hass.isz ]
-      pki_realm: homeassistant.isz.wtf
-      type: proxy
-      proxy_pass: http://127.0.0.1:8123/
-      options: |
-        proxy_buffering off;
-      proxy_options: |
-        proxy_redirect http:// https://;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-    - name: esphome.isz.wtf
-      pki_realm: esphome.isz.wtf
-      type: proxy
-      proxy_pass: http://127.0.0.1:6052/
-      options: |
-        proxy_buffering off;
-      proxy_options: |
-        proxy_redirect http:// https://;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-    - name: pbx.isz.wtf
-      pki_realm: pbx.isz.wtf
-      type: proxy
-      proxy_pass: http://172.18.0.100:80/
-    - name: jellyfin.isz.wtf
-      pki_realm: jellyfin.isz.wtf
-      type: proxy
-      proxy_pass: http://172.30.96.101:8096/
-      options: |
-        proxy_buffering off;
-      proxy_options: |
-        proxy_redirect http:// https://;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-    networkd_interfaces:
-    - name: br0
-      mac_address: '{{ macaddress }}'
-      address: dhcp
-      bridge_pvid: 3096
-      bridge_vlans: [ 3097, 500, 88 ]
-      vlan_interfaces: [ vlan3097, vlan88 ]
-    - name: '{{ ansible_interfaces | select("match", "^e") | first }}'
-      bridge: br0
-      bridge_pvid: 3096
-      bridge_vlans: [ 3097, 500, 88 ]
-    - name: usb0
-      bridge: br0
-      bridge_pvid: 500
-    - name: vlan3097
-      vlan: 3097
-      address: 172.30.97.{{ isz_last_octet }}/24
-    - name: vlan88
-      vlan: 88
-      address: 192.168.88.{{ isz_last_octet }}
     postfix__packages:
     - libsasl2-modules
     postfix__mailname: '{{ postfix__domain }}'
@@ -119,11 +23,6 @@
     - smtp_sasl_password_maps:
       - "hash:${config_directory}/smtp_sasl_password_maps"
   pre_tasks:
-    - name: Prepare pki environment
-      ansible.builtin.import_role:
-        name: 'debops.debops.pki'
-        tasks_from: 'main_env'
-      tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
     - name: Prepare etc_aliases environment
       ansible.builtin.import_role:
         name: 'debops.roles01.etc_aliases'
@@ -135,81 +34,13 @@
         tasks_from: 'main_env'
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
   roles:
-  - role: isz-base
-  - role: networkd
-  - role: debops.debops.global_handlers
-  - role: debops.debops.secret
-    tags: [ 'role::secret', 'role::postfix' ]
-    secret__directories:
-    - '{{ etc_aliases__secret__directories }}'
-    - '{{ postfix__secret__directories }}'
-  - role: debops.debops.locales
-    tags: [ 'role::locales', 'skip::locales' ]
-  - role: debops.debops.pki
-    pki_acme_default_subdomains: []
-    tags: [ 'role::pki', 'skip::pki', 'role::nginx', 'role::mosquitto' ]
-  - role: debops.debops.python
-    tags: [ 'role::python', 'skip::python', 'role::nginx', 'role::mosquitto' ]
-    python__dependent_packages3:
-      - '{{ nginx__python__dependent_packages3 }}'
-      - '{{ mosquitto__python__dependent_packages3 }}'
-    python__dependent_packages2:
-      - '{{ nginx__python__dependent_packages2 }}'
-      - '{{ mosquitto__python__dependent_packages2 }}'
   - role: avaya
     tags: [ 'role::avaya', 'skip::avaya' ]
-  - role: debops.roles01.nginx
-    tags: [ 'role::nginx', 'skip::nginx' ]
-    nginx__dependent_servers:
-      - '{{ avaya__nginx__dependent_servers }}'
-      - '{{ [mosquitto__nginx__dependent_servers[0] | combine(mosquitto__nginx_extra_config)] }}'
-    nginx__dependent_upstreams:
-      - '{{ mosquitto__nginx__dependent_upstreams }}'
-  - role: debops.roles02.mosquitto
-    tags: [ 'role::mosquitto', 'skip::mosquitto' ]
-  - role: debops.roles02.tftpd
-    tags: [ 'role::tftpd', 'skip::tftpd' ]
-#  - role: debops.roles01.tcpwrappers
-#    tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
-#    tcpwrappers__dependent_allow:
-#    - '{{ tftpd__tcpwrappers__dependent_allow }}'
   - role: debops.roles01.etc_aliases
     tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
   - role: debops.roles01.postfix
     tags: [ 'role::postfix', 'skip::postfix' ]
-  - role: podman
-    tags: [ 'role::podman', 'skip::podman' ]
   tasks:
-  - name: Install packages
-    package:
-      name:
-      - amd64-microcode
-      - firmware-linux
-      - firmware-realtek
-      - firmware-iwlwifi
-      # For isdttool
-      - python3-hidapi
-      - libusb-dev
-      - libusb-1.0-0-dev
-      - libudev-dev
-  - file:
-      path: /etc/systemd/system/nginx.service.d
-      state: directory
-  - copy:
-      dest: /etc/systemd/system/nginx.service.d/isz.conf
-      content: |
-        [Unit]
-        After=network-online.target
-        Wants=network-online.target
-        [Service]
-        Restart=on-failure
-    notify: Reload service manager
-  - copy:
-      dest: /etc/udev/rules.d/99-isz.rules
-      content: |
-        SUBSYSTEM=="tty", ATTRS{product}=="Epic-PWRgate", RUN+="/usr/bin/ln -f $devnode /dev/ttyPwrgate"
-        SUBSYSTEM=="tty", ATTRS{idProduct}=="0200", ATTRS{idVendor}=="0658", RUN+="/usr/bin/ln -f $devnode /dev/ttyZwave"
-        SUBSYSTEM=="tty", ATTRS{idProduct}=="6011", ATTRS{idVendor}=="0403", ATTRS{bInterfaceNumber}=="00", RUN+="/usr/bin/ln -f $devnode /dev/ttyFluke45"
   - when: ansible_machine == "aarch64" and ansible_chassis_vendor == ""
     block:
     - copy:
@@ -241,52 +72,4 @@
         ## shouldn't be necessary
         # cp -R /usr/lib/linux-image-5.10.63-v8-isz+/overlays /boot/firmware/overlays
         ## install config.txt updates
-  - name: Install lxc
-    block: []
-    # lxc libvirt0 libpam-cgfs bridge-utils uidmap
-    # skopeo umoci # to build LXC containers from OCI images
-  - name: Containers
-    tags: [ 'role::containers' ]
-    block:
-    - include_role:
-        name: systemd-container
-      vars:
-        name: rtl-tcp
-        image: docker.io/dopry/rtl-sdr
-        command: rtl_tcp -a 0.0.0.0
-        usb_devices:
-        - vendor_id: 0bda
-          product_id: 2838
-        restart: always
-        network_mode: veth
-    - file:
-        path: /srv/rtlamr
-        state: directory
-    - include_role:
-        name: systemd-container
-      vars:
-        name: rtlamr
-        image: rtlamr
-        command: bash -c "/go/bin/rtlamr | /go/bin/rtlamr-collect"
-        working_dir: /run/data
-        volumes:
-        - /srv/rtlamr:/run/data
-        build: ../docker/rtlamr
-        env:
-        - COLLECT_INFLUXDB_TOKEN={{ rtlamr_influx_token }}
-        - COLLECT_INFLUXDB_HOSTNAME=http://influx.isz.wtf:8086/
-        - COLLECT_INFLUXDB_ORG=44ff94dc2f766f90
-        - COLLECT_INFLUXDB_BUCKET=rtlamr
-        - COLLECT_INFLUXDB_MEASUREMENT=rtlamr
-        - COLLECT_STRICTIDM=1
-        - COLLECT_LOGLEVEL=trace
-        - RTLAMR_FORMAT=json
-        - RTLAMR_MSGTYPE=scm,scm+,idm
-        - RTLAMR_SERVER=rtl-tcp:1234
-        restart: always
-        network_mode: veth
-        want_services:
-        - rtl-tcp
-        wanted_by_services:
-        # start automatically when rtl-tcp does
-        - rtl-tcp
+
