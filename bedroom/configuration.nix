@@ -91,6 +91,7 @@
     lastOctet = 33;
     macAddress = "dc:a6:32:98:38:a8";
   };
+  networking.firewall.enable = false;
 
   isz.openssh = {
     hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
