@@ -1,7 +1,9 @@
-{ lib, pkgs, config, nix-index-database, ... }:
+{ lib, pkgs, config, nix-index-database, home-manager, sops-nix, ... }:
 {
   imports = [
     ./sshd.nix
+    home-manager.nixosModules.home-manager
+    sops-nix.nixosModules.sops
   ];
   config = {
     time.timeZone = "America/New_York";

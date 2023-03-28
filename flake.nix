@@ -15,7 +15,7 @@
     nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
-  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, flake-utils, home-manager, nixos-hardware, ... }:
+  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, flake-utils, home-manager, nixos-hardware, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -28,6 +28,9 @@
           nix-npm-buildpackage.overlays.default
         ];
       });
+      specialArgs = args // {
+        channels = { inherit nixpkgs unstable; };
+      };
     in (flake-utils.lib.eachDefaultSystem (system:
       let pkgs = (
             import nixpkgs {
@@ -40,27 +43,21 @@
       })) // {
         nixosConfigurations.workshop = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs.channels = { inherit nixpkgs unstable; };
+          inherit specialArgs;
           modules = [
             overlayModule
             ./workshop/configuration.nix
-            home-manager.nixosModules.home-manager
-            sops-nix.nixosModules.sops
           ];
         };
         nixosConfigurations.bedroom-pi = nixpkgs.lib.nixosSystem {
-          specialArgs.channels = { inherit nixpkgs unstable; };
+          inherit specialArgs;
           modules = [
             {
               nixpkgs.hostPlatform = { system = "aarch64-linux"; };
               #nixpkgs.buildPlatform = { system = "x86_64-linux"; config = "x86_64-unknown-linux-gnu"; };
             }
             overlayModule
-            nixos-hardware.nixosModules.raspberry-pi-4
             ./bedroom/configuration.nix
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            home-manager.nixosModules.home-manager
-            sops-nix.nixosModules.sops
           ];
         };
     };

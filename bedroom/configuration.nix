@@ -1,10 +1,12 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, nixpkgs, nixos-hardware, ... }:
 
 {
   imports = [
     ../nix/base.nix
     ../nix/networkd.nix
     ../nix/telegraf.nix
+    nixos-hardware.nixosModules.raspberry-pi-4
+    "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
   ];
 
   nixpkgs.overlays = [
