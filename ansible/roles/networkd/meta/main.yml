@@ -1,3 +1,0 @@
----
-dependencies:
-- role: debops.debops.ansible_plugins

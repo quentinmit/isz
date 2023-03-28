@@ -113,7 +113,6 @@
     programs.ssh.extraConfig = lib.mkIf ((builtins.compareVersions config.programs.ssh.package.version "9.2p1") >= 0) ''
       EnableEscapeCommandline yes
     '';
-    # TODO: set HISTSIZE to 100000
     programs.git.enable = true;
 
     home-manager.useGlobalPkgs = true;
@@ -134,6 +133,7 @@
           k = "log --graph --abbrev-commit --pretty=oneline --decorate";
         };
       };
+      programs.bash.enable = true;
       programs.nix-index = {
         enable = true;
         enableBashIntegration = true;

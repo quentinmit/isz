@@ -1,5 +1,0 @@
----
-unit_name: systemd-nspawn@{{ name }}.service
-template_path: /var/lib/machines/.umoci-{{ image_fq | urlencode | replace("/", "%2F") }}
-dropin_dir: /etc/systemd/system/{{ unit_name }}.d
-image_fq: "{% if build %}localhost/{% endif %}{{ image }}{% if not ':' is in image %}:latest{% endif %}"
