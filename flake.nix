@@ -13,9 +13,9 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
-    nix-hardware.url = "github:NixOS/nixos-hardware/master";
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
-  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, flake-utils, home-manager, ... }:
+  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, flake-utils, home-manager, nixos-hardware, ... }:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -56,6 +56,7 @@
               #nixpkgs.buildPlatform = { system = "x86_64-linux"; config = "x86_64-unknown-linux-gnu"; };
             }
             overlayModule
+            nixos-hardware.nixosModules.raspberry-pi-4
             ./bedroom/configuration.nix
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             home-manager.nixosModules.home-manager

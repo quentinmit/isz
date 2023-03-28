@@ -1,10 +1,9 @@
-{ config, pkgs, lib, nixos-hardware,... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports = [
     ../nix/base.nix
     ../nix/networkd.nix
-    nixos-hardware.nixosModules.raspberrypi.4
   ];
 
   nixpkgs.overlays = [
@@ -36,7 +35,7 @@
     #loader.generic-extlinux-compatible.enable = lib.mkForce false;
   };
 
-  hardware.deviceTrees.overlays = [{
+  hardware.deviceTree.overlays = [{
     name = "w1-gpio-overlay";
     dtsText = ''
       // Definitions for w1-gpio module (without external pullup)
@@ -44,7 +43,7 @@
       /plugin/;
 
       / {
-        compatible = "brcm,bcm2835";
+        compatible = "brcm,bcm2711";
 
         fragment@0 {
           target-path = "/";
@@ -100,7 +99,14 @@
 
   environment.systemPackages = with pkgs; [
     mmc-utils
+    iw
+    wpa_supplicant
   ];
+
+  users.users.root = {
+    hashedPassword = "";
+    initialHashedPassword = "";
+  };
 
   nix = {
     settings.auto-optimise-store = true;

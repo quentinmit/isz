@@ -70,6 +70,7 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    sg3_utils
   ];
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
