@@ -22,6 +22,7 @@ import (
 var (
 	device = flag.String("d", "", "device node to connect to")
 	file   = flag.String("f", "", "file to read packets from")
+	verbose = flag.Bool("v", false, "log individual packets")
 )
 
 const (
@@ -224,7 +225,9 @@ func logData(writeApi api.WriteAPI, f io.Reader) error {
 				}
 				copy(status.DeviceID[:], deviceID)
 				status.Report(writeApi)
-				log.Printf("%s", &status)
+				if *verbose {
+					log.Printf("%s", &status)
+				}
 			}
 		}
 	}
