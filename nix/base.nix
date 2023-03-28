@@ -106,7 +106,6 @@
     services.locate.localuser = null;
     programs.mtr.enable = true;
     programs.wireshark.enable = true;
-    services.smartd.enable = true;
     # Enable the OpenSSH daemon.
     services.openssh.enable = true;
     programs.ssh.extraConfig = lib.mkIf ((builtins.compareVersions config.programs.ssh.package.version "9.2p1") >= 0) ''

@@ -37,6 +37,8 @@
     canTouchEfiVariables = true;
   };
 
+  services.smartd.enable = true;
+
   networking.hostName = "workshop"; # Define your hostname.
 
   isz.openssh = {
