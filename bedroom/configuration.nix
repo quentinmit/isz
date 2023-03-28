@@ -118,7 +118,7 @@
     initialHashedPassword = "";
   };
 
-  sops.secrets.logger_influx_token = {
+  sops.secrets.wago_logger_influx_token = {
     owner = "wago-logger";
   };
   systemd.services.wago-logger = {
