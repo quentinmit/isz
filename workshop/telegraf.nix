@@ -20,14 +20,8 @@
     readYAML = path: fromYAML (builtins.readFile path);
     pingTargets = [{ host = "overwatch.mit.edu"; }] ++ (readYAML ../telegraf/static/he_lg.yaml).he_lg_ping_targets;
   in {
-    sops.secrets.telegraf = {
-      owner = config.systemd.services.telegraf.serviceConfig.User;
-    };
-    services.telegraf.enable = true;
-    systemd.services.telegraf.serviceConfig.EnvironmentFile = [
-      config.sops.secrets.telegraf.path
-    ];
     isz.telegraf = {
+      enable = true;
       intelRapl = true;
       openweathermap = {
         appId = "$OPENWEATHERMAP_APP_ID";

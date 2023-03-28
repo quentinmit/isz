@@ -100,6 +100,7 @@
   };
 
   isz.telegraf = {
+    enable = true;
     smartctl = null;
     w1 = true;
   };
