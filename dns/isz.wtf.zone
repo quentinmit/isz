@@ -29,6 +29,8 @@ workshop         A 172.30.96.34
 rascsi           A 172.30.96.35
                  EUI48 DC-A6-32-75-54-DC ; rascsi.isz
 macIIsi          A 172.30.96.36
+raspad           A 172.30.96.37
+                 EUI48 DC-A6-32-D3-47-EA
 
 ; DHCP range is 96.50-200
 
