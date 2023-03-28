@@ -74,6 +74,21 @@
             VLAN=88
           '';
       };
+      # Match USB devices first even if they're named "enp*"
+      "00-usb0" = {
+        matchConfig = {
+          Property = "ID_USB_DRIVER=*";
+        };
+        networkConfig = {
+          Bridge = "br0";
+        };
+        extraConfig =
+          ''
+            [BridgeVLAN]
+            PVID=500
+            EgressUntagged=500
+          '';
+      };
       eth = {
         matchConfig = {
           Name = "e*";
@@ -93,18 +108,6 @@
             VLAN=500
             [BridgeVLAN]
             VLAN=88
-          '';
-      };
-      usb0 = {
-        name = "usb0";
-        networkConfig = {
-          Bridge = "br0";
-        };
-        extraConfig =
-          ''
-            [BridgeVLAN]
-            PVID=500
-            EgressUntagged=500
           '';
       };
       vlan3097 = {
