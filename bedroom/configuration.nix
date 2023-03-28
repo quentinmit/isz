@@ -118,6 +118,35 @@
     initialHashedPassword = "";
   };
 
+  sops.secrets.logger_influx_token = {
+    owner = "wago-logger";
+  };
+  systemd.services.wago-logger = {
+    description = "Wago Logger";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    environment = {
+      INFLUX_SERVER = "http://influx.isz.wtf:8086/";
+    };
+    serviceConfig = {
+      User = "wago-logger";
+      Group = "wago-logger";
+      Restart = "always";
+      RestartSec = "5s";
+      StartLimitIntervalSec = "0";
+    };
+    script = ''
+      export INFLUX_TOKEN="$(cat ${lib.strings.escapeShellArg config.sops.secrets.wago_logger_influx_token.path})"
+      exec ${pkgs.callPackage ./go {}}/bin/wago-logger -d /dev/ttyUSB0
+    '';
+  };
+  users.extraUsers.wago-logger = {
+    isSystemUser = true;
+    group = "wago-logger";
+  };
+  users.extraGroups.wago-logger = {};
+
   nix = {
     settings.auto-optimise-store = true;
     gc = {
@@ -133,4 +162,4 @@
   };
   system.stateVersion = "22.11";
 }
-  
+
