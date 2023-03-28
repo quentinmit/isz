@@ -1,5 +1,5 @@
 { lib, pkgs, config, options, ... }:
-let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
+let mikrotik-python = pkgs.isz-mikrotik; in
 {
   options = with lib; {
     isz.telegraf = {
@@ -7,7 +7,7 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
       docker = mkEnableOption "Docker";
       debug = mkEnableOption "debug";
       smartctl = mkOption {
-        type = types.path;
+        type = nullOr types.path;
         default = "/run/wrappers/bin/smartctl_telegraf";
       };
       nvme = mkOption {
@@ -60,6 +60,7 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
             };
           };
       };
+      w1 = mkEnable "1-Wire support";
     };
   };
   config = let cfg = config.isz.telegraf; in {
@@ -128,7 +129,7 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
           }];
           netstat = [{}];
           processes = [{}];
-          smart = [{
+          smart = lib.mkIf (cfg.smartctl != null) [{
             path_smartctl = cfg.smartctl;
             path_nvme = cfg.nvme;
             attributes = true;
@@ -335,6 +336,15 @@ let mikrotik-python = pkgs.callPackage ../mikrotik {}; in
           ];
         }) cfg.mikrotik.snmp.targets;
       }
+      (lib.mkIf cfg.w1 {
+        inputs.execd = [{
+          alias = "w1";
+          command - ["${pkgs.isz-w1}/bin/w1_metrics.py"];
+          signal = "STDIN";
+          restart_delay = "10s";
+          data_format = "influx";
+        }];
+      })
     ];
   };
 }

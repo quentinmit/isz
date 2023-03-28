@@ -8,4 +8,6 @@ with pkgs;
   speedtest-influxdb = callPackage ./speedtest-influxdb {};
   zwave-js-ui = callPackage ./zwave-js-ui {};
   zwave-js-ui-bin = callPackage ./zwave-js-ui/bin.nix {};
+  isz-mikrotik = callPackage ../../mikrotik {};
+  isz-w1 = callPackage ../../w1 {};
 }

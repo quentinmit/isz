@@ -4,6 +4,7 @@
   imports = [
     ../nix/base.nix
     ../nix/networkd.nix
+    ../nix/telegraf.nix
   ];
 
   nixpkgs.overlays = [
@@ -96,6 +97,11 @@
   isz.openssh = {
     hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
     useSops = true;
+  };
+
+  isz.telegraf = {
+    smartctl = null;
+    w1 = true;
   };
 
   environment.systemPackages = with pkgs; [

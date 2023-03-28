@@ -207,7 +207,6 @@
   };
   users.extraGroups.linkzone-logger = {};
 
-  # TODO: Configure services.telegraf
   # Configure speedtest
   sops.secrets."speedtest_influx_password" = {
     owner = "speedtest-influxdb";
