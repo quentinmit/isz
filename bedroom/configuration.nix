@@ -14,6 +14,13 @@
       makeModulesClosure = x:
         super.makeModulesClosure (x // { allowMissing = true; });
     })
+    (final: super: {
+      ubootRaspberryPi4_64bit_nousb = super.ubootRaspberryPi4_64bit.override {
+        extraConfig = ''
+          CONFIG_PREBOOT="pci enum;"
+        '';
+      };
+    })
   ];
 
   sops.defaultSopsFile = ./secrets.yaml;
