@@ -7,7 +7,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
       docker = mkEnableOption "Docker";
       debug = mkEnableOption "debug";
       smartctl = mkOption {
-        type = nullOr types.path;
+        type = with types; nullOr path;
         default = "/run/wrappers/bin/smartctl_telegraf";
       };
       nvme = mkOption {
@@ -60,7 +60,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
             };
           };
       };
-      w1 = mkEnable "1-Wire support";
+      w1 = mkEnableOption "1-Wire support";
     };
   };
   config = let cfg = config.isz.telegraf; in {
@@ -339,7 +339,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
       (lib.mkIf cfg.w1 {
         inputs.execd = [{
           alias = "w1";
-          command - ["${pkgs.isz-w1}/bin/w1_metrics.py"];
+          command = ["${pkgs.isz-w1}/bin/w1_metrics.py"];
           signal = "STDIN";
           restart_delay = "10s";
           data_format = "influx";
