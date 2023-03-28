@@ -13,6 +13,7 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
+    nix-hardware.url = "github:NixOS/nixos-hardware/master";
   };
   outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, flake-utils, home-manager, ... }:
     let

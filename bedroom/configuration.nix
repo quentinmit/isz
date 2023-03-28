@@ -1,9 +1,10 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, nixos-hardware,... }:
 
 {
   imports = [
     ../nix/base.nix
     ../nix/networkd.nix
+    nixos-hardware.nixosModules.raspberrypi.4
   ];
 
   nixpkgs.overlays = [
@@ -14,7 +15,7 @@
   ];
 
   sops.defaultSopsFile = ./secrets.yaml;
-  
+
   boot = {
     kernelPackages = pkgs.linuxPackages_rpi4;
     tmpOnTmpfs = true;
@@ -34,6 +35,45 @@
     loader.grub.enable = false;
     #loader.generic-extlinux-compatible.enable = lib.mkForce false;
   };
+
+  hardware.deviceTrees.overlays = [{
+    name = "w1-gpio-overlay";
+    dtsText = ''
+      // Definitions for w1-gpio module (without external pullup)
+      /dts-v1/;
+      /plugin/;
+
+      / {
+        compatible = "brcm,bcm2835";
+
+        fragment@0 {
+          target-path = "/";
+          __overlay__ {
+            w1: onewire@0 {
+              compatible = "w1-gpio";
+              pinctrl-names = "default";
+              pinctrl-0 = <&w1_pins>;
+              gpios = <&gpio 17 0>;
+              status = "okay";
+              reg = <17>;
+            };
+          };
+        };
+
+        fragment@1 {
+          target = <&gpio>;
+          __overlay__ {
+            w1_pins: w1_pins@0 {
+              brcm,pins = <17>;
+              brcm,function = <0>; // in (initially)
+              brcm,pull = <0>; // off
+              reg = <17>;
+            };
+          };
+        };
+      };
+    '';
+  }];
 
   # Skip building HTML manual, but still install other docs.
   documentation.doc.enable = false;
