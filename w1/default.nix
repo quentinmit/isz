@@ -5,20 +5,20 @@
 }:
 
 let
-  routeros-api =
+  w1thermsensor =
     python3.pkgs.buildPythonPackage rec {
-      pname = "RouterOS-api";
-      version = "0.17.0";
+      pname = "w1thermsensor";
+      version = "2.0.0";
 
       src = python3.pkgs.fetchPypi {
         inherit pname version;
-        hash = "sha256-G5iYRg7MRme1Tkd9SVt0wvJK4KrEyQ3Q5i8j7H6uglI=";
+        hash = "sha256-EcaEr4B8icbwZu2Ty3z8AAgglf74iZ5BLpLnSOZC2cE=";
       };
 
       doCheck = false;
 
       nativeBuildInputs = with python3.pkgs; [ setuptools-scm ];
-      propagatedBuildInputs = with python3.pkgs; [ six ];
+      propagatedBuildInputs = with python3.pkgs; [ aiofiles click ];
     };
 in
 python3.pkgs.buildPythonApplication rec {
