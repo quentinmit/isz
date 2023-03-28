@@ -18,6 +18,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
       openweathermap = {
         appId = mkOption {
           type = with types; nullOr str;
+          default = null;
         };
         cityIds = mkOption {
           type = with types; listOf str;
