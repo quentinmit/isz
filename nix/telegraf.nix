@@ -240,7 +240,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
             name_prefix = "mikrotik-";
           }) cfg.mikrotik.swos.targets;
         }
-        {
+        (lib.mkIf (cfg.mikrotik.snmp.targets != []) {
           inputs.snmp = map (host: {
             alias = "mikrotik_snmp_${host.ip}";
             agents = [ "${host.ip}:161" ];
@@ -347,7 +347,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
               }
             ];
           }) cfg.mikrotik.snmp.targets;
-        }
+        })
         (lib.mkIf cfg.w1 {
           inputs.execd = [{
             alias = "w1";
