@@ -133,7 +133,11 @@
           k = "log --graph --abbrev-commit --pretty=oneline --decorate";
         };
       };
-      programs.bash.enable = true;
+      programs.bash = rec {
+        enable = true;
+        historyFileSize = 100000;
+        historySize = historyFileSize;
+      };
       programs.nix-index = {
         enable = true;
         enableBashIntegration = true;
