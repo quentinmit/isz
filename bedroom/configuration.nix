@@ -98,6 +98,10 @@
     useSops = true;
   };
 
+  environment.systemPackages = with pkgs; [
+    mmc-utils
+  ];
+
   nix = {
     settings.auto-optimise-store = true;
     gc = {
