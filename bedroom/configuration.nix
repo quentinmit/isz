@@ -5,6 +5,7 @@
     ../nix/base.nix
     ../nix/networkd.nix
     ../nix/telegraf.nix
+    ../nix/udev.nix
     nixos-hardware.nixosModules.raspberry-pi-4
     "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
   ];
@@ -125,6 +126,16 @@
     initialHashedPassword = "";
   };
 
+  services.udev.rules = [
+    {
+      SUBSYSTEM = "tty";
+      "ATTRS{idProduct}" = "2008";
+      "ATTRS{idVendor}" = "0557";
+      RUN = { op = "+="; value = "${pkgs.coreutils}/bin/ln -f $devnode /dev/ttyWago"; };
+      OWNER = { op = "="; value = "wago-logger"; };
+      GROUP = { op = "="; value = "wago-logger"; };
+    }
+  ];
   sops.secrets.wago_logger_influx_token = {
     owner = "wago-logger";
   };
@@ -145,7 +156,7 @@
     };
     script = ''
       export INFLUX_TOKEN="$(cat ${lib.strings.escapeShellArg config.sops.secrets.wago_logger_influx_token.path})"
-      exec ${pkgs.callPackage ./go {}}/bin/wago-logger -d /dev/ttyUSB0
+      exec ${pkgs.callPackage ./go {}}/bin/wago-logger -d /dev/ttyWago
     '';
   };
   users.extraUsers.wago-logger = {
