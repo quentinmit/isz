@@ -1,0 +1,188 @@
+{ config, pkgs, lib, nixpkgs, nixos-hardware, ... }:
+
+let
+  toConfigTxt = with builtins; let
+    recurse = path: value:
+      if isAttrs value then
+        lib.mapAttrsToList (name: value: recurse ([ name ] ++ path) value) value
+      else
+        {
+          conditionals = lib.lists.sort builtins.lessThan (filter (k: k != "all") (tail path));
+          name = head path;
+          value = value;
+        };
+    groupItems = items:
+      (lib.attrsets.mapAttrsToList
+        (groupJSON: items:
+          {
+            conditionals = fromJSON groupJSON;
+            inherit items;
+          })
+        (lib.attrsets.mapAttrs
+          (k: builtins.listToAttrs)
+          (lib.lists.groupBy
+            (x: toJSON x.conditionals)
+            items
+          )
+        )
+      );
+    mkValueString = v:
+      if isInt v then toString v
+      else if isString v then v
+      else if true == v then "1"
+      else if false == v then "0"
+      else abort "the value is not supported: ${toPretty {} (toString v)}";
+    mkKeyValue = lib.generators.mkKeyValueDefault { inherit mkValueString; } " = ";
+    mkGroup = group:
+      lib.strings.concatMapStrings (k: "[${k}]\n") group.conditionals
+        + lib.generators.toKeyValue { inherit mkKeyValue; } group.items
+    ;
+    in
+      attrs:
+      let
+        groups = lib.lists.sort
+          (a: b: a.conditionals < b.conditionals)
+          (groupItems (lib.flatten (recurse [] attrs)));
+      in
+        lib.strings.concatMapStringsSep "\n[all]\n" mkGroup groups;
+in
+{
+  disableModules = [
+    "system/boot/loader/generic-extlinux-compatible/default.nix"
+  ]
+  imports = [
+    nixos-hardware.nixosModules.raspberry-pi-4
+    "${nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
+  ];
+
+  options = {
+    boot.loader.isz-raspi = {
+      uboot = mkOption {
+        type = with types; attrsOf package;
+        default = {
+          rpi3 = pkgs.ubootRaspberryPi3_64bit;
+          rpi4 = pkgs.ubootRaspberryPi4_64bit_nousb;
+        };
+      };
+      configurationLimit = mkOption {
+        default = 20;
+        example = 10;
+        type = types.int;
+        description = lib.mdDoc ''
+          Maximum number of configurations in the boot menu.
+        '';
+      };
+      config = mkOption {
+        type = with types; attrsOf (attrsOf (oneOf str int bool));
+        default = {
+          pi3.kernel = "u-boot-rpi3.bin";
+          pi02.kernel = "u-boot-rpi3.bin";
+          pi4 = {
+            kernel = "u-boot-rpi4.bin";
+            enable_gic = true;
+            armstub = "armstub8-gic.bin";
+            disable_overscan = true;
+            arm_boost = true;
+          };
+          cm4 = {
+            otg_mode = true;
+          };
+          # U-Boot used to need this to work, regardless of whether UART is actually used or not.
+          # TODO: check when/if this can be removed.
+          enable_uart = true;
+
+          # Prevent the firmware from smashing the framebuffer setup done by the mainline kernel
+          # when attempting to show low-voltage or overtemperature warnings.
+          avoid_warnings = true;
+
+          # Boot in 64-bit mode
+          arm_64bit = lib.mkIf pkgs.stdenv.hostPlatform.isAarch64 true;
+
+          # Force HDMI out
+          hdmi_force_hotplug = true;
+          # Force 1080p60
+          hdmi_group = 1;
+          hdmi_mode = 16;
+        };
+        description = "config.txt options";
+      };
+    };
+  };
+
+  config = let
+    blCfg = config.boot.loader;
+    dtCfg = config.hardware.deviceTree;
+    cfg = blCfg.isz-raspi;
+
+    timeoutStr = if blCfg.timeout == null then "-1" else toString blCfg.timeout;
+
+    ecbn = "${nixpkgs}/system/boot/loader/generic-extlinux-compatible/extlinux-conf-builder.nix";
+    # The builder used to write during system activation
+    ecbBuilder = import ecbn { inherit pkgs; };
+    # The builder which runs on the build architecture
+    ecbPopulateBuilder = import ecbn { pkgs = pkgs.buildPackages; };
+    ecbBuilderArgs = "-g ${toString cfg.configurationLimit} -t ${timeoutStr}"
+      + lib.optionalString (dtCfg.name != null) " -n ${dtCfg.name}";
+
+    configTxtPkg = pkgs.writeText "config.txt" (toConfigTxt cfg.config);
+    populateFirmwareCommands = ''
+      (cd ${pkgs.raspberrypifw}/share/raspberrypi/boot && cp bootcode.bin fixup*.dat start*.elf $NIX_BUILD_TOP/firmware/)
+      # Add the config
+      cp ${configTxtPkg} firmware/config.txt
+      # Add pi3 specific files
+      cp ${cfg.uboot.rpi3}/u-boot.bin firmware/u-boot-rpi3.bin
+      # Add pi4 specific files
+      cp ${cfg.uboot.rpi4}/u-boot.bin firmware/u-boot-rpi4.bin
+      cp ${pkgs.raspberrypi-armstubs}/armstub8-gic.bin firmware/armstub8-gic.bin
+      cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2711-rpi-4-b.dtb firmware/
+      cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2711-rpi-400.dtb firmware/
+      cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2711-rpi-cm4.dtb firmware/
+      cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2711-rpi-cm4s.dtb firmware/
+      '';
+  in
+  {
+    nixpkgs.overlays = [
+      # Allow RPi kernel to be used despite missing modules.
+      (final: super: {
+        makeModulesClosure = x:
+          super.makeModulesClosure (x // { allowMissing = true; });
+      })
+      (final: super: {
+        ubootRaspberryPi4_64bit_nousb = super.ubootRaspberryPi4_64bit.override {
+          # Work around hang by not initializing USB:
+          # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=256441
+          extraConfig = ''
+            CONFIG_PREBOOT="pci enum;"
+          '';
+        };
+      })
+    ];
+
+    boot = {
+      kernelPackages = pkgs.linuxPackages_rpi4;
+      initrd.availableKernelModules = [ "usbhid" "usb_storage" ];
+      # ttyAMA0 is the serial console broken out to the GPIO
+      kernelParams = [
+        "8250.nr_uarts=1"
+        "console=ttyAMA0,115200"
+        "console=tty1"
+      ];
+
+      loader.grub.enable = false;
+    };
+
+    system.build.installBootloader = lib.writeShellScript "builder" ''
+      ${ecbBuilder} ${ecbBuilderArgs} -c "$@"
+    '';
+    system.boot.loader.id = "isz-raspi";
+
+    sdImage = {
+      inherit populateFirmwareCommands;
+      populateRootCommands = ''
+        mkdir -p ./files/boot
+        ${ecbPopulateBuilder} ${ecbBuilderArgs} -c ${config.system.build.toplevel} -d ./files/boot
+      '';
+    };
+  };
+}
+

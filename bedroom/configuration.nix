@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nixpkgs, nixos-hardware, ... }:
+{ config, pkgs, lib, nixpkgs, ... }:
 
 {
   imports = [
@@ -6,44 +6,15 @@
     ../nix/networkd.nix
     ../nix/telegraf.nix
     ../nix/udev.nix
-    nixos-hardware.nixosModules.raspberry-pi-4
-    "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-  ];
-
-  nixpkgs.overlays = [
-    (final: super: {
-      makeModulesClosure = x:
-        super.makeModulesClosure (x // { allowMissing = true; });
-    })
-    (final: super: {
-      ubootRaspberryPi4_64bit_nousb = super.ubootRaspberryPi4_64bit.override {
-        extraConfig = ''
-          CONFIG_PREBOOT="pci enum;"
-        '';
-      };
-    })
+    ../nix/raspi.nix
   ];
 
   sops.defaultSopsFile = ./secrets.yaml;
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_rpi4;
     tmpOnTmpfs = true;
-    initrd.availableKernelModules = [ "usbhid" "usb_storage" ];
-    # ttyAMA0 is the serial console broken out to the GPIO
-    kernelParams = [
-      "8250.nr_uarts=1"
-      "console=ttyAMA0,115200"
-      "console=tty1"
-    ];
 
-    # Loader is configured by sd-image-aarch64.nix
-    #loader.raspberryPi = {
-    #  enable = true;
-    #  version = 4;
-    #};
     loader.grub.enable = false;
-    #loader.generic-extlinux-compatible.enable = lib.mkForce false;
   };
 
   hardware.deviceTree.overlays = [{

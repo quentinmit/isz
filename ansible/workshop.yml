@@ -46,12 +46,6 @@
     - copy:
         dest: /etc/default/raspi-firmware-custom
         content: |
-          # Enable I2C port
-          dtparam=i2c_arm=on
-          
-          # Enable 1-wire port
-          dtoverlay=w1-gpio,gpiopin=17
-          
           # Force HDMI out
           hdmi_force_hotplug=1
           disable_overscan=1
