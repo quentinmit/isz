@@ -22,6 +22,32 @@
     networking.domain = "isz.wtf";
 
     environment.systemPackages = with pkgs; [
+      w3m-nographics
+      testdisk
+      ms-sys
+      efibootmgr
+      efivar
+      parted
+      gptfdisk
+      ddrescue
+      ccrypt
+      cryptsetup
+
+      fuse
+      fuse3
+      sshfs-fuse
+      socat
+      tcpdump
+
+      sdparm
+      hdparm
+      pciutils
+      usbutils
+      nvme-cli
+
+      unzip
+      zip
+
       acpica-tools
       # apt-file # Debian
       # bash-completion # programs.bash.enableCompletion
@@ -36,7 +62,13 @@
       curlFull
       # debsums # Debian
       drm_info
-      vim
+      (pkgs.vim.customize {
+        name = "vim";
+        vimrcConfig.packages.default = {
+          start = [ pkgs.vimPlugins.vim-nix ];
+        };
+        vimrcConfig.customRC = "syntax on";
+      })
       (
         if config.nixpkgs.buildPlatform.config != config.nixpkgs.hostPlatform.config then
           emacs-nox
