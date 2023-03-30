@@ -137,11 +137,21 @@ in
       # Add pi4 specific files
       cp ${cfg.uboot.rpi4}/u-boot.bin firmware/u-boot-rpi4.bin
       cp ${pkgs.raspberrypi-armstubs}/armstub8-gic.bin firmware/armstub8-gic.bin
-      cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2711-rpi-4-b.dtb firmware/
-      cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2711-rpi-400.dtb firmware/
-      cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2711-rpi-cm4.dtb firmware/
-      cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2711-rpi-cm4s.dtb firmware/
-      '';
+    '' + lib.strings.concatMapStringsSep "\n" (f: "cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/${f} firmware/") [
+      "bootcode.bin"
+      "fixup.dat"
+      "fixup_cd.dat"
+      "fixup_db.dat"
+      "fixup_x.dat"
+      "start.elf"
+      "start_cd.elf"
+      "start_db.elf"
+      "start_x.elf"
+      "bcm2711-rpi-4-b.dtb"
+      "bcm2711-rpi-400.dtb"
+      "bcm2711-rpi-cm4.dtb"
+      "bcm2711-rpi-cm4s.dtb"
+      ];
   in
   {
     nixpkgs.overlays = [
@@ -176,6 +186,10 @@ in
 
     system.build.installBootLoader = pkgs.writeShellScript "isz-boot-builder" ''
       ${ecbBuilder} ${ecbBuilderArgs} -c "$@"
+      (
+        cd "$1";
+        ${populateFirmwareCommands}
+      )
     '';
     system.boot.loader.id = "isz-raspi";
 
