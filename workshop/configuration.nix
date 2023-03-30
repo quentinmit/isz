@@ -73,6 +73,7 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     sg3_utils
+    mqttui
   ];
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
