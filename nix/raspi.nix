@@ -47,15 +47,18 @@ let
         lib.strings.concatMapStringsSep "\n[all]\n" mkGroup groups;
 in
 {
-  disableModules = [
-    "system/boot/loader/generic-extlinux-compatible/default.nix"
-  ]
+  disabledModules = [
+    "system/boot/loader/generic-extlinux-compatible"
+  ];
   imports = [
     nixos-hardware.nixosModules.raspberry-pi-4
     "${nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
   ];
 
-  options = {
+  options = with lib; {
+    boot.loader.generic-extlinux-compatible = {
+      enable = mkEnableOption "bogus";
+    };
     boot.loader.isz-raspi = {
       uboot = mkOption {
         type = with types; attrsOf package;
@@ -116,7 +119,7 @@ in
 
     timeoutStr = if blCfg.timeout == null then "-1" else toString blCfg.timeout;
 
-    ecbn = "${nixpkgs}/system/boot/loader/generic-extlinux-compatible/extlinux-conf-builder.nix";
+    ecbn = "${nixpkgs}/nixos/modules/system/boot/loader/generic-extlinux-compatible/extlinux-conf-builder.nix";
     # The builder used to write during system activation
     ecbBuilder = import ecbn { inherit pkgs; };
     # The builder which runs on the build architecture
@@ -171,7 +174,7 @@ in
       loader.grub.enable = false;
     };
 
-    system.build.installBootloader = lib.writeShellScript "builder" ''
+    system.build.installBootLoader = pkgs.writeShellScript "isz-boot-builder" ''
       ${ecbBuilder} ${ecbBuilderArgs} -c "$@"
     '';
     system.boot.loader.id = "isz-raspi";
