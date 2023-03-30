@@ -95,6 +95,17 @@ let mikrotik-python = pkgs.isz-mikrotik; in
         ];
       };
     })
+    (lib.mkIf (cfg.enable && cfg.intelRapl) {
+      security.wrappers.intel_rapl_telegraf = let
+      intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ../telegraf/scripts/intel_rapl.py);
+      in {
+        source = intelRapl;
+        owner = "root";
+        group = "telegraf";
+        permissions = "u+rx,g+x";
+        setuid = true;
+      };
+    })
     {
       services.telegraf.extraConfig = lib.mkMerge [
         {
@@ -189,7 +200,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
             alias = "intel_rapl";
             restart_delay = "10s";
             data_format = "influx";
-            command = ["${pkgs.python3}/bin/python3" ../telegraf/scripts/intel_rapl.py];
+            command = ["/run/wrappers/bin/intel_rapl_telegraf"];
             signal = "STDIN";
           }];
         })
