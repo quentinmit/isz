@@ -128,15 +128,7 @@ in
       + lib.optionalString (dtCfg.name != null) " -n ${dtCfg.name}";
 
     configTxtPkg = pkgs.writeText "config.txt" (toConfigTxt cfg.config);
-    populateFirmwareCommands = ''
-      # Add the config
-      cp ${configTxtPkg} firmware/config.txt
-      # Add pi3 specific files
-      cp ${cfg.uboot.rpi3}/u-boot.bin firmware/u-boot-rpi3.bin
-      # Add pi4 specific files
-      cp ${cfg.uboot.rpi4}/u-boot.bin firmware/u-boot-rpi4.bin
-      cp ${pkgs.raspberrypi-armstubs}/armstub8-gic.bin firmware/armstub8-gic.bin
-    '' + lib.strings.concatMapStringsSep "\n" (f: "cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/${f} firmware/") [
+    copyRpiFirmware = lib.strings.concatMapStringsSep "\n" (f: "cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/${f} firmware/") [
       "bootcode.bin"
       "fixup.dat"
       "fixup_cd.dat"
@@ -150,7 +142,21 @@ in
       "bcm2711-rpi-400.dtb"
       "bcm2711-rpi-cm4.dtb"
       "bcm2711-rpi-cm4s.dtb"
-      ];
+    ];
+    populateFirmwareCommands = ''
+      if findmnt /boot/firmware > /dev/null; then
+        # Add the config
+        cp ${configTxtPkg} firmware/config.txt
+        # Add pi3 specific files
+        cp ${cfg.uboot.rpi3}/u-boot.bin firmware/u-boot-rpi3.bin
+        # Add pi4 specific files
+        cp ${cfg.uboot.rpi4}/u-boot.bin firmware/u-boot-rpi4.bin
+        cp ${pkgs.raspberrypi-armstubs}/armstub8-gic.bin firmware/armstub8-gic.bin
+        ${copyRpiFirmware}
+      else
+        echo "/boot/firmware not mounted; skipping firmware installation"
+      fi
+    '';
   in
   {
     nixpkgs.overlays = [
