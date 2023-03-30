@@ -32,7 +32,7 @@ let
       else if true == v then "1"
       else if false == v then "0"
       else abort "the value is not supported: ${toPretty {} (toString v)}";
-    mkKeyValue = lib.generators.mkKeyValueDefault { inherit mkValueString; } " = ";
+    mkKeyValue = lib.generators.mkKeyValueDefault { inherit mkValueString; } "=";
     mkGroup = group:
       lib.strings.concatMapStrings (k: "[${k}]\n") group.conditionals
         + lib.generators.toKeyValue { inherit mkKeyValue; } group.items
@@ -76,7 +76,7 @@ in
         '';
       };
       config = mkOption {
-        type = with types; attrsOf (attrsOf (oneOf str int bool));
+        type = with types; let atom = oneOf [str int bool (attrsOf atom)]; in attrsOf atom;
         default = {
           pi3.kernel = "u-boot-rpi3.bin";
           pi02.kernel = "u-boot-rpi3.bin";
@@ -129,7 +129,6 @@ in
 
     configTxtPkg = pkgs.writeText "config.txt" (toConfigTxt cfg.config);
     populateFirmwareCommands = ''
-      (cd ${pkgs.raspberrypifw}/share/raspberrypi/boot && cp bootcode.bin fixup*.dat start*.elf $NIX_BUILD_TOP/firmware/)
       # Add the config
       cp ${configTxtPkg} firmware/config.txt
       # Add pi3 specific files
@@ -185,9 +184,10 @@ in
     };
 
     system.build.installBootLoader = pkgs.writeShellScript "isz-boot-builder" ''
+      set -exuo pipefail
       ${ecbBuilder} ${ecbBuilderArgs} -c "$@"
       (
-        cd "$1";
+        cd /boot;
         ${populateFirmwareCommands}
       )
     '';
