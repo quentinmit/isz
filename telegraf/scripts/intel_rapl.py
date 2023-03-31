@@ -15,8 +15,9 @@ for line in sys.stdin:
                 result[de.name] = open(de.path).read().strip()
             except OSError:
                 pass
+            tags = "device=%s" % (device,)
             if "name" in result:
-                device += ",name=%s" % (result["name"])
+                tags += ",name=%s" % (result["name"])
                 del result["name"]
             result = {k: int(v) for k, v in result.items() if v != ""}
             if "energy_uj" in result:
@@ -31,8 +32,8 @@ for line in sys.stdin:
                 if result["energy_uj_cumulative"] > 0x7fffffffffffffff:
                     # Wrap at 2^63
                     result["energy_uj_cumulative"] = 0
-        print("intel_rapl,device=%s %s %d" % (
-            device,
+        print("intel_rapl,%s %s %d" % (
+            tags,
             ",".join(
                 "%s=%di" % (k, v)
                 for k, v in result.items()
