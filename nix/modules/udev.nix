@@ -19,7 +19,7 @@
     cfg = config.services.udev;
     escapeUdev = arg: ''"${replaceStrings [''"''] [''\\"''] arg}"'';
   in
-    {
+    lib.mkIf (cfg.rules != []) {
       services.udev.extraRules = concatMapStringsSep "\n" (
         rule: concatStringsSep ", " (
           lib.mapAttrsToList
