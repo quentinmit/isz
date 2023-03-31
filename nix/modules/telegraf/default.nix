@@ -95,6 +95,9 @@ in {
           pkgs.lm_sensors
           pkgs.nvme-cli
         ];
+        reloadTriggers = with lib.lists;
+          optional (cfg.mikrotik.api.targets != [] || cfg.mikrotik.swos.targets != []) isz-mikrotik
+          ++ optional cfg.w1 isz-w1;
       };
     })
     (let
@@ -216,7 +219,7 @@ in {
             interval = "10m";
           }];
         })
-        (lib.mkIf (cfg.mikrotik.api.targets != []) {
+        {
           inputs.execd = map (host: {
             alias = "mikrotik_api_${host.ip}";
             command = [
@@ -234,9 +237,8 @@ in {
             data_format = "influx";
             name_prefix = "mikrotik-";
           }) cfg.mikrotik.api.targets;
-          systemd.services.telegraf.reloadTriggers = [isz-mikrotik];
-        })
-        (lib.mkIf (cfg.mikrotik.swos.targets != []) {
+        }
+        {
           inputs.execd = map (host: {
             alias = "mikrotik_swos_${host.ip}";
             command = [
@@ -254,8 +256,7 @@ in {
             data_format = "influx";
             name_prefix = "mikrotik-";
           }) cfg.mikrotik.swos.targets;
-          systemd.services.telegraf.reloadTriggers = [isz-mikrotik];
-        })
+        }
         (lib.mkIf (cfg.mikrotik.snmp.targets != []) {
           inputs.snmp = map (host: {
             alias = "mikrotik_snmp_${host.ip}";
@@ -372,7 +373,6 @@ in {
             restart_delay = "10s";
             data_format = "influx";
           }];
-          systemd.services.telegraf.reloadTriggers = [isz-w1];
         })
       ];
     }
