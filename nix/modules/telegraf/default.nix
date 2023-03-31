@@ -1,6 +1,8 @@
 { lib, pkgs, config, options, ... }:
-let mikrotik-python = pkgs.isz-mikrotik; in
-{
+let
+  isz-mikrotik = pkgs.callPackage ./mikrotik {};
+  isz-w1 = pkgs.callPackage ./w1 {};
+in {
   options = with lib; {
     isz.telegraf = {
       enable = mkEnableOption "telegraf";
@@ -97,7 +99,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
     })
     (lib.mkIf (cfg.enable && cfg.intelRapl) {
       security.wrappers.intel_rapl_telegraf = let
-      intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ../telegraf/scripts/intel_rapl.py);
+      intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ./intel_rapl.py);
       in {
         source = intelRapl;
         owner = "root";
@@ -217,7 +219,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
           inputs.execd = map (host: {
             alias = "mikrotik_api_${host.ip}";
             command = [
-              "${mikrotik-python}/bin/mikrotik_metrics.py"
+              "${isz-mikrotik}/bin/mikrotik_metrics.py"
               "--server"
               host.ip
               "--user"
@@ -236,7 +238,7 @@ let mikrotik-python = pkgs.isz-mikrotik; in
           inputs.execd = map (host: {
             alias = "mikrotik_swos_${host.ip}";
             command = [
-              "${mikrotik-python}/bin/mikrotik_swos_metrics.py"
+              "${isz-mikrotik}/bin/mikrotik_swos_metrics.py"
               "--server"
               host.ip
               "--user"

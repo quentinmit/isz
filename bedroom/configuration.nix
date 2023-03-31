@@ -4,7 +4,7 @@
   imports = [
     ../nix/base.nix
     ../nix/networkd.nix
-    ../nix/telegraf.nix
+    ../nix/modules/telegraf
     ../nix/udev.nix
     ../nix/raspi.nix
   ];

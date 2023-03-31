@@ -1,7 +1,7 @@
 { lib, pkgs, config, options, ... }:
 {
   imports = [
-    ../nix/telegraf.nix
+    ../nix/modules/telegraf
   ];
   config = let
     fromYAML = yaml:
