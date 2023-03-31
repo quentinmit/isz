@@ -97,16 +97,17 @@ in {
         ];
       };
     })
-    (lib.mkIf (cfg.enable && cfg.intelRapl) {
-      security.wrappers.intel_rapl_telegraf = let
+    (let
       intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ./intel_rapl.py);
-      in {
+    in lib.mkIf (cfg.enable && cfg.intelRapl) {
+      security.wrappers.intel_rapl_telegraf = {
         source = intelRapl;
         owner = "root";
         group = "telegraf";
         permissions = "u+rx,g+x";
         setuid = true;
       };
+      systemd.services.telegraf.reloadTriggers = [intelRapl];
     })
     {
       services.telegraf.extraConfig = lib.mkMerge [
@@ -215,7 +216,7 @@ in {
             interval = "10m";
           }];
         })
-        {
+        (lib.mkIf (cfg.mikrotik.api.targets != []) {
           inputs.execd = map (host: {
             alias = "mikrotik_api_${host.ip}";
             command = [
@@ -233,8 +234,9 @@ in {
             data_format = "influx";
             name_prefix = "mikrotik-";
           }) cfg.mikrotik.api.targets;
-        }
-        {
+          systemd.services.telegraf.reloadTriggers = [isz-mikrotik];
+        })
+        (lib.mkIf (cfg.mikrotik.swos.targets != []) {
           inputs.execd = map (host: {
             alias = "mikrotik_swos_${host.ip}";
             command = [
@@ -252,7 +254,8 @@ in {
             data_format = "influx";
             name_prefix = "mikrotik-";
           }) cfg.mikrotik.swos.targets;
-        }
+          systemd.services.telegraf.reloadTriggers = [isz-mikrotik];
+        })
         (lib.mkIf (cfg.mikrotik.snmp.targets != []) {
           inputs.snmp = map (host: {
             alias = "mikrotik_snmp_${host.ip}";
@@ -369,6 +372,7 @@ in {
             restart_delay = "10s";
             data_format = "influx";
           }];
+          systemd.services.telegraf.reloadTriggers = [isz-w1];
         })
       ];
     }
