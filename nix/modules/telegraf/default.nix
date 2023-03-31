@@ -364,7 +364,7 @@ in {
         (lib.mkIf cfg.w1 {
           inputs.execd = [{
             alias = "w1";
-            command = ["${pkgs.isz-w1}/bin/w1_metrics.py"];
+            command = ["${isz-w1}/bin/w1_metrics.py"];
             signal = "STDIN";
             restart_delay = "10s";
             data_format = "influx";
