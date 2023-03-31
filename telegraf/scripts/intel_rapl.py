@@ -15,23 +15,23 @@ for line in sys.stdin:
                 result[de.name] = open(de.path).read().strip()
             except OSError:
                 pass
-            tags = "device=%s" % (device,)
-            if "name" in result:
-                tags += ",name=%s" % (result["name"])
-                del result["name"]
-            result = {k: int(v) for k, v in result.items() if v != ""}
-            if "energy_uj" in result:
-                energy_uj = result["energy_uj"]
-                last_energy_uj = last_result.get("energy_uj", 0)
-                if energy_uj < last_energy_uj:
-                    energy_uj += result.get("max_energy_range_uj", 0)
-                result["energy_uj_cumulative"] = (
-                    last_result.get("energy_uj_cumulative", 0)
-                    + (energy_uj - last_energy_uj)
-                )
-                if result["energy_uj_cumulative"] > 0x7fffffffffffffff:
-                    # Wrap at 2^63
-                    result["energy_uj_cumulative"] = 0
+        tags = "device=%s" % (device,)
+        if "name" in result:
+            tags += ",name=%s" % (result["name"])
+            del result["name"]
+        result = {k: int(v) for k, v in result.items() if v != ""}
+        if "energy_uj" in result:
+            energy_uj = result["energy_uj"]
+            last_energy_uj = last_result.get("energy_uj", 0)
+            if energy_uj < last_energy_uj:
+                energy_uj += result.get("max_energy_range_uj", 0)
+            result["energy_uj_cumulative"] = (
+                last_result.get("energy_uj_cumulative", 0)
+                + (energy_uj - last_energy_uj)
+            )
+            if result["energy_uj_cumulative"] > 0x7fffffffffffffff:
+                # Wrap at 2^63
+                result["energy_uj_cumulative"] = 0
         print("intel_rapl,%s %s %d" % (
             tags,
             ",".join(
