@@ -13,11 +13,9 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-    nix-npm-buildpackage.url = "github:serokell/nix-npm-buildpackage";
-    nix-npm-buildpackage.inputs.nixpkgs.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
-  outputs = { self, nixpkgs, unstable, sops-nix, nix-npm-buildpackage, flake-compat, flake-utils, home-manager, nixos-hardware, ... }@args:
+  outputs = { self, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -27,7 +25,6 @@
       overlayModule = ({ config, pkgs, ... }: {
         nixpkgs.overlays = [
           overlay
-          nix-npm-buildpackage.overlays.default
         ];
       });
       specialArgs = args // {
