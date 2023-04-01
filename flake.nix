@@ -14,8 +14,10 @@
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    darwin.url = "github:lnl7/nix-darwin/master";
+    darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
-  outputs = { self, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, ... }@args:
+  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -57,6 +59,12 @@
             }
             overlayModule
             ./bedroom/configuration.nix
+          ];
+        };
+        darwinConfigurations.mac = darwin.lib.darwinSystem {
+          system = "x86_64-darwin";
+          modules = [
+            ./mac/configuration.nix
           ];
         };
     };
