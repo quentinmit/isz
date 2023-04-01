@@ -76,7 +76,7 @@
       processors.starlark = [{
         namepass = ["ping"];
         source = ''
-          tags = ${builtins.toJSON (builtins.listToAttrs (map (t: { name = t.host; value = t; }) pingTargets))}
+          tags = ${builtins.toJSON (builtins.listToAttrs (map (value: { name = value.host; inherit value; }) pingTargets))}
           def apply(metric):
             url = metric.tags.get("url")
             extra = tags.get(url)
