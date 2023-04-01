@@ -24,11 +24,11 @@
         unstable = import unstable { inherit (prev) system; config.allowUnfree = true; };
       };
       # Overlays-module makes "pkgs.unstable" available in configuration.nix
-      overlayModule = ({ config, pkgs, ... }: {
+      overlayModule = { config, pkgs, ... }: {
         nixpkgs.overlays = [
           overlay
         ];
-      });
+      };
       specialArgs = args // {
         channels = { inherit nixpkgs unstable; };
       };

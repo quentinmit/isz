@@ -64,7 +64,7 @@ in stdenv.mkDerivation {
       Full featured Z-Wave Control Panel UI and MQTT gateway. Built using
       Nodejs, and Vue/Vuetify.
     '';
-    homepage = https://zwave-js.github.io/zwave-js-ui/;
+    homepage = "https://zwave-js.github.io/zwave-js-ui/";
     license = with licenses; [ mit ];
     platforms = [ "x86_64-linux" ];
   };

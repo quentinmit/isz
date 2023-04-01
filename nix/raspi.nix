@@ -4,12 +4,12 @@ let
   toConfigTxt = with builtins; let
     recurse = path: value:
       if isAttrs value then
-        lib.mapAttrsToList (name: value: recurse ([ name ] ++ path) value) value
+        lib.mapAttrsToList (name: recurse ([ name ] ++ path)) value
       else
         {
           conditionals = lib.lists.sort builtins.lessThan (filter (k: k != "all") (tail path));
           name = head path;
-          value = value;
+          inherit value;
         };
     groupItems = items:
       (lib.attrsets.mapAttrsToList
@@ -20,7 +20,7 @@ let
           })
         (lib.attrsets.mapAttrs
           (k: builtins.listToAttrs)
-          (lib.lists.groupBy
+          (builtins.groupBy
             (x: toJSON x.conditionals)
             items
           )

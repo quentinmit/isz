@@ -2,6 +2,7 @@
 
 {
   environment.systemPackages = [
+    statix
   ];
 
   programs.bash = {
@@ -19,4 +20,5 @@
     auto-optimise-store = true;
     bash-prompt-prefix = "(nix:$name)\\040";
   };
+  system.stateVersion = 4;
 }

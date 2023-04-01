@@ -52,7 +52,7 @@
         "zwave_js"
       ];
       config = let
-        cleanName = (name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name));
+        cleanName = name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name);
       in {
         default_config = {};
         homeassistant = {
@@ -131,7 +131,7 @@
             organization = "44ff94dc2f766f90";
             bucket = "icestationzebra";
             queries_flux = let
-              w1Temp = (name: id: {
+              w1Temp = name: id: {
                 name = "${name} Temperature";
                 unique_id = "sensor.${cleanName name}_temperature";
                 unit_of_measurement = "°F";
@@ -140,8 +140,8 @@
                   |> map(fn: (r) => ({r with _value: r._value * 9./5. + 32.}))
                 '';
                 group_function = "last";
-              });
-              speed = (name: {
+              };
+              speed = name: {
                 name = "${name} Speed";
                 unique_id = "sensor.${cleanName name}_speed";
                 unit_of_measurement = "Mbps";
@@ -152,7 +152,7 @@
                   |> filter(fn: (r) => r["_field"] == "${cleanName name}_mbs")
                 '';
                 group_function = "last";
-              });
+              };
             in [
               (w1Temp "Workshop" "00000284b00d")
               (w1Temp "Bedroom Bed" "00000284c7a7")
@@ -180,12 +180,12 @@
           {
             platform = "template";
             switches = let
-              power = (name: let
+              power = name: let
                 turnFrom = state: [
                   {
                     condition = "state";
                     entity_id = "switch.${cleanName name}_power";
-                    state = state;
+                    inherit state;
                   }
                   {
                     service = "button.press";
@@ -198,7 +198,7 @@
                   value_template = "{{ (states('sensor.${cleanName name}_power_electric_consumed_w') | float ) > 10 }}";
                   turn_on = turnFrom "off";
                   turn_off = turnFrom "on";
-                });
+                };
             in {
               receiver_power = power "Receiver";
               tv_power = power "TV";

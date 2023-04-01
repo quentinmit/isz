@@ -38,7 +38,7 @@ in {
           }; in {
             targets = mkOption {
               default = [];
-              type = with types; listOf (trg);
+              type = with types; listOf trg;
             };
           };
         swos = let trg = with types; submodule {
@@ -50,7 +50,7 @@ in {
           }; in {
             targets = mkOption {
               default = [];
-              type = with types; listOf (trg);
+              type = with types; listOf trg;
             };
           };
         snmp = let trg = with types; submodule {
@@ -60,7 +60,7 @@ in {
           }; in {
             targets = mkOption {
               default = [];
-              type = with types; listOf (trg);
+              type = with types; listOf trg;
             };
           };
       };
@@ -124,7 +124,7 @@ in {
             flush_interval = "10s";
             flush_jitter = "0s";
             precision = "";
-            debug = cfg.debug;
+            inherit (cfg) debug;
             quiet = false;
             logfile = ""; # stderr
             hostname = "${config.networking.hostName}.${config.networking.domain}"; # defaults toos.Hostname()
