@@ -63,6 +63,7 @@
         };
         darwinConfigurations.mac = darwin.lib.darwinSystem {
           system = "x86_64-darwin";
+          inherit specialArgs;
           modules = [
             ./mac/configuration.nix
           ];
