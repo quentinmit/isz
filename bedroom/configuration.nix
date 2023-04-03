@@ -82,7 +82,7 @@
 
   isz.telegraf = {
     enable = true;
-    smartctl = null;
+    smart.enable = false;
     w1 = true;
   };
 

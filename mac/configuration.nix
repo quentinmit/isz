@@ -3,6 +3,7 @@
 {
   imports = [
     home-manager.darwinModules.home-manager
+    ../nix/modules/telegraf
   ];
 
   environment.systemPackages = with pkgs; [

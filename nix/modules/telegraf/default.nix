@@ -6,16 +6,21 @@ in {
   options = with lib; {
     isz.telegraf = {
       enable = mkEnableOption "telegraf";
-      intelRapl = mkEnableOption "intel_rapl";
       docker = mkEnableOption "Docker";
+      intelRapl = mkEnableOption "intel_rapl";
       debug = mkEnableOption "debug";
-      smartctl = mkOption {
-        type = with types; nullOr path;
-        default = "/run/wrappers/bin/smartctl_telegraf";
+      smart.enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable SMART monitoring";
       };
-      nvme = mkOption {
-        type = types.path;
-        default = "/run/wrappers/bin/nvme_telegraf";
+      smart.smartctl = mkOption {
+        type = with types; nullOr path;
+        default = null;
+      };
+      smart.nvme = mkOption {
+        type = with types; nullOr path;
+        default = null;
       };
       openweathermap = {
         appId = mkOption {
@@ -67,26 +72,46 @@ in {
       w1 = mkEnableOption "1-Wire support";
     };
   };
-  config = let cfg = config.isz.telegraf; in lib.mkMerge [
+  config = let
+    cfg = config.isz.telegraf;
+    isNixDarwin = builtins.hasAttr "launchd" options;
+    isNixOS = builtins.hasAttr "wrappers" options.security;
+  in lib.mkMerge [
     (lib.mkIf cfg.enable {
-      security.wrappers.smartctl_telegraf = lib.mkIf (cfg.smartctl != null) {
+      services.telegraf.enable = true;
+    })
+    (lib.mkIf pkgs.stdenv.isDarwin {
+      isz.telegraf.smart.smartctl = lib.mkDefault "${pkgs.smartmontools}/bin/smartctl";
+    })
+    (lib.mkIf pkgs.stdenv.isLinux {
+    })
+    (if isNixDarwin then {
+      services.telegraf.environmentFiles = lib.mkIf cfg.enable [
+        config.sops.secrets.telegraf.path
+      ];
+    } else {})
+    (if isNixOS then lib.mkIf cfg.smart.enable {
+      isz.telegraf.smart.smartctl = lib.mkDefault "/run/wrappers/bin/smartctl_telegraf";
+      isz.telegraf.smart.nvme = lib.mkDefault "/run/wrappers/bin/nvme_telegraf";
+      security.wrappers.smartctl_telegraf = lib.mkIf (cfg.smart.smartctl != null) {
         source = "${pkgs.smartmontools}/bin/smartctl";
         owner = "root";
         group = "telegraf";
         permissions = "u+rx,g+x";
         setuid = true;
       };
-      security.wrappers.nvme_telegraf = {
+      security.wrappers.nvme_telegraf = lib.mkIf (cfg.smart.nvme != null) {
         source = "${pkgs.nvme-cli}/bin/nvme";
         owner = "root";
         group = "telegraf";
         permissions = "u+rx,g+x";
         setuid = true;
       };
+    } else {})
+    (if isNixOS then lib.mkIf cfg.enable {
       sops.secrets.telegraf = {
         owner = config.systemd.services.telegraf.serviceConfig.User;
       };
-      services.telegraf.enable = true;
       systemd.services.telegraf.serviceConfig.EnvironmentFile = [
         config.sops.secrets.telegraf.path
       ];
@@ -99,8 +124,8 @@ in {
           optional (cfg.mikrotik.api.targets != [] || cfg.mikrotik.swos.targets != []) isz-mikrotik
           ++ optional cfg.w1 isz-w1;
       };
-    })
-    (let
+    } else {})
+    (if isNixOS then let
       intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ./intel_rapl.py);
     in lib.mkIf (cfg.enable && cfg.intelRapl) {
       security.wrappers.intel_rapl_telegraf = {
@@ -111,7 +136,7 @@ in {
         setuid = true;
       };
       systemd.services.telegraf.reloadTriggers = [intelRapl];
-    })
+    } else {})
     {
       services.telegraf.extraConfig = lib.mkMerge [
         {
@@ -127,7 +152,7 @@ in {
             inherit (cfg) debug;
             quiet = false;
             logfile = ""; # stderr
-            hostname = "${config.networking.hostName}.${config.networking.domain}"; # defaults toos.Hostname()
+            hostname = lib.mkIf (config.networking.hostName != null) "${config.networking.hostName}.${config.networking.domain}"; # defaults to os.Hostname()
             omit_hostname = false;
           };
           outputs = {
@@ -158,9 +183,9 @@ in {
             }];
             netstat = [{}];
             processes = [{}];
-            smart = lib.mkIf (cfg.smartctl != null) [{
-              path_smartctl = cfg.smartctl;
-              path_nvme = cfg.nvme;
+            smart = lib.mkIf cfg.smart.enable [{
+              path_smartctl = lib.mkIf (cfg.smart.smartctl != null) cfg.smart.smartctl;
+              path_nvme = lib.mkIf (cfg.smart.nvme != null) cfg.smart.nvme;
               attributes = true;
             }];
             swap = [{}];
