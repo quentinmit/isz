@@ -1,8 +1,11 @@
-{ lib, pkgs, config, options, ... }:
+{ lib, pkgs, config, options, ... }@args:
 let
   isz-mikrotik = pkgs.callPackage ./mikrotik {};
   isz-w1 = pkgs.callPackage ./w1 {};
+  # nix-darwin exposes "nixos" as a field on lib, but NixOS does not (??).
+  isNixDarwin = lib ? nixos;
 in {
+  imports = if isNixDarwin then [ ./darwin.nix ] else [];
   options = with lib; {
     isz.telegraf = {
       enable = mkEnableOption "telegraf";
@@ -16,7 +19,7 @@ in {
       };
       smart.smartctl = mkOption {
         type = with types; nullOr path;
-        default = null;
+        default = "${pkgs.smartmontools}/bin/smartctl";
       };
       smart.nvme = mkOption {
         type = with types; nullOr path;
@@ -74,22 +77,11 @@ in {
   };
   config = let
     cfg = config.isz.telegraf;
-    isNixDarwin = builtins.hasAttr "launchd" options;
     isNixOS = builtins.hasAttr "wrappers" options.security;
   in lib.mkMerge [
     (lib.mkIf cfg.enable {
       services.telegraf.enable = true;
     })
-    (lib.mkIf pkgs.stdenv.isDarwin {
-      isz.telegraf.smart.smartctl = lib.mkDefault "${pkgs.smartmontools}/bin/smartctl";
-    })
-    (lib.mkIf pkgs.stdenv.isLinux {
-    })
-    (if isNixDarwin then {
-      services.telegraf.environmentFiles = lib.mkIf cfg.enable [
-        config.sops.secrets.telegraf.path
-      ];
-    } else {})
     (if isNixOS then lib.mkIf cfg.smart.enable {
       isz.telegraf.smart.smartctl = lib.mkDefault "/run/wrappers/bin/smartctl_telegraf";
       isz.telegraf.smart.nvme = lib.mkDefault "/run/wrappers/bin/nvme_telegraf";
@@ -244,7 +236,7 @@ in {
             interval = "10m";
           }];
         })
-        {
+        (lib.mkIf (cfg.mikrotik.api.targets != []) {
           inputs.execd = map (host: {
             alias = "mikrotik_api_${host.ip}";
             command = [
@@ -262,8 +254,8 @@ in {
             data_format = "influx";
             name_prefix = "mikrotik-";
           }) cfg.mikrotik.api.targets;
-        }
-        {
+        })
+        (lib.mkIf (cfg.mikrotik.swos.targets != []) {
           inputs.execd = map (host: {
             alias = "mikrotik_swos_${host.ip}";
             command = [
@@ -281,7 +273,7 @@ in {
             data_format = "influx";
             name_prefix = "mikrotik-";
           }) cfg.mikrotik.swos.targets;
-        }
+        })
         (lib.mkIf (cfg.mikrotik.snmp.targets != []) {
           inputs.snmp = map (host: {
             alias = "mikrotik_snmp_${host.ip}";

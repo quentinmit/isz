@@ -18,6 +18,11 @@
     '';
   };
 
+  isz.telegraf.enable = true;
+  services.telegraf.environmentFiles = [
+    ./telegraf.env
+  ];
+
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
   nix.settings = {
