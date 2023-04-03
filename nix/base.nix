@@ -29,9 +29,6 @@
       usbutils
       nvme-cli
 
-      unzip
-      zip
-
       drm_info
       exfatprogs
       input-utils
