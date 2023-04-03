@@ -1,139 +1,56 @@
 { lib, pkgs, config, nix-index-database, home-manager, sops-nix, ... }:
 {
   imports = [
+    ./modules/base
     ./sshd.nix
     home-manager.nixosModules.home-manager
     sops-nix.nixosModules.sops
   ];
   config = {
-    time.timeZone = "America/New_York";
     i18n.defaultLocale = "en_US.UTF-8";
 
-    nixpkgs.overlays = [
-      (import ./pkgs/all-packages.nix)
-    ];
-    nixpkgs.config.allowUnfree = true;
     hardware.enableAllFirmware = true;
-
-    nix.settings = {
-      extra-experimental-features = [ "nix-command" "flakes" ];
-    };
 
     networking.domain = "isz.wtf";
 
     environment.systemPackages = with pkgs; [
-      w3m-nographics
-      testdisk
       ms-sys
       efibootmgr
       efivar
       parted
       gptfdisk
-      ddrescue
-      ccrypt
       cryptsetup
 
       fuse
       fuse3
-      sshfs-fuse
-      socat
-      tcpdump
 
       sdparm
       hdparm
-      pciutils
       usbutils
       nvme-cli
 
       unzip
       zip
 
-      acpica-tools
-      # apt-file # Debian
-      # bash-completion # programs.bash.enableCompletion
-      file
-      bintools # FIXME: Needed for lesspipe?
-      util-linux # already present
-      host # already present
-      dig
-      bwm_ng
-      # command-not-found # programs.command-not-found.enable
-      cpuset
-      curlFull
-      # debsums # Debian
       drm_info
-      (pkgs.vim.customize {
-        name = "vim";
-        vimrcConfig.packages.default = {
-          start = [ pkgs.vimPlugins.vim-nix ];
-        };
-        vimrcConfig.customRC = "syntax on";
-      })
-      (
-        if config.nixpkgs.buildPlatform.config != config.nixpkgs.hostPlatform.config then
-          emacs-nox
-        else
-          ((emacsPackagesFor emacs-nox).emacsWithPackages (epkgs: [
-            epkgs.nix-mode
-            epkgs.magit
-            epkgs.go-mode
-            epkgs.yaml-mode
-          ]))
-      )
       exfatprogs
-      fping
-      glances
-      gawk # already present
-      htop
-      # texinfoInteractive # already present
       input-utils
-      # ionit # Uhh
       iotop
-      jq
-      lsof
-      # man # already present
-      # mlocate # services.locate.enable
-      # mtr # programs.mtr.enable
-      ncdu
-      netcat-openbsd
-      nix-tree
-      nmap
       psmisc
-      # rfkill
-      rsync
-      screen
-      socat
-      sqlite-interactive
       strace
       sysstat
-      inetutils # provides telnet
-      tree
-      tshark
-      usbutils
       v4l-utils
-      wget
+
       # System daemons/parts
       bridge-utils
-      # certbot
-      # docker-compose
-      # docker # virtualization.docker.enable
-      # fbset # Not found?
-      ffmpeg-headless
-      go
+      cpuset
       i2c-tools
       iptables
-      # linux-cpupower # Not found?
       lm_sensors
-      # net-tools # Already present
-      nvme-cli
-      # podman
-      # python311 # pyvenv is part of python311
-      smartmontools
+      util-linux # already present
       net-snmp
-      # snmp-mibs-downloader # Not found?
       vlan
-      # wireless-regdb
-      # wirelesstools
+      netcat-openbsd
     ];
     services.locate.enable = true;
     services.locate.locate = pkgs.mlocate;

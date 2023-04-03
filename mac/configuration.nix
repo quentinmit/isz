@@ -3,11 +3,13 @@
 {
   imports = [
     home-manager.darwinModules.home-manager
+    ../nix/modules/base
     ../nix/modules/telegraf
   ];
 
   environment.systemPackages = with pkgs; [
     statix
+    telegraf
   ];
 
   programs.bash = {
