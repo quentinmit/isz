@@ -169,6 +169,9 @@
         enable = true;
         historyFileSize = 100000;
         historySize = historyFileSize;
+        shellAliases = {
+          nix-diff-system = "${pkgs.nix-diff}/bin/nix-diff $(nix-store -qd $(ls -dtr /nix/var/nix/profiles/*-link | tail -n 2))";
+        };
       };
       programs.nix-index = {
         enable = true;
