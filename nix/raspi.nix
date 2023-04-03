@@ -190,9 +190,10 @@ in
     };
 
     system.build.installBootLoader = pkgs.writeShellScript "isz-boot-builder" ''
-      set -exuo pipefail
+      set -euo pipefail
       ${ecbBuilder} ${ecbBuilderArgs} -c "$@"
       (
+        echo "installing the firmware..."
         cd /boot;
         ${populateFirmwareCommands}
       )
