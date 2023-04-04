@@ -23,7 +23,7 @@
     ack
     #aget
     #unsupported aircrack-ng
-    #unsupported alpine
+    alpine
     antiword
     #why aom
     arduino-cli
