@@ -178,7 +178,7 @@
     libpsl
     libupnp
     libzip
-    limesuite
+    #already from soapysdr-with-plugins limesuite
     #unsupported lirc
     #why llvm-9.0
     #why llvm-14
@@ -317,8 +317,8 @@
     pssh
     pstree
     pv
-    jupyter
     (python3.withPackages (ps: with ps; [
+      jupyter
       pillow
       aiohttp
       alabaster
@@ -480,7 +480,7 @@
       websocket-client
       websockets
       wheel
-      xdis
+      #broken build xdis
       xmldiff
       zipp
       zopfli
