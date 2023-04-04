@@ -13,6 +13,103 @@
       nonfreeLicensing = true;
     })
     openssh_gssapi
+    # Packages from macports
+    ack
+    #aget
+    #unsupported aircrack-ng
+    #unsupported alpine
+    antiword
+    #why aom
+    arduino-cli
+    #arm-none-eabi-binutils
+    #arm-none-eabi-gcc
+    #arm-none-eabi-gdb
+    #arm-none-linux-gnueabi-binutils
+    atomicparsley
+    #unsupported avidemux
+    #avr-gcc
+    #unsupported avrlibc
+    avrdude
+    axel
+    #backdown
+    #barnowl
+    #already binutils
+    binwalk
+    #bitchx
+    #blueutil
+    bochs
+    #why boehmgc
+    #why boost
+    #unsupported bossa
+    bpytop
+    bsdiff
+    #already bwm-ng
+    #why c-ares
+    cabextract
+    #why cairomm
+    capstone
+    #carthage
+    emacsPackages.cask
+    #cctools
+    cdecl
+    cdparanoia
+    #Chmox
+    #why chrony
+    #clang
+    #why cmake
+    codec2
+    contacts
+    coreutils
+    #unsupported createrepo_c
+    #csshX
+    #why ctop
+    #already curl
+    cvsps
+    #cwdiff
+    dasel
+    dav1d
+    ddrescue
+    debianutils
+    dfu-util
+    diff-pdf
+    #unsupported dsd
+    #unsupported dsdcc
+    #unsupported dvdbackup
+    #dvdrw-tools
+    #elftoolchain
+    esptool
+    #unsupported evince
+    exiftool
+    f3
+    fcrackzip
+    fd
+    fdroidserver
+    feh
+    #already ffmpeg
+    figlet
+    #fizmo
+    flac
+    #unsupported fldigi
+    #unsupported flrig
+    (fortune.override {
+      withOffensive = true;
+    })
+    fossil
+    fpc
+    fping
+    #frobtads
+    frotz
+    #funtools
+    gcab
+    #why gcc9
+    gdal
+    #why gdb
+    gegl
+    ghc
+    gimp
+    #already git
+    git-crypt
+    git-secret
   ];
 
   programs.bash = {
