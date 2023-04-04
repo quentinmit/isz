@@ -89,7 +89,7 @@ in {
       # docker-compose
       # docker # virtualization.docker.enable
       # fbset # Not found?
-      ffmpeg-headless
+      #ffmpeg-headless
       go
       # linux-cpupower # Not found?
       # podman

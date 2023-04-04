@@ -10,6 +10,9 @@
   environment.systemPackages = with pkgs; [
     statix
     telegraf
+    (ffmpeg-full.override {
+      nonfreeLicensing = true;
+    })
   ];
 
   programs.bash = {
