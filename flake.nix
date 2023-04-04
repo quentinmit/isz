@@ -27,7 +27,7 @@
       overlayModule = { config, pkgs, ... }: {
         nixpkgs.overlays = [
           overlay
-          ./nix/pkgs/overlays.nix
+          (import ./nix/pkgs/overlays.nix)
         ];
       };
       specialArgs = args // {
