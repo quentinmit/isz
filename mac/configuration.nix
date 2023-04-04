@@ -173,6 +173,400 @@
     libupnp
     libzip
     limesuite
+    #unsupported lirc
+    #why llvm-9.0
+    #why llvm-14
+    lua
+    lzip
+    lzma
+    #macathena-add
+    #macathena-alpine-config
+    #macathena-athrun
+    #macathena-base
+    #macathena-clients
+    #macathena-delete
+    #macathena-discuss
+    #macathena-discuss-ng
+    #macathena-gathrun
+    #macathena-hes
+    #macathena-kerberos-config
+    #macathena-locker-support
+    #macathena-machtype
+    #macathena-moira
+    #macathena-msmtp
+    #macathena-pyhesiodfs
+    #macathena-shell-config
+    #macathena-standard
+    #macathena-xcluster
+    #macutil
+    #makeicns
+    libicns
+    unstable.mariadb_1011.client
+    mdbtools
+    mediainfo
+    mercurial
+    metasploit
+    #unsupported mikmod
+    minicom
+    miniupnpc
+    #mlir-14
+    mono
+    moreutils
+    mosh
+    mosquitto
+    most
+    #mpeg2vidcodec
+    #mpgtx
+    #why mpir
+    mpv
+    mtr
+    multimon-ng
+    nbd
+    ncdu
+    ncftp
+    #why nghttp2
+    nmap
+    nodejs # 18
+    #nodejs15
+    #nodejs17
+    #why npm6
+    #why npm7
+    nodePackages.npm
+    #ntpsec
+    #nvm
+    fnm
+    #unsupported nx-libs
+    oath-toolkit
+    octaveFull
+    #unsupported openafs
+    #openafs-signed-kext
+    #why OpenBLAS
+    openconnect
+    opencv
+    openntpd
+    openocd
+    #already openssh
+    openssl
+    #collision openssl_1_1
+    openvpn
+    #osxfuse
+    #p5-devel-repl
+    file-rename
+    #already exiftool
+    #why p5-soap-lite
+    #why p5-term-readline
+    #why p5-term-readline-gnu
+    #why p5-xml-parser
+    #why p5.26-data-dump
+    #why p5.26-json
+    #why p5.26-time-local
+    #why p5.26-utf8-all
+    #why p5.28-authen-sasl
+    #why p5.28-cgi
+    #why p5.28-clone
+    #why p5.28-compress-raw-bzip2
+    #why p5.28-compress-raw-zlib
+    #why p5.28-digest-hmac
+    #why p5.28-digest-sha1
+    #why p5.28-error
+    #why p5.28-file-rename
+    #why p5.28-file-slurper
+    #why p5.28-gssapi
+    #why p5.28-image-exiftool
+    #why p5.28-io
+    #why p5.28-io-compress
+    #why p5.28-io-compress-brotli
+    brotli
+    #why p5.28-io-socket-inet6
+    #why p5.28-net-smtp-ssl
+    #why p5.28-socket6
+    #why p5.28-term-readkey
+    #why p5.28-term-readline-gnu
+    perl536Packages.TermReadLineGnu
+    #why p5.28-time-hires
+    #why p5.28-time-local
+    p7zip
+    pandoc
+    #broken haskellPackages.pandoc-citeproc
+    pass
+    passExtensions.pass-import
+    passExtensions.pass-otp
+    passExtensions.pass-update
+    passExtensions.pass-genphrase
+    passExtensions.pass-checkup
+    pass-git-helper
+    #unsupported pavucontrol
+    pdf2svg
+    pdftk
+    perl
+    pidgin
+    pigz
+    pipenv
+    pixz
+    poly2tri-c
+    poppler
+    #why portmidi
+    postgresql
+    #unsupported pothos
+    pssh
+    pstree
+    pv
+    jupyter
+    (python3.withPackages (ps: with ps; [
+      pillow
+      aiohttp
+      alabaster
+      ansible
+      #argparse-manpage
+      #astroplan
+      astropy
+      astropy-helpers
+      atomicwrites
+      awscli
+      babel
+      #insecure beaker
+      beautifulsoup4
+      bidict
+      bitarray
+      bokeh
+      cached-property
+      cachetools
+      cairosvg
+      chardet
+      cheetah3
+      click
+      clint
+      colorama
+      configargparse
+      configobj
+      configparser
+      contextlib2
+      cryptography
+      cssselect
+      debugpy
+      defusedxml
+      deprecation
+      dnspython
+      docutils
+      ecdsa
+      epc
+      ephem
+      flake8
+      pep8-naming
+      fonttools
+      funcsigs
+      future
+      GitPython
+      gmpy2
+      gnupg
+      gnureadline
+      pygobject3
+      google-auth
+      graphviz
+      h11
+      h5py
+      #hesiod
+      httpx
+      imageio
+      imagesize
+      importlib-metadata
+      importmagic
+      #removed ipaddress
+      ipympl
+      ipython
+      ipywidgets
+      isodate
+      jmespath
+      #jupyter_packaging
+      jupyter_server
+      jupyterlab
+      jupyterlab-widgets
+      keyring
+      ldap3
+      #unsupported leveldb
+      #lib389
+      #lightblue
+      lxml
+      mako
+      markdown
+      markupsafe
+      matplotlib
+      basemap
+      matplotlib-inline
+      more-itertools
+      netaddr
+      networkx
+      nltk
+      oauthlib
+      pyopengl
+      #opengl-accelerate
+      openssl
+      pyotp
+      packaging
+      pandas
+      pdfrw
+      phonenumbers
+      pint
+      pip
+      pluggy
+      plyvel
+      psycopg2
+      py
+      pybind11
+      #pybonjour
+      pycryptodome
+      pydot
+      pygit2
+      #unsupported pyglet
+      pygments
+      pykerberos
+      pylint
+      #pyobjc
+      pypdf2
+      pyperclip
+      pyqt5
+      pyqtgraph
+      pytest
+      pyusb
+      pywinrm
+      re2
+      regex
+      reportlab
+      requests
+      #requests-gssapi
+      requests-oauthlib
+      requests-toolbelt
+      rfc3986
+      roman
+      rsa
+      ruamel-yaml
+      scikitimage
+      scipy
+      selenium
+      semver
+      pyserial
+      sniffio
+      snowballstemmer
+      soapysdr-with-plugins
+      sphinx
+      sphinxcontrib-applehelp
+      sphinxcontrib-devhelp
+      sphinxcontrib-htmlhelp
+      sphinxcontrib-jsmath
+      sphinxcontrib-qthelp
+      sphinxcontrib-serializinghtml
+      sqlalchemy
+      #suds
+      #broken suds-jurko
+      sympy
+      tables
+      tabulate
+      termcolor
+      tifffile
+      toml
+      tomlkit
+      tqdm
+      twisted
+      #unsupported on py310 uncompyle6
+      unicodedata2
+      unidecode
+      #upnp-inspector
+      websocket-client
+      websockets
+      wheel
+      xdis
+      xmldiff
+      zipp
+      zopfli
+    ]))
+    # TODO python packages
+    qemu
+    #unsupported qgis
+    #why qt5
+    #why qwt-qt5
+    #why qwt60
+    #why qwt61
+    radare2
+    rapidjson
+    rav1e
+    rcs
+    #remctl
+    renameutils
+    ripgrep
+    rizin
+    #rlpr
+    #unsupported rpm
+    rtl-sdr
+    rtl_433
+    rubber
+    ruby
+    rustc
+    #rx_tools
+    #already screen
+    #screenresolution
+    #unsupported sdrangel
+    simg2img
+    sl
+    sloccount
+    #already smartmontools
+    soapyhackrf
+    #already socat
+    sops
+    sox
+    spice-gtk
+    squashfsTools
+    #already sshfs
+    #subversion-perlbindings-5.28
+    #already telegraf
+    terminal-notifier
+    #already texinfo
+    texlive.combined.scheme-full
+    tigervnc
+    #insecure tightvnc
+    tintin
+    tmate
+    tmux
+    #unsupported traceroute
+    transmission
+    #already tree
+    tsduck
+    #tuntaposx
+    #unsupported turbovnc
+    libuchardet
+    unrar
+    unrtf
+    upx
+    #unsupported usbutils
+    #broken vapoursynth
+    vbindiff
+    #unsupported realvnc-vnc-viewer
+    vttest
+    #already watch
+    #broken webkitgtk
+    websocat
+    #already wget
+    #unsupported winetricks
+    wireshark
+    termshark
+    #insecure wkhtmltopdf
+    wordnet
+    wxSVG
+    #x86_64-w64-mingw32-binutils
+    #unsupported xastir
+    xdelta
+    xmlstarlet
+    #xorg-server
+    #insecure xpdf
+    xqilla
+    #unsupported xsane
+    yarn
+    youtube-dl
+    yq
+    zbar
+    zenith
+    #unsupported gnome.zenity
+    #zephyr
+    #why zimg
   ];
 
   programs.bash = {

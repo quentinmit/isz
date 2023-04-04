@@ -91,6 +91,7 @@ in {
       inetutils # provides telnet
       tree
       tshark
+      watch
       wget
       # System daemons/parts
       # certbot
