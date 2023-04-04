@@ -110,6 +110,19 @@
     #already git
     git-crypt
     git-secret
+    #unsupported gnome.gnome-keyring
+    gnome-online-accounts
+    gnupg
+    gnuplot
+    gnuradio
+    gnutar
+    gperftools
+    gpgme
+    gpsbabel
+    gpsbabel-gui
+    #unsupported gpsd
+    #unsupported gptfdisk
+    #unsupported gqrx
   ];
 
   programs.bash = {
