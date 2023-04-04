@@ -123,6 +123,56 @@
     #unsupported gpsd
     #unsupported gptfdisk
     #unsupported gqrx
+    graphviz
+    #grig
+    gspell
+    gtk-vnc
+    #why gtk3
+    #why gtkmm
+    #why gtkmm3
+    units
+    gv
+    gvfs
+    hamlib_4
+    #hesiod
+    #why hidapi
+    htmlq
+    htop
+    id3lib
+    #id3tool
+    iftop
+    imagemagickBig
+    #why imake
+    inetutils
+    inkscape
+    #inkscape-app
+    iperf3
+    ipmitool
+    irssi
+    #why isl
+    jc
+    #why jemalloc
+    jp
+    #why jpeg
+    #already jq
+    #why jsoncpp
+    #unsupported julia
+    #buildfail kicad
+    #ld64
+    #unsupported ldapvi
+    less
+    #lft
+    libcanberra
+    libde265
+    libftdi1
+    geoip
+    gsm
+    libidn2
+    libjpeg
+    libpsl
+    libupnp
+    libzip
+    limesuite
   ];
 
   programs.bash = {
