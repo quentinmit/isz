@@ -41,22 +41,12 @@
   home-manager.useUserPackages = true;
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
-    programs.home-manager.enable = true;
+
+    imports = [
+      ../nix/home/base.nix
+    ];
 
     programs.git = {
-      enable = true;
-      ignores = [
-        "*~"
-        "*#"
-        ".ipynb_checkpoints"
-        "__pycache__"
-      ];
-      userName = "Quentin Smith";
-      userEmail = "quentin@mit.edu";
-      aliases = {
-        up = "pull --rebase";
-        k = "log --graph --abbrev-commit --pretty=oneline --decorate";
-      };
       extraConfig = {
         url = {
           "git@github.com:".pushInsteadOf = "https://github.com/";
@@ -81,11 +71,7 @@
       };
     };
 
-    programs.bash = rec {
-      enable = true;
-      enableCompletion = true;
-      historyFileSize = 100000;
-      historySize = historyFileSize;
+    programs.bash = {
       shellAliases = {
         mit-kinit = "kinit";
         krootrsync = ''kdo quentin/root@ATHENA.MIT.EDU rsync -e 'ssh -o "GSSAPIDelegateCredentials no"' '';

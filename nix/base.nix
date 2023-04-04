@@ -65,28 +65,10 @@
     home-manager.useUserPackages = true;
     home-manager.users.root = {
       home.stateVersion = "22.11";
-      programs.home-manager.enable = true;
-      # ~/.gitconfig and ~/.config/git/ignore
-      programs.git = {
-        enable = true;
-        ignores = [
-          "*~"
-        ];
-        userName = "Quentin Smith";
-        userEmail = "quentin@mit.edu";
-        aliases = {
-          up = "pull --rebase";
-          k = "log --graph --abbrev-commit --pretty=oneline --decorate";
-        };
-      };
-      programs.bash = rec {
-        enable = true;
-        historyFileSize = 100000;
-        historySize = historyFileSize;
-        shellAliases = {
-          nix-diff-system = "${pkgs.nix-diff}/bin/nix-diff $(nix-store -qd $(ls -dtr /nix/var/nix/profiles/*-link | tail -n 2))";
-        };
-      };
+
+      imports = [
+        ./home/base.nix
+      ];
       programs.nix-index = {
         enable = true;
         enableBashIntegration = true;
