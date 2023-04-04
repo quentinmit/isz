@@ -3,7 +3,6 @@
   imports = [
     ./modules/base
     ./sshd.nix
-    home-manager.nixosModules.home-manager
     sops-nix.nixosModules.sops
   ];
   config = {
@@ -61,8 +60,6 @@
     '';
     programs.git.enable = true;
 
-    home-manager.useGlobalPkgs = true;
-    home-manager.useUserPackages = true;
     home-manager.users.root = {
       home.stateVersion = "22.11";
 

@@ -2,7 +2,6 @@
 
 {
   imports = [
-    home-manager.darwinModules.home-manager
     ../nix/modules/base
     ../nix/modules/telegraf
   ];

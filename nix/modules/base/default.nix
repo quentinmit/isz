@@ -4,7 +4,11 @@ let
   isNixOS = !isNixDarwin;
 in {
   imports = [
-  ];
+  ] ++ (if isNixDarwin then [
+    home-manager.darwinModules.home-manager
+  ] else [
+    home-manager.nixosModules.home-manager
+  ]);
   config = {
     time.timeZone = "America/New_York";
 
@@ -16,6 +20,9 @@ in {
     nix.settings = {
       extra-experimental-features = [ "nix-command" "flakes" ];
     };
+
+    home-manager.useGlobalPkgs = true;
+    home-manager.useUserPackages = true;
 
     environment.systemPackages = with pkgs; [
       w3m-nographics
