@@ -118,7 +118,7 @@
     gnutar
     gperftools
     gpgme
-    gpsbabel
+    #already gpsbabel
     gpsbabel-gui
     #unsupported gpsd
     #unsupported gptfdisk
