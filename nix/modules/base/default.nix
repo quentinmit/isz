@@ -9,7 +9,17 @@ in {
   ] else [
     home-manager.nixosModules.home-manager
   ]);
-  config = {
+  options = with lib; {
+    isz.programs = {
+      tshark = mkOption {
+        type = types.bool;
+        default = true;
+      };
+    };
+  };
+  config = let
+    prg = config.isz.programs;
+  in {
     time.timeZone = "America/New_York";
 
     nixpkgs.overlays = [
@@ -90,7 +100,6 @@ in {
       sqlite-interactive
       inetutils # provides telnet
       tree
-      tshark
       watch
       wget
       # System daemons/parts
@@ -107,6 +116,7 @@ in {
       # snmp-mibs-downloader # Not found?
       # wireless-regdb
       # wirelesstools
-    ];
+    ]
+    ++ lib.lists.optional prg.tshark pkgs.tshark;
   };
 }

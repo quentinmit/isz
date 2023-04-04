@@ -6,6 +6,12 @@
     ../nix/modules/telegraf
   ];
 
+  environment.shells = with pkgs; [ bashInteractive ];
+
+  isz.programs = {
+    # Replace with wireshark
+    tshark = false;
+  };
   environment.systemPackages = with pkgs; [
     statix
     telegraf
