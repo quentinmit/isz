@@ -30,14 +30,10 @@
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
   nix.settings = {
-    extra-experimental-features = [ "nix-command" "flakes" ];
-    auto-optimise-store = true;
     bash-prompt-prefix = "(nix:$name)\\040";
   };
   system.stateVersion = 4;
 
-  home-manager.useGlobalPkgs = true;
-  home-manager.useUserPackages = true;
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
 
