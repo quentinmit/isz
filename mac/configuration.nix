@@ -12,6 +12,7 @@
     (ffmpeg-full.override {
       nonfreeLicensing = true;
     })
+    openssh_gssapi
   ];
 
   programs.bash = {
