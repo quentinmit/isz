@@ -333,6 +333,7 @@
     ripgrep
     rizin
     #rlpr
+    rlwrap
     #unsupported rpm
     rtl-sdr
     rtl_433
