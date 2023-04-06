@@ -7,6 +7,7 @@ final: prev:
   zwave-js-ui-bin = final.callPackage ./zwave-js-ui/bin.nix {};
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (python-final: python-prev: with python-final; {
+      routeros-api = callPackage ./python/routeros-api {};
       w1thermsensor = callPackage ./python/w1thermsensor {};
     })
   ];
