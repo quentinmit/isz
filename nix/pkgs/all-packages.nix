@@ -6,8 +6,8 @@ final: prev:
   speedtest-influxdb = final.callPackage ./speedtest-influxdb {};
   zwave-js-ui-bin = final.callPackage ./zwave-js-ui/bin.nix {};
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-    (python-final: python-prev: {
-      w1thermsensor = prev.callPackage ./python/w1thermsensor {};
+    (python-final: python-prev: with python-final; {
+      w1thermsensor = callPackage ./python/w1thermsensor {};
     })
   ];
 }
