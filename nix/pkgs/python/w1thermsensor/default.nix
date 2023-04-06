@@ -1,7 +1,6 @@
 { lib
 , buildPythonPackage
 , fetchPypi
-, stdenv
 , pkgs
 , setuptools-scm
 , aiofiles
