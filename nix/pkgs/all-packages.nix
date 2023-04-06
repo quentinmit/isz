@@ -1,10 +1,13 @@
-self: pkgs:
-
-with pkgs;
+final: prev:
 
 {
-  rtlamr = callPackage ./rtlamr {};
-  rtlamr-collect = callPackage ./rtlamr-collect {};
-  speedtest-influxdb = callPackage ./speedtest-influxdb {};
-  zwave-js-ui-bin = callPackage ./zwave-js-ui/bin.nix {};
+  rtlamr = final.callPackage ./rtlamr {};
+  rtlamr-collect = final.callPackage ./rtlamr-collect {};
+  speedtest-influxdb = final.callPackage ./speedtest-influxdb {};
+  zwave-js-ui-bin = final.callPackage ./zwave-js-ui/bin.nix {};
+  pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+    (python-final: python-prev: {
+      w1thermsensor = prev.callPackage ./python/w1thermsensor {};
+    })
+  ];
 }
