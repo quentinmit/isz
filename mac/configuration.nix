@@ -351,6 +351,7 @@
     soapyhackrf
     #already socat
     sops
+    sourceHighlight
     sox
     spice-gtk
     squashfsTools
