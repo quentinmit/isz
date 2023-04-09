@@ -29,7 +29,9 @@ in {
 
     nix.settings = {
       extra-experimental-features = [ "nix-command" "flakes" ];
-      auto-optimise-store = true;
+      # Nix on macOS has a race condition when this is turned on.
+      # https://github.com/NixOS/nix/issues/7273
+      auto-optimise-store = lib.mkIf (!pkgs.stdenv.isDarwin) true;
     };
 
     home-manager.useGlobalPkgs = true;

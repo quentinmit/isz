@@ -151,7 +151,7 @@
     imagemagickBig
     #why imake
     inetutils
-    inkscape
+    unstable.inkscape
     #inkscape-app
     iperf3
     ipmitool
@@ -317,6 +317,7 @@
     #unsupported pothos
     pssh
     pstree
+    pulseaudio
     pv
     qemu
     #unsupported qgis
