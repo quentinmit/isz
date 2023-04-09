@@ -28,14 +28,14 @@
     antiword
     #why aom
     arduino-cli
-    #arm-none-eabi-binutils
-    #arm-none-eabi-gcc
-    #arm-none-eabi-gdb
+    pkgsCross.arm-embedded.buildPackages.binutils
+    pkgsCross.arm-embedded.stdenv.cc
+    pkgsCross.arm-embedded.buildPackages.gdb
     #arm-none-linux-gnueabi-binutils
     atomicparsley
     #unsupported avidemux
-    #avr-gcc
-    #unsupported avrlibc
+    pkgsCross.avr.buildPackages.gcc
+    pkgsCross.avr.avrlibc
     avrdude
     axel
     #backdown
