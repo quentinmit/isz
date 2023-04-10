@@ -52,7 +52,7 @@
     bochs
     #why boehmgc
     #why boost
-    #unsupported bossa
+    unstable.bossa
     bpytop
     bsdiff
     #already bwm-ng
