@@ -183,6 +183,7 @@
     libidn2
     libjpeg
     libpsl
+    libraw
     libupnp
     libzip
     #already from soapysdr-with-plugins limesuite
@@ -335,6 +336,7 @@
     radare2
     rapidjson
     rav1e
+    rawtherapee
     rcs
     #remctl
     renameutils
