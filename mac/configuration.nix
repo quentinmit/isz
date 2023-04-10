@@ -9,6 +9,12 @@
 
   environment.shells = with pkgs; [ bashInteractive ];
 
+  nixpkgs.overlays = [
+    (final: prev: {
+      openssh = final.openssh_gssapi;
+    })
+  ];
+
   isz.programs = {
     # Replace with wireshark
     tshark = false;
@@ -19,7 +25,6 @@
     (ffmpeg-full.override {
       nonfreeLicensing = true;
     })
-    openssh_gssapi
     # Packages from macports
     ack
     #aget
@@ -252,7 +257,7 @@
     opencv
     openntpd
     openocd
-    #already openssh
+    openssh
     openssl
     #collision openssl_1_1
     openvpn
