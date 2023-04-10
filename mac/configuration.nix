@@ -38,7 +38,7 @@
     pkgsCross.arm-embedded.buildPackages.gdb
     #arm-none-linux-gnueabi-binutils
     atomicparsley
-    #unsupported avidemux
+    avidemux
     pkgsCross.avr.buildPackages.gcc
     pkgsCross.avr.avrlibc
     avrdude
@@ -135,6 +135,7 @@
     #unsupported gpsd
     #unsupported gptfdisk
     #unsupported gqrx
+    graphicsmagick_q16
     graphviz
     #grig
     gspell
