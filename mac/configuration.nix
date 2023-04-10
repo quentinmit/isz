@@ -322,6 +322,7 @@
     postgresql
     #unsupported pothos
     pssh
+    pstoedit
     pstree
     pulseaudio
     pv
@@ -399,7 +400,7 @@
     wordnet
     wxSVG
     #x86_64-w64-mingw32-binutils
-    #unsupported xastir
+    xastir
     xdelta
     xmlstarlet
     #xorg-server

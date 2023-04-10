@@ -9,4 +9,7 @@ final: prev: {
   multimon-ng = prev.multimon-ng.overrideAttrs (old: {
     buildInputs = with final; old.buildInputs ++ [ libpulseaudio xorg.libX11 ];
   });
+  xastir = prev.xastir.overrideAttrs (old: {
+    meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
+  });
 }
