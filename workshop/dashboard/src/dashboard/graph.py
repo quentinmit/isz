@@ -36,13 +36,13 @@ import cherrypy
 from influxdb_client import InfluxDBClient, Point, Dialect
 import paho.mqtt.client as mqtt
 
-from backend_pil import FigureCanvasPIL
+from .backend_pil import FigureCanvasPIL
 
 logging.basicConfig(level=logging.INFO)
 
 _log = logging.getLogger(__name__)
 
-mpl.use("module://backend_pil")
+mpl.use("module://dashboard.backend_pil")
 mpl.rc("axes", unicode_minus=False)
 
 u.imperial.enable()

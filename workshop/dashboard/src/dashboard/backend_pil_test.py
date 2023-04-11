@@ -7,7 +7,7 @@ import numpy as np
 
 matplotlib.offsetbox.DEBUG = True
 
-mpl.use("module://backend_pil")
+mpl.use("module://dashboard.backend_pil")
 
 # Data for plotting
 t = np.arange(0.0, 2.0, 0.01)

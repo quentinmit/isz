@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 matplotlib.offsetbox.DEBUG = True
 
-mpl.use("module://backend_pil")
+mpl.use("module://dashboard.backend_pil")
 
 fig = plt.figure(figsize=(8, 5))
 ha_list = ["left", "center", "right"]

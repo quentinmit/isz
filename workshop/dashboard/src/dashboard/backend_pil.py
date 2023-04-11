@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 from dataclasses import dataclass
+import importlib.resources
 import logging
 import math
 import os
 import os.path
+import pathlib
 import gzip
 from PIL import Image, ImageDraw, ImageFont, BdfFontFile, PcfFontFile
 from itertools import chain, pairwise, islice
@@ -31,10 +33,10 @@ class BitmapFontEntry(FontEntry):
     charset_encoding: str = ''
 
 class BitmapFontManager(FontManager):
-    def __init__(self, cache_dir, font_dirs):
+    def __init__(self, cache_dir, font_paths):
         self.cache_dir = cache_dir
         os.makedirs(self.cache_dir, exist_ok=True)
-        self.font_dirs = font_dirs
+        self.font_paths = font_paths
         # Has to be named ttflist for _findfont_cached
         self.default = BitmapFontEntry(
             name='default',
@@ -50,8 +52,10 @@ class BitmapFontManager(FontManager):
             self.default.fname: ImageFont.load_default(),
         }
 
-        for path in self.font_dirs:
-            self._load_fonts_dir(path)
+        for path in self.font_paths:
+            if isinstance(path, str):
+                path = pathlib.Path(path)
+            self._load_fonts_path(path)
 
     defaultFamily = {'ttf': 'default'}
 
@@ -70,17 +74,17 @@ AVERAGE_WIDTH
 CHARSET_REGISTRY
 CHARSET_ENCODING""".split()
 
-    def _load_fonts_dir(self, directory):
+    def _load_fonts_path(self, path):
         try:
-            f = open(os.path.join(directory, "fonts.dir"))
+            f = path.joinpath("fonts.dir").open()
         except OSError:
-            _log.warning("Can't find fonts.dir in %s", directory)
+            _log.warning("Can't find fonts.dir in %s", path)
             return
         count = int(f.readline().strip())
-        _log.debug("Reading %d fonts from %s", count, directory)
+        _log.debug("Reading %d fonts from %s", count, path)
         for line in f:
             filename, fontname = line.strip().split(" ", 1)
-            filename = os.path.abspath(os.path.join(directory, filename))
+            filename = path.joinpath(filename)
             if fontname[0] == '"':
                 fontname = fontname[1:-1]
             parts = fontname.split("-")
@@ -146,8 +150,8 @@ CHARSET_ENCODING""".split()
         except OSError:
             pass
         _log.info("Generating PIL font for %s from %s", fontprops, fname)
-        f = open(fname, 'rb')
-        if fname.endswith('.gz'):
+        f = fname.open('rb')
+        if fname.name.endswith('.gz'):
             fname = fname[:-3]
             f = gzip.open(f)
         if fname.endswith('.pcf'):
@@ -164,7 +168,7 @@ CHARSET_ENCODING""".split()
 fontmanager = BitmapFontManager(
     "fonts/cache/",
     [
-        "fonts/",
+        importlib.resources.files("dashboard.fonts"),
         "/usr/share/fonts/X11/100dpi",
         "/usr/share/fonts/X11/misc",
         "/opt/local/share/fonts/100dpi",

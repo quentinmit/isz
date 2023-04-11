@@ -1,0 +1,18 @@
+[project]
+name = "dashboard"
+version = "0.0.1"
+dependencies = [
+    "Pillow",
+    "astropy",
+    "influxdb-client",
+    "matplotlib",
+    "more-itertools",
+    "numpy",
+    "paho-mqtt",
+    "cherrypy",
+    "Dozer",
+]
+[tool.setuptools.packages.find]
+where = ["src"]
+[project.scripts]
+dashboard-graph = "dashboard.graph:main"
