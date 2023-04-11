@@ -487,6 +487,7 @@
         pbpaste-html = ''
           osascript -e 'the clipboard as «class HTML»' |   perl -ne 'print chr foreach unpack("C*",pack("H*",substr($_,11,-3)))'
         '';
+        cyberchef = "open ${pkgs.cyberchef}/share/cyberchef/index.html";
       };
       bashrcExtra = ''
         #export PATH="/opt/local/libexec/gnubin:$PATH"
