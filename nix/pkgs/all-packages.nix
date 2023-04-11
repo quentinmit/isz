@@ -1,6 +1,7 @@
 final: prev:
 
 {
+  dashboard = final.callPackage ../../workshop/dashboard {};
   rtlamr = final.callPackage ./rtlamr {};
   rtlamr-collect = final.callPackage ./rtlamr-collect {};
   speedtest-influxdb = final.callPackage ./speedtest-influxdb {};
@@ -12,6 +13,7 @@ final: prev:
     (python-final: python-prev: with python-final; {
       routeros-api = callPackage ./python/routeros-api {};
       w1thermsensor = callPackage ./python/w1thermsensor {};
+      Dozer = callPackage ./python/dozer {};
     })
   ];
 }
