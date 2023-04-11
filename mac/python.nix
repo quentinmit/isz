@@ -80,6 +80,7 @@
         bidict
         bitarray
         bokeh
+        build
         cached-property
         cachetools
         cairosvg
