@@ -8,6 +8,7 @@ import os
 import os.path
 import pathlib
 import gzip
+from functools import lru_cache
 from PIL import Image, ImageDraw, ImageFont, BdfFontFile, PcfFontFile
 from itertools import chain, pairwise, islice
 from more_itertools import flatten, split_before, unique_justseen
@@ -129,6 +130,7 @@ CHARSET_ENCODING""".split()
             score += 0.1*(font.charset_registry != 'iso8859' or font.charset_encoding != '1')
         return score
 
+    @lru_cache
     def findfont(self, prop, fontext='ttf', directory=None,
                  fallback_to_default=True, rebuild_if_missing=False):
         if prop.get_family()[0] == 'default':
