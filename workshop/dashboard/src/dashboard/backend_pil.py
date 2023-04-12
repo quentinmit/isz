@@ -7,8 +7,10 @@ import math
 import os
 import os.path
 import pathlib
+import struct
 import gzip
 from functools import lru_cache
+from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, BdfFontFile, PcfFontFile
 from itertools import chain, pairwise, islice
 from more_itertools import flatten, split_before, unique_justseen
@@ -33,10 +35,13 @@ class BitmapFontEntry(FontEntry):
     charset_registry: str = ''
     charset_encoding: str = ''
 
+def puti16(fp, values):
+    """Write network order (big-endian) 16-bit sequence"""
+    for v in values:
+        fp.write(struct.pack(">h", v))
+
 class BitmapFontManager(FontManager):
-    def __init__(self, cache_dir, font_paths):
-        self.cache_dir = cache_dir
-        os.makedirs(self.cache_dir, exist_ok=True)
+    def __init__(self, font_paths):
         self.font_paths = font_paths
         # Has to be named ttflist for _findfont_cached
         self.default = BitmapFontEntry(
@@ -187,31 +192,40 @@ CHARSET_ENCODING""".split()
         fontprops = self.fonts_by_path[fname]
         if fname in self.font_cache:
             return self.font_cache[fname]
-        pilpath = os.path.join(self.cache_dir, fontprops.xfontdesc+".pil")
-        try:
-            font = ImageFont.load(pilpath)
-            self.font_cache[fname] = font
-            return font
-        except OSError:
-            pass
         _log.info("Generating PIL font for %s from %s", fontprops, fname)
         f = fname.open('rb')
-        if fname.name.endswith('.gz'):
-            fname = fname[:-3]
+        name = fname.name
+        if name.endswith('.gz'):
+            name = name[:-3]
             f = gzip.open(f)
-        if fname.name.endswith('.pcf'):
+        if name.endswith('.pcf'):
             p = PcfFontFile.PcfFontFile(f)
-        elif fname.name.endswith('.bdf'):
+        elif name.endswith('.bdf'):
             p = BdfFontFile.BdfFontFile(f)
         else:
             raise ValueError('unknown file format %s' % (fname,))
-        p.save(pilpath)
-        font = ImageFont.load(pilpath)
+        p.compile()
+        font = ImageFont.ImageFont()
+        fp = BytesIO()
+        fp.write(b"PILfont\n")
+        fp.write(f";;;;;;{p.ysize};\n".encode("ascii"))  # HACK!!!
+        fp.write(b"DATA\n")
+        for id in range(256):
+            m = p.metrics[id]
+            if not m:
+                puti16(fp, [0] * 10)
+            else:
+                puti16(fp, m[0] + m[1] + m[2])
+        fp.seek(0)
+        #_log.debug("PILfont: %r", fp)
+        font._load_pilfont_data(
+            fp,
+            p.bitmap,
+        )
         self.font_cache[fname] = font
         return font
 
 fontmanager = BitmapFontManager(
-    "fonts/cache/",
     [
         importlib.resources.files("dashboard.fonts"),
         "/usr/share/fonts/X11/100dpi",
@@ -219,6 +233,8 @@ fontmanager = BitmapFontManager(
         "/opt/local/share/fonts/100dpi",
         "/opt/local/share/fonts/misc",
     ])
+
+ttffonts = {}
 
 def loadfont(prop):
     prop = FontProperties._from_any(prop)
@@ -230,8 +246,12 @@ def loadfont(prop):
         except ValueError:
             pass
     if ttfpath:
-        _log.debug("Loading TTF font: %s", ttfpath)
-        return ImageFont.truetype(ttfpath, size=int(prop.get_size()))
+        size = int(prop.get_size())
+        key = (ttfpath, size)
+        if key not in ttffonts:
+            _log.debug("Loading TTF font: %s", ttfpath)
+            ttffonts[key] = ImageFont.truetype(ttfpath, size=size)
+        return ttffonts[key]
     return fontmanager.loadfont(prop)
 
 class DashedImageDraw(ImageDraw.ImageDraw):
