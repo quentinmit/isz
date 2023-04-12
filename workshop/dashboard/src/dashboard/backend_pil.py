@@ -133,12 +133,55 @@ CHARSET_ENCODING""".split()
                  fallback_to_default=True, rebuild_if_missing=False):
         if prop.get_family()[0] == 'default':
             return self.default.fname
-        return super().findfont(prop, fontext, directory, fallback_to_default, rebuild_if_missing)
+        # Reimplementation of super().findfont
+        prop = FontProperties._from_any(prop)
+        if fname := prop.get_file() is not None:
+            return fname
+
+        best_score = 1e64
+        best_font = None
+
+        _log.debug('findfont: Matching %s.', prop)
+        for font in self.ttflist:
+            score = (self.score_family(prop.get_family(), font.name) * 10
+                     + self.score_style(prop.get_style(), font.style)
+                     + self.score_variant(prop.get_variant(), font.variant)
+                     + self.score_weight(prop.get_weight(), font.weight)
+                     + self.score_stretch(prop.get_stretch(), font.stretch)
+                     + self.score_size(prop.get_size(), font.size))
+            _log.debug('findfont: score(%s) = %s', font, score)
+            if score < best_score:
+                best_score = score
+                best_font = font
+            if score == 0:
+                break
+
+        if best_font is None or best_score >= 10.0:
+            if fallback_to_default:
+                _log.warning(
+                    'findfont: Font family %s not found. Falling back to %s.',
+                    prop.get_family(), self.defaultFamily[fontext])
+                for family in map(str.lower, prop.get_family()):
+                    if family in font_family_aliases:
+                        _log.warning(
+                            "findfont: Generic family %r not found because "
+                            "none of the following families were found: %s",
+                            family, ", ".join(self._expand_aliases(family)))
+                default_prop = prop.copy()
+                default_prop.set_family(self.defaultFamily[fontext])
+                return self.findfont(default_prop, fontext, directory,
+                                     fallback_to_default=False)
+            else:
+                raise ValueError(f"Failed to find font {prop}, and fallback "
+                                 f"to the default font was disabled")
+        _log.debug('findfont: Matching %s to %s (%r) with score of %f.',
+                   prop, best_font.name, best_font.fname, best_score)
+        return best_font.fname
 
     def loadfont(self, prop, directory=None):
         _log.debug("looking for font for %s", prop)
         fname = self.findfont(prop, rebuild_if_missing=False)
-        _log.debug("found %s", fname)
+        _log.debug("found %r", fname)
         fontprops = self.fonts_by_path[fname]
         if fname in self.font_cache:
             return self.font_cache[fname]
@@ -154,9 +197,9 @@ CHARSET_ENCODING""".split()
         if fname.name.endswith('.gz'):
             fname = fname[:-3]
             f = gzip.open(f)
-        if fname.endswith('.pcf'):
+        if fname.name.endswith('.pcf'):
             p = PcfFontFile.PcfFontFile(f)
-        elif fname.endswith('.bdf'):
+        elif fname.name.endswith('.bdf'):
             p = BdfFontFile.BdfFontFile(f)
         else:
             raise ValueError('unknown file format %s' % (fname,))
