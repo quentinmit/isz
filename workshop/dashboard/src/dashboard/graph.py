@@ -499,11 +499,11 @@ class App:
 
     @cherrypy.expose
     @cherrypy.tools.params()
-    def meteogram(self, width: int = 640, height: int = 480, days: int = 4, humidity: bool = False):
+    def meteogram(self, width: int = 640, height: int = 480, days: int = 4, humidity: bool = False, image_mode: str = '1'):
         fig = self.grapher.plot_meteogram(days, humidity=humidity)
         fig.set_size_inches((width/fig.dpi, height/fig.dpi))
         b = io.BytesIO()
-        fig.savefig(b, format='png')
+        fig.savefig(b, format='png', image_mode=image_mode)
         cherrypy.response.headers['Content-Type'] = 'image/png'
         return b.getvalue()
 

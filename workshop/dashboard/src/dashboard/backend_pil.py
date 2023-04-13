@@ -11,7 +11,7 @@ import struct
 import gzip
 from functools import lru_cache
 from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont, BdfFontFile, PcfFontFile
+from PIL import Image, ImageDraw, ImageFont, ImageColor, BdfFontFile, PcfFontFile
 from itertools import chain, pairwise, islice
 from more_itertools import flatten, split_before, unique_justseen
 
@@ -402,6 +402,25 @@ class DashedImageDraw(ImageDraw.ImageDraw):
             self.point(list(chain.from_iterable((x+dx,y+dy) for x,y in points for dx in range(width) for dy in range(width))))
         # Have to do more complicated stuff
 
+def color2pil(color, mode):
+    if mode == '1':
+        return 1*(sum(color[:3])/3 > 0.99)
+    color, alpha = tuple(int(x*255) for x in color), 255
+    if len(color) == 4:
+        color, alpha = color[:3], color[3]
+
+    if Image.getmodebase(mode) == "L":
+        r, g, b = color
+        # ITU-R Recommendation 601-2 for nonlinear RGB
+        # scaled to 24 bits to match the convert's implementation.
+        color = (r * 19595 + g * 38470 + b * 7471 + 0x8000) >> 16
+        if mode[-1] == "A":
+            return color, alpha
+    else:
+        if mode[-1] == "A":
+            return color + (alpha,)
+    return color
+
 class RendererPIL(RendererBase):
     def __init__(self, im, dpi):
         super().__init__()
@@ -410,6 +429,9 @@ class RendererPIL(RendererBase):
         self.dpi = dpi
         self.font_dirs = ["fonts/"]
         #self.font_cache = {}
+
+    def color2pil(self, color):
+        return color2pil(color, self.im.mode)
 
     def draw_path(self, gc, path, transform, rgbFace=None):
         #transform += FLIPY
@@ -440,20 +462,20 @@ class RendererPIL(RendererBase):
             points = [(points[0], self.im.height-points[1]) for points,_ in poly]
             points = [(round(p[0]), round(p[1])) for p in points]
             if dashes:
-                self.draw.dotted_line(points, width=width)
+                self.draw.dotted_line(points, fill=self.color2pil(gc.get_rgb()), width=width)
                 #self.draw.dashed_line(points, dash=dashes, width=width)
             else:
                 # TODO: Switch to ImageDraw.Outline
                 # o = ImageDraw.Outline()
                 # o.move, o.line, o.curve, etc.
                 # self.draw.shape(o)
-                self.draw.line(points, fill=0, width=width)
+                self.draw.line(points, fill=self.color2pil(gc.get_rgb()), width=width)
                 fill = rgbFace is not None and sum(rgbFace[:3])/3 < 0.9
                 #_log.debug("Fill color %s fill %s", rgbFace, fill)
                 if fill:
                     _log.debug("Filling polygon %s", points)
                     self.draw.polygon(points,
-                                      fill=0,
+                                      fill=self.color2pil(gc.get_rgb()),
                                       outline=0,
                                       #width=width,
                                       )
@@ -671,13 +693,17 @@ class FigureCanvasPIL(FigureCanvasBase):
     # you should add it to the class-scope filetypes dictionary as follows:
     filetypes = {**FigureCanvasBase.filetypes, 'pbm': 'Portable Bit Map'}
 
-    def _print(self, filename, *args, **kwargs):
+    def _print(self, filename, image_mode='1', *args, **kwargs):
         width, height = self.figure.get_size_inches()
         dpi = self.figure.dpi
         width = int(width * dpi)
         height = int(height * dpi)
 
-        im = Image.new('1', (width, height), color=1)
+        im = Image.new(
+            image_mode,
+            (width, height),
+            color=color2pil((1, 1, 1), image_mode),
+        )
         renderer = RendererPIL(im, self.figure.dpi)
         self.figure.draw(renderer)
         return im
