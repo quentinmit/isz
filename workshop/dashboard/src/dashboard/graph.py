@@ -321,7 +321,7 @@ from(bucket: defaultBucket)
             out[result] = QTable(rows)
         return out
 
-    def plot_meteogram(self, days=4):
+    def plot_meteogram(self, days=4, humidity=False):
         tables = self.fetch_weathergram(days)
 
         xmin = datetime.now() - timedelta(hours=24)
@@ -350,7 +350,7 @@ from(bucket: defaultBucket)
         ax.axis["left"].major_ticklabels.set_fontfamily("lucida")
         ax.axis["left"].major_ticklabels.set_fontsize(11)
 
-        if 0 and "humidity" in tables["forecast"].colnames:
+        if humidity and "humidity" in tables["forecast"].colnames:
             ax2 = ax.twinx()
             # Units don't work until https://github.com/matplotlib/matplotlib/issues/22714 is fixed
             ax2.axis["right"].major_ticklabels.set_visible(True)
@@ -499,8 +499,8 @@ class App:
 
     @cherrypy.expose
     @cherrypy.tools.params()
-    def meteogram(self, width: int = 640, height: int = 480, days: int = 4):
-        fig = self.grapher.plot_meteogram(days)
+    def meteogram(self, width: int = 640, height: int = 480, days: int = 4, humidity: bool = False):
+        fig = self.grapher.plot_meteogram(days, humidity=humidity)
         fig.set_size_inches((width/fig.dpi, height/fig.dpi))
         b = io.BytesIO()
         fig.savefig(b, format='png')
@@ -512,6 +512,7 @@ def main():
     parser.add_argument('--test', action='store_true', help='generate one image to out.png and exit')
     parser.add_argument('--mqtt', action='store_true', help='generate images on mqtt')
     parser.add_argument('--verbose', action='store_true', help='emit debug logs')
+    parser.add_argument('--host', default='127.0.0.1', help='host to listen on')
     args = parser.parse_args()
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
@@ -526,8 +527,9 @@ def main():
         return
     config = {
         'environment': 'embedded',
-        'server.socket_port': '8080',
         'global': {
+            'server.socket_host': args.host,
+            'server.socket_port': 8080,
             'request.show_tracebacks': True
         },
     }
