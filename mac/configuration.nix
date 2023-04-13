@@ -446,6 +446,12 @@
       ../nix/home/base.nix
     ];
 
+    home.file.".screenrc".text = ''
+      defscrollback 100000
+      term screen-256color
+      unsetenv TERM_SESSION_ID
+    '';
+
     programs.git = {
       extraConfig = {
         url = {
