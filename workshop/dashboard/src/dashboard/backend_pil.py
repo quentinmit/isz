@@ -20,7 +20,7 @@ from matplotlib._pylab_helpers import Gcf
 from matplotlib.backend_bases import (
      FigureCanvasBase, FigureManagerBase, GraphicsContextBase, RendererBase)
 from matplotlib.figure import Figure
-from matplotlib.font_manager import FontManager, FontProperties, FontEntry, findfont
+from matplotlib.font_manager import FontManager, FontProperties, FontEntry, findfont, font_family_aliases
 from matplotlib.path import Path
 from matplotlib.transforms import Affine2D
 
@@ -228,11 +228,16 @@ CHARSET_ENCODING""".split()
 fontmanager = BitmapFontManager(
     [
         importlib.resources.files("dashboard.fonts"),
-        "/usr/share/fonts/X11/100dpi",
-        "/usr/share/fonts/X11/misc",
-        "/opt/local/share/fonts/100dpi",
-        "/opt/local/share/fonts/misc",
-    ])
+    ] + os.getenv(
+        "BACKEND_PIL_FONT_PATH",
+        ':'.join([
+            "/usr/share/fonts/X11/100dpi",
+            "/usr/share/fonts/X11/misc",
+            "/opt/local/share/fonts/100dpi",
+            "/opt/local/share/fonts/misc",
+        ]))
+    .split(':')
+)
 
 ttffonts = {}
 

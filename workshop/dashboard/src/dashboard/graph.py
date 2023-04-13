@@ -236,7 +236,10 @@ _CONDITION_ICON_TO_MDI_ICON = {
     "50n": "fog",
 }
 
-_MATERIAL_ICON_FONT = "../esphome/fonts/materialdesignicons-webfont.ttf"
+_MATERIAL_ICON_FONT = os.getenv(
+    "MATERIAL_ICON_FONT",
+    "../esphome/fonts/materialdesignicons-webfont.ttf"
+)
 
 
 class Grapher:
