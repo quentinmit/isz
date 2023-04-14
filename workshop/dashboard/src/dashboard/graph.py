@@ -21,9 +21,11 @@ import matplotlib.dates as mdates
 from matplotlib.font_manager import FontProperties
 import matplotlib.text as mtext
 import matplotlib.ticker as mticker
+import matplotlib.quiver as mquiver
 from matplotlib.transforms import Bbox
 from matplotlib.tight_layout import get_renderer
 import matplotlib.units as munits
+import matplotlib.backend_bases
 from more_itertools import bucket
 import mpl_toolkits.axisartist as axisartist
 from mpl_toolkits.axes_grid1.parasite_axes import host_axes
@@ -122,6 +124,22 @@ class OverlapAnnotations(mtext.Annotation):
             super().draw(renderer)
             bboxes.append(bbox)
         renderer.close_group(__name__)
+
+class OverlapBarbs(mquiver.Barbs):
+    def _prepare_points(self):
+        transform, offset_trf, offsets, paths = super()._prepare_points()
+        toffsets = offset_trf.transform(offsets)
+        trans = self.get_transforms()
+        bboxes = []
+        keep = []
+        for i, (p, t) in enumerate(matplotlib.backend_bases.RendererBase._iter_collection_raw_paths(None, transform.frozen(), paths, trans)):
+            bbox = p.get_extents(t.frozen().translate(*toffsets[i]))
+            if bbox.count_overlaps(bboxes) > 0:
+                _log.debug("Skipping path at (%s) due to overlap", bbox)
+                continue
+            keep.append(i)
+            bboxes.append(bbox)
+        return transform, offset_trf, offsets[keep], [paths[i] for i in keep]
 
 class MplQuantityConverter(munits.ConversionInterface):
     @staticmethod
@@ -403,12 +421,22 @@ from(bucket: defaultBucket)
                 # barbs takes the direction the shaft should point, so we subtract 180 degrees.
                 wind_u = wind_speed * np.cos(wind_angle)
                 wind_v = wind_speed * np.sin(wind_angle)
-                ax2.barbs(
+
+                args = (
                     forecast["_time"].plot_date, np.zeros(forecast["_time"].shape),
-                    wind_u, wind_v,
+                    wind_u, wind_v
+                )
+                kwargs = dict(
                     length=6,
                     pivot="middle",
                 )
+                b = OverlapBarbs(
+                    ax2,
+                    *ax2._quiver_units(args, kwargs),
+                    **kwargs
+                )
+                ax2.add_collection(b, autolim=True)
+                ax2._request_autoscale_view()
             # Plot condition icons
             forecast.sort("_time")
             iconfont = FontProperties(size=24, fname=Path(_MATERIAL_ICON_FONT))
