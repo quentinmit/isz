@@ -225,7 +225,13 @@
     showExternalIp = true;
   };
   # TODO: Configure dashboard (for esphome)
-  services.dashboard.enable = true;
+  sops.secrets."dashboard_influx_token" = {
+    owner = config.services.dashboard.user;
+  };
+  services.dashboard = {
+    enable = true;
+    influxdb.tokenPath = config.sops.secrets.dashboard_influx_token.path;
+  };
   # TODO: Configure esphome
   # Configure home-assistant
   # Configure zwave-js-ui
