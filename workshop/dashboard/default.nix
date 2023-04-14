@@ -4,7 +4,10 @@
 , material-design-icons
 }:
 with python3Packages;
-buildPythonApplication rec {
+let
+  backendPilFontPath = "$(find $bitmapFonts -name fonts.dir -exec dirname {} \\; | sed -z -e 's/\\n/:/g' -e 's/:$//')";
+  materialIconFont = "${material-design-icons}/share/fonts/truetype/materialdesignicons-webfont.ttf";
+in buildPythonApplication rec {
   pname = "dashboard";
   version = "0.0.1";
   format = "pyproject";
@@ -38,11 +41,16 @@ buildPythonApplication rec {
   makeWrapperArgs = [
     "--set"
     "BACKEND_PIL_FONT_PATH"
-    "$(find $bitmapFonts -name fonts.dir -exec dirname {} \\; | sed -z -e 's/\\n/:/g' -e 's/:$//')"
+    backendPilFontPath
     "--set"
     "MATERIAL_ICON_FONT"
-    "${material-design-icons}/share/fonts/truetype/materialdesignicons-webfont.ttf"
+    materialIconFont
   ];
+
+  shellHook = ''
+    export BACKEND_PIL_FONT_PATH=${backendPilFontPath}
+    export MATERIAL_ICON_FONT=${materialIconFont}
+  '';
 
   src = ./.;
 }
