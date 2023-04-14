@@ -241,6 +241,7 @@ fontmanager = BitmapFontManager(
 
 ttffonts = {}
 
+@lru_cache
 def loadfont(prop):
     prop = FontProperties._from_any(prop)
     _log.debug("Loading font for %s", prop)
