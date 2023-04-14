@@ -374,12 +374,12 @@ from(bucket: defaultBucket)
             ax2.axis["right"].major_ticklabels.set_visible(True)
             ax2.axis["right"].invert_ticklabel_direction()
             ax2.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["humidity"], linewidth=0.8)
-        ax.plot(tables["local"]["_time"].plot_date, tables["local"]["temp"], linewidth=1.5)
+        ax.plot(tables["local"]["_time"].plot_date, tables["local"]["temp"], linewidth=1.5, label='Observed')
 
         ax.grid(axis='x', linestyle='dotted')
 
         if forecast := tables.get("forecast"):
-            ax.plot(forecast["_time"].plot_date, forecast["temperature"], linewidth=0.8)
+            ax.plot(forecast["_time"].plot_date, forecast["temperature"], linewidth=0.8, label='Forecast')
 
             # Plot min and max temperature
             forecast.sort("temperature")
