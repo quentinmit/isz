@@ -58,7 +58,6 @@
           locations."/dashboard/" = lib.mkIf config.services.dashboard.enable {
             proxyPass = "http://127.0.0.1:8080";
             extraConfig = ''
-              rewrite ^ $request_uri;
               rewrite '^/dashboard(/.*)$' $1 break;
             '';
           };
