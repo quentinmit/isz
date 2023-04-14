@@ -11,6 +11,7 @@
       ./nginx.nix
       ./home-assistant.nix
       ./telegraf.nix
+      ./dashboard.nix
       ../nix/zwave-js-ui.nix
       ../nix/base.nix
       ../nix/networkd.nix
@@ -224,6 +225,7 @@
     showExternalIp = true;
   };
   # TODO: Configure dashboard (for esphome)
+  services.dashboard.enable = true;
   # TODO: Configure esphome
   # Configure home-assistant
   # Configure zwave-js-ui

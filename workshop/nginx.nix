@@ -55,6 +55,9 @@
               proxy_set_header X-External-Path /zwave;
             '';
           };
+          locations."/dashboard/" = lib.mkIf config.services.dashboard.enable {
+            proxyPass = "http://127.0.0.1:8080";
+          };
         };
         "esphome.isz.wtf" = lib.mkIf false {
           forceSSL = true;
