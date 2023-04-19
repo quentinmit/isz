@@ -478,6 +478,39 @@
       };
     };
 
+    targets.darwin.defaults = {
+      NSGlobalDefaults = {
+        AppleInterfaceStyle = "Dark";
+        AppleShowAllExtensions = true;
+        AppleSpacesSwitchOnActivate = false;
+        AppleMeasurementUnits = "Inches";
+        AppleMetricUnits = false;
+        AppleTemperatureUnit = "Fahrenheit";
+
+        NSAutomaticCapitalizationEnabled = false;
+        NSAutomaticDashSubstitutionEnabled = true;
+        NSAutomaticPeriodSubstitutionEnabled = false;
+        NSAutomaticQuoteSubstitutionEnabled = true;
+        NSAutomaticSpellingCorrectionEnabled = false;
+        NSAutomaticTextCompletionEnabled = true;
+        WebAutomaticSpellingCorrectionEnabled = false;
+
+        NavPanelFileListModeForOpenMode = 2;
+        NavPanelFileListModeForSaveMode = 2;
+
+        "com.apple.mouse.scaling" = "1.5";
+        "com.apple.scrollwheel.scaling" = 0;
+      };
+      "com.apple.dock" = {
+        autohide = false;
+        magnification = true;
+        orientation = "left";
+        "wvous-bl-corner" = 10;
+        "wvous-bl-modifier" = 0;
+        "show-recents" = false;
+      };
+    };
+
     programs.bash = {
       shellAliases = {
         mit-kinit = "kinit";
