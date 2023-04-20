@@ -1,24 +1,5 @@
 { lib, pkgs, config, options, ... }:
 {
-  options = with lib; {
-    launchd.daemons = mkOption {
-      type = types.attrsOf (types.submodule {
-        options = {
-          serviceConfig = mkOption {
-            type = types.submodule {
-              options = {
-                SessionCreate = mkOption {
-                  type = types.nullOr types.bool;
-                  default = null;
-                  description = "Create a new audit context";
-                };
-              };
-            };
-          };
-        };
-      });
-    };
-  };
   config = let
     cfg = config.isz.telegraf;
   in lib.mkMerge [

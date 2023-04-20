@@ -14,7 +14,7 @@
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    darwin.url = "github:lnl7/nix-darwin/master";
+    darwin.url = "github:quentinmit/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, ... }@args:
@@ -38,6 +38,7 @@
             import nixpkgs {
               inherit system;
               overlays = [
+                overlay
                 (import ./nix/pkgs/all-packages.nix)
                 (import ./nix/pkgs/overlays.nix)
               ];}).pkgs;

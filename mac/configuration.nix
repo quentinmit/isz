@@ -4,6 +4,7 @@
   imports = [
     ../nix/modules/base
     ../nix/modules/telegraf
+    ../nix/modules/xquartz
     ./python.nix
   ];
 
@@ -432,6 +433,10 @@
   services.telegraf.environmentFiles = [
     ./telegraf.env
   ];
+
+  services.xserver = {
+    enable = true;
+  };
 
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
