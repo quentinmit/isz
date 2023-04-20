@@ -30,6 +30,7 @@
       xorg.fontcursormisc
     ];
     environment.systemPackages = with pkgs; with xorg; [
+      xquartz
       # non-xorg
       quartz-wm xterm fontconfig
       # xorg
@@ -42,7 +43,7 @@
     ];
     environment.etc."X11/xinit/xinitrc".source = "${xquartz}/etc/X11/xinit/xinitrc";
     environment.etc."X11/fonts.conf".source = fontsConf;
-    launchd.agents."org.nixos.xquartz.startx".serviceConfig = {
+    launchd.agents."xquartz.startx".serviceConfig = {
       ProgramArguments = [
         "${xquartz}/libexec/launchd_startx"
         "${xquartz}/bin/startx"
@@ -57,7 +58,7 @@
       ServiceIPC = true;
       EnableTransactions = true;
     };
-    launchd.daemons."org.nixos.xquartz.privileged_startx".serviceConfig = {
+    launchd.daemons."xquartz.privileged_startx".serviceConfig = {
       ProgramArguments = [
         "${xquartz}/libexec/privileged_startx"
         "-d"
