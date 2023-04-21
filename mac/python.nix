@@ -131,6 +131,7 @@
         jmespath
         ipykernel
         notebook
+        jsonlines
         jupyter-c-kernel
         jupyter-lsp
         jupyter-packaging
