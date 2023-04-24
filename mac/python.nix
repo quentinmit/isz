@@ -113,7 +113,9 @@
         gnupg
         gnureadline
         pygobject3
+        google-api-python-client
         google-auth
+        google-auth-oauthlib
         graphviz
         h11
         h5py
