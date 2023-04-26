@@ -33,6 +33,25 @@
       - org.signal.Signal
       - org.wireshark.Wireshark
       - uk.org.greenend.chiark.sgtatham.putty
+      # Productivity
+      - ch.theologeek.Manuskript
+      - com.abisource.AbiWord
+      - com.calibre_ebook.calibre
+      - com.github.flxzt.rnote
+      - com.github.johnfactotum.Foliate
+      - com.github.marktext.marktext
+      - com.github.xournalpp.xournalpp
+      - com.sigil_ebook.Sigil
+      - io.github.wereturtle.ghostwriter
+      - me.mitya57.ReText
+      - net.xm1math.Texmaker
+      - org.cvfosammmm.Setzer
+      - org.gnome.gitlab.somas.Apostrophe
+      - org.kde.kile
+      - org.libreoffice.LibreOffice
+      - org.onlyoffice.desktopeditors
+      - org.texstudio.TeXstudio
+      - org.tug.texworks
       # Graphics
       - com.boxy_svg.BoxySVG
       - net.scribus.Scribus
@@ -61,6 +80,12 @@
       - net.cebix.basilisk
       - org.kde.kstars
       - org.stellarium.Stellarium
+      - io.github.shiiion.primehack
+      - com.steamdeckrepo.manager
+      - net.rpcs3.RPCS3
+      - org.citra_emu.citra
+      - org.DolphinEmu.dolphin-emu
+      - org.ppsspp.PPSSPP
       # Development
       - com.github.tchx84.Flatseal
       - com.visualstudio.code.insiders # flathub-beta
@@ -72,6 +97,7 @@
       - com.google.AndroidStudio
       - org.fritzing.Fritzing
       - org.radare.iaito
+      - re.sonny.Playhouse
       # Multimedia
       - com.obsproject.Studio
       #- com.obsproject.Studio.Plugin.InputOverlay
@@ -86,7 +112,7 @@
       - com.w1hkj.fldigi
       - com.w1hkj.flrig
       - net.oz9aec.Gpredict
-      - be.telenet.user.QSSTV
+      - net.qsl.QSSTV
       - info.mumble.Mumble
       - org.sdrangel.SDRangel
       - org.viking.Viking
@@ -102,6 +128,10 @@
       - com.github.donadigo.appeditor
       - io.gitlab.jstest_gtk.jstest_gtk
       - io.qt.qdbusviewer
+      - ca.desrt.dconf-editor
+      - io.github.arunsivaramanneo.GPUViewer
+      - org.bluesabre.MenuLibre
+      - org.gnome.dspy
       method: system
   - ansible.builtin.command: pacman -Qk {{ packages | join(' ') }}
     check_mode: no
