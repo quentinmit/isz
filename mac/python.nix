@@ -68,6 +68,7 @@
         aiohttp
         alabaster
         ansible
+        ansible-core
         #argparse-manpage
         #astroplan
         astropy
