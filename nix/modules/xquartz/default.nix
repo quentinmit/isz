@@ -8,18 +8,14 @@
    };
   config = let
     cfg = config.services.xserver;
-    fontsConf = pkgs.makeFontsConf {
-      fontDirectories = config.fonts.fonts ++ [
-        "/Library/Fonts"
-        "~/Library/Fonts"
-      ];
-    };
-    xquartz = pkgs.callPackage ./pkg.nix {
-      inherit nixpkgs;
-      inherit (pkgs.unstable) xorg;
+    xquartz = pkgs.unstable.xquartz.override {
+      unfreeFonts = true;
+      extraFontDirs = config.fonts.fonts;
     };
   in lib.mkIf cfg.enable {
     fonts.fonts = with pkgs; [
+      xorg.fontadobe100dpi
+      xorg.fontadobe75dpi
       xorg.fontbhlucidatypewriter100dpi
       xorg.fontbhlucidatypewriter75dpi
       ttf_bitstream_vera
@@ -29,20 +25,9 @@
       xorg.fontmiscmisc
       xorg.fontcursormisc
     ];
-    environment.systemPackages = with pkgs; with xorg; [
+    environment.systemPackages = [
       xquartz
-      # non-xorg
-      quartz-wm xterm fontconfig
-      # xorg
-      xlsfonts xfontsel
-      bdftopcf fontutil iceauth libXpm lndir luit makedepend mkfontdir
-      mkfontscale sessreg setxkbmap smproxy twm x11perf xauth xbacklight xclock
-      xcmsdb xcursorgen xdm xdpyinfo xdriinfo xev xeyes xfs xgamma xhost
-      xinput xkbcomp xkbevd xkbutils xkill xlsatoms xlsclients xmessage xmodmap
-      xpr xprop xrandr xrdb xrefresh xset xsetroot xvinfo xwd xwininfo xwud
-    ];
-    environment.etc."X11/xinit/xinitrc".source = "${xquartz}/etc/X11/xinit/xinitrc";
-    environment.etc."X11/fonts.conf".source = fontsConf;
+    ] ++ xquartz.pkgs;
     launchd.agents."xquartz.startx".serviceConfig = {
       ProgramArguments = [
         "${xquartz}/libexec/launchd_startx"

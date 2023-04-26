@@ -418,7 +418,6 @@
     #unsupported gnome.zenity
     #zephyr
     #why zimg
-    xterm
   ];
 
   programs.bash = {

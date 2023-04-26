@@ -6,7 +6,7 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-22.11";
-    unstable.url = "nixpkgs/nixos-unstable";
+    unstable.url = "github:quentinmit/nixpkgs/xquartz";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
