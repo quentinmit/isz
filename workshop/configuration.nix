@@ -9,7 +9,7 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./nginx.nix
-      ./home-assistant.nix
+      ./home-assistant
       ./telegraf.nix
       ./dashboard.nix
       ../nix/zwave-js-ui.nix

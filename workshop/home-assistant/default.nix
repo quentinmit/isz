@@ -5,6 +5,9 @@
   ];
   imports = [
     "${channels.unstable}/nixos/modules/services/home-automation/home-assistant.nix"
+    ./dashboards.nix
+    ./scenes.nix
+    ./automations.nix
   ];
   options = with lib; {
     services.home-assistant.extraLovelaceModules = mkOption {
@@ -57,56 +60,6 @@
         "zone"
         "zwave_js"
       ];
-      extraLovelaceModules = let
-        hassLovelaceModules = config.nur.repos.mweinelt.hassLovelaceModules;
-      in {
-        inherit (hassLovelaceModules) mushroom apexcharts-card;
-      };
-      lovelaceConfig = let
-        light = (name: {
-          type = "light";
-          entity = "light.${name}";
-        });
-      in {
-        title = "Ice Station Zebra";
-        views = [ {
-          path = "default_view";
-          title = "Home";
-          cards = [
-            {
-              type = "vertical-stack";
-              cards = [
-                {
-                  type = "horizontal-stack";
-                  cards = map light [
-                    "headboard"
-                    "underlight_l"
-                    "underlight_c"
-                  ];
-                }
-                {
-                  type = "horizontal-stack";
-                  cards = map light [
-                    "living_room_floor_lamp"
-                    "hg02"
-                    "elgato_key_light_air"
-                  ];
-                }
-                {
-                  type = "entities";
-                  entities = [];
-                  footer.type = "buttons";
-                  footer.entities = map (name: {
-                    entity = "scene.${name}";
-                    show_icon = true;
-                    show_name = true;
-                  }) [ "day" "night" "night_2" ];
-                }
-              ];
-            }
-          ];
-        } ];
-      };
       config = let
         cleanName = name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name);
       in {
@@ -127,7 +80,6 @@
           use_x_forwarded_for = true;
         };
         lovelace = {
-          #type = "yaml";
           resources = lib.mapAttrsToList (name: package: {
             url = "/local/${name}.js?${package.version}";
             type = "module";
@@ -361,9 +313,9 @@
           }
         ];
         group = "!include groups.yaml";
-        automation = "!include automations.yaml";
+        "automation ui" = "!include automations.yaml";
         script = "!include scripts.yaml";
-        scene = "!include scenes.yaml";
+        "scene ui" = "!include scenes.yaml";
       };
     };
   };
