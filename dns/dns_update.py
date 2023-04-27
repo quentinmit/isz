@@ -10,6 +10,7 @@ from netaddr import IPAddress, IPNetwork
 import routeros_api
 import socket
 import sys
+import netrc
 import toml
 from typing import Container, Optional, TypedDict
 import dns.zone
@@ -127,13 +128,29 @@ def mikrotik_to_record(resource_type: str, entry: dict) -> Record:
     return frozendict(out)
 
 
+def netrc_lookup(server):
+    if "username" in server and "password" in server:
+        return server["username"], server["password"]
+    try:
+        n = netrc.netrc()
+        for key in (server.get("host"), server.get("name"), "default"):
+            if not key:
+                continue
+            if key in n.hosts:
+                login, _, password = n.hosts[key] or [None, None, None]
+                return server.get("username") or login, server.get("password") or password
+    except FileNotFoundError:
+        pass
+    return server["username"], server["password"]
+
 class Server:
     def __init__(self, server):
+        username, password = netrc_lookup(server)
         self.conf = server
         self.conn = routeros_api.RouterOsApiPool(
             server["host"],
-            username=server["username"],
-            password=server["password"],
+            username=username,
+            password=password,
             plaintext_login=server["plaintext_login"],
         )
         self.api = self.conn.get_api()
