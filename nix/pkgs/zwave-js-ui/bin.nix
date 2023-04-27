@@ -1,17 +1,13 @@
 { stdenv, lib, fetchzip, glibc, gcc-unwrapped, autoPatchelfHook, bbe }:
-let
+stdenv.mkDerivation rec {
+  pname = "zwave-js-ui-bin";
+  version = "8.14.2";
+
   src = fetchzip {
-    url = "https://github.com/zwave-js/zwave-js-ui/releases/download/v8.11.0/zwave-js-ui-v8.11.0-linux.zip";
+    url = "https://github.com/zwave-js/zwave-js-ui/releases/download/v${version}/zwave-js-ui-v${version}-linux.zip";
     stripRoot = false;
-    sha256 = "lh58PdF311OBs+P2c8guh4Kv6OWzwtCpueZNX31Q6Hg=";
+    sha256 = "geAl6AoMY7P7f0d4MZF+m301aLao6d4jAzViVapTHlU=";
   };
-
-  version = "8.11.0";
-in stdenv.mkDerivation {
-  name = "zwave-js-ui-bin";
-
-  inherit src;
-  inherit version;
 
   # Required for compilation
   nativeBuildInputs = [
