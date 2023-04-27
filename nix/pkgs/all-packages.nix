@@ -9,9 +9,10 @@ final: prev:
   avidemux = final.libsForQt5.callPackage ./avidemux {
     inherit (final.darwin.apple_sdk.frameworks) VideoToolbox;
   };
+  dns-update = final.callPackage ../../dns {};
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (python-final: python-prev: with python-final; {
-      routeros-api = callPackage ./python/routeros-api {};
+      RouterOS-api = callPackage ./python/routeros-api {};
       w1thermsensor = callPackage ./python/w1thermsensor {};
       Dozer = callPackage ./python/dozer {};
     })

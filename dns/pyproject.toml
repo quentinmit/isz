@@ -1,0 +1,12 @@
+[project]
+name = "dns-update"
+version = "0.0.1"
+dependencies = [
+    "RouterOS-api",
+    "toml",
+    "dnspython",
+    "frozendict",
+    "netaddr",
+]
+[project.scripts]
+dns-update = "dns_update:main"

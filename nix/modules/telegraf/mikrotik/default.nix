@@ -11,7 +11,7 @@ python3.pkgs.buildPythonApplication {
     aiohttp
     httpx
     influxdb-client
-    routeros-api
+    RouterOS-api
     pyparsing
     more-itertools
   ];
