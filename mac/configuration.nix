@@ -515,6 +515,11 @@
       };
     };
 
+    programs.direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+    };
+
     programs.bash = {
       shellAliases = {
         mit-kinit = "kinit";
