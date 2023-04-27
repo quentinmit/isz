@@ -38,29 +38,35 @@
           serverAliases = [ "hass.isz.wtf" ];
           forceSSL = true;
           enableACME = true;
-          locations."/".tryFiles = "$uri @hass";
-          locations."@hass" = {
-            proxyPass = "http://[::1]:${toString config.services.home-assistant.config.http.server_port}";
-            proxyWebsockets = true;
-            extraConfig = ''
-              proxy_buffering off;
-            '';
-          };
-          locations."/zwave/" = {
-            proxyPass = "http://127.0.0.1:8091";
-            proxyWebsockets = true;
-            extraConfig = ''
-              rewrite ^ $request_uri;
-              rewrite '^/zwave(/.*)$' $1 break;
-              proxy_set_header X-External-Path /zwave;
-            '';
-          };
-          locations."/dashboard/" = lib.mkIf config.services.dashboard.enable {
-            proxyPass = "http://127.0.0.1:8080";
-            extraConfig = ''
-              rewrite '^/dashboard(/.*)$' $1 break;
-            '';
-          };
+          locations = {
+            "/".tryFiles = "$uri @hass";
+            "@hass" = {
+              proxyPass = "http://[::1]:${toString config.services.home-assistant.config.http.server_port}";
+              proxyWebsockets = true;
+              extraConfig = ''
+                proxy_buffering off;
+              '';
+            };
+            "/zwave/" = {
+              proxyPass = "http://127.0.0.1:8091";
+              proxyWebsockets = true;
+              extraConfig = ''
+                rewrite ^ $request_uri;
+                rewrite '^/zwave(/.*)$' $1 break;
+                proxy_set_header X-External-Path /zwave;
+              '';
+            };
+            "/dashboard/" = lib.mkIf config.services.dashboard.enable {
+              proxyPass = "http://127.0.0.1:8080";
+              extraConfig = ''
+                rewrite '^/dashboard(/.*)$' $1 break;
+              '';
+            };
+          } // lib.mapAttrs' (name: package:
+            lib.nameValuePair "=/local/${name}.js" {
+              alias = "${package}/${name}.js";
+            }
+          ) config.services.home-assistant.extraLovelaceModules;
         };
         "esphome.isz.wtf" = lib.mkIf false {
           forceSSL = true;

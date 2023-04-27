@@ -16,8 +16,9 @@
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     darwin.url = "github:quentinmit/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nur.url = "github:nix-community/NUR";
   };
-  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, ... }@args:
+  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, nur, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -51,6 +52,7 @@
           modules = [
             overlayModule
             ./workshop/configuration.nix
+            nur.nixosModules.nur
           ];
         };
         nixosConfigurations.bedroom-pi = nixpkgs.lib.nixosSystem {

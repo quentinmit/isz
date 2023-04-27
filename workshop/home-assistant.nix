@@ -6,6 +6,12 @@
   imports = [
     "${channels.unstable}/nixos/modules/services/home-automation/home-assistant.nix"
   ];
+  options = with lib; {
+    services.home-assistant.extraLovelaceModules = mkOption {
+      type = with types; attrsOf package;
+      default = {};
+    };
+  };
   config = {
     nixpkgs.overlays = [
       (self: super: {
@@ -51,6 +57,56 @@
         "zone"
         "zwave_js"
       ];
+      extraLovelaceModules = let
+        hassLovelaceModules = config.nur.repos.mweinelt.hassLovelaceModules;
+      in {
+        inherit (hassLovelaceModules) mushroom apexcharts-card;
+      };
+      lovelaceConfig = let
+        light = (name: {
+          type = "light";
+          entity = "light.${name}";
+        });
+      in {
+        title = "Ice Station Zebra";
+        views = [ {
+          path = "default_view";
+          title = "Home";
+          cards = [
+            {
+              type = "vertical-stack";
+              cards = [
+                {
+                  type = "horizontal-stack";
+                  cards = map light [
+                    "headboard"
+                    "underlight_l"
+                    "underlight_c"
+                  ];
+                }
+                {
+                  type = "horizontal-stack";
+                  cards = map light [
+                    "living_room_floor_lamp"
+                    "hg02"
+                    "elgato_key_light_air"
+                  ];
+                }
+                {
+                  type = "entities";
+                  entities = [];
+                  footer.type = "buttons";
+                  footer.entities = map (name: {
+                    entity = "scene.${name}";
+                    show_icon = true;
+                    show_name = true;
+                  }) [ "day" "night" "night_2" ];
+                }
+              ];
+            }
+          ];
+        } ];
+      };
       config = let
         cleanName = name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name);
       in {
@@ -69,6 +125,13 @@
         http = {
           trusted_proxies = [ "::1" "127.0.0.1" ];
           use_x_forwarded_for = true;
+        };
+        lovelace = {
+          #type = "yaml";
+          resources = lib.mapAttrsToList (name: package: {
+            url = "/local/${name}.js?${package.version}";
+            type = "module";
+          }) config.services.home-assistant.extraLovelaceModules;
         };
         google_assistant = {
           project_id = "api-project-64499786246";
