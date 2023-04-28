@@ -37,6 +37,7 @@
         doInstallCheck = false;
         patches = (old.patches or []) ++ [
           ./patches/hass-mikrotik-comment.patch
+          ./patches/esphome-entity-ids.patch
         ];
       });
       extraComponents = [

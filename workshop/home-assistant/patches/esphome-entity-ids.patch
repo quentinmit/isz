@@ -1,0 +1,27 @@
+commit e9f530ff584956395600943f17cdcdae377401a6
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Fri Apr 28 02:55:03 2023 -0400
+
+    Use esphome object ID as default entity ID
+
+diff --git a/homeassistant/components/esphome/__init__.py b/homeassistant/components/esphome/__init__.py
+index 0c1eac3aa4..8385a0d4bb 100644
+--- a/homeassistant/components/esphome/__init__.py
++++ b/homeassistant/components/esphome/__init__.py
+@@ -51,6 +51,7 @@ from homeassistant.helpers.json import JSONEncoder
+ from homeassistant.helpers.service import async_set_service_schema
+ from homeassistant.helpers.storage import Store
+ from homeassistant.helpers.template import Template
++from homeassistant.util import slugify
+ 
+ # Import config flow so that it's added to the registry
+ from .entry_data import RuntimeEntryData
+@@ -683,6 +684,8 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
+         self._entry_data = entry_data
+         self._component_key = component_key
+         self._key = key
++        if self._static_info.object_id:
++            self.entity_id = "%s.%s" % (component_key, slugify(self._static_info.object_id))
+ 
+     async def async_added_to_hass(self) -> None:
+         """Register callbacks."""
