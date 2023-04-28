@@ -62,6 +62,7 @@ status_led:
 
 sensor:
   - platform: wifi_signal
+    id: bedroom_lights_wifi_signal
     name: "WiFi Signal bedroom-lights"
     update_interval: 60s
 

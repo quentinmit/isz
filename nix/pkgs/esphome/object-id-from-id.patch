@@ -1,0 +1,23 @@
+diff --git a/esphome/cpp_helpers.py b/esphome/cpp_helpers.py
+index cc53f491..071a5062 100644
+--- a/esphome/cpp_helpers.py
++++ b/esphome/cpp_helpers.py
+@@ -4,6 +4,7 @@ from esphome.const import (
+     CONF_DISABLED_BY_DEFAULT,
+     CONF_ENTITY_CATEGORY,
+     CONF_ICON,
++    CONF_ID,
+     CONF_INTERNAL,
+     CONF_NAME,
+     CONF_SETUP_PRIORITY,
+@@ -102,7 +103,9 @@ async def register_parented(var, value):
+ async def setup_entity(var, config):
+     """Set up generic properties of an Entity"""
+     add(var.set_name(config[CONF_NAME]))
+-    if not config[CONF_NAME]:
++    if config.get(CONF_ID):
++        add(var.set_object_id(sanitize(snake_case(str(config[CONF_ID])))))
++    elif not config[CONF_NAME]:
+         add(var.set_object_id(sanitize(snake_case(CORE.friendly_name))))
+     else:
+         add(var.set_object_id(sanitize(snake_case(config[CONF_NAME]))))
