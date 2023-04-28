@@ -13,7 +13,7 @@
         "__pycache__"
       ];
       userName = "Quentin Smith";
-      userEmail = "quentin@mit.edu";
+      userEmail = lib.mkDefault "quentin@mit.edu";
       aliases = {
         up = "pull --rebase";
         k = "log --graph --abbrev-commit --pretty=oneline --decorate";

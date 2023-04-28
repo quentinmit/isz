@@ -83,5 +83,8 @@
             ./mac/configuration.nix
           ];
         };
+        hmModules = {
+          base = import ./nix/home/base.nix;
+        };
     };
 }
