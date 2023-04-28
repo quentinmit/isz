@@ -22,7 +22,14 @@
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
-        unstable = import unstable { inherit (prev) system; config.allowUnfree = true; };
+        unstable = import unstable {
+          inherit (prev) system;
+          config.allowUnfree = true;
+          overlays = [
+            (import ./nix/pkgs/all-packages.nix)
+            (import ./nix/pkgs/unstable-overlays.nix)
+          ];
+        };
       };
       # Overlays-module makes "pkgs.unstable" available in configuration.nix
       overlayModule = { config, pkgs, ... }: {
@@ -45,6 +52,7 @@
               ];}).pkgs;
       in {
         legacyPackages = pkgs;
+        devShells.esphome = import ./workshop/esphome/shell.nix { inherit pkgs; };
       })) // {
         nixosConfigurations.workshop = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";

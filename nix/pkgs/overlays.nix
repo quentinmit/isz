@@ -12,4 +12,5 @@ final: prev: {
   xastir = prev.xastir.overrideAttrs (old: {
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
+  esphome = final.unstable.esphome;
 }
