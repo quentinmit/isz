@@ -1,5 +1,5 @@
 diff --git a/esphome/cpp_helpers.py b/esphome/cpp_helpers.py
-index cc53f491..071a5062 100644
+index cc53f491..091d0a6a 100644
 --- a/esphome/cpp_helpers.py
 +++ b/esphome/cpp_helpers.py
 @@ -4,6 +4,7 @@ from esphome.const import (
@@ -15,7 +15,7 @@ index cc53f491..071a5062 100644
      """Set up generic properties of an Entity"""
      add(var.set_name(config[CONF_NAME]))
 -    if not config[CONF_NAME]:
-+    if config.get(CONF_ID):
++    if config.get(CONF_ID) and config[CONF_ID].is_manual:
 +        add(var.set_object_id(sanitize(snake_case(str(config[CONF_ID])))))
 +    elif not config[CONF_NAME]:
          add(var.set_object_id(sanitize(snake_case(CORE.friendly_name))))
