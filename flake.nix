@@ -7,7 +7,8 @@
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-22.11";
     unstable.url = "github:quentinmit/nixpkgs/xquartz";
-    home-manager.url = "github:nix-community/home-manager";
+    # Remove pin when moving to nixos 23.05
+    home-manager.url = "github:nix-community/home-manager/6142193635ecdafb9a231bd7d1880b9b7b210d19";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
