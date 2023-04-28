@@ -1,25 +1,25 @@
-commit e9f530ff584956395600943f17cdcdae377401a6
+commit 8c982b9341c9c39183b2eec15e0902f7897f406f
 Author: Quentin Smith <quentin@mit.edu>
 Date:   Fri Apr 28 02:55:03 2023 -0400
 
     Use esphome object ID as default entity ID
 
 diff --git a/homeassistant/components/esphome/__init__.py b/homeassistant/components/esphome/__init__.py
-index 0c1eac3aa4..8385a0d4bb 100644
+index 4658893d37..a14ee33e8c 100644
 --- a/homeassistant/components/esphome/__init__.py
 +++ b/homeassistant/components/esphome/__init__.py
-@@ -51,6 +51,7 @@ from homeassistant.helpers.json import JSONEncoder
+@@ -56,6 +56,7 @@ from homeassistant.helpers.issue_registry import (
+ )
  from homeassistant.helpers.service import async_set_service_schema
- from homeassistant.helpers.storage import Store
  from homeassistant.helpers.template import Template
 +from homeassistant.util import slugify
  
- # Import config flow so that it's added to the registry
- from .entry_data import RuntimeEntryData
-@@ -683,6 +684,8 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
-         self._entry_data = entry_data
-         self._component_key = component_key
-         self._key = key
+ from .bluetooth import async_connect_scanner
+ from .const import DOMAIN
+@@ -758,6 +759,8 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
+         self._state_type = state_type
+         if entry_data.device_info is not None and entry_data.device_info.friendly_name:
+             self._attr_has_entity_name = True
 +        if self._static_info.object_id:
 +            self.entity_id = "%s.%s" % (component_key, slugify(self._static_info.object_id))
  
