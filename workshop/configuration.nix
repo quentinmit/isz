@@ -175,6 +175,7 @@
     enable = true;
     settings = {
       server.protocol = "socket";
+      security.allow_embedding = true;
     };
   };
   users.users."${config.services.nginx.user}".extraGroups = [ "grafana" ];
