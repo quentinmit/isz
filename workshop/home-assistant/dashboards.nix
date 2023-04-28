@@ -5,7 +5,12 @@
       extraLovelaceModules = let
         hassLovelaceModules = config.nur.repos.mweinelt.hassLovelaceModules;
       in {
-        inherit (hassLovelaceModules) mushroom apexcharts-card;
+        inherit (hassLovelaceModules)
+          mushroom
+          apexcharts-card
+          multiple-entity-row
+          slider-button-card
+        ;
       };
       lovelaceConfig = let
         light = (name: {
