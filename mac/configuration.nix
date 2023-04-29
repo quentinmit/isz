@@ -578,6 +578,25 @@
       };
     };
 
+    programs.ssh = {
+      enable = true;
+      extraConfig = ''
+        GSSAPIAuthentication yes
+        GSSAPIKeyExchange yes
+        PubkeyAcceptedKeyTypes +ssh-dss,ssh-rsa
+      '';
+      matchBlocks."hercules.comclub.org" = {
+        user = "quentins";
+        proxyJump = "atlas.comclub.org";
+      };
+      matchBlocks."sipb-isilon-*" = {
+        extraOptions.HostKeyAlgorithms = "+ssh-dss";
+      };
+      matchBlocks."mattermost.mit.edu" = {
+        hostname = "mattermost.mit.edu";
+      };
+    };
+
     # .emacs
     # .influxdbv2/configs
     # .ipython/profile_default/ipython_config.py
@@ -594,7 +613,6 @@
     # .snmp/snmp.conf
     # .snmp/mibs/*
     # .spacemacs
-    # .ssh/config
     # .subversion/auth
     # .xastir/config/
     # .xlog
