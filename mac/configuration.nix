@@ -578,6 +578,28 @@
       };
     };
 
+    # .emacs
+    # .influxdbv2/configs
+    # .ipython/profile_default/ipython_config.py
+    # .irssi/config
+    # .ldapvirc
+    # .meetings
+    # .ncftp/bookmarks
+    # .netrc
+    # .offlineimaprc
+    # .owl/startup
+    # .password-store
+    # .pinerc
+    # .sheepshaver_prefs
+    # .snmp/snmp.conf
+    # .snmp/mibs/*
+    # .spacemacs
+    # .ssh/config
+    # .subversion/auth
+    # .xastir/config/
+    # .xlog
+    # .zephyr.subs
+
     targets.darwin.defaults = {
       NSGlobalDefaults = {
         AppleInterfaceStyle = "Dark";
