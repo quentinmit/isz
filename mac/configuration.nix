@@ -517,6 +517,29 @@
       };
     };
 
+    programs.mpv = {
+      enable = true;
+      bindings = {
+        PGDWN = "seek -600";
+        PGUP = "seek 600";
+        "Shift+PGDWN" = "add chapter -1";
+        "Shift+PGUP" = "add chapter 1";
+
+        KP1 = "add video-rotate -90";
+        KP2 = "add video-pan-y -0.01";
+        KP3 = "add video-rotate +90";
+        KP4 = "add video-pan-x +0.01";
+        KP5 = "set video-pan-x 0; set video-pan-y 0; set video-zoom 0";
+        KP6 = "add video-pan-x -0.01";
+        KP7 = "add video-zoom -0.01";
+        KP8 = "add video-pan-y +0.01";
+        KP9 = "add video-zoom +0.01";
+        b = "osd-msg script-message curves-brighten-show";
+        y = "osd-msg script-message curves-cooler-show";
+        c = "script_message show-clock";
+      };
+    };
+
     targets.darwin.defaults = {
       NSGlobalDefaults = {
         AppleInterfaceStyle = "Dark";
