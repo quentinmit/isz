@@ -445,6 +445,13 @@
   };
   system.stateVersion = 4;
 
+  users.users.quentin = {
+    description = "Quentin Smith";
+    uid = 501;
+    home = "/Users/quentin";
+    shell = "/run/current-system/sw/bin/bash";
+  };
+
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
 
@@ -537,6 +544,37 @@
         b = "osd-msg script-message curves-brighten-show";
         y = "osd-msg script-message curves-cooler-show";
         c = "script_message show-clock";
+      };
+    };
+    xdg.configFile."youtube-dl/config".text = ''
+      --netrc
+    '';
+    xdg.configFile."yt-dlp/config".text = ''
+      --ap-mso Spectrum
+      --netrc
+    '';
+
+    home.file.".ExifTool_config".text = ''
+      %Image::ExifTool::UserDefined::Options = (
+          LargeFileSupport => 1,
+      );
+    '';
+
+    home.file.".gdbinit".text = ''
+      set history filename ~/.gdb_history
+      set history save on
+    '';
+
+    programs.gpg = {
+      enable = true;
+      settings = rec {
+        ask-cert-level = true;
+        default-key = "1C71A0665400AACD142EB1A004EE05A8FCEFB697";
+        encrypt-to = default-key;
+        no-comments = false;
+        no-emit-version = false;
+        keyid-format = "long";
+        no-symkey-cache = false;
       };
     };
 
