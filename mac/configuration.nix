@@ -30,6 +30,7 @@
     ack
     #aget
     #unsupported aircrack-ng
+    unstable.alacritty
     alpine
     antiword
     #why aom
@@ -135,7 +136,7 @@
     gpsbabel-gui
     #unsupported gpsd
     #unsupported gptfdisk
-    #unsupported gqrx
+    unstable.gqrx-portaudio
     graphicsmagick_q16
     graphviz
     #grig
