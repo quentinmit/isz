@@ -451,22 +451,6 @@
       ../nix/home/base.nix
     ];
 
-    home.file.".screenrc".text = ''
-      defscrollback 100000
-      term screen-256color
-      unsetenv TERM_SESSION_ID
-    '';
-
-    programs.git = {
-      extraConfig = {
-        url = {
-          "git@github.com:".pushInsteadOf = "https://github.com/";
-          "git@github.mit.edu:".insteadOf = "https://github.mit.edu/";
-          "git@gitlab.com:".pushInsteadOf = "https://gitlab.com/";
-        };
-      };
-    };
-
     programs.atuin = {
       enable = true;
       enableBashIntegration = true;
@@ -513,23 +497,6 @@
         "wvous-bl-modifier" = 0;
         "show-recents" = false;
       };
-    };
-
-    programs.direnv = {
-      enable = true;
-      nix-direnv.enable = true;
-      # Store cache files in ~/.cache/direnv instead of ./.direnv
-      stdlib = ''
-        : ''${XDG_CACHE_HOME:=$HOME/.cache}
-        declare -A direnv_layout_dirs
-        direnv_layout_dir() {
-          echo "''${direnv_layout_dirs[$PWD]:=$(
-            local hash="$(sha1sum - <<<"''${PWD}" | cut -c-7)"
-            local path="''${PWD//[^a-zA-Z0-9]/-}"
-            echo "''${XDG_CACHE_HOME}/direnv/layouts/''${hash}''${path}"
-          )}"
-        }
-      '';
     };
 
     xdg.configFile."pip/pip.conf".text = pkgs.lib.generators.toINI {} {
