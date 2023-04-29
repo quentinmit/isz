@@ -1,7 +1,9 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, osConfig ? null, ... }:
 {
   config = {
     programs.home-manager.enable = true;
+
+    targets.genericLinux.enable = osConfig == null && pkgs.stdenv.hostPlatform.isLinux;
 
     # ~/.gitconfig and ~/.config/git/ignore
     programs.git = {
