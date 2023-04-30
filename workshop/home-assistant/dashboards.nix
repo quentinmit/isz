@@ -3,7 +3,7 @@
   config = {
     services.home-assistant = {
       extraLovelaceModules = let
-        hassLovelaceModules = config.nur.repos.mweinelt.hassLovelaceModules;
+        inherit (config.nur.repos.mweinelt) hassLovelaceModules;
       in {
         inherit (hassLovelaceModules)
           mushroom
@@ -13,10 +13,10 @@
         ;
       };
       lovelaceConfig = let
-        light = (name: {
+        light = name: {
           type = "light";
           entity = "light.${name}";
-        });
+        };
       in {
         title = "Ice Station Zebra";
         views = [ {

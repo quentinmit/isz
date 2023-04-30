@@ -43,14 +43,14 @@
         channels = { inherit nixpkgs unstable; };
       };
     in (flake-utils.lib.eachDefaultSystem (system:
-      let pkgs = (
+      let inherit ((
             import nixpkgs {
               inherit system;
               overlays = [
                 overlay
                 (import ./nix/pkgs/all-packages.nix)
                 (import ./nix/pkgs/overlays.nix)
-              ];}).pkgs;
+              ];})) pkgs;
       in {
         legacyPackages = pkgs;
         devShells.esphome = import ./workshop/esphome/shell.nix { inherit pkgs; };

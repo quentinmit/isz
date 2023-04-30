@@ -46,7 +46,7 @@
           #sage = sage.kernelspec;
           #octave = octave-kernel.definition;
         };
-        jupyterPath = (jupyter-kernel.create { inherit definitions; });
+        jupyterPath = jupyter-kernel.create { inherit definitions; };
         opa = oldAttrs: {
           makeWrapperArgs = (oldAttrs.makeWrapperArgs or []) ++ ["--set JUPYTER_PATH ${jupyterPath}"];
           doCheck = false;

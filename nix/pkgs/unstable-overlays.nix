@@ -9,8 +9,8 @@ final: prev: {
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
   gqrx-portaudio = (prev.gqrx-portaudio.override {
-    qtbase = final.libsForQt5.qtbase;
-    qtsvg = final.libsForQt5.qtsvg;
+    inherit (final.libsForQt5) qtbase;
+    inherit (final.libsForQt5) qtsvg;
     qtwayland = null;
     alsa-lib = null;
   }).overrideAttrs (old: {

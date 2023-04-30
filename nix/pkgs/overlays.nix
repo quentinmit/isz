@@ -12,7 +12,7 @@ final: prev: {
   xastir = prev.xastir.overrideAttrs (old: {
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
-  esphome = final.unstable.esphome;
+  inherit (final.unstable) esphome;
   net-snmp = prev.net-snmp.overrideAttrs (old: {
     buildInputs = old.buildInputs ++ final.lib.optionals final.stdenv.isDarwin (with final.darwin.apple_sdk.frameworks; [
       DiskArbitration
