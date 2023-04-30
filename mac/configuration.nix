@@ -240,6 +240,7 @@
     nbd
     ncdu
     ncftp
+    net-snmp
     #why nghttp2
     nmap
     nodejs # 18
@@ -452,6 +453,10 @@
     shell = "/run/current-system/sw/bin/bash";
   };
 
+  environment.etc."snmp/snmp.conf".text = ''
+    mibdirs +${pkgs.snmp-mibs}/share/snmp/mibs
+  '';
+
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
 
@@ -597,6 +602,10 @@
       };
     };
 
+    home.file.".snmp/snmp.conf".text = ''
+      mibAllowUnderline yes
+    '';
+
     # .emacs
     # .influxdbv2/configs
     # .ipython/profile_default/ipython_config.py
@@ -610,7 +619,6 @@
     # .password-store
     # .pinerc
     # .sheepshaver_prefs
-    # .snmp/snmp.conf
     # .snmp/mibs/*
     # .spacemacs
     # .subversion/auth

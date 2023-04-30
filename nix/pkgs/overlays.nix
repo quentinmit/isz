@@ -20,6 +20,9 @@ final: prev: {
       CoreServices
       ApplicationServices
     ]);
+    configureFlags = old.configureFlags ++ [
+      "--sysconfdir=/etc"
+    ];
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
 }
