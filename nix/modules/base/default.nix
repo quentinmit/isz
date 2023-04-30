@@ -93,6 +93,7 @@ in {
       # mlocate # services.locate.enable
       # mtr # programs.mtr.enable
       ncdu
+      net-snmp
       nix-tree
       nmap
       # rfkill
@@ -115,10 +116,13 @@ in {
       # podman
       # python311 # pyvenv is part of python311
       smartmontools
-      # snmp-mibs-downloader # Not found?
       # wireless-regdb
       # wirelesstools
     ]
     ++ lib.lists.optional prg.tshark pkgs.tshark;
+
+    environment.etc."snmp/snmp.conf".text = ''
+      mibdirs +${pkgs.snmp-mibs}/share/snmp/mibs
+    '';
   };
 }

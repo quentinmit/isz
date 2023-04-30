@@ -240,7 +240,6 @@
     nbd
     ncdu
     ncftp
-    net-snmp
     #why nghttp2
     nmap
     nodejs # 18
@@ -452,10 +451,6 @@
     home = "/Users/quentin";
     shell = "/run/current-system/sw/bin/bash";
   };
-
-  environment.etc."snmp/snmp.conf".text = ''
-    mibdirs +${pkgs.snmp-mibs}/share/snmp/mibs
-  '';
 
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
