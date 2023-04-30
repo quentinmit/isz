@@ -9,6 +9,7 @@ final: prev:
   avidemux = final.libsForQt5.callPackage ./avidemux {
     inherit (final.darwin.apple_sdk.frameworks) VideoToolbox;
   };
+  snmp-mibs = final.callPackage ./snmp-mibs {};
   dns-update = final.callPackage ../../dns {};
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (python-final: python-prev: with python-final; {
