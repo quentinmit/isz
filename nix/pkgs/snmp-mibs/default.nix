@@ -3,6 +3,7 @@
 , fetchgit
 , fetchpatch
 , libsmi
+, sources ? [ "rfc" "ianarfc" "iana" ]
 }:
 
 let
@@ -32,11 +33,12 @@ in stdenv.mkDerivation rec {
   dontConfigure = true;
   dontBuild = true;
 
+  inherit sources;
+
   installPhase = ''
-    set -x
     mibdir=$out/share/snmp/mibs
     mkdir -p $mibdir
-    for i in rfc ianarfc iana; do (
+    for i in $sources; do (
       . $src/$i.conf
       if [ "$ARCHTYPE" != "dirgz" ]; then
         echo "Only directories are supported"
