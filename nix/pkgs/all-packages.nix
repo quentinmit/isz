@@ -11,6 +11,7 @@ final: prev:
   };
   snmp-mibs = final.callPackage ./snmp-mibs {};
   dns-update = final.callPackage ../../dns {};
+  process-bandwidth = final.callPackage ./process-bandwidth {};
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (python-final: python-prev: with python-final; {
       RouterOS-api = callPackage ./python/routeros-api {};
