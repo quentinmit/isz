@@ -159,6 +159,7 @@
     imagemagickBig
     #why imake
     inetutils
+    influxdb2-cli
     unstable.inkscape
     #inkscape-app
     iperf3
@@ -262,7 +263,7 @@
     openntpd
     openocd
     openssh
-    openssl
+    #already openssl
     #collision openssl_1_1
     openvpn
     #osxfuse

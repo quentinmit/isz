@@ -12,6 +12,7 @@
       ./home-assistant
       ./telegraf.nix
       ./dashboard.nix
+      ./grafana.nix
       ../nix/zwave-js-ui.nix
       ../nix/base.nix
       ../nix/networkd.nix
@@ -171,13 +172,6 @@
     };
   };
   # Configure services.grafana
-  services.grafana = {
-    enable = true;
-    settings = {
-      server.protocol = "socket";
-      security.allow_embedding = true;
-    };
-  };
   users.users."${config.services.nginx.user}".extraGroups = [ "grafana" ];
   # TODO: Configure pwrgate-logger
   # Configure linkzone-logger

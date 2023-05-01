@@ -96,6 +96,7 @@ in {
       net-snmp
       nix-tree
       nmap
+      openssl
       # rfkill
       rsync
       screen
