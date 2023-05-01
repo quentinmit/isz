@@ -57,6 +57,27 @@
           };
         }
       ];
+      provision.dashboards.settings.providers = let
+        dashboards = {
+          "provisioning-test" = {
+            uid = "Pd7zBps4z";
+            title = "Provisioning Test 2";
+            panels = [{
+              title = "Panel Title 2";
+              type = "timeseries";
+              gridPos = {
+                x = 0; y = 0; w = 12; h = 8;
+              };
+            }];
+          };
+        };
+        dashboardFiles = lib.mapAttrsToList (name: d: (pkgs.writeTextFile {
+          name = "${name}.yaml";
+          text = builtins.toJSON d;
+        })) dashboards;
+      in [{
+          options.path = "${pkgs.linkFarmFromDrvs "grafana-dashboards" dashboardFiles}";
+        }];
     };
   };
 }
