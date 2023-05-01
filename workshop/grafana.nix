@@ -3,10 +3,10 @@
 {
   config = {
     sops.secrets."grafana/influx_token" = {
-      owner = config.systemd.services.grafana.serviceConfig.user;
+      owner = config.systemd.services.grafana.serviceConfig.User;
     };
     sops.secrets."grafana/influxql_password" = {
-      owner = config.systemd.services.grafana.serviceConfig.user;
+      owner = config.systemd.services.grafana.serviceConfig.User;
     };
     services.grafana = {
       enable = true;
