@@ -18,33 +18,19 @@
 # GPIO 16/XPD_DCDC
 # TOUT
 
-esphome:
+substitutions:
   name: bedroom-lights
+  friendly_name: Bedroom-Lights
 
 esp8266:
   board: esp01_1m
 
+packages:
+  isz_base: !include include/isz-base.yaml
+
 # Enable logging
 logger:
   hardware_uart: UART1
-
-# Enable Home Assistant API
-api:
-
-ota:
-  password: !secret ota_password
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  domain: .guest.isz.wtf
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Bedroom-Lights Fallback Hotspot"
-    password: !secret fallback_password
-
-captive_portal:
 
 time:
   - platform: homeassistant
