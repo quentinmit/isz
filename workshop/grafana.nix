@@ -59,9 +59,10 @@
       ];
       provision.dashboards.settings.providers = let
         dashboards = {
-          "provisioning-test" = {
+          "Experimental/provisioning-test" = {
             uid = "Pd7zBps4z";
             title = "Provisioning Test 2";
+            version = 2;
             panels = [{
               title = "Panel Title 2";
               type = "timeseries";
@@ -71,13 +72,14 @@
             }];
           };
         };
-        dashboardFiles = lib.mapAttrsToList (name: d: (pkgs.writeTextFile {
-          name = "${name}.yaml";
-          text = builtins.toJSON d;
-        })) dashboards;
+        dashboardFormat = pkgs.formats.json {};
+        dashboardPkg = pkgs.linkFarm "grafana-dashboards" (
+          lib.mapAttrs' (name: d: lib.nameValuePair "${name}.yaml" (dashboardFormat.generate "${name}.yaml" d)) dashboards
+        );
       in [{
-          options.path = "${pkgs.linkFarmFromDrvs "grafana-dashboards" dashboardFiles}";
-        }];
+        options.path = "${dashboardPkg}";
+        options.foldersFromFilesStructure = true;
+      }];
     };
   };
 }
