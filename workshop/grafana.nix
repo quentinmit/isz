@@ -59,22 +59,40 @@
       ];
       provision.dashboards.settings.providers = let
         dashboards = {
-          "Experimental/provisioning-test" = {
+          "Experimental/provisioning-test-2" = {
             uid = "Pd7zBps4z";
-            title = "Provisioning Test 2";
-            version = 2;
-            panels = [{
-              title = "Panel Title 2";
-              type = "timeseries";
-              gridPos = {
-                x = 0; y = 0; w = 12; h = 8;
-              };
-            }];
+            #annotations.list = [];
+            #version = 0;
+            title = "Provisioning Test 5";
+            schemaVersion = 38;
+            #editable = true;
+            #graphTooltip = 0;
+            #links = [];
+            #liveNow = false;
+            #fiscalYearStartMonth = 0;
+            #refresh = "";
+            #style = "dark";
+            #tags = [];
+            #templating.list = [];
+            #time.from = "now-6h";
+            #time.to = "now";
+            #timepicker = {};
+            #timezone = "";
+            #weekStart = "";
+            panels = [
+              {
+                title = "Panel Title 5";
+                type = "timeseries";
+                gridPos = {
+                  x = 0; y = 0; w = 12; h = 8;
+                };
+              }
+            ];
           };
         };
         dashboardFormat = pkgs.formats.json {};
         dashboardPkg = pkgs.linkFarm "grafana-dashboards" (
-          lib.mapAttrs' (name: d: lib.nameValuePair "${name}.yaml" (dashboardFormat.generate "${name}.yaml" d)) dashboards
+          lib.mapAttrs' (name: d: lib.nameValuePair "${name}.json" (dashboardFormat.generate "${name}.json" d)) dashboards
         );
       in [{
         options.path = "${dashboardPkg}";
