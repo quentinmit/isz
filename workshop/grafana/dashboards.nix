@@ -198,6 +198,21 @@ let
       repeat = "interface";
       unit = "bps";
     }
+    {
+      # if_err_
+      graph_title = "\${interface} errors";
+      graph_category = "network";
+      graph_vlabel = "packets in (-) / out (+) per second";
+      graph_info = "This graph shows the amount of errors, packet drops, and collisions on the \${interface} network interface.";
+      influx.filter._measurement = "net";
+      influx.filter._field = ["err_in" "err_out"];
+      influx.filter.interface = "\${interface}";
+      influx.fn = "derivative";
+      fields.err_in.negative = true;
+      repeat = "interface";
+      unit = "pps";
+      right = true;
+    }
   ];
   fluxValue = with builtins; v:
     if isInt v || isFloat v then toString v
@@ -216,6 +231,7 @@ let
     gridPos = {
       w = 12;
       h = 8;
+      x = if (g.right or false) then 12 else 0;
     };
     title = g.graph_title;
     type = "timeseries";
