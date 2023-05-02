@@ -1,6 +1,9 @@
 { config, pkgs, lib, ... }:
 
 {
+  imports = [
+    ./dashboards.nix
+  ];
   config = {
     sops.secrets."grafana/influx_token" = {
       owner = config.systemd.services.grafana.serviceConfig.User;
@@ -57,47 +60,6 @@
           };
         }
       ];
-      provision.dashboards.settings.providers = let
-        dashboards = {
-          "Experimental/provisioning-test-2" = {
-            uid = "Pd7zBps4z";
-            #annotations.list = [];
-            #version = 0;
-            title = "Provisioning Test 5";
-            schemaVersion = 38;
-            #editable = true;
-            #graphTooltip = 0;
-            #links = [];
-            #liveNow = false;
-            #fiscalYearStartMonth = 0;
-            #refresh = "";
-            #style = "dark";
-            #tags = [];
-            #templating.list = [];
-            #time.from = "now-6h";
-            #time.to = "now";
-            #timepicker = {};
-            #timezone = "";
-            #weekStart = "";
-            panels = [
-              {
-                title = "Panel Title 5";
-                type = "timeseries";
-                gridPos = {
-                  x = 0; y = 0; w = 12; h = 8;
-                };
-              }
-            ];
-          };
-        };
-        dashboardFormat = pkgs.formats.json {};
-        dashboardPkg = pkgs.linkFarm "grafana-dashboards" (
-          lib.mapAttrs' (name: d: lib.nameValuePair "${name}.json" (dashboardFormat.generate "${name}.json" d)) dashboards
-        );
-      in [{
-        options.path = "${dashboardPkg}";
-        options.foldersFromFilesStructure = true;
-      }];
     };
   };
 }

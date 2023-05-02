@@ -12,7 +12,7 @@
       ./home-assistant
       ./telegraf.nix
       ./dashboard.nix
-      ./grafana.nix
+      ./grafana
       ../nix/zwave-js-ui.nix
       ../nix/base.nix
       ../nix/networkd.nix
