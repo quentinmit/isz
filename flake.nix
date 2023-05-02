@@ -18,8 +18,14 @@
     darwin.url = "github:quentinmit/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     nur.url = "github:nix-community/NUR";
+    nur-mweinelt.url = "github:mweinelt/nur-packages";
+    nur-mweinelt.inputs.nixpkgs.follows = "nixpkgs";
+    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
+    deploy-rs.inputs.flake-compat.follows = "flake-compat";
+    deploy-rs.inputs.utils.follows = "flake-utils";
   };
-  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, nur, ... }@args:
+  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -61,7 +67,6 @@
           modules = [
             overlayModule
             ./workshop/configuration.nix
-            nur.nixosModules.nur
           ];
         };
         nixosConfigurations.bedroom-pi = nixpkgs.lib.nixosSystem {
@@ -86,5 +91,20 @@
         hmModules = {
           base = import ./nix/home/base.nix;
         };
+        deploy.nodes.workshop.profiles.system = {
+          sshUser = "root";
+          hostname = "workshop.isz.wtf";
+          path = deploy-rs.lib.${self.nixosConfigurations.workshop.pkgs.system}.activate.nixos self.nixosConfigurations.workshop;
+          #path = deploy-rs.lib.x86_64-darwin.activate.nixos self.nixosConfigurations.workshop;
+        };
+        deploy.nodes.bedroom-pi = {
+          sshUser = "root";
+          hostname = "bedroom-pi.isz.wtf";
+          profiles.system = {
+            path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
+          };
+        };
+        deploy.remoteBuild = true;
+        checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
     };
 }

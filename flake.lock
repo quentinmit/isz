@@ -21,6 +21,32 @@
         "type": "github"
       }
     },
+    "deploy-rs": {
+      "inputs": {
+        "flake-compat": [
+          "flake-compat"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "utils": [
+          "flake-utils"
+        ]
+      },
+      "locked": {
+        "lastModified": 1682063650,
+        "narHash": "sha256-VaDHh2z6xlnTHaONlNVHP7qEMcK5rZ8Js3sT6mKb2XY=",
+        "owner": "serokell",
+        "repo": "deploy-rs",
+        "rev": "c2ea4e642dc50fd44b537e9860ec95867af30d39",
+        "type": "github"
+      },
+      "original": {
+        "owner": "serokell",
+        "repo": "deploy-rs",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -158,9 +184,30 @@
         "type": "github"
       }
     },
+    "nur-mweinelt": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1682459150,
+        "narHash": "sha256-r7jMLmhlfLeP+HtZa8O2DqpsEDgKY9mB900jrDYRv4I=",
+        "owner": "mweinelt",
+        "repo": "nur-packages",
+        "rev": "99af322101166ec8e3e0650658ef39dcf9bab505",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mweinelt",
+        "repo": "nur-packages",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "darwin": "darwin",
+        "deploy-rs": "deploy-rs",
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
@@ -168,6 +215,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nur": "nur",
+        "nur-mweinelt": "nur-mweinelt",
         "sops-nix": "sops-nix",
         "unstable": "unstable"
       }

@@ -1,11 +1,9 @@
-{ lib, pkgs, config, channels, ... }:
+{ lib, pkgs, config, channels, nur-mweinelt, ... }:
 {
   config = {
     services.home-assistant = {
-      extraLovelaceModules = let
-        inherit (config.nur.repos.mweinelt) hassLovelaceModules;
-      in {
-        inherit (hassLovelaceModules)
+      extraLovelaceModules = {
+        inherit (nur-mweinelt.packages.${pkgs.system}.hassLovelaceModules)
           mushroom
           apexcharts-card
           multiple-entity-row
@@ -13,10 +11,10 @@
         ;
       };
       lovelaceConfig = let
-        light = name: {
+        light = (name: {
           type = "light";
           entity = "light.${name}";
-        };
+        });
       in {
         title = "Ice Station Zebra";
         views = [ {
