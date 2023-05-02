@@ -3,15 +3,7 @@
 from lxml import html
 import sys
 import requests
-import yaml
-
-class FlowList(yaml.YAMLObject, list):
-    yaml_tag = 'flowlist'
-    yaml_flow_style = True
-
-    @classmethod
-    def to_yaml(cls, dumper, data):
-        return dumper.represent_sequence('tag:yaml.org,2002:seq', data, flow_style=True)
+import json
 
 def main():
     response = requests.get("https://lg.he.net", stream=True)
@@ -34,14 +26,15 @@ def main():
             x['city'] = x['city'][:-4]
         t = e.find('./label').get('title')
         if ' - ' in t:
-            x['exchanges'] = FlowList(t.split(' - ', 1)[1].split(', '))
+            x['exchanges'] = t.split(' - ', 1)[1].split(', ')
         out.append(x)
-    yaml.dump(
+    json.dump(
         {
             'he_lg_ping_targets': out,
         },
-        stream=sys.stdout,
-        sort_keys=False, allow_unicode=True,
+        fp=sys.stdout,
+        sort_keys=False,
+        indent=2,
     )
 # $ pbpaste | yq eval '... style="" | (.[] | select(.exchanges) | .exchanges) style="flow" | (.[].country | select(. == "NO")) style="double"' - | pbcopy
 

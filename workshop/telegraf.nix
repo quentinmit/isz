@@ -4,21 +4,7 @@
     ../nix/modules/telegraf
   ];
   config = let
-    fromYAML = yaml:
-      builtins.fromJSON (builtins.readFile (pkgs.runCommand "from-yaml" {
-        inherit yaml;
-        allowSubstitutes = false;
-        preferLocalBuild = true;
-      } ''
-        ${pkgs.remarshal}/bin/remarshal  \
-          -if yaml \
-          -i <(echo "$yaml") \
-          -of json \
-          -o $out
-      ''));
-
-    readYAML = path: fromYAML (builtins.readFile path);
-    pingTargets = [{ host = "overwatch.mit.edu"; }] ++ (readYAML ../telegraf/static/he_lg.yaml).he_lg_ping_targets;
+    pingTargets = [{ host = "overwatch.mit.edu"; }] ++ (builtins.fromJSON (builtins.readFile ../telegraf/static/he_lg.json)).he_lg_ping_targets;
   in {
     isz.telegraf = {
       enable = true;

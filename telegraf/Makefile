@@ -15,7 +15,5 @@ upload-%: %.conf
 %.conf: %.conf.jinja base.conf.jinja static/* scripts/*
 	ionit -c static -t .
 
-workshop.conf: static/he_lg.yaml
-
-static/he_lg.yaml: bin/generate_he_lg.py
+static/he_lg.json: bin/generate_he_lg.py
 	$< > $@

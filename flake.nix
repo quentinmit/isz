@@ -91,18 +91,15 @@
         hmModules = {
           base = import ./nix/home/base.nix;
         };
-        deploy.nodes.workshop.profiles.system = {
+        deploy.nodes.workshop = {
           sshUser = "root";
           hostname = "workshop.isz.wtf";
-          path = deploy-rs.lib.${self.nixosConfigurations.workshop.pkgs.system}.activate.nixos self.nixosConfigurations.workshop;
-          #path = deploy-rs.lib.x86_64-darwin.activate.nixos self.nixosConfigurations.workshop;
+          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.workshop.pkgs.system}.activate.nixos self.nixosConfigurations.workshop;
         };
         deploy.nodes.bedroom-pi = {
           sshUser = "root";
           hostname = "bedroom-pi.isz.wtf";
-          profiles.system = {
-            path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
-          };
+          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
         };
         deploy.remoteBuild = true;
         checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
