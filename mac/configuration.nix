@@ -1,4 +1,4 @@
-{ config, pkgs, lib, home-manager, ... }:
+{ config, pkgs, lib, home-manager, deploy-rs,... }:
 
 {
   imports = [
@@ -14,6 +14,7 @@
     (final: prev: {
       openssh = final.openssh_gssapi;
     })
+    deploy-rs.overlay
   ];
 
   isz.programs = {
@@ -84,6 +85,7 @@
     dav1d
     ddrescue
     debianutils
+    pkgs.deploy-rs.deploy-rs
     dfu-util
     diff-pdf
     #unsupported dsd
