@@ -168,18 +168,35 @@ let
     }
     {
       # smart_
-      graph_title = "S.M.A.R.T values for drive \${device}";
+      graph_title = "S.M.A.R.T values for drive \${smart_device}";
       graph_category = "disk";
       graph_vlabel = "Attribute S.M.A.R.T value";
       graph_args.lower-limit = 0;
       influx.filter._measurement = "smart_attribute";
       influx.filter._field = "value";
-      influx.filter.device = "\${device}";
+      influx.filter.device = "\${smart_device}";
       influx.fn = "mean";
       influx.extra = ''
         |> keep(columns: ["_time", "_value", "host", "model", "serial_no", "name"])
       '';
-      repeat = "device";
+      repeat = "smart_device";
+    }
+    {
+      # if_
+      graph_title = "\${interface} traffic";
+      graph_category = "network";
+      graph_vlabel = "bits in (-) / out (+) per second";
+      graph_info = "This graph shows the traffic of the \${interface} network interface. Please note that the traffic is shown in bits per second, not bytes.";
+      influx.filter._measurement = "net";
+      influx.filter._field = ["bytes_recv" "bytes_sent"];
+      influx.filter.interface = "\${interface}";
+      influx.fn = "derivative";
+      influx.extra = ''
+        |> map(fn: (r) => ({r with _value: 8. * r._value}))
+      '';
+      fields.bytes_recv.negative = true;
+      repeat = "interface";
+      unit = "bps";
     }
   ];
   fluxValue = with builtins; v:
@@ -194,6 +211,7 @@ let
         (lib.toList v.values)
     else fluxFilter field { op = "=="; values = v; }
   ;
+  mergeAttrs = with lib; fold recursiveUpdate {};
   muninPanel = g: {
     gridPos = {
       w = 12;
@@ -202,18 +220,24 @@ let
     title = g.graph_title;
     type = "timeseries";
     interval = "10s";
-    fieldConfig.defaults = {
-      unit = g.unit or "none";
-    } // lib.optionalAttrs (g ? graph_vlabel) {
-      custom.axisLabel = g.graph_vlabel;
-    } // lib.optionalAttrs (g ? graph_args.lower-limit) {
-      min = g.graph_args.lower-limit;
-    } // lib.optionalAttrs (g ? graph_args.upper-limit) {
-      max = g.graph_args.upper-limit;
-    } // lib.optionalAttrs (g.graph_args.logarithmic or false) {
-      custom.scaleDistribution.type = "log";
-      custom.scaleDistribution.log = 10;
-    };
+    fieldConfig.defaults = mergeAttrs [
+      {
+        unit = g.unit or "none";
+      }
+      (lib.optionalAttrs (g ? graph_vlabel) {
+        custom.axisLabel = g.graph_vlabel;
+      })
+      (lib.optionalAttrs (g ? graph_args.lower-limit) {
+        min = g.graph_args.lower-limit;
+      })
+      (lib.optionalAttrs (g ? graph_args.upper-limit) {
+        max = g.graph_args.upper-limit;
+      })
+      (lib.optionalAttrs (g.graph_args.logarithmic or false) {
+        custom.scaleDistribution.type = "log";
+        custom.scaleDistribution.log = 10;
+      })
+    ];
     fieldConfig.overrides = lib.mapAttrsToList (field: options: {
       matcher.id = "byName";
       matcher.options = field;
@@ -257,57 +281,48 @@ in {
         "Experimental/munin-generated" = {
           uid = "Pd7zBps4z";
           title = "Munin Generated";
-          templating.list = [
-            (let
-              query = ''
-                import "influxdata/influxdb/schema"
+          templating.list = let
+            variables = {
+              host = {
+                predicate = ''r["_measurement"] == "system"'';
+                extra.label = "Host";
+                extra.multi = true;
+              };
+              smart_device = {
+                tag = "device";
+                predicate = ''r["_measurement"] == "smart_device" and r.host =~ /''${host:regex}/'';
+                extra.label = "SMART Device";
+              };
+              interface = {
+                predicate = ''r["_measurement"] == "net" and r.interface != "all" and r.host =~ /''${host:regex}/'';
+              };
+            };
+          in lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
+            tag = args.tag or name;
+            query = ''
+              import "influxdata/influxdb/schema"
 
-                schema.tagValues(
-                  bucket: v.defaultBucket,
-                  tag: "host",
-                  predicate: (r) => r["_measurement"] == "system",
-                  start: v.timeRangeStart,
-                  stop: v.timeRangeStop
-                )
-              '';
-            in {
-              datasource = influxDatasource;
-              inherit query;
-              definition = query;
-              includeAll = true;
-              label = "Host";
-              multi = true;
-              name = "host";
-              type = "query";
-            })
-            (let
-              query = ''
-                import "influxdata/influxdb/schema"
-
-                schema.tagValues(
-                  bucket: v.defaultBucket,
-                  tag: "device",
-                  predicate: (r) => r["_measurement"] == "smart_device" and r.host =~ /''${host:regex}/,
-                  start: v.timeRangeStart,
-                  stop: v.timeRangeStop
-                )
-              '';
-            in {
-              datasource = influxDatasource;
-              inherit query;
-              definition = query;
-              includeAll = true;
-              name = "device";
-              type = "query";
-            })
-          ];
+              schema.tagValues(
+                bucket: v.defaultBucket,
+                tag: ${fluxValue tag},
+                predicate: (r) => ${args.predicate},
+                start: v.timeRangeStart,
+                stop: v.timeRangeStop
+              )
+            '';
+            definition = query;
+            datasource = influxDatasource;
+            includeAll = true;
+            inherit name;
+            type = "query";
+          } (args.extra or {})) variables;
           panels = map muninPanel muninGraphs;
         };
       };
       dashboardFormat = pkgs.formats.json {};
       dashboardPkg = pkgs.linkFarm "grafana-dashboards" (
         lib.mapAttrs' (name: d: lib.nameValuePair "${name}.json" (
-          dashboardFormat.generate "${name}.json" (blankDashboard // d)
+          dashboardFormat.generate "${name}.json" (lib.recursiveUpdate blankDashboard d)
         )) dashboards
       );
     in [{
