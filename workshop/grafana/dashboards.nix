@@ -213,6 +213,85 @@ let
       unit = "pps";
       right = true;
     }
+    {
+      # netstat
+      graph_title = "Netstat";
+      graph_category = "network";
+      graph_vlabel = "TCP connection rate";
+      graph_info = "This graph shows the TCP activity of all the network interfaces combined.";
+      graph_args.logarithmic = true;
+      influx = [
+        {
+          filter._measurement = "net";
+          filter._field = ["tcp_activeopens" "tcp_passiveopens" "tcp_attemptfails" "tcp_estabresets"];
+          fn = "derivative";
+          extra = ''
+            |> drop(columns: ["interface"])
+          '';
+        }
+        {
+          filter._measurement = "netstat";
+          filter._field = "tcp_established";
+          fn = "mean";
+          extra = ''
+            |> drop(columns: ["interface"])
+          '';
+        }
+      ];
+      field.tcp_established.properties = {
+        unit = "none";
+        "custom.axisPlacement" = "right";
+        "custom.axisLabel" = "TCP connections";
+      };
+    }
+    # http_loadtime
+    # fw_packets
+    # graph_category postfix
+    # graph_category processes
+    {
+      # forks
+      graph_title = "Fork rate";
+      graph_category = "processes";
+      graph_info = "This graph shows the number of forks (new processes started) per second.";
+      graph_args.lower-limit = 0;
+      influx.filter._measurement = "kernel";
+      influx.filter._field = "processes_forked";
+      influx.fn = "derivative";
+      unit = "hertz";
+    }
+    {
+      # processes
+      graph_title = "Processes";
+      graph_category = "processes";
+      graph_info = "This graph shows the number of processes";
+      graph_args.lower-limit = 0;
+      stacking = true;
+      influx.filter._measurement = "processes";
+      influx.filter._field = { op = "!="; values = ["total" "total_threads"]; };
+      influx.fn = "mean";
+    }
+    # proc_pri
+    # threads
+    # vmstat
+    # graph_category sensors
+    # acpi
+    # hddtemp_smartctl
+    # sensors_fan
+    # sensors_temp
+    # sensors_volt
+    # graph_category system
+    # cpu
+    # cpuspeed
+    # entropy
+    # interrupts
+    # irqstats
+    # load
+    # memory
+    # open_files
+    # open_inodes
+    # swap
+    # uptime
+    # users
   ];
   fluxValue = with builtins; v:
     if isInt v || isFloat v then toString v
@@ -240,6 +319,10 @@ let
       {
         unit = g.unit or "none";
       }
+      (lib.optionalAttrs (g.stacking or false) {
+        custom.stacking.mode = "normal";
+        custom.fillOpacity = 10;
+      })
       (lib.optionalAttrs (g ? graph_vlabel) {
         custom.axisLabel = g.graph_vlabel;
       })
@@ -257,33 +340,34 @@ let
     fieldConfig.overrides = lib.mapAttrsToList (field: options: {
       matcher.id = "byName";
       matcher.options = field;
-      properties = lib.optional options.negative {
-        id = "custom.transform";
-        value = "negative-Y";
-      };
-    }) (g.fields or {});
+      properties = lib.mapAttrsToList (id: value: {
+        inherit id value;
+      }) ((options.properties or {}) // lib.optionalAttrs (options.negative or false) {
+        "custom.transform" = "negative-Y";
+      });
+    }) (g.field or {});
     datasource = influxDatasource;
     targets = let
       filters = lib.mapAttrsToList (field: values:
-        ''|> filter(fn: (r) => ${fluxFilter field values})'') g.influx.filter;
-    in [{
+        ''|> filter(fn: (r) => ${fluxFilter field values})'');
+    in lib.imap0 (i: influx: {
       datasource = influxDatasource;
       query = ''
-      from (bucket: v.defaultBucket)
-      |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-      ${lib.concatStringsSep "\n" filters}
-      |> filter(fn: (r) => r.host =~ /^''${host:regex}$/)
-      '' + (if g.influx.fn == "derivative" then ''
-      |> aggregateWindow(every: v.windowPeriod, fn: last)
-      |> derivative(unit: 1s, nonNegative: true)
+        from (bucket: v.defaultBucket)
+        |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+        ${lib.concatStringsSep "\n" (filters influx.filter)}
+        |> filter(fn: (r) => r.host =~ /^''${host:regex}$/)
+      '' + (if influx.fn == "derivative" then ''
+        |> aggregateWindow(every: v.windowPeriod, fn: last)
+        |> derivative(unit: 1s, nonNegative: true)
       '' else ''
-      |> aggregateWindow(every: v.windowPeriod, fn: ${g.influx.fn}, createEmpty: false)
-      '') + lib.optionalString (g.influx.pivot or false) ''
-      |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-      |> drop(columns: ["_start", "_stop"])
-      '' + (g.influx.extra or "");
-      refId = "A";
-    }];
+        |> aggregateWindow(every: v.windowPeriod, fn: ${influx.fn}, createEmpty: false)
+      '') + lib.optionalString (influx.pivot or false) ''
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> drop(columns: ["_start", "_stop"])
+      '' + (influx.extra or "");
+      refId = lib.elemAt [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ] i;
+    }) (lib.toList g.influx);
   } // lib.optionalAttrs (g ? repeat) {
     repeat = g.repeat;
     repeatDirection = "v";
