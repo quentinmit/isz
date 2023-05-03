@@ -269,18 +269,99 @@ let
       influx.filter._measurement = "processes";
       influx.filter._field = { op = "!="; values = ["total" "total_threads"]; };
       influx.fn = "mean";
+      unit = "short";
     }
     # proc_pri
-    # threads
-    # vmstat
+    {
+      # threads
+      graph_title = "Number of threads";
+      graph_category = "processes";
+      graph_vlabel = "number of threads";
+      graph_info = "This graph shows the number of threads.";
+      graph_args.lower-limit = 0;
+      influx.filter._measurement = "processes";
+      influx.filter._field = "total_threads";
+      influx.fn = "mean";
+      unit = "short";
+    }
+    {
+      # vmstat
+      graph_title = "VMstat";
+      graph_category = "processes";
+      graph_vlabel = "process states";
+      graph_args.lower-limit = 0;
+      influx.filter._measurement = "processes";
+      influx.filter._field = ["blocked" "running"];
+      influx.fn = "mean";
+      unit = "short";
+    }
     # graph_category sensors
     # acpi
-    # hddtemp_smartctl
-    # sensors_fan
-    # sensors_temp
-    # sensors_volt
+    {
+      # hddtemp_smartctl
+      graph_title = "HDD temperature";
+      graph_category = "sensors";
+      influx.filter._measurement = "smart_device";
+      influx.filter._field = "temp_c";
+      influx.fn = "mean";
+      influx.extra = ''
+        |> drop(columns: ["capacity", "enabled"])
+      '';
+      unit = "celsius";
+    }
+    # (new) temp_gopsutil
+    {
+      # sensors_fan
+      graph_title = "Fans";
+      graph_category = "sensors";
+      influx.filter._measurement = "sensors";
+      influx.filter._field = "fan_input";
+      influx.fn = "mean";
+      unit = "rotrpm";
+    }
+    {
+      # sensors_temp
+      graph_title = "Temperatures";
+      graph_category = "sensors";
+      influx.filter._measurement = "sensors";
+      influx.filter._field = "temp_input";
+      influx.fn = "mean";
+      unit = "celsius";
+    }
+    {
+      # sensors_volt
+      graph_title = "Voltages";
+      graph_category = "sensors";
+      influx.filter._measurement = "sensors";
+      influx.filter._field = "in_input";
+      influx.fn = "mean";
+      unit = "volt";
+      graph_args.logarithmic = true;
+    }
     # graph_category system
-    # cpu
+    {
+      # cpu
+      graph_title = "CPU usage";
+      graph_category = "system";
+      graph_info = "This graph shows how CPU time is spent.";
+      influx.filter._measurement = "cpu";
+      influx.filter._field = { op = "=~"; values = "^time"; };
+      influx.fn = "derivative";
+      influx.imports = ["strings"];
+      influx.extra = ''
+        |> group(columns: ["_measurement", "_field", "_time", "host"])
+        |> sum()
+        |> group(columns: ["_measurement", "_field", "host"])
+        |> map(fn: (r) => ({r with _field: strings.trimPrefix(v: r._field, prefix: "time_")}))
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+      '';
+      stacking = true;
+      unit = "percentunit";
+      fields.idle.color.mode = "fixed";
+      fields.system.color = { mode = "fixed"; fixedColor = "green"; };
+      fields.user.color = { mode = "fixed"; fixedColor = "blue"; };
+      fields.nice.color = { mode = "fixed"; fixedColor = "orange"; };
+    }
     # cpuspeed
     # entropy
     # interrupts
@@ -300,8 +381,8 @@ let
   fluxFilter = with builtins; field: v:
     if isAttrs v then
       lib.concatMapStringsSep
-        (if v.op == "!=" then " and " else " or ")
-        (value: ''r[${fluxValue field}] ${v.op} ${fluxValue value}'')
+        (if v.op == "!=" || v.op == "!~" then " and " else " or ")
+        (value: ''r[${fluxValue field}] ${v.op} ${if v.op == "=~" || v.op == "!~" then "/${value}/" else fluxValue value}'')
         (lib.toList v.values)
     else fluxFilter field { op = "=="; values = v; }
   ;
@@ -311,6 +392,9 @@ let
     else
       acc // { "${name}" = value; }
   ) {};
+  toProperties = with builtins; with lib; attrs:
+    (removeAttrs attrs ["custom"]) //
+    (mapAttrs' (k: v: nameValuePair "custom.${k}" v) (attrs.custom or {}));
   mergeAttrs = with lib; fold recursiveUpdate {};
   muninPanel = g: {
     gridPos = {
@@ -363,7 +447,7 @@ let
         matcher.options = field;
         properties = lib.mapAttrsToList (id: value: {
           inherit id value;
-        }) (flattenAttrs options);
+        }) (toProperties options);
       })
       (g.fields or {});
     datasource = influxDatasource;
@@ -372,7 +456,8 @@ let
         ''|> filter(fn: (r) => ${fluxFilter field values})'');
     in lib.imap0 (i: influx: {
       datasource = influxDatasource;
-      query = ''
+      query =
+        lib.concatMapStringsSep "\n" (x: ''import ${fluxValue x}'') (influx.imports or []) + ''
         from (bucket: v.defaultBucket)
         |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
         ${lib.concatStringsSep "\n" (filters influx.filter)}
