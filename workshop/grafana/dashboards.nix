@@ -363,9 +363,41 @@ let
       fields.nice.color = { mode = "fixed"; fixedColor = "orange"; };
     }
     # cpuspeed
-    # entropy
-    # interrupts
-    # irqstats
+    {
+      # entropy
+      graph_title = "Available entropy";
+      graph_category = "system";
+      graph_info = "This graph shows the amount of entropy available in the system.";
+      influx.filter._measurement = "kernel";
+      influx.filter._field = "entropy_avail";
+      influx.fn = "mean";
+    }
+    {
+      # interrupts
+      graph_title = "Interrupts and context switches";
+      graph_category = "system";
+      graph_info = "This graph shows the number of interrupts and context switches on the system. These are typically high on a busy system.";
+      graph_vlabel = "interrupts & ctx switches";
+      influx.filter._measurement = "kernel";
+      influx.filter._field = ["context_switches" "interrupts"];
+      influx.fn = "derivative";
+      unit = "hertz";
+    }
+    {
+      # irqstats
+      graph_title = "Individual interrupts";
+      graph_category = "system";
+      graph_info = "Shows the number of different IRQs received by the kernel.  High disk or network traffic can cause a high number of interrupts (with good hardware and drivers this will be less so). Sudden high interrupt activity with no associated higher system activity is not normal.";
+      graph_vlabel = "interrupts";
+      graph_args.logarithmic = true;
+      influx.filter._measurement = "interrupts";
+      influx.filter._field = "total";
+      influx.fn = "derivative";
+      influx.extra = ''
+        |> map(fn: (r) => ({_time: r._time, host: r.host, _value: r._value, _field: if exists r.device then r.device else if exists r.type then r.type else r.irq}))
+      '';
+      unit = "hertz";
+    }
     # load
     # memory
     # open_files
