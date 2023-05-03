@@ -49,7 +49,7 @@ let
       influx.fn = "derivative";
       influx.pivot = true;
       unit = "iops";
-      fields.reads.negative = true;
+      fields.reads.custom.transform = "negative-Y";
     }
     {
       # diskstats_latency
@@ -76,7 +76,7 @@ let
       influx.fn = "derivative";
       influx.pivot = true;
       unit = "binBps";
-      fields.read_bytes.negative = true;
+      fields.read_bytes.custom.transform = "negative-Y";
     }
     {
       # diskstats_utilization
@@ -145,7 +145,7 @@ let
       influx.extra = ''
         |> map(fn: (r) => ({r with read_bytes: r.read_bytes / 512., write_bytes: r.write_bytes / 512.}))
       '';
-      fields.read_bytes.negative = true;
+      fields.read_bytes.custom.transform = "negative-Y";
     }
     {
       # iostat_ios
@@ -194,7 +194,7 @@ let
       influx.extra = ''
         |> map(fn: (r) => ({r with _value: 8. * r._value}))
       '';
-      fields.bytes_recv.negative = true;
+      fields.bytes_recv.custom.transform = "negative-Y";
       repeat = "interface";
       unit = "bps";
     }
@@ -208,7 +208,7 @@ let
       influx.filter._field = ["err_in" "err_out"];
       influx.filter.interface = "\${interface}";
       influx.fn = "derivative";
-      fields.err_in.negative = true;
+      fields.err_in.custom.transform = "negative-Y";
       repeat = "interface";
       unit = "pps";
       right = true;
@@ -238,10 +238,10 @@ let
           '';
         }
       ];
-      field.tcp_established.properties = {
+      fields.tcp_established = {
         unit = "none";
-        "custom.axisPlacement" = "right";
-        "custom.axisLabel" = "TCP connections";
+        custom.axisPlacement = "right";
+        custom.axisLabel = "TCP connections";
       };
     }
     # http_loadtime
@@ -305,6 +305,12 @@ let
         (lib.toList v.values)
     else fluxFilter field { op = "=="; values = v; }
   ;
+  flattenAttrs = with builtins; with lib; pkgs.unstable.lib.foldlAttrs (acc: name: value:
+    if isAttrs value then
+      acc // (mapAttrs' (k: v: nameValuePair "${name}.${k}" v) (flattenAttrs value))
+    else
+      acc // { "${name}" = value; }
+  ) {};
   mergeAttrs = with lib; fold recursiveUpdate {};
   muninPanel = g: {
     gridPos = {
@@ -315,6 +321,20 @@ let
     title = g.graph_title;
     type = "timeseries";
     interval = "10s";
+    options.tooltip.mode = "multi";
+    options.legend = {
+      showLegend = true;
+      displayMode = "table";
+      placement = "bottom";
+      calcs = [
+        "lastNotNull"
+        "min"
+        "mean"
+        "max"
+      ];
+      sortBy = "Last *";
+      sortDesc = true;
+    };
     fieldConfig.defaults = mergeAttrs [
       {
         unit = g.unit or "none";
@@ -337,15 +357,15 @@ let
         custom.scaleDistribution.log = 10;
       })
     ];
-    fieldConfig.overrides = lib.mapAttrsToList (field: options: {
-      matcher.id = "byName";
-      matcher.options = field;
-      properties = lib.mapAttrsToList (id: value: {
-        inherit id value;
-      }) ((options.properties or {}) // lib.optionalAttrs (options.negative or false) {
-        "custom.transform" = "negative-Y";
-      });
-    }) (g.field or {});
+    fieldConfig.overrides = lib.mapAttrsToList
+      (field: options: {
+        matcher.id = "byName";
+        matcher.options = field;
+        properties = lib.mapAttrsToList (id: value: {
+          inherit id value;
+        }) (flattenAttrs options);
+      })
+      (g.fields or {});
     datasource = influxDatasource;
     targets = let
       filters = lib.mapAttrsToList (field: values:
