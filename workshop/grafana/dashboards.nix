@@ -398,8 +398,105 @@ let
       '';
       unit = "hertz";
     }
-    # load
-    # memory
+    {
+      # load
+      graph_title = "Load average (1m)";
+      graph_category = "system";
+      graph_info = ''The load average of the machine describes how many processes are in the run-queue (scheduled to run "immediately").'';
+      graph_vlabel = "load";
+      influx.filter._measurement = "system";
+      influx.filter._field = "load1";
+      influx.fn = "mean";
+      unit = "short";
+    }
+    {
+      # memory
+      graph_title = "Memory usage";
+      graph_category = "system";
+      graph_info = "This graph shows what the machine uses memory for.";
+      influx.filter._measurement = "mem";
+      influx.filter._field = [
+        # apps = r.total - r.free - r.buffered - r.cached - r.slab - r.page_tables - r.swap_cached
+        "total"
+        "sreclaimable"
+        "page_tables"
+        "swap_cached"
+        "slab"
+        "shared"
+        "cached"
+        "buffered"
+        "free"
+        # swap = swap_total - swap_free
+        "swap_total"
+        "swap_free"
+        "vmalloc_used"
+        "committed_as"
+        "mapped"
+        "active"
+        "inactive"
+        # mac
+        "wired"
+      ];
+      influx.fn = "mean";
+      influx.extra = ''
+        |> group(columns: ["_time", "_field"])
+        |> sum()
+        |> group()
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        // swap = swap_total - swap_free
+        // apps = MemTotal - MemFree - Buffers - Cached - Slap - PageTables - Percpu - SwapCached
+        |> map(fn: (r) => ({r with
+          swap: if exists r.swap_total then r.swap_total - r.swap_free else 0.,
+          cached: r.cached - r.sreclaimable,
+          apps:
+            r.total
+            - r.free
+            - (if exists r.wired then r.wired else 0.)
+            - (if exists r.buffered then r.buffered else 0.)
+            - (if exists r.cached then r.cached - r.sreclaimable else 0.)
+            - (if exists r.slab then r.slab else 0.)
+            - (if exists r.page_tables then r.page_tables else 0.)
+            - (if exists r.swap_cached then r.swap_cached else 0.)
+        }))
+        |> drop(columns: ["_start", "_stop", "total", "sreclaimable", "swap_total", "swap_free"])
+      '';
+      stacking = true;
+      defaults = {
+        custom.fillOpacity = 50;
+      };
+      unit = "bytes";
+      fields = {
+        free.color.mode = "fixed";
+        swap.color = { mode = "fixed"; fixedColor = "#ff0000"; };
+      } // lib.genAttrs [
+        "mapped"
+        "active"
+        "committed_as"
+        "inactive"
+        "vmalloc_used"
+      ] (_: {
+        custom.lineWidth = 2;
+        custom.fillOpacity = 0;
+        custom.stacking.mode = "none";
+      });
+      fieldOrder = [
+        "_time"
+        "apps"
+        "page_tables"
+        "swap_cached"
+        "slab"
+        "shared"
+        "cached"
+        "buffered"
+        "free"
+        "swap"
+        "vmalloc_used"
+        "committed_as"
+        "mapped"
+        "active"
+        "inactive"
+      ];
+    }
     # open_files
     # open_inodes
     # swap
@@ -472,6 +569,7 @@ let
         custom.scaleDistribution.type = "log";
         custom.scaleDistribution.log = 10;
       })
+      (g.defaults or {})
     ];
     fieldConfig.overrides = lib.mapAttrsToList
       (field: options: {
@@ -510,6 +608,11 @@ let
     repeatDirection = "v";
   } // lib.optionalAttrs (g ? graph_info) {
     description = g.graph_info;
+  } // lib.optionalAttrs (g ? fieldOrder) {
+    transformations = [{
+      id = "organize";
+      options.indexByName = builtins.listToAttrs (lib.imap0 (i: key: lib.nameValuePair key i) g.fieldOrder);
+    }];
   };
 in {
   config = {
