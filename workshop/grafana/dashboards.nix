@@ -497,11 +497,63 @@ let
         "inactive"
       ];
     }
-    # open_files
-    # open_inodes
-    # swap
-    # uptime
-    # users
+    {
+      # open_files
+      graph_title = "File table usage";
+      graph_category = "system";
+      graph_info = "This graph monitors the Linux open files table.";
+      graph_vlabel = "number of open files";
+      graph_args.lower-limit = 0;
+      influx.filter._measurement = "linux_sysctl_fs";
+      influx.filter._field = "file-nr";
+      influx.fn = "mean";
+      unit = "short";
+    }
+    {
+      # open_inodes
+      graph_title = "Inode table usage";
+      graph_category = "system";
+      graph_info = "This graph monitors the Linux open inode table.";
+      graph_vlabel = "number of open inodes";
+      influx.filter._measurement = "linux_sysctl_fs";
+      influx.filter._field = ["inode-nr" "inode-free-nr"];
+      influx.fn = "mean";
+      influx.pivot = true;
+      influx.extra = ''
+        |> map(fn: (r) => ({_time: r._time, host: r.host, "inode table size": r["inode-nr"], "open inodes": r["inode-nr"]-r["inode-free-nr"]}))
+      '';
+      unit = "short";
+    }
+    {
+      # swap
+      graph_title = "Swap in/out";
+      graph_category = "system";
+      graph_vlabel = "in (-) / out (+)";
+      influx.filter._measurement = "swap";
+      influx.filter._field = ["in" "out"];
+      influx.fn = "derivative";
+      field."in".custom.transform = "negative-Y";
+      unit = "binBps";
+    }
+    {
+      # uptime
+      graph_title = "Uptime";
+      graph_category = "system";
+      influx.filter._measurement = "system";
+      influx.filter._field = "uptime";
+      influx.fn = "mean";
+      unit = "s";
+    }
+    {
+      # users
+      # TODO: Break down by tty/pty/pts/X/other
+      graph_title = "Logged in users";
+      graph_category = "system";
+      influx.filter._measurement = "system";
+      influx.filter._field = "n_users";
+      influx.fn = "mean";
+      unit = "short";
+    }
   ];
   fluxValue = with builtins; v:
     if isInt v || isFloat v then toString v
