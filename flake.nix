@@ -6,7 +6,7 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-22.11";
-    unstable.url = "nixpkgs/nixos-unstable-small";
+    unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
     # Remove pin when moving to nixos 23.05
     home-manager.url = "github:nix-community/home-manager/6142193635ecdafb9a231bd7d1880b9b7b210d19";
@@ -15,10 +15,10 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+    sops-nix.inputs.nixpkgs-stable.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     darwin.url = "github:quentinmit/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
-    nur.url = "github:nix-community/NUR";
     nur-mweinelt.url = "github:mweinelt/nur-packages";
     nur-mweinelt.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.url = "github:serokell/deploy-rs";
