@@ -3,6 +3,7 @@
 {
   imports = [
     ./dashboards.nix
+    ../../nix/modules/grafana
   ];
   config = {
     sops.secrets."grafana/influx_token" = {

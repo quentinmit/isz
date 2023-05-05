@@ -668,58 +668,47 @@ let
   };
 in {
   config = {
-    services.grafana.provision.dashboards.settings.providers = let
-      dashboards = {
-        "Experimental/munin-generated" = {
-          uid = "Pd7zBps4z";
-          title = "Munin Generated";
-          templating.list = let
-            variables = {
-              host = {
-                predicate = ''r["_measurement"] == "system"'';
-                extra.label = "Host";
-                extra.multi = true;
-              };
-              smart_device = {
-                tag = "device";
-                predicate = ''r["_measurement"] == "smart_device" and r.host =~ /''${host:regex}/'';
-                extra.label = "SMART Device";
-              };
-              interface = {
-                predicate = ''r["_measurement"] == "net" and r.interface != "all" and r.host =~ /''${host:regex}/'';
-              };
+    services.grafana.dashboards = {
+      "Experimental/munin-generated" = {
+        uid = "Pd7zBps4z";
+        title = "Munin Generated";
+        templating.list = let
+          variables = {
+            host = {
+              predicate = ''r["_measurement"] == "system"'';
+              extra.label = "Host";
+              extra.multi = true;
             };
-          in lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
-            tag = args.tag or name;
-            query = ''
-              import "influxdata/influxdb/schema"
+            smart_device = {
+              tag = "device";
+              predicate = ''r["_measurement"] == "smart_device" and r.host =~ /''${host:regex}/'';
+              extra.label = "SMART Device";
+            };
+            interface = {
+              predicate = ''r["_measurement"] == "net" and r.interface != "all" and r.host =~ /''${host:regex}/'';
+            };
+          };
+        in lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
+          tag = args.tag or name;
+          query = ''
+            import "influxdata/influxdb/schema"
 
-              schema.tagValues(
-                bucket: v.defaultBucket,
-                tag: ${fluxValue tag},
-                predicate: (r) => ${args.predicate},
-                start: v.timeRangeStart,
-                stop: v.timeRangeStop
-              )
-            '';
-            definition = query;
-            datasource = influxDatasource;
-            includeAll = true;
-            inherit name;
-            type = "query";
-          } (args.extra or {})) variables;
-          panels = map muninPanel muninGraphs;
-        };
+            schema.tagValues(
+              bucket: v.defaultBucket,
+              tag: ${fluxValue tag},
+              predicate: (r) => ${args.predicate},
+              start: v.timeRangeStart,
+              stop: v.timeRangeStop
+            )
+          '';
+          definition = query;
+          datasource = influxDatasource;
+          includeAll = true;
+          inherit name;
+          type = "query";
+        } (args.extra or {})) variables;
+        panels = map muninPanel muninGraphs;
       };
-      dashboardFormat = pkgs.formats.json {};
-      dashboardPkg = pkgs.linkFarm "grafana-dashboards" (
-        lib.mapAttrs' (name: d: lib.nameValuePair "${name}.json" (
-          dashboardFormat.generate "${name}.json" (lib.recursiveUpdate blankDashboard d)
-        )) dashboards
-      );
-    in [{
-      options.path = "${dashboardPkg}";
-      options.foldersFromFilesStructure = true;
-    }];
+    };
   };
 }
