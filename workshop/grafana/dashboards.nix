@@ -1,39 +1,6 @@
 { config, pkgs, lib, ... }:
 
 let
-  blankDashboard = {
-    annotations.list = [{
-      builtIn = 1;
-      datasource.type = "grafana";
-      datasource.uid = "-- Grafana --";
-      enable = true;
-      hide = true;
-      iconColor = "rgba(0, 211, 255, 1)";
-      name = "Annotations & Alerts";
-      target.limit = 100;
-      target.matchAny = false;
-      target.tags = [];
-      target.type = "dashboard";
-      type = "dashboard";
-    }];
-    #version = 0;
-    schemaVersion = 38;
-    #editable = true;
-    #graphTooltip = 0;
-    #links = [];
-    #liveNow = false;
-    #fiscalYearStartMonth = 0;
-    #refresh = "";
-    #style = "dark";
-    #tags = [];
-    #templating.list = [];
-    #time.from = "now-6h";
-    #time.to = "now";
-    #timepicker = {};
-    #timezone = "";
-    #weekStart = "";
-    panels = [];
-  };
   influxDatasource = {
     uid = "mAU691fGz";
     type = "influxdb";
