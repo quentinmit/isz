@@ -50,6 +50,7 @@ in {
         };
         fieldConfig = mkOption {
           type = FieldConfigSource;
+          default = {};
         };
       };
     };
@@ -57,6 +58,7 @@ in {
       options = {
         defaults = mkOption {
           type = FieldConfig;
+          default = {};
         };
         overrides = mkOption {
           type = with types; listOf (submodule {

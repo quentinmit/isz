@@ -3,6 +3,7 @@
 {
   imports = [
     ./dashboards.nix
+    ./munin.nix
     ../../nix/modules/grafana
   ];
   config = {
