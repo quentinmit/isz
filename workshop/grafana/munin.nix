@@ -203,9 +203,9 @@ in {
   };
   config = {
     services.grafana.dashboards = {
-      "Experimental/munin-generated" = {
+      "munin" = {
         uid = "Pd7zBps4z";
-        title = "Munin Generated";
+        title = "Munin";
         templating.list = let
           variables = {
             host = {
