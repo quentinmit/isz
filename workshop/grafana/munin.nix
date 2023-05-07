@@ -241,8 +241,8 @@ in {
           inherit name;
           type = "query";
         } (args.extra or {})) variables;
-        panels =
-          lib.concatLists (
+        panels = let
+          panels = lib.concatLists (
             lib.mapAttrsToList
               (category: graphs:
                 [{
@@ -255,6 +255,9 @@ in {
               )
               cfg.graphs
           );
+          sumHeights = lib.foldl' (s: p: s + p.gridPos.h) 0;
+        in
+          lib.foldl (a: b: a ++ [(b // { gridPos = b.gridPos // { y = if (b.gridPos.x or 0) == 0 then sumHeights a else (lib.last a).gridPos.y; }; })]) [] panels;
       };
     };
   };
