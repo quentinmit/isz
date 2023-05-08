@@ -9,6 +9,7 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./nginx.nix
+      ./postfix.nix
       ./home-assistant
       ./telegraf.nix
       ./dashboard.nix
@@ -143,7 +144,7 @@
     } ];
   };
   # TODO: Configure tftp
-  # TODO: Configure postfix
+  # Configure postfix
   # Containers?
   # Configure rtl-sdr to hotplug on udev 0bda/2838
   services.rtl-tcp.enable = true;
