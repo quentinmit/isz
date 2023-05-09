@@ -10,7 +10,7 @@
     relayHost = "mail.smtp2go.com";
     relayPort = 2525;
     mapFiles.smtp_sasl_password_maps = config.sops.secrets."smtp_sasl_password_maps".path;
-    config = {
+    config = rec {
       # smtpd_banner = $myhostname ESMTP
       # UNNEEDED? biff = no
       # DEFAULT append_dot_mydomain = no
@@ -65,14 +65,14 @@
       smtp_tls_note_starttls_offer = true;
 
       lmtp_tls_security_level = "may";
-      #lmtp_tls_CAfile = config.services.postfix.config.smtp_tls_CAfile;
+      lmtp_tls_CAfile = config.services.postfix.tlsTrustedAuthorities;
       lmtp_tls_session_cache_database = "btree:\${data_directory}/lmtp_scache";
       lmtp_tls_loglevel = "1";
-      #lmtp_tls_protocols = config.services.postfix.config.smtp_tls_protocols;
-      #lmtp_tls_mandatory_protocols = config.services.postfix.config.smtp_tls_mandatory_protocols;
-      #lmtp_tls_ciphers = config.services.postfix.config.smtp_tls_ciphers;
-      #lmtp_tls_mandatory_ciphers = config.services.postfix.config.smtp_tls_mandatory_ciphers;
-      #lmtp_tls_exclude_ciphers = config.services.postfix.config.smtp_tls_exclude_ciphers;
+      lmtp_tls_protocols = smtp_tls_protocols;
+      lmtp_tls_mandatory_protocols = smtp_tls_mandatory_protocols;
+      lmtp_tls_ciphers = smtp_tls_ciphers;
+      lmtp_tls_mandatory_ciphers = smtp_tls_mandatory_ciphers;
+      lmtp_tls_exclude_ciphers = smtp_tls_exclude_ciphers;
       lmtp_tls_note_starttls_offer = true;
 
       smtpd_helo_required = true;
