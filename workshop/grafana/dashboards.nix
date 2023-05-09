@@ -1,8 +1,25 @@
-{ config, pkgs, lib, ... }:
+{ config, options, pkgs, lib, ... }:
 {
-  config = {
-    isz.grafana.munin.datasource.uid = "mAU691fGz";
-    isz.grafana.munin.graphs = {
+  config.isz.grafana.dashboards.munin = {
+    uid = "Pd7zBps4z";
+    title = "Munin";
+    defaultDatasourceName = "workshop";
+    variables = {
+      host = {
+        predicate = ''r["_measurement"] == "system"'';
+        extra.label = "Host";
+        extra.multi = true;
+      };
+      smart_device = {
+        tag = "device";
+        predicate = ''r["_measurement"] == "smart_device" and r.host =~ /''${host:regex}/'';
+        extra.label = "SMART Device";
+      };
+      interface = {
+        predicate = ''r["_measurement"] == "net" and r.interface != "all" and r.host =~ /''${host:regex}/'';
+      };
+    };
+    munin.graphs = {
       disk.diskstats_iops = {
         graph_title = "Disk IOs per device";
         graph_vlabel = "IOs/second read (-) / write (+)";
