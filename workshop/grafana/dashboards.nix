@@ -63,10 +63,26 @@
           displayName = "\${__field.labels.rate}";
         };
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = ["strength-at-rates"];
+        influx.filter._field = ["strength-at-rates" "strength-at-rates-age-ns"];
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "mean";
-        influx.createEmpty = true;
+        influx.pivot = true;
+        influx.imports = ["date"];
+        influx.extra = ''
+          |> map(fn: (r) => ({
+            _value: r["strength-at-rates"],
+            _field: "strength-at-rates",
+            rate: r.rate,
+            _time:
+              if exists r["strength-at-rates-age-ns"]
+              then date.sub(
+                from: r._time,
+                d: duration(v: int(v: r["strength-at-rates-age-ns"]))
+              )
+              else r._time
+          }))
+          |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: true)
+        '';
       }
       {
         panel = {

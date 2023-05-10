@@ -29,7 +29,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
       in lib.imap0 (i: influx: {
         inherit datasource;
         query =
-          lib.concatMapStringsSep "\n" (x: ''import ${fluxValue x}'') influx.imports + ''
+          lib.concatMapStrings (x: ''import ${fluxValue x}'' + "\n") influx.imports + ''
             from (bucket: v.defaultBucket)
             |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
             ${lib.concatStringsSep "\n" (filters (extraInfluxFilter // influx.filter))}

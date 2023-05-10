@@ -4,6 +4,8 @@ rec {
   fluxValue = with builtins; v:
     if isInt v || isFloat v then toString v
     else if isString v then ''"${lib.escape [''"''] v}"''
+    else if true == v then "true"
+    else if false == v then "false"
     else abort "Unknown type";
   fluxFilter = with builtins; field: v:
     lib.concatMapStringsSep
