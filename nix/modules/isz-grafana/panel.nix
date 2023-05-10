@@ -20,8 +20,8 @@ with import ../grafana/types.nix { inherit pkgs lib; };
         g.fields;
     }
     (lib.mkIf (g.influx != []) {
-      type = "timeseries";
-      interval = "10s";
+      type = lib.mkDefault "timeseries";
+      interval = lib.mkDefault "10s";
       inherit datasource;
       targets = let
         filters = lib.mapAttrsToList (field: values:

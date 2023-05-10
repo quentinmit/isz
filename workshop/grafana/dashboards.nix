@@ -7,14 +7,14 @@
     variables = {
       macaddress = {
         tag = "mac-address";
-        predicate = ''mikrotik-/interface/wireless/registration-table'';
+        predicate = ''r._measurement == "mikrotik-/interface/wireless/registration-table"'';
         extra.label = "MAC address";
       };
     };
     panels = [
       {
         panel = {
-          gridPos = { x = 0; y = 0; w = 12; h = 8; };
+          gridPos = { x = 0; y = 0; w = 10; h = 8; };
           title = "Wireless Rate";
           options.tooltip.mode = "multi";
         };
@@ -31,7 +31,7 @@
       }
       {
         panel = {
-          gridPos = { x = 12; y = 0; w = 12; h = 8; };
+          gridPos = { x = 10; y = 0; w = 10; h = 8; };
           title = "Throughput";
           options.tooltip.mode = "multi";
         };
@@ -51,6 +51,73 @@
         influx.filter._field = ["tx-bytes" "rx-bytes"];
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "derivative";
+      }
+      {
+        panel = {
+          gridPos = { x = 20; y = 0; w = 4; h = 36; };
+          title = "Stats";
+          type = "stat";
+          options.text = {
+            titleSize = 18;
+            valueSize = 20;
+          };
+          options.orientation = "horizontal";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter.mac-address = "\${macaddress}";
+        influx.filter._field = [
+          "last-activity-ns"
+          "p-throughput"
+          "rx-bytes"
+          "rx-frame-bytes"
+          "rx-frames"
+          "rx-hw-frame-bytes"
+          "rx-hw-frames"
+          "rx-packets"
+          "rx-rate"
+          "signal-strength"
+          "signal-strength-ch0"
+          "signal-strength-ch1"
+          "signal-strength-ch2"
+          "signal-strength-rate"
+          "signal-to-noise"
+          "strength-at-rates"
+          "strength-at-rates-age-ns"
+          "tx-bytes"
+          "tx-ccq"
+          "tx-frame-bytes"
+          "tx-frames"
+          "tx-frames-timed-out"
+          "tx-hw-frame-bytes"
+          "tx-hw-frames"
+          "tx-packets"
+          "tx-rate"
+          "uptime-ns"
+        ];
+        influx.fn = "mean";
+        fields.last-activity-ns.unit = "ns";
+        fields.p-throughput.unit = "Kbits";
+        fields.rx-bytes.unit = "bytes";
+        fields.rx-frame-bytes.unit = "bytes";
+        fields.rx-hw-frame-bytes.unit = "bytes";
+        fields.rx-rate.unit = "bps";
+        fields.signal-strength.unit = "dBm";
+        fields.signal-strength-rate.unit = "bps";
+        fields.signal-strength-ch0.unit = "dBm";
+        fields.signal-strength-ch1.unit = "dBm";
+        fields.signal-strength-ch2.unit = "dBm";
+        fields.signal-to-noise.unit = "dB";
+        fields.strength-at-rates.unit = "dBm";
+        fields.strength-at-rates-age-ns.unit = "ns";
+        fields.tx-bytes.unit = "bytes";
+        fields.tx-ccq.unit = "percent";
+        fields.tx-frame-bytes.unit = "bytes";
+        fields.tx-hw-frame-bytes.unit = "bytes";
+        fields.tx-rate.unit = "bps";
+        fields.uptime-ns.unit = "ns";
+        influx.extra = ''
+          |> drop(columns: ["_start", "_stop", "_measurement", "agent_host", "host", "hostname", "mac-address", "last-ip", "authentication-type", "encryption", "group-encryption", "interface"])
+        '';
       }
     ];
   };

@@ -55,9 +55,11 @@
     };
     services.grafana = {
       enable = true;
+      package = pkgs.unstable.grafana;
       settings = {
         server.protocol = "socket";
         security.allow_embedding = true;
+        feature_toggles.enable = "timeSeriesTable";
       };
     };
   };
