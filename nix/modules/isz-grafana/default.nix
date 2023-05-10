@@ -1,12 +1,15 @@
-{ config, options, pkgs, lib, ... }:
+{ config, options, pkgs, channels, lib, ... }:
 with import ./lib.nix { inherit config pkgs lib; };
 let
   cfg = config.isz.grafana;
-  dashboardType = options.services.grafana.dashboards.type.nestedTypes.elemType;
 in {
   imports = [
     ./munin.nix
     ../grafana
+    "${channels.unstable}/nixos/modules/services/monitoring/grafana.nix"
+  ];
+  disabledModules = [
+    "services/monitoring/grafana.nix"
   ];
   options = with lib;
     let
@@ -21,11 +24,10 @@ in {
         }
       )]));
       default = {};
-      #type = options.services.grafana.provision.datasources.settings.datasources.type;
     };
     isz.grafana.dashboards = mkOption {
       default = {};
-      type = with types; attrsOf (submodule {
+      type = with types; attrsOf (submodule ({ config, ... }: {
         options = {
           uid = mkOption {
             type = types.str;
@@ -59,11 +61,23 @@ in {
             default = {};
           };
           panels = mkOption {
-            type = types.listOf (dashboardType.getSubOptions []).panels.type;
+            type = types.listOf (types.submoduleWith {
+              modules = [ ./panel.nix ];
+              shorthandOnlyDefinesConfig = true;
+              specialArgs = {
+                datasource = {
+                  #uid = "uid";
+                  #type = "influxdb";
+                  inherit (cfg.datasources.${config.defaultDatasourceName}) uid type;
+                };
+                inherit pkgs;
+                extraInfluxFilter = {};
+              };
+            });
             default = [];
           };
         };
-      });
+      }));
     };
   };
   config = {
@@ -74,7 +88,8 @@ in {
         inherit (cfg.datasources.${dashboard.defaultDatasourceName}) uid type;
       };
       in {
-        inherit (dashboard) uid title panels;
+        inherit (dashboard) uid title;
+        panels = map (p: p.panel) dashboard.panels;
         templating.list = lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
           inherit (args) tag;
           query = ''

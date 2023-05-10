@@ -1,5 +1,59 @@
 { config, options, pkgs, lib, ... }:
 {
+  config.isz.grafana.dashboards.wifi-client = {
+    uid = "eXssGz84k";
+    title = "WiFi Client";
+    defaultDatasourceName = "workshop";
+    variables = {
+      macaddress = {
+        tag = "mac-address";
+        predicate = ''mikrotik-/interface/wireless/registration-table'';
+        extra.label = "MAC address";
+      };
+    };
+    panels = [
+      {
+        panel = {
+          gridPos = { x = 0; y = 0; w = 12; h = 8; };
+          title = "Wireless Rate";
+          options.tooltip.mode = "multi";
+        };
+        panel.fieldConfig.defaults = {
+          custom.axisLabel = "rx (-) / tx (+)";
+          unit = "bps";
+          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+        };
+        fields.rx-rate.custom.transform = "negative-Y";
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = ["tx-rate" "rx-rate"];
+        influx.filter.mac-address = "\${macaddress}";
+        influx.fn = "mean";
+      }
+      {
+        panel = {
+          gridPos = { x = 12; y = 0; w = 12; h = 8; };
+          title = "Throughput";
+          options.tooltip.mode = "multi";
+        };
+        panel.fieldConfig.defaults = {
+          custom.axisLabel = "in (-) / out (+)";
+          custom.fillOpacity = 10;
+          custom.scaleDistribution = {
+            type = "symlog";
+            linearThreshold = 10;
+            log = 10;
+          };
+          unit = "Bps";
+          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+        };
+        fields.rx-bytes.custom.transform = "negative-Y";
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = ["tx-bytes" "rx-bytes"];
+        influx.filter.mac-address = "\${macaddress}";
+        influx.fn = "derivative";
+      }
+    ];
+  };
   config.isz.grafana.dashboards.munin = {
     uid = "Pd7zBps4z";
     title = "Munin";
@@ -388,7 +442,7 @@
         |> drop(columns: ["_start", "_stop", "total", "sreclaimable", "swap_total", "swap_free"])
       '';
         stacking = true;
-        defaults = {
+        panel.fieldConfig.defaults = {
           custom.fillOpacity = 50;
         };
         unit = "bytes";
