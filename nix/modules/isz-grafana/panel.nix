@@ -37,7 +37,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
             |> aggregateWindow(every: v.windowPeriod, fn: last)
             |> derivative(unit: 1s, nonNegative: true)
           '' else ''
-            |> aggregateWindow(every: v.windowPeriod, fn: ${influx.fn}, createEmpty: false)
+            |> aggregateWindow(every: v.windowPeriod, fn: ${influx.fn}, createEmpty: ${fluxValue influx.createEmpty})
           '') + lib.optionalString influx.pivot ''
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> drop(columns: ["_start", "_stop"])
@@ -80,6 +80,10 @@ with import ../grafana/types.nix { inherit pkgs lib; };
         };
         fn = mkOption {
           type = types.enum ["derivative" "mean"];
+        };
+        createEmpty = mkOption {
+          type = types.bool;
+          default = false;
         };
         pivot = mkEnableOption "pivot";
         extra = mkOption {

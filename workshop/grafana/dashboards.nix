@@ -54,6 +54,22 @@
       }
       {
         panel = {
+          gridPos = { x = 0; y = 8; w = 10; h = 8; };
+          title = "Signal Strength at Rate";
+          options.tooltip.mode = "multi";
+        };
+        panel.fieldConfig.defaults = {
+          unit = "dBm";
+          displayName = "\${__field.labels.rate}";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = ["strength-at-rates"];
+        influx.filter.mac-address = "\${macaddress}";
+        influx.fn = "mean";
+        influx.createEmpty = true;
+      }
+      {
+        panel = {
           gridPos = { x = 20; y = 0; w = 4; h = 36; };
           title = "Stats";
           type = "stat";
@@ -81,8 +97,8 @@
           "signal-strength-ch2"
           "signal-strength-rate"
           "signal-to-noise"
-          "strength-at-rates"
-          "strength-at-rates-age-ns"
+          #"strength-at-rates"
+          #"strength-at-rates-age-ns"
           "tx-bytes"
           "tx-ccq"
           "tx-frame-bytes"
@@ -107,8 +123,8 @@
         fields.signal-strength-ch1.unit = "dBm";
         fields.signal-strength-ch2.unit = "dBm";
         fields.signal-to-noise.unit = "dB";
-        fields.strength-at-rates.unit = "dBm";
-        fields.strength-at-rates-age-ns.unit = "ns";
+        #fields.strength-at-rates.unit = "dBm";
+        #fields.strength-at-rates-age-ns.unit = "ns";
         fields.tx-bytes.unit = "bytes";
         fields.tx-ccq.unit = "percent";
         fields.tx-frame-bytes.unit = "bytes";
@@ -118,6 +134,8 @@
         influx.extra = ''
           |> drop(columns: ["_start", "_stop", "_measurement", "agent_host", "host", "hostname", "mac-address", "last-ip", "authentication-type", "encryption", "group-encryption", "interface"])
         '';
+        # For use with the "dateTimeFromNow" unit
+        # |> map(fn: (r) => ({r with _value: if (r._field == "last-activity-ns" or r._field == "uptime-ns") then float(v: uint(v: date.sub(from: r._time, d: duration(v: int(v: r._value)))))/1000000. else r._value}))
       }
     ];
   };
