@@ -1,5 +1,7 @@
 { config, pkgs, lib, osConfig ? null, ... }:
-{
+let
+  isLinux = pkgs.stdenv.isLinux;
+in {
   config = {
     programs.home-manager.enable = true;
 
@@ -36,6 +38,8 @@
       historySize = historyFileSize;
       shellAliases = {
         nix-diff-system = "${pkgs.nix-diff}/bin/nix-diff $(nix-store -qd $(ls -dtr /nix/var/nix/profiles/*-link | tail -n 2))";
+        pbcopy = lib.mkIf isLinux ''${pkgs.xsel}/bin/xsel --clipboard --input'';
+        pbpaste = lib.mkIf isLinux ''${pkgs.xsel}/bin/xsel --clipboard --output'';
       };
     };
 
