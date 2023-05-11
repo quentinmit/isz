@@ -12,8 +12,8 @@ in {
       enable = true;
       ignores = [
         "*~"
-	''\#*#''
-	".#*"
+        ''\#*#''
+        ".#*"
         ".ipynb_checkpoints"
         "__pycache__"
       ];
@@ -22,8 +22,12 @@ in {
       aliases = {
         up = "pull --rebase";
         k = "log --graph --abbrev-commit --pretty=oneline --decorate";
+        log-json = let
+          format = ''"%h": {%n  "commit": "%H",%n  "author": "%an <%ae>",%n  "date": "%ad",%n  "message": "%B"%n},'';
+        in lib.escapeShellArgs ["log" "--pretty=format:${format}"];
       };
       extraConfig = {
+        color.ui = "auto";
         url = {
           "git@github.com:".pushInsteadOf = [
             "https://github.com/"
@@ -45,6 +49,13 @@ in {
         pbcopy = lib.mkIf isLinux ''${pkgs.xsel}/bin/xsel --clipboard --input'';
         pbpaste = lib.mkIf isLinux ''${pkgs.xsel}/bin/xsel --clipboard --output'';
       };
+    };
+
+    programs.lesspipe.enable = true;
+
+    programs.dircolors = {
+      enable = true;
+      enableBashIntegration = true;
     };
 
     home.file.".screenrc".text = ''
