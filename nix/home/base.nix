@@ -25,7 +25,10 @@ in {
       };
       extraConfig = {
         url = {
-          "git@github.com:".pushInsteadOf = "https://github.com/";
+          "git@github.com:".pushInsteadOf = [
+            "https://github.com/"
+            "git://github.com/quentinmit/"
+          ];
           "git@github.mit.edu:".insteadOf = "https://github.mit.edu/";
           "git@gitlab.com:".pushInsteadOf = "https://gitlab.com/";
         };
