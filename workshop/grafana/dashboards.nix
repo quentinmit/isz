@@ -6,9 +6,40 @@
     defaultDatasourceName = "workshop";
     variables = {
       macaddress = {
-        tag = "mac-address";
-        predicate = ''r._measurement == "mikrotik-/interface/wireless/registration-table"'';
+        query = ''
+          import "join"
+          import "influxdata/influxdb/schema"
+
+          tags = schema.tagValues(
+            bucket: v.defaultBucket,
+            tag: "mac-address",
+            predicate: (r) => r._measurement == "mikrotik-/interface/wireless/registration-table",
+            start: v.timeRangeStart,
+            stop: v.timeRangeStop
+          )
+          |> map (fn: (r) => ({"mac-address": r._value}))
+
+          leases = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/ip/dhcp-server/lease")
+            |> filter(fn: (r) => r._field == "status")
+            |> last()
+            |> group(columns: ["mac-address"])
+            |> sort(columns: ["_time"])
+            |> last(column: "_value")
+            |> group()
+            |> keep(columns: ["mac-address", "comment"])
+
+          join.left(
+            left: tags, right: leases,
+            on: (l, r) => l["mac-address"] == r["mac-address"],
+            as: (l, r) => ({noComment: not exists r.comment, comment: r.comment, _value: l["mac-address"] + (if exists r["comment"] then " - "+r["comment"] else "")})
+          )
+          |> sort(columns: ["noComment", "comment", "_value"])
+          '';
         extra.label = "MAC address";
+        extra.regex = ''/^(?<text>(?<value>[^ ]+).*)/'';
+        extra.includeAll = false;
       };
     };
     links = [
@@ -73,6 +104,7 @@
         influx.filter._field = ["tx-rate" "rx-rate"];
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "mean";
+        influx.createEmpty = true;
       }
       {
         panel = {
@@ -96,6 +128,7 @@
         influx.filter._field = ["tx-bytes" "rx-bytes"];
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "derivative";
+        influx.createEmpty = true;
       }
       {
         panel = {
@@ -128,6 +161,20 @@
           }))
           |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: true)
         '';
+      }
+      {
+        panel = {
+          gridPos = { x = 10; y = 11; w = 10; h = 8; };
+          title = "TX CCQ";
+        };
+        panel.fieldConfig.defaults = {
+          unit = "percent";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = ["tx-ccq"];
+        influx.filter.mac-address = "\${macaddress}";
+        influx.fn = "mean";
+        influx.createEmpty = true;
       }
       {
         panel = {

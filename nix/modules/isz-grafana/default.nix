@@ -51,9 +51,23 @@ in {
                   type = types.attrsOf dashboardFormat.type;
                   default = {};
                 };
+                query = mkOption {
+                  type = types.str;
+                };
               };
               config = {
                 tag = mkDefault name;
+                query = mkDefault ''
+                  import "influxdata/influxdb/schema"
+
+                  schema.tagValues(
+                    bucket: v.defaultBucket,
+                    tag: ${fluxValue config.tag},
+                    predicate: (r) => ${config.predicate},
+                    start: v.timeRangeStart,
+                    stop: v.timeRangeStop
+                  )
+                '';
               };
             };
           in mkOption {
@@ -95,18 +109,7 @@ in {
         inherit (dashboard) uid title links;
         panels = map (p: p.panel) dashboard.panels;
         templating.list = lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
-          inherit (args) tag;
-          query = ''
-            import "influxdata/influxdb/schema"
-
-            schema.tagValues(
-              bucket: v.defaultBucket,
-              tag: ${fluxValue tag},
-              predicate: (r) => ${args.predicate},
-              start: v.timeRangeStart,
-              stop: v.timeRangeStop
-            )
-          '';
+          inherit (args) tag query;
           definition = query;
           inherit datasource;
           includeAll = true;
