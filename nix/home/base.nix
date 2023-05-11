@@ -12,7 +12,8 @@ in {
       enable = true;
       ignores = [
         "*~"
-        "*#"
+	''\#*#''
+	".#*"
         ".ipynb_checkpoints"
         "__pycache__"
       ];
