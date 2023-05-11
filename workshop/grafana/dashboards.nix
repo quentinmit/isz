@@ -11,6 +11,12 @@
         extra.label = "MAC address";
       };
     };
+    links = [
+      {
+        tags = ["wifi"];
+        type = "dashboards";
+      }
+    ];
     panels = [
       {
         panel = {

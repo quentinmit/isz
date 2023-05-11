@@ -60,6 +60,10 @@ in {
             type = with types; attrsOf (submodule variableOpts);
             default = {};
           };
+          links = mkOption {
+            type = types.listOf dashboardFormat.type;
+            default = [];
+          };
           panels = mkOption {
             type = types.listOf (types.submoduleWith {
               modules = [ ./panel.nix ];
@@ -88,7 +92,7 @@ in {
         inherit (cfg.datasources.${dashboard.defaultDatasourceName}) uid type;
       };
       in {
-        inherit (dashboard) uid title;
+        inherit (dashboard) uid title links;
         panels = map (p: p.panel) dashboard.panels;
         templating.list = lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
           inherit (args) tag;
