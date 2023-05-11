@@ -14,7 +14,46 @@
     panels = [
       {
         panel = {
-          gridPos = { x = 0; y = 0; w = 10; h = 8; };
+          gridPos = { x = 0; y = 0; w = 20; h = 3; };
+          title = "";
+          type = "table";
+        };
+        panel.fieldConfig.defaults = {
+        };
+        influx.filter._measurement = "mikrotik-/ip/dhcp-server/lease";
+        influx.filter.mac-address = "\${macaddress}";
+        influx.fn = "last1";
+        influx.pivot = true;
+        influx.extra = ''
+          |> last(column: "_time")
+          |> drop(columns: ["hostname", "host", "agent_host", "mac-address"])
+          |> group(columns: ["_measurement"])
+        '';
+        fields.comment.custom.width = 200;
+        fields._time.custom.width = 160;
+        fields.status.custom.width = 75;
+        fields.active-address.custom.width = 125;
+        fields.address.custom.width = 125;
+        fields.blocked.custom.width = 75;
+        fields.disabled.custom.width = 75;
+        fields.dynamic.custom.width = 75;
+        fields.radius.custom.width = 75;
+        fields.expires-after-ns.unit = "ns";
+        fields.last-seen-ns.unit = "ns";
+        fieldOrder = [
+          "comment"
+          "_time"
+          "status"
+          "active-address"
+          "last-seen-ns"
+          "expires-after-ns"
+          "host-name"
+          "active-client-id"
+        ];
+      }
+      {
+        panel = {
+          gridPos = { x = 0; y = 3; w = 10; h = 8; };
           title = "Wireless Rate";
           options.tooltip.mode = "multi";
         };
@@ -31,7 +70,7 @@
       }
       {
         panel = {
-          gridPos = { x = 10; y = 0; w = 10; h = 8; };
+          gridPos = { x = 10; y = 3; w = 10; h = 8; };
           title = "Throughput";
           options.tooltip.mode = "multi";
         };
@@ -54,7 +93,7 @@
       }
       {
         panel = {
-          gridPos = { x = 0; y = 8; w = 10; h = 8; };
+          gridPos = { x = 0; y = 11; w = 10; h = 8; };
           title = "Signal Strength at Rate";
           options.tooltip.mode = "multi";
         };

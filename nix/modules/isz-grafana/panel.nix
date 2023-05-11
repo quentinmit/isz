@@ -33,12 +33,17 @@ with import ../grafana/types.nix { inherit pkgs lib; };
             from (bucket: v.defaultBucket)
             |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
             ${lib.concatStringsSep "\n" (filters (extraInfluxFilter // influx.filter))}
-          '' + (if influx.fn == "derivative" then ''
-            |> aggregateWindow(every: v.windowPeriod, fn: last)
-            |> derivative(unit: 1s, nonNegative: true)
-          '' else ''
-            |> aggregateWindow(every: v.windowPeriod, fn: ${influx.fn}, createEmpty: ${fluxValue influx.createEmpty})
-          '') + lib.optionalString influx.pivot ''
+          '' + (
+            if influx.fn == null then ""
+            else if influx.fn == "last1" then ''
+              |> last()
+            '' else if influx.fn == "derivative" then ''
+              |> aggregateWindow(every: v.windowPeriod, fn: last)
+              |> derivative(unit: 1s, nonNegative: true)
+            '' else ''
+              |> aggregateWindow(every: v.windowPeriod, fn: ${influx.fn}, createEmpty: ${fluxValue influx.createEmpty})
+            ''
+          ) + lib.optionalString influx.pivot ''
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> drop(columns: ["_start", "_stop"])
           '' + influx.extra;
@@ -79,7 +84,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           default = [];
         };
         fn = mkOption {
-          type = types.enum ["derivative" "mean"];
+          type = types.nullOr (types.enum ["derivative" "mean" "last1"]);
         };
         createEmpty = mkOption {
           type = types.bool;
