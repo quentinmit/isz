@@ -161,10 +161,10 @@ hdmi_switch_ir:
 
 ir_icons:
   # arrow
-  left: mdi:keyboard-arrow-left
-  right: mdi:keyboard-arrow-right
-  up: mdi:keyboard-arrow-up
-  down: mdi:keyboard-arrow-down
+  left: mdi:chevron-left  # also mdi:keyboard-arrow-left
+  right: mdi:chevron-right  # also keyboard-arrow-right
+  up: mdi:chevron-up  # also mdi:keyboard-arrow-up
+  down: mdi:chevron-down  # also mdi:keyboard-arrow-down
   # tuning
   0: mdi:numeric-0
   1: mdi:numeric-1
@@ -208,14 +208,14 @@ ir_icons:
   dimmer: mdi:brightness-6
   # media control
   playpause: mdi:play-pause
-  "-": mdi:horizontal-line
+  "-": mdi:minus
   rewind: mdi:rewind
   stop: mdi:stop
   ffw: mdi:fast-forward
   guide: mdi:television-guide
   last: mdi:swap-horizontal-variant
-  mts: mdi:language
-  # picture
+  mts: mdi:web # same as mdi:language
+  picture: mdi:image-edit
   freeze: mdi:monitor-screenshot
   aspect: mdi:aspect-ratio
   ccd: mdi:closed-caption
