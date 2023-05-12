@@ -1,5 +1,7 @@
 { lib, pkgs, config, channels, ... }:
-{
+let
+  dashboardFormat = pkgs.formats.yaml {};
+in {
   disabledModules = [
     "services/home-automation/home-assistant.nix"
   ];
@@ -10,9 +12,42 @@
     ./automations.nix
   ];
   options = with lib; {
-    services.home-assistant.extraLovelaceModules = mkOption {
-      type = with types; attrsOf package;
-      default = {};
+    services.home-assistant = {
+      extraLovelaceModules = mkOption {
+        type = with types; attrsOf package;
+        default = {};
+      };
+      dashboards = mkOption {
+        type = types.attrsOf (types.submodule ({ name, config, ... }: {
+          options = {
+            sidebar_title = mkOption {
+              type = types.str;
+              default = name;
+            };
+            icon = mkOption {
+              type = with types; nullOr str;
+              default = null;
+            };
+            show_in_sidebar = mkOption {
+              type = types.bool;
+              default = true;
+            };
+            require_admin = mkOption {
+              type = types.bool;
+              default = false;
+            };
+            title = mkOption {
+              type = with types; nullOr str;
+              default = null;
+            };
+            views = mkOption {
+              type = types.listOf dashboardFormat.type;
+              default = [];
+            };
+          };
+        }));
+        default = {};
+      };
     };
   };
   config = {
@@ -85,6 +120,14 @@
             url = "/local/${name}.js?${package.version}";
             type = "module";
           }) config.services.home-assistant.extraLovelaceModules;
+          dashboards = lib.mapAttrs (name: content: {
+            mode = "yaml";
+            title = content.sidebar_title;
+            inherit (content) icon show_in_sidebar require_admin;
+            filename = dashboardFormat.generate "${name}.yaml" {
+              inherit (content) title views;
+            };
+          }) config.services.home-assistant.dashboards;
         };
         google_assistant = {
           project_id = "api-project-64499786246";
