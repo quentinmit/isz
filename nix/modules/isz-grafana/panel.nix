@@ -23,30 +23,9 @@ with import ../grafana/types.nix { inherit pkgs lib; };
       type = lib.mkDefault "timeseries";
       interval = lib.mkDefault "10s";
       inherit datasource;
-      targets = let
-        filters = lib.mapAttrsToList (field: values:
-          ''|> filter(fn: (r) => ${fluxFilter field values})'');
-      in lib.imap0 (i: influx: {
+      targets = lib.imap0 (i: influx: {
         inherit datasource;
-        query =
-          lib.concatMapStrings (x: ''import ${fluxValue x}'' + "\n") influx.imports + ''
-            from (bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            ${lib.concatStringsSep "\n" (filters (extraInfluxFilter // influx.filter))}
-          '' + (
-            if influx.fn == null then ""
-            else if influx.fn == "last1" then ''
-              |> last()
-            '' else if influx.fn == "derivative" then ''
-              |> aggregateWindow(every: v.windowPeriod, fn: last)
-              |> derivative(unit: 1s, nonNegative: true)
-            '' else ''
-              |> aggregateWindow(every: v.windowPeriod, fn: ${influx.fn}, createEmpty: ${fluxValue influx.createEmpty})
-            ''
-          ) + lib.optionalString influx.pivot ''
-            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> drop(columns: ["_start", "_stop"])
-          '' + influx.extra;
+        inherit (influx) query;
         refId = lib.elemAt [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ] i;
       }) (lib.toList g.influx);
     })
@@ -58,7 +37,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
     })
   ];
   options = with lib; let
-    Query = types.submodule {
+    Query = types.submodule ({ config, ... }: {
       key = "Query";
       options = {
         filter = mkOption {
@@ -96,8 +75,36 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           default = "";
           description = "Extra Flux expressions to append at the end of the query";
         };
+        query = mkOption {
+          type = types.str;
+        };
       };
-    };
+      config = {
+        query = let
+          filters = lib.mapAttrsToList (field: values:
+            ''|> filter(fn: (r) => ${fluxFilter field values})'');
+        in lib.mkDefault (
+          lib.concatMapStrings (x: ''import ${fluxValue x}'' + "\n") config.imports + ''
+            from (bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            ${lib.concatStringsSep "\n" (filters (extraInfluxFilter // config.filter))}
+          '' + (
+            if config.fn == null then ""
+            else if config.fn == "last1" then ''
+              |> last()
+            '' else if config.fn == "derivative" then ''
+              |> aggregateWindow(every: v.windowPeriod, fn: last)
+              |> derivative(unit: 1s, nonNegative: true)
+            '' else ''
+              |> aggregateWindow(every: v.windowPeriod, fn: ${config.fn}, createEmpty: ${fluxValue config.createEmpty})
+            ''
+          ) + lib.optionalString config.pivot ''
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> drop(columns: ["_start", "_stop"])
+          '' + config.extra
+        );
+      };
+    });
     FieldConfig = (pkgs.formats.json {}).type;
   in {
     influx = mkOption {
