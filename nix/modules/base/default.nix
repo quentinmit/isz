@@ -38,31 +38,51 @@ in {
     home-manager.useUserPackages = true;
 
     environment.systemPackages = with pkgs; [
-      w3m-nographics
+      # Filesystem
+      sshfs-fuse
+
+      # Block devices
       testdisk
       ddrescue
-      ccrypt
+      smartmontools
 
-      sshfs-fuse
-      socat
-      tcpdump
-
+      # Other devices
+      acpica-tools
       pciutils
 
-      unzip
-      zip
+      # Performance tools
+      glances
+      htop
+      lsof
 
-      acpica-tools
-      # apt-file # Debian
-      # bash-completion # programs.bash.enableCompletion
-      file
-      bintools # FIXME: Needed for lesspipe?
+      # Networking
+      w3m-nographics
+      socat
+      tcpdump
+      bwm_ng
+      curlFull
       host # already present
       dig
-      bwm_ng
-      # command-not-found # programs.command-not-found.enable
-      curlFull
-      # debsums # Debian
+      fping
+      net-snmp
+      openssl
+      socat
+      inetutils # provides telnet
+      wget
+
+      # Compression
+      unzip
+      zip
+      ccrypt
+
+      # Development
+      bintools # FIXME: Needed for lesspipe?
+      go
+      jq
+      file
+      sqlite-interactive
+
+      # Editors
       (pkgs.vim.customize {
         name = "vim";
         vimrcConfig.packages.default = {
@@ -81,42 +101,31 @@ in {
             epkgs.yaml-mode
           ]))
       )
-      fping
-      glances
+
+      # bash-completion # programs.bash.enableCompletion
       gawk # already present
-      htop
       # texinfoInteractive # already present
       # ionit # Uhh
-      jq
-      lsof
       # man # already present
       # mlocate # services.locate.enable
       # mtr # programs.mtr.enable
       ncdu
-      net-snmp
       nix-tree
       nmap
-      openssl
       # rfkill
       rsync
       screen
-      socat
-      sqlite-interactive
-      inetutils # provides telnet
       tree
       watch
-      wget
       # System daemons/parts
       # certbot
       # docker-compose
       # docker # virtualization.docker.enable
       # fbset # Not found?
       #ffmpeg-headless
-      go
       # linux-cpupower # Not found?
       # podman
       # python311 # pyvenv is part of python311
-      smartmontools
       # wireless-regdb
       # wirelesstools
     ]

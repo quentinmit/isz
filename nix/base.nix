@@ -13,40 +13,47 @@
     networking.domain = "isz.wtf";
 
     environment.systemPackages = with pkgs; [
+      # Partition/MBR tools
       ms-sys
       efibootmgr
       efivar
       parted
       gptfdisk
-      cryptsetup
 
+      # Filesystems
+      exfatprogs
       fuse
       fuse3
 
+      # Block devices
       sdparm
       hdparm
-      usbutils
       nvme-cli
+      cryptsetup
 
+      # Other devices
       drm_info
-      exfatprogs
+      usbutils
       input-utils
+      v4l-utils
+      lm_sensors
+      i2c-tools
+
+      # Performance tools
       iotop
       psmisc
       strace
       sysstat
-      v4l-utils
-
-      # System daemons/parts
-      bridge-utils
       cpuset
-      i2c-tools
+
+      # Networking
+      bridge-utils
       iptables
-      lm_sensors
-      util-linux # already present
-      net-snmp
       vlan
       netcat-openbsd
+
+      # Utilities
+      util-linux
     ];
     services.locate.enable = true;
     services.locate.locate = pkgs.mlocate;
