@@ -1,5 +1,306 @@
 { config, options, pkgs, lib, ... }:
 {
+  config.isz.grafana.dashboards.wifi-clients = {
+    uid = "vQ9bVarMz";
+    title = "WiFi Clients";
+    tags = [ "home" "wifi" ];
+    defaultDatasourceName = "workshop";
+    panels = let
+      interval = config.isz.telegraf.interval.mikrotik;
+    in [
+      {
+        panel = {
+          gridPos = { x = 0; y = 0; w = 24; h = 20; };
+          title = "WiFi Clients";
+          type = "table";
+        };
+        panel.fieldConfig.defaults = {
+          custom.filterable = true;
+        };
+        influx.query = ''
+          import "join"
+
+          interfaces1 = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless")
+            |> filter(fn: (r) => r["_field"] == "running")
+            |> last()
+            |> group(columns: ["hostname"])
+            |> map(fn: (r) => ({r with "master-interface": if exists r["master-interface"] then r["master-interface"] else r["name"]}))
+          interfaces2 = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless")
+            |> filter(fn: (r) => r["_field"] == "running")
+            |> last()
+            |> group(columns: ["hostname"])
+            // Should not be necessary but causes a panic if missing
+            |> map(fn: (r) => ({r with "master-interface": if exists r["master-interface"] then r["master-interface"] else r["name"]}))
+
+          interfaces = join.left(
+            left: interfaces1,
+            right: interfaces2,
+            on: (l, r) => l["master-interface"] == r["name"],
+            as: (l, r) => ({
+              "hostname": l.hostname,
+              "name": l.name,
+              "ssid": l.ssid,
+              "band": if exists r.band then r.band else l.band,
+            })
+            )
+            |> group(columns: ["hostname"])
+
+          registrations = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless/registration-table")
+            |> filter(fn: (r) => r["_field"] == "tx-rate-name" or r._field == "rx-rate-name" or r._field == "uptime-ns" or r._field == "signal-strength" or r._field == "tx-ccq")
+            |> group(columns: ["_measurement", "_field", "_start", "_stop", "agent_host", "hostname", "interface", "mac-address"])
+            |> last()
+            |> pivot(rowKey: ["_time", "last-ip"], columnKey: ["_field"], valueColumn: "_value")
+            |> group(columns: ["hostname"])
+
+          leases = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/ip/dhcp-server/lease")
+            |> filter(fn: (r) => r["_field"] == "active-address" or r._field == "status")
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> group(columns: ["hostname", "mac-address"])
+            |> sort(columns: ["_time"])
+            |> last(column: "status")
+            |> group(columns: ["hostname"])
+
+          registrations2 = join.left(
+            left: registrations,
+            right: leases,
+            on: (l, r) => l["mac-address"] == r["mac-address"],
+            as: (l, r) => ({
+              "hostname": l.hostname,
+              "interface": l.interface,
+              "last-seen": l._time,
+              "mac-address": l["mac-address"],
+              "last-ip": l["last-ip"],
+              "active-address": r["active-address"],
+              "known": exists r.comment,
+              "comment": r.comment,
+              "rx-rate": l["rx-rate-name"],
+              "tx-rate": l["tx-rate-name"],
+              "tx-ccq": l["tx-ccq"],
+              "uptime": l["uptime-ns"],
+              "signal-strength": l["signal-strength"]
+            })
+          )
+          |> sort(columns: ["interface", "active-address"])
+          |> sort(columns: ["last-seen"], desc: true)
+
+          join.left(
+            left: registrations2,
+            right: interfaces,
+            on: (l, r) => l["interface"] == r["name"],
+            as: (l, r) => ({
+              "hostname": l.hostname,
+              "interface": l.interface,
+              "band": r.band,
+              "ssid": r.ssid,
+              "last-seen": l["last-seen"],
+              "mac-address": l["mac-address"],
+              "last-ip": l["last-ip"],
+              "active-address": l["active-address"],
+              "known": l.known,
+              "comment": l.comment,
+              "rx-rate": l["rx-rate"],
+              "tx-rate": l["tx-rate"],
+              "tx-ccq": l["tx-ccq"],
+              "uptime": l["uptime"],
+              "signal-strength": l["signal-strength"]
+            })
+            )
+            |> drop(columns: ["hostname"])
+            |> yield()
+        '';
+        fields.last-seen.custom.width = 170;
+        fields.interface.custom.width = 65;
+        fields.band.custom.width = 100;
+        fields.ssid.custom.width = 170;
+        fields.mac-address = {
+          custom.width = 150;
+          links = [{
+            url = ''/d/eXssGz84k/wifi-client?orgId=1&var-macaddress=''${__value.text}'';
+          }];
+        };
+        fields.comment.custom.width = 294;
+        fields.known = {
+          custom.cellOptions = {
+            mode = "basic";
+            type = "color-background";
+          };
+          custom.width = 59;
+        };
+        fields.active-address.custom.width = 120;
+        fields.signal-strength = {
+          unit = "dBm";
+          custom.width = 90;
+        };
+        fields.tx-ccq = {
+          custom.width = 75;
+          unit = "percent";
+          color.mode = "thresholds";
+          thresholds.mode = "absolute";
+          thresholds.steps = [
+            { value = null; color = "red"; }
+            { value = 50; color = "#EAB839"; }
+            { value = 90; color = "green"; }
+          ];
+          custom.cellOptions.type = "color-text";
+        };
+        fields.last-ip.custom.width = 120;
+        fields.uptime = {
+          unit = "ns";
+          custom.width = 80;
+        };
+        fields.encryption.custom.width = 81;
+        fieldOrder = [
+          "last-seen"
+          "interface"
+          "band"
+          "ssid"
+          "mac-address"
+          "comment"
+          "known"
+          "active-address"
+          "signal-strength"
+          "tx-ccq"
+          "last-ip"
+          "uptime"
+          "tx-rate"
+          "rx-rate"
+        ];
+      }
+      {
+        panel = {
+          gridPos = { x = 0; y = 20; w = 12; h = 11; };
+          title = "TX Rate";
+          inherit interval;
+          options.tooltip.mode = "multi";
+          options.tooltip.sort = "desc";
+          options.legend.showLegend = false;
+        };
+        panel.fieldConfig.defaults = {
+          displayName = ''''${__field.labels.interface} ''${__field.labels.mac-address} ''${__field.labels.comment}'';
+          unit = "bps";
+          links = [{
+            title = "Show details";
+            url = ''/d/eXssGz84k/wifi-client?orgId=1&var-macaddress=''${__field.labels.mac-address}'';
+          }];
+        };
+        influx.query = ''
+          import "join"
+
+          rates = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless/registration-table")
+            |> filter(fn: (r) => r["_field"] == "tx-rate")
+            |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false) // true
+            |> group(columns: ["hostname", "mac-address"])
+
+          leases = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/ip/dhcp-server/lease")
+            |> filter(fn: (r) => r._field == "status")
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> group(columns: ["hostname", "mac-address"])
+            |> sort(columns: ["_time"])
+            |> last(column: "status")
+            |> map(fn: (r) => ({r with comment: if exists r.comment then r.comment else ""}))
+            |> keep(columns: ["hostname", "mac-address", "comment"])
+
+          join.left(
+            left: rates,
+            right: leases,
+            on: (l, r) => l["mac-address"] == r["mac-address"],
+            as: (l, r) => ({
+              "hostname": l.hostname,
+              "interface": l.interface,
+              "mac-address": l["mac-address"],
+              "last-ip": l["last-ip"],
+              "comment": r.comment,
+              "_value": l._value,
+              "_time": l._time,
+              "_start": l._start,
+              "_stop": l._stop,
+              "_measurement": l._measurement,
+              "_field": l._field,
+            })
+          )
+          |> group(columns: ["_measurement", "_field", "_start", "_stop", "hostname", "interface", "mac-address", "comment"])
+          |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: true)
+          |> yield()
+        '';
+      }
+      {
+        panel = {
+          gridPos = { x = 12; y = 20; w = 12; h = 11; };
+          title = "Throughput";
+          inherit interval;
+          options.tooltip.mode = "multi";
+          options.tooltip.sort = "desc";
+          options.legend.showLegend = false;
+        };
+        panel.fieldConfig.defaults = {
+          displayName = ''''${__field.name} ''${__field.labels.interface} ''${__field.labels.comment}'';
+          unit = "Bps";
+          custom.axisLabel = "in (-) / out (+)";
+          custom.scaleDistribution.type = "symlog";
+          custom.scaleDistribution.log = 10;
+          links = [{
+            title = "Show details";
+            url = ''/d/eXssGz84k/wifi-client?orgId=1&var-macaddress=''${__field.labels.mac-address}'';
+          }];
+        };
+        fields.rx-bytes.custom.transform = "negative-Y";
+        influx.query = ''
+          import "join"
+
+          rates = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless/registration-table")
+            |> filter(fn: (r) => r["_field"] == "tx-bytes" or r._field == "rx-bytes")
+            |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
+            |> derivative(nonNegative: true)
+            |> group(columns: ["hostname", "mac-address"])
+
+          leases = from(bucket: v.defaultBucket)
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/ip/dhcp-server/lease")
+            |> filter(fn: (r) => r._field == "status")
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> group(columns: ["hostname", "mac-address"])
+            |> sort(columns: ["_time"])
+            |> last(column: "status")
+            |> map(fn: (r) => ({r with comment: if exists r.comment then r.comment else r["mac-address"]}))
+            |> keep(columns: ["hostname", "mac-address", "comment"])
+
+          join.left(
+            left: rates,
+            right: leases,
+            on: (l, r) => l["mac-address"] == r["mac-address"],
+            as: (l, r) => ({
+              "hostname": l.hostname,
+              "interface": l.interface,
+              "mac-address": l["mac-address"],
+              "comment": if exists r.comment then r.comment else l["mac-address"],
+              "_time": l._time,
+              "_start": l._start,
+              "_stop": l._stop,
+              "_measurement": l._measurement,
+              "_field": l._field,
+              "_value": l._value,
+            })
+          )
+          |> group(columns: ["_measurement", "_field", "_start", "_stop", "hostname", "interface", "mac-address", "comment"])
+          |> yield()
+        '';
+      }
+    ];
+  };
   config.isz.grafana.dashboards.wifi-client = {
     uid = "eXssGz84k";
     title = "WiFi Client";
@@ -95,13 +396,13 @@
           gridPos = { x = 0; y = 3; w = 10; h = 8; };
           title = "Wireless Rate";
           options.tooltip.mode = "multi";
+          inherit interval;
         };
         panel.fieldConfig.defaults = {
           custom.axisLabel = "rx (-) / tx (+)";
           unit = "bps";
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
-        panel.interval = interval;
         fields.rx-rate.custom.transform = "negative-Y";
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter._field = ["tx-rate" "rx-rate"];
@@ -114,6 +415,7 @@
           gridPos = { x = 10; y = 3; w = 10; h = 8; };
           title = "Throughput";
           options.tooltip.mode = "multi";
+          inherit interval;
         };
         panel.fieldConfig.defaults = {
           custom.axisLabel = "in (-) / out (+)";
@@ -126,7 +428,6 @@
           unit = "Bps";
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
-        panel.interval = interval;
         fields.rx-bytes.custom.transform = "negative-Y";
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter._field = ["tx-bytes" "rx-bytes"];
@@ -139,12 +440,12 @@
           gridPos = { x = 0; y = 11; w = 10; h = 8; };
           title = "Signal Strength at Rate";
           options.tooltip.mode = "multi";
+          inherit interval;
         };
         panel.fieldConfig.defaults = {
           unit = "dBm";
           displayName = "\${__field.labels.rate}";
         };
-        panel.interval = interval;
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter._field = ["strength-at-rates" "strength-at-rates-age-ns"];
         influx.filter.mac-address = "\${macaddress}";
@@ -171,11 +472,11 @@
         panel = {
           gridPos = { x = 10; y = 11; w = 10; h = 8; };
           title = "TX CCQ";
+          inherit interval;
         };
         panel.fieldConfig.defaults = {
           unit = "percent";
         };
-        panel.interval = interval;
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter._field = ["tx-ccq"];
         influx.filter.mac-address = "\${macaddress}";
@@ -192,8 +493,8 @@
             valueSize = 20;
           };
           options.orientation = "horizontal";
+          inherit interval;
         };
-        panel.interval = interval;
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter.mac-address = "\${macaddress}";
         influx.filter._field = [

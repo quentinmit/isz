@@ -35,6 +35,10 @@ in {
           title = mkOption {
             type = types.str;
           };
+          tags = mkOption {
+            type = types.listOf types.str;
+            default = [];
+          };
           defaultDatasourceName = mkOption {
             type = types.str;
           };
@@ -106,7 +110,7 @@ in {
         inherit (cfg.datasources.${dashboard.defaultDatasourceName}) uid type;
       };
       in {
-        inherit (dashboard) uid title links;
+        inherit (dashboard) uid title tags links;
         panels = map (p: p.panel) dashboard.panels;
         templating.list = lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
           inherit (args) tag query;
