@@ -37,6 +37,16 @@ in {
           default = [];
         };
       };
+      interval = mkOption {
+        type = types.attrsOf (types.strMatching "[0-9]+[hms]");
+        default = {
+          agent = "10s";
+          cgroup = "60s";
+          mikrotik = "30s";
+          internal = "60s";
+          openweathermap = "10m";
+        };
+      };
       mikrotik = {
         api = let trg = with types; submodule {
             options = {
@@ -134,8 +144,8 @@ in {
     {
       services.telegraf.extraConfig = lib.mkMerge [
         {
-            agent = {
-            interval = "10s";
+          agent = {
+            interval = cfg.interval.agent;
             round_interval = true;
             metric_batch_size = 5000;
             metric_buffer_limit = 50000;
@@ -188,7 +198,7 @@ in {
               tagdrop.sensor = ["w1_slave_temp_input"];
             }];
             internal = [{
-              interval = "60s";
+              interval = cfg.interval.internal;
               tags.app = "telegraf";
             }];
           };
@@ -197,7 +207,7 @@ in {
           inputs = {
             kernel = [{}];
             cgroup = [{
-              interval = "60s";
+              interval = cfg.interval.cgroup;
             }];
             linux_sysctl_fs = [{}];
             sensors = [{
@@ -235,7 +245,7 @@ in {
             city_id = cfg.openweathermap.cityIds;
             lang = "en";
             fetch = ["weather" "forecast"];
-            interval = "10m";
+            interval = cfg.interval.openweathermap;
           }];
         })
         (lib.mkIf (cfg.mikrotik.api.targets != []) {
@@ -251,7 +261,7 @@ in {
               host.password
             ] ++ (if host.plaintext then ["--plaintext-login"] else []);
             signal = "STDIN";
-            interval = "30s";
+            interval = cfg.interval.mikrotik;
             restart_delay = "10s";
             data_format = "influx";
             name_prefix = "mikrotik-";
@@ -270,7 +280,7 @@ in {
               host.password
             ];
             signal = "STDIN";
-            interval = "30s";
+            interval = cfg.interval.mikrotik;
             restart_delay = "10s";
             data_format = "influx";
             name_prefix = "mikrotik-";

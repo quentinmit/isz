@@ -48,7 +48,9 @@
         type = "dashboards";
       }
     ];
-    panels = [
+    panels = let
+      interval = config.isz.telegraf.interval.mikrotik;
+    in [
       {
         panel = {
           gridPos = { x = 0; y = 0; w = 20; h = 3; };
@@ -99,6 +101,7 @@
           unit = "bps";
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
+        panel.interval = interval;
         fields.rx-rate.custom.transform = "negative-Y";
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter._field = ["tx-rate" "rx-rate"];
@@ -123,6 +126,7 @@
           unit = "Bps";
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
+        panel.interval = interval;
         fields.rx-bytes.custom.transform = "negative-Y";
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter._field = ["tx-bytes" "rx-bytes"];
@@ -140,6 +144,7 @@
           unit = "dBm";
           displayName = "\${__field.labels.rate}";
         };
+        panel.interval = interval;
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter._field = ["strength-at-rates" "strength-at-rates-age-ns"];
         influx.filter.mac-address = "\${macaddress}";
@@ -170,6 +175,7 @@
         panel.fieldConfig.defaults = {
           unit = "percent";
         };
+        panel.interval = interval;
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter._field = ["tx-ccq"];
         influx.filter.mac-address = "\${macaddress}";
@@ -187,6 +193,7 @@
           };
           options.orientation = "horizontal";
         };
+        panel.interval = interval;
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter.mac-address = "\${macaddress}";
         influx.filter._field = [

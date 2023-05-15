@@ -13,9 +13,9 @@ with import ../grafana/types.nix { inherit pkgs lib; };
         (field: options: {
           matcher.id = "byName";
           matcher.options = field;
-        properties = lib.mapAttrsToList (id: value: {
-          inherit id value;
-        }) (toProperties options);
+          properties = lib.mapAttrsToList (id: value: {
+            inherit id value;
+          }) (toProperties options);
         })
         g.fields;
     }
