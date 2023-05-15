@@ -15,7 +15,6 @@ final: prev:
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (python-final: python-prev: with python-final; {
       RouterOS-api = callPackage ./python/routeros-api {};
-      w1thermsensor = callPackage ./python/w1thermsensor {};
       Dozer = callPackage ./python/dozer {};
     })
   ];

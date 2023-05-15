@@ -1,7 +1,9 @@
 { lib, pkgs, config, options, ... }@args:
 let
   isz-mikrotik = pkgs.callPackage ./mikrotik {};
-  isz-w1 = pkgs.callPackage ./w1 {};
+  isz-w1 = pkgs.callPackage ./w1 {
+    python3 = pkgs.unstable.python3;
+  };
   # nix-darwin exposes "nixos" as a field on lib, but NixOS does not (??).
   isNixDarwin = lib ? nixos;
 in {
