@@ -58,7 +58,9 @@ in {
       host # already present
       dig
       fping
+      # mtr # programs.mtr.enable
       net-snmp
+      nmap
       openssl
       socat
       inetutils # provides telnet
@@ -96,21 +98,25 @@ in {
           ]))
       )
 
+      # Nix
+      nix-diff
+      nix-tree
+      nvd
+
+      # Shell utilities
       # bash-completion # programs.bash.enableCompletion
       gawk # already present
-      # texinfoInteractive # already present
-      # ionit # Uhh
       # man # already present
-      # mlocate # services.locate.enable
-      # mtr # programs.mtr.enable
       ncdu
-      nix-tree
-      nmap
-      # rfkill
-      rsync
       screen
+      # texinfoInteractive # already present
       tree
       watch
+
+      # ionit # Uhh
+      # mlocate # services.locate.enable
+      # rfkill
+      rsync
       # System daemons/parts
       # certbot
       # docker-compose
