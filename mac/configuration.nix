@@ -22,182 +22,231 @@
     tshark = false;
   };
   environment.systemPackages = with pkgs; [
+    # Block devices
+    ddrescue
+    f3
+    #unsupported gptfdisk
+
+    # Nix
     statix
-    telegraf
-    (ffmpeg-full.override {
-      nonfreeLicensing = true;
-    })
-    # Packages from macports
-    ack
-    #aget
-    #unsupported aircrack-ng
-    unstable.alacritty
-    alpine
-    antiword
-    #why aom
+    pkgs.deploy-rs.deploy-rs
+
+    # Development
     arduino-cli
     pkgsCross.arm-embedded.buildPackages.binutils
     pkgsCross.arm-embedded.stdenv.cc
     pkgsCross.arm-embedded.buildPackages.gdb
     #arm-none-linux-gnueabi-binutils
-    atomicparsley
-    avidemux
     pkgsCross.avr.buildPackages.gcc
     pkgsCross.avr.avrlibc
     avrdude
-    axel
-    #backdown
-    #barnowl
     #already binutils
-    binwalk
-    #bitchx
-    #blueutil
-    bochs
-    #why boehmgc
-    #why boost
     unstable.bossa
-    bpytop
-    bsdiff
-    #already bwm-ng
-    #why c-ares
-    cabextract
-    #why cairomm
-    capstone
     #carthage
-    emacsPackages.cask
     #cctools
     cdecl
-    cdparanoia
-    #Chmox
-    #why chrony
     #clang
     #why cmake
-    codec2
-    contacts
-    coreutils
     #unsupported createrepo_c
-    #csshX
-    #why ctop
-    #already curl
     cvsps
-    #cwdiff
-    dasel
-    dav1d
-    ddrescue
-    debianutils
-    pkgs.deploy-rs.deploy-rs
     dfu-util
-    diff-pdf
-    #unsupported dsd
-    #unsupported dsdcc
-    #unsupported dvdbackup
-    #dvdrw-tools
     #elftoolchain
     esptool
-    #unsupported evince
-    exiftool
-    f3
-    fcrackzip
-    fd
     fdroidserver
-    feh
-    #already ffmpeg
-    figlet
-    #fizmo
-    flac
-    #unsupported fldigi
-    #unsupported flrig
-    (fortune.override {
-      withOffensive = true;
-    })
-    fossil
     fpc
-    fping
-    #frobtads
-    frotz
-    #funtools
-    gcab
     #why gcc9
-    gdal
     #why gdb
-    gegl
     ghc
-    gimp
+    gperftools
+    #why imake
+    #ld64
+    openocd
+
+    # (D)VCS
+    fossil
     #already git
     git-crypt
     git-secret
-    #unsupported gnome.gnome-keyring
-    gnome-online-accounts
-    gnupg
-    gnuplot
+    mercurial
+
+    # Multimedia
+    (ffmpeg-full.override {
+      nonfreeLicensing = true;
+    })
+    atomicparsley
+    avidemux
+    cdparanoia
+    codec2
+    (dav1d.override {
+      withTools = true;
+      withExamples = true;
+    })
+    #unsupported dvdbackup
+    #dvdrw-tools
+    exiftool
+    feh
+    #already ffmpeg
+    flac
+    graphicsmagick_q16
+    gsm
+    id3lib
+    #id3tool
+    imagemagickBig
+    libde265
+    libjpeg
+    libraw
+    #makeicns
+    libicns
+    mediainfo
+    #unsupported mikmod
+    #mpeg2vidcodec
+    #mpgtx
+    mpv
+    opencv
+
+    # Radio
+    #unsupported dsd
+    #unsupported dsdcc
+    #unsupported fldigi
+    #unsupported flrig
     gnuradio
-    gnutar
-    gperftools
-    gpgme
     #already gpsbabel
     gpsbabel-gui
     #unsupported gpsd
-    #unsupported gptfdisk
     unstable.gqrx-portaudio
-    graphicsmagick_q16
-    graphviz
     #grig
-    gspell
-    gtk-vnc
-    #why gtk3
-    #why gtkmm
-    #why gtkmm3
-    units
-    gv
-    gvfs
     hamlib_4
-    #hesiod
-    #why hidapi
-    htmlq
-    htop
-    id3lib
-    #id3tool
+    #already from soapysdr-with-plugins limesuite
+    multimon-ng
+
+    # Other devices
+    #blueutil
+    libftdi1
+    minicom
+
+    # Database
+    unstable.mariadb_1011.client
+    mdbtools
+
+    # Network
+    #unsupported aircrack-ng
+    alpine
+    #aget
+    axel
+    #barnowl
+    #bitchx
+    #why chrony
+    #csshX
+    #already curl
+    fping
+    geoip
     iftop
-    imagemagickBig
-    #why imake
     inetutils
     influxdb2-cli
-    unstable.inkscape
-    #inkscape-app
     iperf3
     ipmitool
     irssi
-    #why isl
-    jc
-    #why jemalloc
-    jp
-    #why jpeg
-    #already jq
-    #why jsoncpp
-    #unsupported julia
-    #buildfail kicad
-    #ld64
     #unsupported ldapvi
-    less
     #lft
-    libcanberra
-    libde265
-    libftdi1
-    geoip
-    gsm
     libidn2
-    libjpeg
     libpsl
-    libraw
     libupnp
+    miniupnpc
+    mosh
+    mosquitto
+    mtr  # TODO: setuid wrapper
+    nbd
+    ncftp
+    nmap
+    #ntpsec
+    openconnect
+    openntpd
+    openssh
+    #already openssl
+    #collision openssl_1_1
+    openvpn
+
+    # Emulation
+    bochs
+
+    # Performance monitoring
+    bpytop
+    htop
+    telegraf
+
+    # Security
+    binwalk
+    capstone
+    fcrackzip
+    gnupg
+    gpgme
+    metasploit
+
+    # Shell utilities
+    ack
+    #backdown
+    bsdiff
+    cabextract
+    coreutils
+    #cwdiff
+    dasel
+    debianutils
+    (fortune.override {
+      withOffensive = true;
+    })
+    fd
+    file-rename
+    gcab
+    gnutar
+    units
+    htmlq
+    jc
+    jp
+    #already jq
+    less
     libzip
-    #already from soapysdr-with-plugins limesuite
-    #unsupported lirc
-    #why llvm-9.0
-    #why llvm-14
-    lua
     lzip
     lzma
+    #macutil
+    moreutils
+    most
+
+    # Science
+    #funtools
+    gdal
+    gnuplot
+    graphviz
+
+    # Productivity
+    antiword
+    contacts
+    diff-pdf
+    figlet
+    gspell
+    gv
+
+    # Games
+    #fizmo
+    #frobtads
+    frotz
+
+    # GUI
+    unstable.alacritty
+    #Chmox
+    #unsupported evince
+    gimp
+    #unsupported gnome.gnome-keyring
+    gnome-online-accounts
+    gtk-vnc
+    unstable.inkscape
+    #inkscape-app
+    #buildfail kicad
+
+    # Editors
+    emacsPackages.cask
+
+    # MacAthena
+    #hesiod
     #macathena-add
     #macathena-alpine-config
     #macathena-athrun
@@ -217,60 +266,34 @@
     #macathena-shell-config
     #macathena-standard
     #macathena-xcluster
-    #macutil
-    #makeicns
-    libicns
-    unstable.mariadb_1011.client
-    mdbtools
-    mediainfo
-    mercurial
-    metasploit
-    #unsupported mikmod
-    minicom
-    miniupnpc
+    #unsupported openafs
+    #openafs-signed-kext
+
+    # Packages from macports
+    gvfs
+    #unsupported julia
+    libcanberra
+    #unsupported lirc
+    lua
     #mlir-14
     mono
-    moreutils
-    mosh
-    mosquitto
-    most
-    #mpeg2vidcodec
-    #mpgtx
     #why mpir
-    mpv
-    mtr
-    multimon-ng
-    nbd
     ncdu
-    ncftp
     #why nghttp2
-    nmap
     nodejs # 18
     #nodejs15
     #nodejs17
     #why npm6
     #why npm7
     nodePackages.npm
-    #ntpsec
     #nvm
     fnm
     #unsupported nx-libs
     oath-toolkit
     octaveFull
-    #unsupported openafs
-    #openafs-signed-kext
     #why OpenBLAS
-    openconnect
-    opencv
-    openntpd
-    openocd
-    openssh
-    #already openssl
-    #collision openssl_1_1
-    openvpn
     #osxfuse
     #p5-devel-repl
-    file-rename
     #already exiftool
     #why p5-soap-lite
     #why p5-term-readline
