@@ -5,6 +5,7 @@
     ../nix/modules/base
     ../nix/modules/telegraf
     ../nix/modules/xquartz
+    ./perl.nix
     ./python.nix
   ];
 
@@ -26,6 +27,12 @@
     ddrescue
     f3
     #unsupported gptfdisk
+    simg2img
+
+    # Filesystems
+    gvfs
+    squashfsTools
+    #osxfuse
 
     # Nix
     statix
@@ -39,6 +46,7 @@
     #arm-none-linux-gnueabi-binutils
     pkgsCross.avr.buildPackages.gcc
     pkgsCross.avr.avrlibc
+    pkgsCross.mingwW64.buildPackages.binutils
     avrdude
     #already binutils
     unstable.bossa
@@ -59,8 +67,28 @@
     ghc
     gperftools
     #why imake
+    #unsupported julia
     #ld64
+    lua
+    #mlir-14
+    mono
+    #nodejs15
+    #nodejs17
+    #why npm6
+    #why npm7
+    nodePackages.npm
+    #nvm
+    fnm
+    octaveFull
     openocd
+    pipenv
+    #unsupported rpm
+    ruby
+    rustc
+    sloccount
+    sourceHighlight
+    upx
+    yarn
 
     # (D)VCS
     fossil
@@ -68,6 +96,7 @@
     git-crypt
     git-secret
     mercurial
+    rcs
 
     # Multimedia
     (ffmpeg-full.override {
@@ -103,6 +132,15 @@
     #mpgtx
     mpv
     opencv
+    #unsupported pavucontrol
+    pulseaudio
+    rav1e
+    rawtherapee
+    sox
+    tsduck
+    #broken vapoursynth
+    wxSVG
+    youtube-dl
 
     # Radio
     #unsupported dsd
@@ -118,15 +156,27 @@
     hamlib_4
     #already from soapysdr-with-plugins limesuite
     multimon-ng
+    #unsupported pothos
+    rtl-sdr
+    rtl_433
+    #rx_tools
+    #unsupported sdrangel
+    soapyhackrf
+    xastir
 
     # Other devices
     #blueutil
     libftdi1
+    #unsupported lirc
     minicom
+    #tuntaposx
+    #unsupported usbutils
+    #unsupported xsane
 
     # Database
     unstable.mariadb_1011.client
     mdbtools
+    postgresql
 
     # Network
     #unsupported aircrack-ng
@@ -159,20 +209,33 @@
     ncftp
     nmap
     #ntpsec
+    #unsupported nx-libs
     openconnect
     openntpd
     openssh
     #already openssl
     #collision openssl_1_1
     openvpn
+    pssh
+    #rlpr
+    tintin
+    #unsupported traceroute
+    transmission
+    websocat
+    wireshark
+    termshark
 
     # Emulation
     bochs
+    qemu
+    #unsupported winetricks
 
     # Performance monitoring
     bpytop
     htop
+    pstree
     telegraf
+    zenith
 
     # Security
     binwalk
@@ -181,10 +244,22 @@
     gnupg
     gpgme
     metasploit
+    oath-toolkit
+    pass
+    passExtensions.pass-import
+    passExtensions.pass-otp
+    passExtensions.pass-update
+    passExtensions.pass-genphrase
+    passExtensions.pass-checkup
+    pass-git-helper
+    radare2
+    rizin
+    sops
 
     # Shell utilities
     ack
     #backdown
+    brotli
     bsdiff
     cabextract
     coreutils
@@ -210,6 +285,28 @@
     #macutil
     moreutils
     most
+    ncdu
+    p7zip
+    pigz
+    pixz
+    pv
+    renameutils
+    ripgrep
+    rlwrap
+    #screenresolution
+    sl
+    terminal-notifier
+    tmate
+    tmux
+    libuchardet
+    unrar
+    vbindiff
+    vttest
+    xdelta
+    xmlstarlet
+    xqilla
+    yq
+    #unsupported gnome.zenity
 
     # Science
     #funtools
@@ -224,6 +321,20 @@
     figlet
     gspell
     gv
+    pandoc
+    #broken haskellPackages.pandoc-citeproc
+    pdf2svg
+    pdftk
+    poppler_utils
+    pstoedit
+    #unsupported qgis
+    rubber
+    texlive.combined.scheme-full
+    unrtf
+    #insecure wkhtmltopdf
+    wordnet
+    #insecure xpdf
+    zbar
 
     # Games
     #fizmo
@@ -241,6 +352,13 @@
     unstable.inkscape
     #inkscape-app
     #buildfail kicad
+    pidgin
+    spice-gtk
+    tigervnc
+    #insecure tightvnc
+    #unsupported turbovnc
+    #unsupported realvnc-vnc-viewer
+    #broken webkitgtk
 
     # Editors
     emacsPackages.cask
@@ -268,183 +386,14 @@
     #macathena-xcluster
     #unsupported openafs
     #openafs-signed-kext
+    #remctl
+    #zephyr
 
     # Packages from macports
-    gvfs
-    #unsupported julia
     libcanberra
-    #unsupported lirc
-    lua
-    #mlir-14
-    mono
-    #why mpir
-    ncdu
-    #why nghttp2
-    nodejs # 18
-    #nodejs15
-    #nodejs17
-    #why npm6
-    #why npm7
-    nodePackages.npm
-    #nvm
-    fnm
-    #unsupported nx-libs
-    oath-toolkit
-    octaveFull
-    #why OpenBLAS
-    #osxfuse
-    #p5-devel-repl
-    #already exiftool
-    #why p5-soap-lite
-    #why p5-term-readline
-    #why p5-term-readline-gnu
-    #why p5-xml-parser
-    #why p5.26-data-dump
-    #why p5.26-json
-    #why p5.26-time-local
-    #why p5.26-utf8-all
-    #why p5.28-authen-sasl
-    #why p5.28-cgi
-    #why p5.28-clone
-    #why p5.28-compress-raw-bzip2
-    #why p5.28-compress-raw-zlib
-    #why p5.28-digest-hmac
-    #why p5.28-digest-sha1
-    #why p5.28-error
-    #why p5.28-file-rename
-    #why p5.28-file-slurper
-    #why p5.28-gssapi
-    #why p5.28-image-exiftool
-    #why p5.28-io
-    #why p5.28-io-compress
-    #why p5.28-io-compress-brotli
-    brotli
-    #why p5.28-io-socket-inet6
-    #why p5.28-net-smtp-ssl
-    #why p5.28-socket6
-    #why p5.28-term-readkey
-    #why p5.28-term-readline-gnu
-    perl536Packages.TermReadLineGnu
-    #why p5.28-time-hires
-    #why p5.28-time-local
-    p7zip
-    pandoc
-    #broken haskellPackages.pandoc-citeproc
-    pass
-    passExtensions.pass-import
-    passExtensions.pass-otp
-    passExtensions.pass-update
-    passExtensions.pass-genphrase
-    passExtensions.pass-checkup
-    pass-git-helper
-    #unsupported pavucontrol
-    pdf2svg
-    pdftk
-    perl
-    pidgin
-    pigz
-    pipenv
-    pixz
     poly2tri-c
-    poppler
-    #why portmidi
-    postgresql
-    #unsupported pothos
-    pssh
-    pstoedit
-    pstree
-    pulseaudio
-    pv
-    qemu
-    #unsupported qgis
-    #why qt5
-    #why qwt-qt5
-    #why qwt60
-    #why qwt61
-    radare2
-    rapidjson
-    rav1e
-    rawtherapee
-    rcs
-    #remctl
-    renameutils
-    ripgrep
-    rizin
-    #rlpr
-    rlwrap
-    #unsupported rpm
-    rtl-sdr
-    rtl_433
-    rubber
-    ruby
-    rustc
-    #rx_tools
-    #already screen
-    #screenresolution
-    #unsupported sdrangel
-    simg2img
-    sl
-    sloccount
-    #already smartmontools
-    soapyhackrf
-    #already socat
-    sops
-    sourceHighlight
-    sox
-    spice-gtk
-    squashfsTools
-    #already sshfs
     #subversion-perlbindings-5.28
-    #already telegraf
-    terminal-notifier
     #already texinfo
-    texlive.combined.scheme-full
-    tigervnc
-    #insecure tightvnc
-    tintin
-    tmate
-    tmux
-    #unsupported traceroute
-    transmission
-    #already tree
-    tsduck
-    #tuntaposx
-    #unsupported turbovnc
-    libuchardet
-    unrar
-    unrtf
-    upx
-    #unsupported usbutils
-    #broken vapoursynth
-    vbindiff
-    #unsupported realvnc-vnc-viewer
-    vttest
-    #already watch
-    #broken webkitgtk
-    websocat
-    #already wget
-    #unsupported winetricks
-    wireshark
-    termshark
-    #insecure wkhtmltopdf
-    wordnet
-    wxSVG
-    #x86_64-w64-mingw32-binutils
-    xastir
-    xdelta
-    xmlstarlet
-    #xorg-server
-    #insecure xpdf
-    xqilla
-    #unsupported xsane
-    yarn
-    youtube-dl
-    yq
-    zbar
-    zenith
-    #unsupported gnome.zenity
-    #zephyr
-    #why zimg
   ];
 
   programs.bash = {
@@ -585,6 +534,10 @@
           LargeFileSupport => 1,
       );
     '';
+
+    programs.git = {
+      package = pkgs.gitFull;
+    };
 
     home.file.".gdbinit".text = ''
       set history filename ~/.gdb_history
