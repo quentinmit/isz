@@ -120,7 +120,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
       default = null;
     };
     panel = mkOption {
-      type = dashboardFormat.type;
+      inherit (dashboardFormat) type;
     };
   };
 }

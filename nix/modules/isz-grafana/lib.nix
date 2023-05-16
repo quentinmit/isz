@@ -15,5 +15,5 @@ rec {
   ;
   toProperties = with builtins; with lib; attrs:
     (removeAttrs attrs ["custom"]) //
-    (mapAttrs' (k: v: nameValuePair "custom.${k}" v) (attrs.custom or {}));
+    (mapAttrs' (k: nameValuePair "custom.${k}") (attrs.custom or {}));
 }

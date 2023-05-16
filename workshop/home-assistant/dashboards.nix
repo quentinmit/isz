@@ -15,14 +15,14 @@ let
     entity = "switch.${name}";
     show_state = true;
   };
-  light = (name: {
+  light = name: {
     type = "light";
     entity = "light.${name}";
-  });
-  climate = (name: {
+  };
+  climate = name: {
     type = "thermostat";
     entity = "climate.${name}";
-  });
+  };
 in {
   config = {
     services.home-assistant = {

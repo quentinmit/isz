@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 with import ./lib.nix { inherit config pkgs lib; };
 let
-  datasources = config.isz.grafana.datasources;
+  inherit (config.isz.grafana) datasources;
 in {
   options = with lib; {
     isz.grafana.dashboards = mkOption {
@@ -69,7 +69,7 @@ in {
                   };
                   fieldConfig.defaults = lib.mkMerge [
                     {
-                      unit = g.unit;
+                      inherit (g) unit;
                     }
                     (lib.mkIf g.stacking {
                       custom.stacking.mode = "normal";

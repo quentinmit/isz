@@ -43,7 +43,7 @@ rec {
         default = null;
       };
       options = mkOption {
-        type = dashboardFormat.type;
+        inherit (dashboardFormat) type;
         default = {};
       };
       fieldConfig = mkOption {
@@ -122,7 +122,7 @@ rec {
         default = "";
       };
       options = mkOption {
-        type = dashboardFormat.type;
+        inherit (dashboardFormat) type;
       };
     };
   };
@@ -133,7 +133,7 @@ rec {
         default = "";
       };
       value = mkOption {
-        type = dashboardFormat.type;
+        inherit (dashboardFormat) type;
       };
     };
   };

@@ -1,6 +1,6 @@
 { config, pkgs, lib, ... }@args:
 let
-  isLinux = pkgs.stdenv.isLinux;
+  inherit (pkgs.stdenv) isLinux;
 in {
   config = {
     programs.home-manager.enable = true;
