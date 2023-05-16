@@ -74,8 +74,6 @@ in {
       # Development
       bintools # FIXME: Needed for lesspipe?
       go
-      jq
-      file
       sqlite-interactive
 
       # Editors
@@ -105,7 +103,10 @@ in {
 
       # Shell utilities
       # bash-completion # programs.bash.enableCompletion
+      dyff
+      file
       gawk # already present
+      jq
       # man # already present
       ncdu
       screen
