@@ -11,26 +11,108 @@
       vlan88 = mkEnableOption "VLAN 88";
     };
   };
-  config = let cfg = config.isz.networking; in with lib.strings; {
-    networking.useDHCP = false;
-    networking.useNetworkd = true;
-    systemd.network.netdevs = {
-      br0 = {
-        enable = true;
-        netdevConfig = {
-          Name = "br0";
-          Kind = "bridge";
-          MACAddress = cfg.macAddress;
+  config = let
+    cfg = config.isz.networking;
+  in lib.mkMerge [
+    {
+      networking.useDHCP = false;
+      networking.useNetworkd = true;
+      systemd.network.netdevs = {
+        br0 = {
+          enable = true;
+          netdevConfig = {
+            Name = "br0";
+            Kind = "bridge";
+            MACAddress = cfg.macAddress;
+          };
+          extraConfig =
+            ''
+              [Bridge]
+              VLANFiltering=yes
+              STP=no
+              DefaultPVID=none
+            '';
         };
-        extraConfig =
-          ''
-            [Bridge]
-            VLANFiltering=yes
-            STP=no
-            DefaultPVID=none
-          '';
+        vlan3097 = {
+          enable = true;
+          netdevConfig = {
+            Name = "vlan3097";
+            Kind = "vlan";
+          };
+          vlanConfig = {
+            Id = 3097;
+          };
+        };
       };
-      vlan88 = {
+      systemd.network.networks = {
+        br0 = {
+          name = "br0";
+          networkConfig = {
+            DHCP = "ipv4";
+            VLAN = [
+              "vlan3097"
+            ];
+          };
+          extraConfig =
+            ''
+              [BridgeVLAN]
+              PVID=3096
+              EgressUntagged=3096
+              [BridgeVLAN]
+              VLAN=3097
+              [BridgeVLAN]
+              VLAN=500
+              [BridgeVLAN]
+              VLAN=88
+            '';
+        };
+        # Match USB devices first even if they're named "enp*"
+        "00-usb0" = {
+          matchConfig = {
+            Property = "ID_USB_DRIVER=*";
+          };
+          networkConfig = {
+            Bridge = "br0";
+          };
+          extraConfig =
+            ''
+              [BridgeVLAN]
+              PVID=500
+              EgressUntagged=500
+            '';
+        };
+        eth = {
+          matchConfig = {
+            Name = "e*";
+          };
+          networkConfig = {
+            Bridge = "br0";
+            LinkLocalAddressing = "no";
+          };
+          extraConfig =
+            ''
+              [BridgeVLAN]
+              PVID=3096
+              EgressUntagged=3096
+              [BridgeVLAN]
+              VLAN=3097
+              [BridgeVLAN]
+              VLAN=500
+              [BridgeVLAN]
+              VLAN=88
+            '';
+        };
+        vlan3097 = {
+          name = "vlan3097";
+          networkConfig = {
+            Address = "172.30.97.${toString cfg.lastOctet}/24";
+          };
+        };
+      };
+    }
+    (lib.mkIf cfg.vlan88 {
+      systemd.network.networks.br0.networkConfig.VLAN = ["vlan88"];
+      systemd.network.netdevs.vlan88 = {
         enable = true;
         netdevConfig = {
           Name = "vlan88";
@@ -40,88 +122,12 @@
           Id = 88;
         };
       };
-      vlan3097 = {
-        enable = true;
-        netdevConfig = {
-          Name = "vlan3097";
-          Kind = "vlan";
-        };
-        vlanConfig = {
-          Id = 3097;
-        };
-      };
-    };
-    systemd.network.networks = {
-      br0 = {
-        name = "br0";
-        networkConfig = {
-          DHCP = "ipv4";
-          VLAN = [
-            "vlan3097"
-            "vlan88"
-          ];
-        };
-        extraConfig =
-          ''
-            [BridgeVLAN]
-            PVID=3096
-            EgressUntagged=3096
-            [BridgeVLAN]
-            VLAN=3097
-            [BridgeVLAN]
-            VLAN=500
-            [BridgeVLAN]
-            VLAN=88
-          '';
-      };
-      # Match USB devices first even if they're named "enp*"
-      "00-usb0" = {
-        matchConfig = {
-          Property = "ID_USB_DRIVER=*";
-        };
-        networkConfig = {
-          Bridge = "br0";
-        };
-        extraConfig =
-          ''
-            [BridgeVLAN]
-            PVID=500
-            EgressUntagged=500
-          '';
-      };
-      eth = {
-        matchConfig = {
-          Name = "e*";
-        };
-        networkConfig = {
-          Bridge = "br0";
-          LinkLocalAddressing = "no";
-        };
-        extraConfig =
-          ''
-            [BridgeVLAN]
-            PVID=3096
-            EgressUntagged=3096
-            [BridgeVLAN]
-            VLAN=3097
-            [BridgeVLAN]
-            VLAN=500
-            [BridgeVLAN]
-            VLAN=88
-          '';
-      };
-      vlan3097 = {
-        name = "vlan3097";
-        networkConfig = {
-          Address = "172.30.97.${toString cfg.lastOctet}/24";
-        };
-      };
-      vlan88 = lib.mkIf cfg.vlan88 {
+      systemd.network.networks.vlan88 = {
         name = "vlan88";
         networkConfig = {
           Address = "192.168.88.${toString cfg.lastOctet}";
         };
       };
-    };
-  };
+    })
+  ];
 }
