@@ -80,14 +80,12 @@
           (lib.lists.any (t: t == "netidm") mtl)
           && (lib.lists.any (t: t == "idm") mtl)
       );
+    }
+    (lib.mkIf config.services.rtl-tcp.enable {
       hardware.rtl-sdr.enable = true;
       environment.systemPackages = with pkgs; [
         rtl-sdr
-        rtlamr
-        rtlamr-collect
       ];
-    }
-    (lib.mkIf config.services.rtl-tcp.enable {
       systemd.services.rtl-tcp = {
         description = "RTL-SDR TCP server";
         path = [ pkgs.rtl-sdr ];
@@ -108,6 +106,10 @@
     (let
       cfg = config.services.rtlamr-collect;
     in lib.mkIf cfg.enable {
+      environment.systemPackages = with pkgs; [
+        rtlamr
+        rtlamr-collect
+      ];
       users.extraUsers.${cfg.user} = {
         isSystemUser = true;
         group = cfg.user;
