@@ -17,9 +17,7 @@
       ../nix/zwave-js-ui.nix
       ../nix/base.nix
       ../nix/networkd.nix
-      ../nix/modules/rtlamr-collect.nix
       ../nix/speedtest.nix
-      ../nix/modules/udev.nix
     ];
 
   sops.defaultSopsFile = ./secrets.yaml;

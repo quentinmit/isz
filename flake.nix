@@ -75,25 +75,16 @@
         legacyPackages = pkgs;
         devShells.esphome = import ./workshop/esphome/shell.nix { inherit pkgs; };
       })) // {
-        nixosConfigurations.workshop = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
+        nixosConfigurations = nixpkgs.lib.genAttrs [
+          "workshop"
+          "bedroom-pi"
+        ] (name: nixpkgs.lib.nixosSystem {
           inherit specialArgs;
-          modules = [
+          modules = (builtins.attrValues self.nixosModules) ++ [
             overlayModule
-            ./workshop/configuration.nix
+            ./${name}/configuration.nix
           ];
-        };
-        nixosConfigurations.bedroom-pi = nixpkgs.lib.nixosSystem {
-          inherit specialArgs;
-          modules = [
-            {
-              nixpkgs.hostPlatform = { system = "aarch64-linux"; };
-              #nixpkgs.buildPlatform = { system = "x86_64-linux"; config = "x86_64-unknown-linux-gnu"; };
-            }
-            overlayModule
-            ./bedroom/configuration.nix
-          ];
-        };
+        });
         darwinConfigurations.mac = darwin.lib.darwinSystem {
           system = "x86_64-darwin";
           inherit specialArgs;

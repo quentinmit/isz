@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ../../nix/modules/isz-grafana
     ./dashboards.nix
   ];
   config = {

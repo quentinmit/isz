@@ -159,6 +159,8 @@ in
     '';
   in
   {
+    nixpkgs.hostPlatform = { system = "aarch64-linux"; };
+    #nixpkgs.buildPlatform = { system = "x86_64-linux"; config = "x86_64-unknown-linux-gnu"; };
     nixpkgs.overlays = [
       # Allow RPi kernel to be used despite missing modules.
       (final: super: {

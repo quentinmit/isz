@@ -4,8 +4,6 @@
   imports = [
     ../nix/base.nix
     ../nix/networkd.nix
-    ../nix/modules/telegraf
-    ../nix/modules/udev.nix
     ../nix/raspi.nix
   ];
 

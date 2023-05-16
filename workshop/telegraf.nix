@@ -1,8 +1,5 @@
 { lib, pkgs, config, options, ... }:
 {
-  imports = [
-    ../nix/modules/telegraf
-  ];
   config = let
     pingTargets = [{ host = "overwatch.mit.edu"; }] ++ (builtins.fromJSON (builtins.readFile ../telegraf/static/he_lg.json)).he_lg_ping_targets;
   in {
