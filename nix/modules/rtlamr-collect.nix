@@ -1,8 +1,5 @@
 { lib, pkgs, config, options, ... }:
 {
-  imports = [
-    ./udev.nix
-  ];
   options = with lib; {
     services.rtl-tcp = {
       enable = mkOption{

@@ -5,7 +5,6 @@ let
 in {
   imports = [
     ./munin.nix
-    ../grafana
     "${channels.unstable}/nixos/modules/services/monitoring/grafana.nix"
   ];
   disabledModules = [
