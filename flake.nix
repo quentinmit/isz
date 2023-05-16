@@ -49,6 +49,19 @@
       specialArgs = args // {
         channels = { inherit nixpkgs unstable; };
       };
+      findModules = dir:
+        builtins.concatLists (builtins.attrValues (builtins.mapAttrs
+          (name: type:
+            if type == "regular" then [{
+              name = builtins.elemAt (builtins.match "(.*)\\.nix" name) 0;
+              value = dir + "/${name}";
+            }] else if (
+              builtins.readDir (dir + "/${name}"))
+            ? "default.nix" then [{
+              inherit name;
+              value = dir + "/${name}";
+            }] else
+              findModules (dir + "/${name}")) (builtins.readDir dir)));
     in (flake-utils.lib.eachDefaultSystem (system:
       let inherit ((
             import nixpkgs {
@@ -84,14 +97,20 @@
         darwinConfigurations.mac = darwin.lib.darwinSystem {
           system = "x86_64-darwin";
           inherit specialArgs;
-          modules = [
+          modules = (builtins.attrValues self.darwinModules) ++ [
             overlayModule
             ./mac/configuration.nix
           ];
         };
-        hmModules = {
-          base = import ./nix/home/base.nix;
+        nixosModules = builtins.listToAttrs (findModules ./nix/modules);
+        darwinModules = builtins.listToAttrs (findModules ./nix/darwin) // {
+          # Modules that work on both nixos and nix-darwin
+          inherit (self.nixosModules)
+            base
+            telegraf
+          ;
         };
+        hmModules = builtins.listToAttrs (findModules ./nix/home);
         deploy.nodes.workshop = {
           sshUser = "root";
           hostname = "workshop.isz.wtf";

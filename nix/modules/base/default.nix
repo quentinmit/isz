@@ -10,12 +10,6 @@ in {
     home-manager.nixosModules.home-manager
   ]);
   options = with lib; {
-    isz.programs = {
-      tshark = mkOption {
-        type = types.bool;
-        default = true;
-      };
-    };
   };
   config = let
     prg = config.isz.programs;
@@ -128,8 +122,9 @@ in {
       # python311 # pyvenv is part of python311
       # wireless-regdb
       # wirelesstools
-    ]
-    ++ lib.lists.optional prg.tshark pkgs.tshark;
+    ];
+
+    programs.wireshark.enable = true;
 
     environment.etc."snmp/snmp.conf".text = ''
       mibdirs +${pkgs.snmp-mibs}/share/snmp/mibs

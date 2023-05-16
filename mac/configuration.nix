@@ -2,9 +2,6 @@
 
 {
   imports = [
-    ../nix/modules/base
-    ../nix/modules/telegraf
-    ../nix/modules/xquartz
     ./perl.nix
     ./python.nix
   ];
@@ -18,10 +15,8 @@
     deploy-rs.overlay
   ];
 
-  isz.programs = {
-    # Replace with wireshark
-    tshark = false;
-  };
+  programs.wireshark.package = pkgs.wireshark;
+
   environment.systemPackages = with pkgs; [
     # Block devices
     ddrescue
@@ -222,7 +217,6 @@
     #unsupported traceroute
     transmission
     websocat
-    wireshark
     termshark
 
     # Emulation
