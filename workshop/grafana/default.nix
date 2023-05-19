@@ -59,6 +59,7 @@
         server.protocol = "socket";
         security.allow_embedding = true;
         feature_toggles.enable = "timeSeriesTable";
+        dataproxy.timeout = 300;
       };
     };
   };
