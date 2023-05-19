@@ -29,6 +29,7 @@
         entity_id = [
           "sensor.pixel_4a_5g_next_alarm"
           "sensor.pixel_7_pro_next_alarm"
+          "sensor.shiba_next_alarm"
         ];
         from = "unavailable";
       }];
@@ -72,6 +73,67 @@
             "switch.tv_power"
           ];
         }
+      ];
+    }
+    {
+      id = "1684475136066";
+      alias = "Quentin Leaving Work";
+      trigger = {
+        platform = "state";
+        entity_id = "person.quentin_smith";
+        from = "Work";
+      };
+      condition = [
+        {
+          condition = "time";
+          after = "17:00:00";
+        }
+      ];
+      action = let
+        setAc = tempState: climateName: {
+          "if" = [
+            ({
+              condition = "numeric_state";
+              above = 77;
+            } // tempState)
+            (cond "not" [{
+              condition = "state";
+              entity_id = "climate.${climateName}";
+              state = "cool";
+            }])
+          ];
+          # TODO: set_fan_mode high?
+          "then" = [{
+            service = "climate.set_temperature";
+            data.temperature = 74;
+            data.hvac_mode = "cool";
+            target.entity_id = "climate.${climateName}";
+          }];
+        };
+      in [
+        {
+          service = "notify.mobile_app_jess_pixel_4a";
+          data = {
+            message = "{{trigger.to_state.name}} has left {{trigger.from_state.state}} at {{trigger.to_state.last_changed}}";
+            title = "Quentin Arrival";
+            data.group = "Arrival";
+            data.importance = "high";
+            data.tag = "arrival-quentin";
+          };
+        }
+        (setAc
+          {
+            entity_id = "climate.heat";
+            attribute = "current_temperature";
+          }
+          "living_room_ac"
+        )
+        (setAc
+          {
+            entity_id = "sensor.bedroom_bed_temperature";
+          }
+          "bedroom_ac"
+        )
       ];
     }
   ];
