@@ -841,9 +841,9 @@
         influx.fn = "derivative";
         influx.imports = ["strings"];
         influx.extra = ''
-        |> group(columns: ["_measurement", "_field", "_time", "host"])
+        |> group(columns: ["_measurement", "_field", "_time"])
         |> sum()
-        |> group(columns: ["_measurement", "_field", "host"])
+        |> group(columns: ["_measurement", "_field"])
         |> map(fn: (r) => ({r with _field: strings.trimPrefix(v: r._field, prefix: "time_")}))
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
       '';
@@ -853,6 +853,18 @@
         fields.system.color = { mode = "fixed"; fixedColor = "green"; };
         fields.user.color = { mode = "fixed"; fixedColor = "blue"; };
         fields.nice.color = { mode = "fixed"; fixedColor = "orange"; };
+        fieldOrder = [
+          "irq"
+          "softirq"
+          "system"
+          "user"
+          "guest"
+          "guest_nice"
+          "nice"
+          "iowait"
+          "idle"
+          "steal"
+        ];
       };
       # cpuspeed
       system.entropy = {
