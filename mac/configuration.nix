@@ -160,6 +160,7 @@
     xastir
 
     # Other devices
+    android-tools
     #blueutil
     libftdi1
     #unsupported lirc
