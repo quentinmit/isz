@@ -1,4 +1,4 @@
-{ config, pkgs, lib, home-manager, deploy-rs,... }:
+{ config, pkgs, lib, self, home-manager, deploy-rs,... }:
 
 {
   imports = [
@@ -424,9 +424,12 @@
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
 
-    imports = [
-      ../nix/home/base.nix
+    imports = with self.hmModules; [
+      base
+      clamav
     ];
+
+    services.clamav.updater.enable = true;
 
     programs.atuin = {
       enable = true;
