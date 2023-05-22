@@ -36,12 +36,14 @@
     # Development
     arduino-cli
     pkgsCross.arm-embedded.buildPackages.binutils
-    pkgsCross.arm-embedded.stdenv.cc
+    # gcc provides info pages that overlap; prioritize one to prevent a conflict message.
+    (lib.setPrio 15 pkgsCross.arm-embedded.stdenv.cc)
     pkgsCross.arm-embedded.buildPackages.gdb
     #arm-none-linux-gnueabi-binutils
     pkgsCross.avr.buildPackages.gcc
     pkgsCross.avr.avrlibc
     pkgsCross.mingwW64.buildPackages.binutils
+    (lowPrio pkgsCross.mingwW64.stdenv.cc)
     avrdude
     #already binutils
     unstable.bossa
