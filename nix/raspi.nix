@@ -186,6 +186,7 @@ in
         "8250.nr_uarts=1"
         "console=ttyAMA0,115200"
         "console=tty1"
+        "cgroup_enable=memory"
       ];
 
       loader.grub.enable = false;
