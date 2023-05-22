@@ -43,6 +43,10 @@
     pkgsCross.avr.buildPackages.gcc
     pkgsCross.avr.avrlibc
     pkgsCross.mingwW64.buildPackages.binutils
+    (lowPrio (pkgs.extend (self: super: {
+      threadsCross.model = "win32";
+      threadsCross.package = null;
+    })).pkgsCross.mingw32.stdenv.cc)
     (lowPrio pkgsCross.mingwW64.stdenv.cc)
     avrdude
     #already binutils

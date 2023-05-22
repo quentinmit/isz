@@ -106,6 +106,7 @@ in {
       dyff
       file
       gawk # already present
+      gnused
       jq
       # man # already present
       ncdu
