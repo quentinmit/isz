@@ -9,6 +9,11 @@ final: prev:
   avidemux = final.libsForQt5.callPackage ./avidemux {
     inherit (final.darwin.apple_sdk.frameworks) VideoToolbox;
   };
+  macfuse = final.callPackage ./macfuse {
+    inherit (final.darwin.apple_sdk.frameworks) DiskArbitration;
+    inherit (final.darwin) signingUtils;
+  };
+  macfuse-stubs = final.macfuse;
   snmp-mibs = final.callPackage ./snmp-mibs {};
   dns-update = final.callPackage ../../dns {};
   process-bandwidth = final.callPackage ./process-bandwidth {};

@@ -15,6 +15,8 @@
     deploy-rs.overlay
   ];
 
+  programs.macfuse.enable = true;
+
   programs.wireshark.package = pkgs.wireshark;
 
   environment.systemPackages = with pkgs; [
@@ -27,7 +29,6 @@
     # Filesystems
     gvfs
     squashfsTools
-    #osxfuse
 
     # Nix
     statix
