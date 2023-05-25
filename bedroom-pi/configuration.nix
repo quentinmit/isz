@@ -3,7 +3,6 @@
 {
   imports = [
     ../nix/base.nix
-    ../nix/networkd.nix
     ../nix/raspi.nix
   ];
 
@@ -70,6 +69,7 @@
   isz.networking = {
     lastOctet = 33;
     macAddress = "dc:a6:32:98:38:a8";
+    linkzone = true;
   };
   networking.firewall.enable = false;
 

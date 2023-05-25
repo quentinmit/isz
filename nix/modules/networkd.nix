@@ -3,24 +3,20 @@
   options = with lib; {
     isz.networking = {
       lastOctet = mkOption {
-        type = types.ints.u8;
+        type = types.nullOr types.ints.u8;
+        default = null;
       };
       macAddress = mkOption {
         type = types.strMatching "^([0-9a-fA-F]{2}\:){5}[0-9a-fA-F]{2}$";
       };
       vlan88 = mkEnableOption "VLAN 88";
+      linkzone = mkEnableOption "Attach Linkzone to VLAN 500";
     };
   };
   config = let
     cfg = config.isz.networking;
   in lib.mkMerge [
-    {
-      environment.systemPackages = with pkgs; [
-        (writeScriptBin "linkzone-debug" ''
-          # https://alex.studer.dev/2021/01/04/mw41-1
-          exec ${pkgs.sg3_utils}/bin/sg_raw -r 192 /dev/disk/by-id/usb-ONETOUCH_MobileBroadBand_1234567890ABCDE-0:0 16 f9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 -v
-        '')
-      ];
+    (lib.mkIf (cfg.lastOctet != null) {
       networking.useDHCP = false;
       networking.useNetworkd = true;
       systemd.network.netdevs = {
@@ -72,21 +68,6 @@
               VLAN=88
             '';
         };
-        # Match USB devices first even if they're named "enp*"
-        "00-usb0" = {
-          matchConfig = {
-            Property = "ID_USB_DRIVER=*";
-          };
-          networkConfig = {
-            Bridge = "br0";
-          };
-          extraConfig =
-            ''
-              [BridgeVLAN]
-              PVID=500
-              EgressUntagged=500
-            '';
-        };
         eth = {
           matchConfig = {
             Name = "e*";
@@ -115,7 +96,33 @@
           };
         };
       };
-    }
+    })
+    (lib.mkIf cfg.linkzone {
+      environment.systemPackages = with pkgs; [
+        (writeShellScriptBin "linkzone-debug" ''
+          # https://alex.studer.dev/2021/01/04/mw41-1
+          exec ${pkgs.sg3_utils}/bin/sg_raw -r 192 /dev/disk/by-id/usb-ONETOUCH_MobileBroadBand_1234567890ABCDE-0:0 16 f9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 -v
+        '')
+      ];
+      systemd.network.networks = {
+        # Match USB device first even if it's named "enp*"
+        "00-usb0" = {
+          matchConfig = {
+            # Alcatel / Mobilebroadband
+            Property = "ID_USB_DRIVER=* ID_VENDOR_ID=1bbb ID_MODEL_ID=0192";
+          };
+          networkConfig = {
+            Bridge = "br0";
+          };
+          extraConfig =
+            ''
+              [BridgeVLAN]
+              PVID=500
+              EgressUntagged=500
+            '';
+        };
+      };
+    })
     (lib.mkIf cfg.vlan88 {
       systemd.network.networks.br0.networkConfig.VLAN = ["vlan88"];
       systemd.network.netdevs.vlan88 = {

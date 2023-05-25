@@ -16,7 +16,6 @@
       ./grafana
       ../nix/zwave-js-ui.nix
       ../nix/base.nix
-      ../nix/networkd.nix
       ../nix/speedtest.nix
     ];
 
@@ -51,6 +50,7 @@
     lastOctet = 34;
     macAddress = "04:42:1A:C9:93:8B";
     vlan88 = true;
+    linkzone = true;
   };
 
   # Select internationalisation properties.
