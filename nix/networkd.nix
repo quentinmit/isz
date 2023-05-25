@@ -15,6 +15,12 @@
     cfg = config.isz.networking;
   in lib.mkMerge [
     {
+      environment.systemPackages = with pkgs; [
+        (writeScriptBin "linkzone-debug" ''
+          # https://alex.studer.dev/2021/01/04/mw41-1
+          exec ${pkgs.sg3_utils}/bin/sg_raw -r 192 /dev/disk/by-id/usb-ONETOUCH_MobileBroadBand_1234567890ABCDE-0:0 16 f9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 -v
+        '')
+      ];
       networking.useDHCP = false;
       networking.useNetworkd = true;
       systemd.network.netdevs = {
