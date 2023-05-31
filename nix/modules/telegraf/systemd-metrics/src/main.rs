@@ -1,5 +1,6 @@
 use async_std;
-use zbus::{self, dbus_proxy, Connection, Result, zvariant::{Type, OwnedObjectPath}};
+use zbus::{self, dbus_proxy, Connection, Result, zvariant::{Type, OwnedObjectPath}, fdo::PropertiesProxy};
+use zbus_names::InterfaceName;
 use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
 
@@ -62,9 +63,13 @@ async fn main() -> Result<()> {
     }
     println!("Units:");
     timeit(|| async_std::task::block_on(async {
-            for unit in proxy.list_units().await? {
-                println!("   {} - {}", unit.name, unit.path);
+        for unit in proxy.list_units().await? {
+            println!(" {} - {}", unit.name, unit.path);
+            let properties = PropertiesProxy::builder(&connection).path(unit.path)?.build().await?.get_all(InterfaceName::from_static_str_unchecked("")).await?;
+            for (key, value) in &properties {
+                println!("  {}={:?}", key, value);
             }
+        }
         Ok::<(), zbus::Error>(())
     }))?;
 
