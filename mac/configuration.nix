@@ -87,6 +87,7 @@
     #unsupported rpm
     ruby
     rustc
+    cargo
     sloccount
     sourceHighlight
     upx
