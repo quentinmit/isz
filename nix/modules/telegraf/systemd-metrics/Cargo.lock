@@ -847,6 +847,7 @@ dependencies = [
  "async-std",
  "serde",
  "zbus",
+ "zvariant",
 ]
 
 [[package]]

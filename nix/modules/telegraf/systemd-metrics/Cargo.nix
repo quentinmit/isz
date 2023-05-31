@@ -1288,6 +1288,7 @@ in
       async_std = rustPackages."registry+https://github.com/rust-lang/crates.io-index".async-std."1.12.0" { inherit profileName; };
       serde = rustPackages."registry+https://github.com/rust-lang/crates.io-index".serde."1.0.163" { inherit profileName; };
       zbus = rustPackages."registry+https://github.com/rust-lang/crates.io-index".zbus."3.13.1" { inherit profileName; };
+      zvariant = rustPackages."registry+https://github.com/rust-lang/crates.io-index".zvariant."3.14.0" { inherit profileName; };
     };
   });
   
@@ -1859,7 +1860,9 @@ in
     registry = "registry+https://github.com/rust-lang/crates.io-index";
     src = fetchCratesIo { inherit name version; sha256 = "622cc473f10cef1b0d73b7b34a266be30ebdcfaea40ec297dd8cbda088f9f93c"; };
     features = builtins.concatLists [
+      [ "default" ]
       [ "enumflags2" ]
+      [ "gvariant" ]
     ];
     dependencies = {
       byteorder = rustPackages."registry+https://github.com/rust-lang/crates.io-index".byteorder."1.4.3" { inherit profileName; };
