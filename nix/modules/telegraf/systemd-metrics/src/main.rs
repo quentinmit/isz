@@ -65,7 +65,7 @@ async fn main() -> Result<()> {
     timeit(|| async_std::task::block_on(async {
         for unit in proxy.list_units().await? {
             println!(" {} - {}", unit.name, unit.path);
-            let properties = PropertiesProxy::builder(&connection).path(unit.path)?.build().await?.get_all(InterfaceName::from_static_str_unchecked("")).await?;
+            let properties = PropertiesProxy::builder(&connection).destination("org.freedesktop.systemd1")?.path(unit.path)?.build().await?.get_all(InterfaceName::from_static_str_unchecked("")).await?;
             for (key, value) in &properties {
                 println!("  {}={:?}", key, value);
             }
