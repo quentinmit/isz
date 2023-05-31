@@ -23,4 +23,5 @@ final: prev:
       Dozer = callPackage ./python/dozer {};
     })
   ];
+  systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
 }

@@ -25,8 +25,15 @@
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.inputs.flake-compat.follows = "flake-compat";
     deploy-rs.inputs.utils.follows = "flake-utils";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.inputs.flake-utils.follows = "flake-utils";
+    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+    cargo2nix.url = "github:cargo2nix/cargo2nix/release-0.11.0";
+    cargo2nix.inputs.flake-utils.follows = "flake-utils";
+    cargo2nix.inputs.nixpkgs.follows = "nixpkgs";
+    cargo2nix.inputs.rust-overlay.follows = "rust-overlay";
   };
-  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, ... }@args:
+  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -70,6 +77,7 @@
                 overlay
                 (import ./nix/pkgs/all-packages.nix)
                 (import ./nix/pkgs/overlays.nix)
+                cargo2nix.overlays.default
               ];})) pkgs;
       in {
         legacyPackages = pkgs;

@@ -50,6 +50,10 @@ async fn main() -> Result<()> {
     for env in proxy.environment().await? {
         println!("  {}", env);
     }
+    println!("Units:");
+    for unit in proxy.list_units().await? {
+        println!("   {} - {}", unit.name, unit.path);
+    }
 
     Ok(())
 }
