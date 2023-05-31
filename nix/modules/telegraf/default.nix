@@ -208,6 +208,16 @@ in {
             kernel = [{}];
             cgroup = [{
               interval = cfg.interval.cgroup;
+              paths = let
+                f = (i: if i < 0 then [] else ["/sys/fs/cgroup"] ++ (map (x: x + "/*") (f (i - 1))));
+              in
+                f 8;
+              files = [
+                "cgroup.stat"
+                "cpu.stat"
+                "memory.stat"
+                # io.stat can't be parsed by Telegraf
+              ];
             }];
             linux_sysctl_fs = [{}];
             sensors = [{
