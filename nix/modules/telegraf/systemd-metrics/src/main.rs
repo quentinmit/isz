@@ -1,6 +1,7 @@
 use async_std;
-use zbus::{dbus_proxy, Connection, Result, zvariant::{Type, OwnedObjectPath}};
+use zbus::{self, dbus_proxy, Connection, Result, zvariant::{Type, OwnedObjectPath}};
 use serde::{Serialize, Deserialize};
+use std::time::SystemTime;
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct UnitStatus {
@@ -40,6 +41,15 @@ trait SystemdManager {
     fn list_units(&self) -> Result<Vec<UnitStatus>>;
 }
 
+fn timeit<F: Fn() -> T, T>(f: F) -> T {
+    let start = SystemTime::now();
+    let result = f();
+    let end = SystemTime::now();
+    let duration = end.duration_since(start).unwrap();
+    println!("it took {:?}", duration);
+    result
+}
+
 #[async_std::main]
 async fn main() -> Result<()> {
     let connection = Connection::system().await?;
@@ -51,9 +61,12 @@ async fn main() -> Result<()> {
         println!("  {}", env);
     }
     println!("Units:");
-    for unit in proxy.list_units().await? {
-        println!("   {} - {}", unit.name, unit.path);
-    }
+    timeit(|| async_std::task::block_on(async {
+            for unit in proxy.list_units().await? {
+                println!("   {} - {}", unit.name, unit.path);
+            }
+        Ok::<(), zbus::Error>(())
+    }))?;
 
     Ok(())
 }
