@@ -79,7 +79,7 @@ async fn main() -> Result<()> {
             let interface_name = InterfaceName::try_from(
                 format!("org.freedesktop.systemd1.{}", unit_type.chars().next().map(|c| c.to_uppercase().chain(unit_type.chars().skip(1)).collect::<String>()).unwrap())
             )?;
-            for key in ["IPIngressBytes", "IPEgressBytes"] {
+            for key in ["ControlGroup", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"] {
                 properties_proxy.get(interface_name.clone(), key).await.map_or_else(
                     |e| println!("  {} error {:?}", key, e),
                     |value| println!("  {}={:?}", key, value)
