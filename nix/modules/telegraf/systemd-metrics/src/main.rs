@@ -3,6 +3,7 @@ use zbus::{self, dbus_proxy, Connection, Result, zvariant::{Type, OwnedObjectPat
 use zbus_names::InterfaceName;
 use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
+use futures::future::FutureExt;
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct UnitStatus {
@@ -55,6 +56,8 @@ fn timeit<F: Fn() -> T, T>(f: F) -> T {
 async fn main() -> Result<()> {
     let connection = Connection::system().await?;
 
+    let all_properties = false;
+
     let proxy = SystemdManagerProxy::new(&connection).await?;
     println!("Host architecture: {}", proxy.architecture().await?);
     println!("Environment:");
@@ -65,9 +68,22 @@ async fn main() -> Result<()> {
     timeit(|| async_std::task::block_on(async {
         for unit in proxy.list_units().await? {
             println!(" {} - {}", unit.name, unit.path);
-            let properties = PropertiesProxy::builder(&connection).destination("org.freedesktop.systemd1")?.path(unit.path)?.build().await?.get_all(InterfaceName::from_static_str_unchecked("")).await?;
-            for (key, value) in &properties {
-                println!("  {}={:?}", key, value);
+            let properties_proxy = PropertiesProxy::builder(&connection).destination("org.freedesktop.systemd1")?.path(unit.path)?.build().await?;
+            if all_properties {
+                let properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
+                for (key, value) in &properties {
+                    println!("  {}={:?}", key, value);
+                }
+            }
+            let unit_type = unit.name.rsplit_once(".").map(|(_, v)| v).unwrap_or(&unit.name);
+            let interface_name = InterfaceName::try_from(
+                format!("org.freedesktop.systemd1.{}", unit_type.chars().next().map(|c| c.to_uppercase().chain(unit_type.chars().skip(1)).collect::<String>()).unwrap())
+            )?;
+            for key in ["IPIngressBytes", "IPEgressBytes"] {
+                properties_proxy.get(interface_name.clone(), key).await.map_or_else(
+                    |e| println!("  {} error {:?}", key, e),
+                    |value| println!("  {}={:?}", key, value)
+                );
             }
         }
         Ok::<(), zbus::Error>(())
