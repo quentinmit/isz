@@ -62,6 +62,63 @@ async fn connect() -> Result<Connection> {
         }).await
 }
 
+struct Scraper {
+    connection: Connection,
+    all_properties: bool,
+}
+
+fn to_initial_uppercase(s: &str) -> String {
+    s
+        .chars()
+        .next()
+        .map_or(String::new(), |c|
+             c
+             .to_uppercase()
+             .chain(s.chars().skip(1))
+             .collect()
+        )
+}
+
+impl Scraper {
+    async fn scrape(&self) -> Result<()> {
+        let proxy = SystemdManagerProxy::new(&self.connection).await?;
+        let units = proxy.list_units().await?;
+        stream::iter(units).map(Ok).try_for_each_concurrent(10, |unit| async move {
+            self.scrape_unit(&unit).await
+        }).await
+    }
+
+    async fn scrape_unit(&self, unit: &UnitStatus) -> Result<()> {
+        println!(" {} - {}", unit.name, unit.path);
+        let properties_proxy =
+            PropertiesProxy::builder(&self.connection)
+            .destination("org.freedesktop.systemd1")?
+            .path(unit.path.clone())?
+            .build()
+            .await?;
+        if self.all_properties {
+            let properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
+            for (key, value) in &properties {
+                println!("  {}={:?}", key, value);
+            }
+        }
+        let unit_type = unit.name.rsplit_once(".").map(|(_, v)| v).unwrap_or(&unit.name);
+        let interface_name = InterfaceName::try_from(
+            format!(
+                "org.freedesktop.systemd1.{}",
+                to_initial_uppercase(unit_type),
+            )
+        )?;
+        for key in ["ControlGroup", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"] {
+            properties_proxy.get(interface_name.clone(), key).await.map_or_else(
+                |e| println!("  {} error {:?}", key, e),
+                |value| println!("  {}={:?}", key, value)
+            );
+        }
+        Ok::<(), zbus::Error>(())
+    }
+}
+
 #[async_std::main]
 async fn main() -> Result<()> {
 
@@ -75,34 +132,12 @@ async fn main() -> Result<()> {
     for env in proxy.environment().await? {
         println!("  {}", env);
     }
+    let scraper = Scraper{
+        connection: connection,
+        all_properties: false,
+    };
     println!("Units:");
-    timeit(|| async_std::task::block_on(async {
-        let units = proxy.list_units().await?;
-        stream::iter(units).map(Ok).try_for_each_concurrent(10, |unit| {
-            let conn = &connection;
-            let (name, path) = (unit.name, unit.path);
-            async move {
-                println!(" {} - {}", name, path);
-                let properties_proxy = PropertiesProxy::builder(conn).destination("org.freedesktop.systemd1")?.path(path.clone())?.build().await?;
-                if all_properties {
-                    let properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
-                    for (key, value) in &properties {
-                        println!("  {}={:?}", key, value);
-                    }
-                }
-                let unit_type = name.rsplit_once(".").map(|(_, v)| v).unwrap_or(&name);
-                let interface_name = InterfaceName::try_from(
-                    format!("org.freedesktop.systemd1.{}", unit_type.chars().next().map(|c| c.to_uppercase().chain(unit_type.chars().skip(1)).collect::<String>()).unwrap())
-                )?;
-                for key in ["ControlGroup", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"] {
-                    properties_proxy.get(interface_name.clone(), key).await.map_or_else(
-                        |e| println!("  {} error {:?}", key, e),
-                        |value| println!("  {}={:?}", key, value)
-                    );
-                }
-                Ok::<(), zbus::Error>(())
-            }}).await
-    }))?;
+    timeit(|| async_std::task::block_on(scraper.scrape()))?;
 
     Ok(())
 }
