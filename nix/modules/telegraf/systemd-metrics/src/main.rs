@@ -4,6 +4,7 @@ use zbus_names::InterfaceName;
 use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
 use futures::future::FutureExt;
+use futures::stream::{self, StreamExt, FuturesUnordered};
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct UnitStatus {
@@ -66,9 +67,10 @@ async fn main() -> Result<()> {
     }
     println!("Units:");
     timeit(|| async_std::task::block_on(async {
-        for unit in proxy.list_units().await? {
+        let units = proxy.list_units().await?;
+	stream::iter(units.iter().map(|unit| async {
             println!(" {} - {}", unit.name, unit.path);
-            let properties_proxy = PropertiesProxy::builder(&connection).destination("org.freedesktop.systemd1")?.path(unit.path)?.build().await?;
+            let properties_proxy = PropertiesProxy::builder(&connection).destination("org.freedesktop.systemd1")?.path(unit.path.clone())?.build().await?;
             if all_properties {
                 let properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
                 for (key, value) in &properties {
@@ -85,7 +87,8 @@ async fn main() -> Result<()> {
                     |value| println!("  {}={:?}", key, value)
                 );
             }
-        }
+	    Ok::<(), zbus::Error>(())
+        })).buffer_unordered(10).collect::<Vec<Result<()>>>().await;
         Ok::<(), zbus::Error>(())
     }))?;
 
