@@ -4,7 +4,7 @@ use zbus_names::InterfaceName;
 use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
 use futures::future::FutureExt;
-use futures::stream::{self, StreamExt, FuturesUnordered};
+use futures::stream::{self, StreamExt, TryStreamExt, FuturesUnordered};
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct UnitStatus {
@@ -68,16 +68,19 @@ async fn main() -> Result<()> {
     println!("Units:");
     timeit(|| async_std::task::block_on(async {
         let units = proxy.list_units().await?;
-	stream::iter(units.iter().map(|unit| async {
-            println!(" {} - {}", unit.name, unit.path);
-            let properties_proxy = PropertiesProxy::builder(&connection).destination("org.freedesktop.systemd1")?.path(unit.path.clone())?.build().await?;
+	stream::iter(units).map(Ok).try_for_each_concurrent(10, |unit| {
+	let conn = &connection;
+	let (name, path) = (unit.name, unit.path);
+	async move {
+            println!(" {} - {}", name, path);
+            let properties_proxy = PropertiesProxy::builder(conn).destination("org.freedesktop.systemd1")?.path(path.clone())?.build().await?;
             if all_properties {
                 let properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
                 for (key, value) in &properties {
                     println!("  {}={:?}", key, value);
                 }
             }
-            let unit_type = unit.name.rsplit_once(".").map(|(_, v)| v).unwrap_or(&unit.name);
+            let unit_type = name.rsplit_once(".").map(|(_, v)| v).unwrap_or(&name);
             let interface_name = InterfaceName::try_from(
                 format!("org.freedesktop.systemd1.{}", unit_type.chars().next().map(|c| c.to_uppercase().chain(unit_type.chars().skip(1)).collect::<String>()).unwrap())
             )?;
@@ -88,8 +91,7 @@ async fn main() -> Result<()> {
                 );
             }
 	    Ok::<(), zbus::Error>(())
-        })).buffer_unordered(10).collect::<Vec<Result<()>>>().await;
-        Ok::<(), zbus::Error>(())
+        }}).await
     }))?;
 
     Ok(())
