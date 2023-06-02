@@ -123,6 +123,7 @@ impl Scraper {
                 },
                 |value| {
                     match *value {
+                        Value::U64(u64::MAX) => None,
                         Value::U8(v) => Some(Into::<FieldValue>::into(Into::<i64>::into(v))),
                         Value::Bool(v) => Some(v.into()),
                         Value::I16(v) => Some(Into::<i64>::into(v).into()),
