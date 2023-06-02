@@ -200,6 +200,7 @@
     iperf3
     ipmitool
     irssi
+    krb5
     #unsupported ldapvi
     #lft
     libidn2
