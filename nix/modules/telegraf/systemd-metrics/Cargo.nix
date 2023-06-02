@@ -1439,6 +1439,13 @@ in
     };
   });
   
+  "registry+https://github.com/rust-lang/crates.io-index".maplit."1.0.2" = overridableMkRustCrate (profileName: rec {
+    name = "maplit";
+    version = "1.0.2";
+    registry = "registry+https://github.com/rust-lang/crates.io-index";
+    src = fetchCratesIo { inherit name version; sha256 = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"; };
+  });
+  
   "registry+https://github.com/rust-lang/crates.io-index".matchers."0.0.1" = overridableMkRustCrate (profileName: rec {
     name = "matchers";
     version = "0.0.1";
@@ -2457,6 +2464,7 @@ in
       futures = rustPackages."registry+https://github.com/rust-lang/crates.io-index".futures."0.3.28" { inherit profileName; };
       influxdb2 = rustPackages."registry+https://github.com/rust-lang/crates.io-index".influxdb2."0.4.2" { inherit profileName; };
       log = rustPackages."registry+https://github.com/rust-lang/crates.io-index".log."0.4.18" { inherit profileName; };
+      maplit = rustPackages."registry+https://github.com/rust-lang/crates.io-index".maplit."1.0.2" { inherit profileName; };
       pretty_env_logger = rustPackages."registry+https://github.com/rust-lang/crates.io-index".pretty_env_logger."0.5.0" { inherit profileName; };
       serde = rustPackages."registry+https://github.com/rust-lang/crates.io-index".serde."1.0.163" { inherit profileName; };
       zbus = rustPackages."registry+https://github.com/rust-lang/crates.io-index".zbus."3.13.1" { inherit profileName; };
