@@ -92,7 +92,7 @@ impl Scraper {
 
     async fn scrape_unit(&self, unit: &UnitStatus) -> Result<()> {
         let mut builder = DataPoint::builder("systemd")
-            .tag("unit_name", &unit.name)
+            .tag("Id", &unit.name)
             ;
         //println!(" {} - {}", unit.name, unit.path);
         let properties_proxy =
@@ -132,6 +132,7 @@ impl Scraper {
                         Value::I64(v) => Some(Into::<i64>::into(v).into()),
                         Value::U64(v) => Some((v.min(i64::MAX as u64) as i64).into()),
                         Value::F64(v) => Some(v.into()),
+                        Value::Str(_) => Some(TryInto::<String>::try_into(value).unwrap().into()),
                         _ => {
                             println!("  can't convert {}={:?}", key, value);
                             None
