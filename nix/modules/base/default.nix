@@ -16,9 +16,6 @@ in {
   in {
     time.timeZone = "America/New_York";
 
-    nixpkgs.overlays = [
-      (import ../../pkgs/all-packages.nix)
-    ];
     nixpkgs.config.allowUnfree = true;
 
     nix.settings = {

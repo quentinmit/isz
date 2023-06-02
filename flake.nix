@@ -46,12 +46,15 @@
           ];
         };
       };
+      overlays = [
+        overlay
+        (import ./nix/pkgs/all-packages.nix)
+        (import ./nix/pkgs/overlays.nix)
+        cargo2nix.overlays.default
+      ];
       # Overlays-module makes "pkgs.unstable" available in configuration.nix
       overlayModule = { config, pkgs, ... }: {
-        nixpkgs.overlays = [
-          overlay
-          (import ./nix/pkgs/overlays.nix)
-        ];
+        nixpkgs.overlays = overlays;
       };
       specialArgs = args // {
         channels = { inherit nixpkgs unstable; };
@@ -73,12 +76,8 @@
       let inherit ((
             import nixpkgs {
               inherit system;
-              overlays = [
-                overlay
-                (import ./nix/pkgs/all-packages.nix)
-                (import ./nix/pkgs/overlays.nix)
-                cargo2nix.overlays.default
-              ];})) pkgs;
+              inherit overlays;
+            })) pkgs;
       in {
         legacyPackages = pkgs;
         devShells.esphome = import ./workshop/esphome/shell.nix { inherit pkgs; };

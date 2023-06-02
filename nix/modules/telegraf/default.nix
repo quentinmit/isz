@@ -224,6 +224,14 @@ in {
               tagdrop.chip = ["w1_slave_temp-*"];
             }];
             interrupts = [{}];
+            execd = [{
+              interval = cfg.interval.cgroup;
+              alias = "systemd_user";
+              restart_delay = "10s";
+              data_format = "influx";
+              command = [ "${pkgs.systemd-metrics}/bin/systemd-metrics" "--get-all" ];
+              signal = "STDIN";
+            }];
           };
         })
         (lib.mkIf cfg.docker {
