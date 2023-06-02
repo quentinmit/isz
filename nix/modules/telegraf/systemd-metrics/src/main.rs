@@ -7,7 +7,9 @@ use futures::future::{self, FutureExt, TryFutureExt};
 use futures::stream::{self, StreamExt, TryStreamExt, FuturesUnordered};
 use influxdb2::models::{DataPoint, data_point::DataPointError, FieldValue, WriteDataPoint};
 use std::io;
+use std::collections::HashSet;
 use log::{warn, info, debug};
+use maplit::{convert_args, hashset};
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct UnitStatus {
@@ -67,7 +69,7 @@ async fn connect() -> zbus::Result<Connection> {
 
 struct Scraper {
     connection: Connection,
-    all_properties: bool,
+    properties: Option<HashSet<String>>,
 }
 
 fn to_initial_uppercase(s: &str) -> String {
@@ -102,12 +104,6 @@ impl Scraper {
             .path(unit.path.clone())?
             .build()
             .await?;
-        if self.all_properties {
-            let properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
-            for (key, value) in &properties {
-                debug!("  {}={:?}", key, value);
-            }
-        }
         let unit_type = unit.name.rsplit_once(".").map(|(_, v)| v).unwrap_or(&unit.name);
         builder = builder.tag("unit_type", unit_type);
         let interface_name = InterfaceName::try_from(
@@ -116,30 +112,34 @@ impl Scraper {
                 to_initial_uppercase(unit_type),
             )
         )?;
-        for key in ["Slice", "ControlGroup", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations", "MemoryCurrent", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"] {
-            let value = properties_proxy.get(interface_name.clone(), key).await.map_or_else(
-                |_| None,
-                |value| {
-                    match value.into() {
-                        Value::U64(u64::MAX) => None,
-                        Value::U8(v) => Some(Into::<FieldValue>::into(Into::<i64>::into(v))),
-                        Value::Bool(v) => Some(v.into()),
-                        Value::I16(v) => Some(Into::<i64>::into(v).into()),
-                        Value::U16(v) => Some(Into::<i64>::into(v).into()),
-                        Value::I32(v) => Some(Into::<i64>::into(v).into()),
-                        Value::U32(v) => Some(Into::<i64>::into(v).into()),
-                        Value::I64(v) => Some(Into::<i64>::into(v).into()),
-                        Value::U64(v) => Some((v.min(i64::MAX as u64) as i64).into()),
-                        Value::F64(v) => Some(v.into()),
-                        Value::Str(s) if s.len() == 0 => None,
-                        Value::Str(s) => Some(Into::<String>::into(s).into()),
-                        v => {
-                            warn!("  can't convert {}={:?}", key, v);
-                            None
-                        },
-                    }
+        let properties = match &self.properties {
+            None => properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?,
+            Some(p) => {
+                stream::iter(p).filter_map(|key| async {
+                    properties_proxy.get(interface_name.clone(), &key.clone()).await.ok().map(|value| (key.clone(), value))
+                }).collect().await
+            }
+        };
+        for (key, value) in &properties {
+            debug!("  {}={:?}", key, value);
+            let value = match value.into() {
+                Value::U64(u64::MAX) => None,
+                Value::U8(v) => Some(Into::<FieldValue>::into(Into::<i64>::into(v))),
+                Value::Bool(v) => Some(v.into()),
+                Value::I16(v) => Some(Into::<i64>::into(v).into()),
+                Value::U16(v) => Some(Into::<i64>::into(v).into()),
+                Value::I32(v) => Some(Into::<i64>::into(v).into()),
+                Value::U32(v) => Some(Into::<i64>::into(v).into()),
+                Value::I64(v) => Some(Into::<i64>::into(v).into()),
+                Value::U64(v) => Some((v.min(i64::MAX as u64) as i64).into()),
+                Value::F64(v) => Some(v.into()),
+                Value::Str(s) if s.len() == 0 => None,
+                Value::Str(s) => Some(Into::<String>::into(s).into()),
+                v => {
+                    warn!("  can't convert {}={:?}", key, v);
+                    None
                 },
-            );
+            };
             match value {
                 Some(FieldValue::String(s)) => {
                     builder = builder.tag(key, s);
@@ -172,7 +172,9 @@ async fn main() -> zbus::Result<()> {
     }
     let scraper = Scraper{
         connection,
-        all_properties: false,
+        properties: Some(convert_args!(hashset!(
+            "Slice", "ControlGroup", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations", "MemoryCurrent", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"
+        ))),
     };
     info!("Units:");
     timeit(|| async_std::task::block_on(scraper.scrape()))?;
