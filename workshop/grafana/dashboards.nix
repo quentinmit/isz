@@ -1038,6 +1038,36 @@
         influx.fn = "mean";
         unit = "short";
       };
+      systemd.ip_traffic_bytes = {
+        panel.interval = "60s";
+        graph_title = "systemd unit IP traffic";
+        graph_vlabel = "bits in (-) / out (+) per second";
+        influx.filter._measurement = "systemd_unit";
+        influx.filter._field = ["IPIngressBytes" "IPEgressBytes"];
+        influx.fn = "derivative";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: 8. * r._value}))
+        '';
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
+        };
+        fields.IPIngressBytes.custom.transform = "negative-Y";
+        unit = "Bps";
+      };
+      systemd.ip_traffic_packets = {
+        panel.interval = "60s";
+        graph_title = "systemd unit IP packets";
+        graph_vlabel = "packets in (-) / out (+) per second";
+        influx.filter._measurement = "systemd_unit";
+        influx.filter._field = ["IPIngressPackets" "IPEgressPackets"];
+        influx.fn = "derivative";
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
+        };
+        fields.IPIngressPackets.custom.transform = "negative-Y";
+        unit = "pps";
+        right = true;
+      };
     };
   };
 }
