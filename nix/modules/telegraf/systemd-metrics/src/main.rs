@@ -115,12 +115,9 @@ impl Scraper {
                 to_initial_uppercase(unit_type),
             )
         )?;
-        for key in ["ControlGroup", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"] {
+        for key in ["Slice", "ControlGroup", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations", "MemoryCurrent", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"] {
             let value = properties_proxy.get(interface_name.clone(), key).await.map_or_else(
-                |e| {
-                    None
-                    //println!("  {} error {:?}", key, e),
-                },
+                |_| None,
                 |value| {
                     match value.into() {
                         Value::U64(u64::MAX) => None,
