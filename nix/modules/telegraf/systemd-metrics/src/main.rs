@@ -10,6 +10,7 @@ use std::io;
 use std::collections::HashSet;
 use log::{warn, info, debug};
 use maplit::{convert_args, hashset};
+use clap::Parser;
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct UnitStatus {
@@ -158,9 +159,19 @@ impl Scraper {
     }
 }
 
+#[derive(Parser)]
+struct Cli {
+    #[arg(short, long, group="properties_group")]
+    properties: Option<Vec<String>>,
+    #[arg(short, long, group="properties_group")]
+    all_properties: bool,
+}
+
 #[async_std::main]
 async fn main() -> zbus::Result<()> {
     pretty_env_logger::init();
+
+    let cli = Cli::parse();
 
     let connection = connect().await?;
 
@@ -172,9 +183,13 @@ async fn main() -> zbus::Result<()> {
     }
     let scraper = Scraper{
         connection,
-        properties: Some(convert_args!(hashset!(
-            "Slice", "ControlGroup", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations", "MemoryCurrent", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"
-        ))),
+        properties: match (cli.properties, cli.all_properties) {
+            (None, true) => None,
+            (None, false) => Some(convert_args!(hashset!(
+                "Slice", "ControlGroup", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations", "MemoryCurrent", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"
+            ))),
+            (Some(p), _) => Some(p.into_iter().collect()),
+        },
     };
     info!("Units:");
     timeit(|| async_std::task::block_on(scraper.scrape()))?;
