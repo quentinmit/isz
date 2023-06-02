@@ -8,8 +8,7 @@ use futures::stream::{self, StreamExt, TryStreamExt, FuturesUnordered};
 use influxdb2::models::{DataPoint, data_point::DataPointError, FieldValue, WriteDataPoint};
 use std::io;
 use std::collections::HashSet;
-use log::{warn, info, debug};
-use maplit::{convert_args, hashset};
+use log::{warn, info, debug, trace};
 use clap::Parser;
 
 #[derive(Debug, Type, Serialize, Deserialize)]
@@ -71,6 +70,7 @@ async fn connect() -> zbus::Result<Connection> {
 struct Scraper {
     connection: Connection,
     properties: Option<HashSet<String>>,
+    get_all: bool,
 }
 
 fn to_initial_uppercase(s: &str) -> String {
@@ -98,7 +98,7 @@ impl Scraper {
         let mut builder = DataPoint::builder("systemd_unit")
             .tag("Id", &unit.name)
             ;
-        //debug!(" {} - {}", unit.name, unit.path);
+        trace!("scraping {} - {}", unit.name, unit.path);
         let properties_proxy =
             PropertiesProxy::builder(&self.connection)
             .destination("org.freedesktop.systemd1")?
@@ -113,16 +113,22 @@ impl Scraper {
                 to_initial_uppercase(unit_type),
             )
         )?;
-        let properties = match &self.properties {
-            None => properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?,
-            Some(p) => {
+        let properties = match (self.get_all, &self.properties) {
+            (true, _) | (false, None) => {
+                let mut properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
+                if let Some(keys) = &self.properties {
+                    properties.retain(|key, _| keys.contains(key));
+                }
+                properties
+            },
+            (false, Some(p)) => {
                 stream::iter(p).filter_map(|key| async {
                     properties_proxy.get(interface_name.clone(), &key.clone()).await.ok().map(|value| (key.clone(), value))
                 }).collect().await
             }
         };
         for (key, value) in &properties {
-            debug!("  {}={:?}", key, value);
+            trace!("  {}={:?}", key, value);
             let value = match value.into() {
                 Value::U64(u64::MAX) => None,
                 Value::U8(v) => Some(Into::<FieldValue>::into(Into::<i64>::into(v))),
@@ -159,12 +165,31 @@ impl Scraper {
     }
 }
 
+const DEFAULT_PROPERTIES: &[&str] = &[
+    "NRestarts",
+    "Slice",
+    "ControlGroup",
+    "CPUUsageNSec",
+    "IOReadBytes",
+    "IOReadOperations",
+    "IOWriteBytes",
+    "IOWriteOperations",
+    "MemoryCurrent",
+    "MemoryMax",
+    "IPIngressBytes",
+    "IPIngressPackets",
+    "IPEgressBytes",
+    "IPEgressPackets",
+    "TasksCurrent",
+];
+
+
 #[derive(Parser)]
 struct Cli {
-    #[arg(short, long, group="properties_group")]
-    properties: Option<Vec<String>>,
-    #[arg(short, long, group="properties_group")]
-    all_properties: bool,
+    #[arg(short, long, num_args=0.., default_values_t=DEFAULT_PROPERTIES.into_iter().map(|v| v.to_string()))]
+    properties: Vec<String>,
+    #[arg(long)]
+    get_all: bool,
 }
 
 #[async_std::main]
@@ -183,13 +208,8 @@ async fn main() -> zbus::Result<()> {
     }
     let scraper = Scraper{
         connection,
-        properties: match (cli.properties, cli.all_properties) {
-            (None, true) => None,
-            (None, false) => Some(convert_args!(hashset!(
-                "Slice", "ControlGroup", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations", "MemoryCurrent", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"
-            ))),
-            (Some(p), _) => Some(p.into_iter().collect()),
-        },
+        properties: Some(cli.properties).filter(|p| p.len() > 0).map(|p| p.into_iter().collect()),
+        get_all: cli.get_all,
     };
     info!("Units:");
     timeit(|| async_std::task::block_on(scraper.scrape()))?;
