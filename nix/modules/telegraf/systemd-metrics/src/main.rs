@@ -122,7 +122,7 @@ impl Scraper {
                     //println!("  {} error {:?}", key, e),
                 },
                 |value| {
-                    match *value {
+                    match value.into() {
                         Value::U64(u64::MAX) => None,
                         Value::U8(v) => Some(Into::<FieldValue>::into(Into::<i64>::into(v))),
                         Value::Bool(v) => Some(v.into()),
@@ -133,9 +133,10 @@ impl Scraper {
                         Value::I64(v) => Some(Into::<i64>::into(v).into()),
                         Value::U64(v) => Some((v.min(i64::MAX as u64) as i64).into()),
                         Value::F64(v) => Some(v.into()),
-                        Value::Str(_) => Some(TryInto::<String>::try_into(value).unwrap().into()),
-                        _ => {
-                            println!("  can't convert {}={:?}", key, value);
+                        Value::Str(s) if s.len() == 0 => None,
+                        Value::Str(s) => Some(TryInto::<String>::try_into(s).unwrap().into()),
+                        v => {
+                            println!("  can't convert {}={:?}", key, v);
                             None
                         },
                     }
