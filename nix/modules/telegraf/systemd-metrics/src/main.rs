@@ -1,5 +1,5 @@
 use async_std;
-use zbus::{self, dbus_proxy, Connection, ConnectionBuilder, Result, zvariant::{Type, OwnedObjectPath, Value}, fdo::PropertiesProxy};
+use zbus::{self, dbus_proxy, Connection, ConnectionBuilder, zvariant::{Type, OwnedObjectPath, Value}, fdo::PropertiesProxy};
 use zbus_names::InterfaceName;
 use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
@@ -7,6 +7,7 @@ use futures::future::{self, FutureExt, TryFutureExt};
 use futures::stream::{self, StreamExt, TryStreamExt, FuturesUnordered};
 use influxdb2::models::{DataPoint, data_point::DataPointError, FieldValue, WriteDataPoint};
 use std::io;
+use log::{warn, info, debug};
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct UnitStatus {
@@ -39,11 +40,11 @@ pub struct UnitStatus {
 )]
 trait SystemdManager {
     #[dbus_proxy(property)]
-    fn architecture(&self) -> Result<String>;
+    fn architecture(&self) -> zbus::Result<String>;
     #[dbus_proxy(property)]
-    fn environment(&self) -> Result<Vec<String>>;
+    fn environment(&self) -> zbus::Result<Vec<String>>;
 
-    fn list_units(&self) -> Result<Vec<UnitStatus>>;
+    fn list_units(&self) -> zbus::Result<Vec<UnitStatus>>;
 }
 
 fn timeit<F: Fn() -> T, T>(f: F) -> T {
@@ -51,15 +52,15 @@ fn timeit<F: Fn() -> T, T>(f: F) -> T {
     let result = f();
     let end = SystemTime::now();
     let duration = end.duration_since(start).unwrap();
-    println!("it took {:?}", duration);
+    debug!("it took {:?}", duration);
     result
 }
 
-async fn connect() -> Result<Connection> {
+async fn connect() -> zbus::Result<Connection> {
     future::ready(ConnectionBuilder::address("unix:path=/run/systemd/private"))
         .and_then(|b| b.p2p().build())
         .or_else(|e| {
-            println!("private connection failed: {:?}", e);
+            warn!("private connection failed: {:?}", e);
             Connection::system()
         }).await
 }
@@ -82,7 +83,7 @@ fn to_initial_uppercase(s: &str) -> String {
 }
 
 impl Scraper {
-    async fn scrape(&self) -> Result<()> {
+    async fn scrape(&self) -> zbus::Result<()> {
         let proxy = SystemdManagerProxy::new(&self.connection).await?;
         let units = proxy.list_units().await?;
         stream::iter(units).map(Ok).try_for_each_concurrent(10, |unit| async move {
@@ -90,11 +91,11 @@ impl Scraper {
         }).await
     }
 
-    async fn scrape_unit(&self, unit: &UnitStatus) -> Result<()> {
+    async fn scrape_unit(&self, unit: &UnitStatus) -> zbus::Result<()> {
         let mut builder = DataPoint::builder("systemd_unit")
             .tag("Id", &unit.name)
             ;
-        //println!(" {} - {}", unit.name, unit.path);
+        //debug!(" {} - {}", unit.name, unit.path);
         let properties_proxy =
             PropertiesProxy::builder(&self.connection)
             .destination("org.freedesktop.systemd1")?
@@ -104,7 +105,7 @@ impl Scraper {
         if self.all_properties {
             let properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
             for (key, value) in &properties {
-                println!("  {}={:?}", key, value);
+                debug!("  {}={:?}", key, value);
             }
         }
         let unit_type = unit.name.rsplit_once(".").map(|(_, v)| v).unwrap_or(&unit.name);
@@ -131,9 +132,9 @@ impl Scraper {
                         Value::U64(v) => Some((v.min(i64::MAX as u64) as i64).into()),
                         Value::F64(v) => Some(v.into()),
                         Value::Str(s) if s.len() == 0 => None,
-                        Value::Str(s) => Some(TryInto::<String>::try_into(s).unwrap().into()),
+                        Value::Str(s) => Some(Into::<String>::into(s).into()),
                         v => {
-                            println!("  can't convert {}={:?}", key, v);
+                            warn!("  can't convert {}={:?}", key, v);
                             None
                         },
                     }
@@ -158,20 +159,22 @@ impl Scraper {
 }
 
 #[async_std::main]
-async fn main() -> Result<()> {
+async fn main() -> zbus::Result<()> {
+    pretty_env_logger::init();
+
     let connection = connect().await?;
 
     let proxy = SystemdManagerProxy::new(&connection).await?;
-    println!("Host architecture: {}", proxy.architecture().await?);
-    println!("Environment:");
+    info!("Host architecture: {}", proxy.architecture().await?);
+    info!("Environment:");
     for env in proxy.environment().await? {
-        println!("  {}", env);
+        info!("  {}", env);
     }
     let scraper = Scraper{
         connection,
         all_properties: false,
     };
-    println!("Units:");
+    info!("Units:");
     timeit(|| async_std::task::block_on(scraper.scrape()))?;
 
     Ok(())
