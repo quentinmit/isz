@@ -5,7 +5,7 @@ use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
 use futures::future::{self, FutureExt, TryFutureExt};
 use futures::stream::{self, StreamExt, TryStreamExt, FuturesUnordered};
-use influxdb2::models::{DataPoint, FieldValue, WriteDataPoint};
+use influxdb2::models::{DataPoint, data_point::DataPointError, FieldValue, WriteDataPoint};
 use std::io;
 
 #[derive(Debug, Type, Serialize, Deserialize)]
@@ -143,7 +143,10 @@ impl Scraper {
                 builder = builder.field(key, v);
             }
         }
-        builder.build().unwrap().write_data_point_to(io::stdout()).unwrap();
+        match builder.build() {
+            Err(DataPointError::AtLeastOneFieldRequired { .. }) => {},
+            Ok(p) => p.write_data_point_to(io::stdout()).unwrap(),
+        }
         Ok::<(), zbus::Error>(())
     }
 }
