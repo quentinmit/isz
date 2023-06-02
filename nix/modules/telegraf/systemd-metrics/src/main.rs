@@ -1,10 +1,12 @@
 use async_std;
-use zbus::{self, dbus_proxy, Connection, ConnectionBuilder, Result, zvariant::{Type, OwnedObjectPath}, fdo::PropertiesProxy};
+use zbus::{self, dbus_proxy, Connection, ConnectionBuilder, Result, zvariant::{Type, OwnedObjectPath, Value}, fdo::PropertiesProxy};
 use zbus_names::InterfaceName;
 use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
 use futures::future::{self, FutureExt, TryFutureExt};
 use futures::stream::{self, StreamExt, TryStreamExt, FuturesUnordered};
+use influxdb2::models::{DataPoint, FieldValue, WriteDataPoint};
+use std::io;
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct UnitStatus {
@@ -89,7 +91,10 @@ impl Scraper {
     }
 
     async fn scrape_unit(&self, unit: &UnitStatus) -> Result<()> {
-        println!(" {} - {}", unit.name, unit.path);
+        let mut builder = DataPoint::builder("systemd")
+            .tag("unit_name", &unit.name)
+            ;
+        //println!(" {} - {}", unit.name, unit.path);
         let properties_proxy =
             PropertiesProxy::builder(&self.connection)
             .destination("org.freedesktop.systemd1")?
@@ -103,6 +108,7 @@ impl Scraper {
             }
         }
         let unit_type = unit.name.rsplit_once(".").map(|(_, v)| v).unwrap_or(&unit.name);
+        builder = builder.tag("unit_type", unit_type);
         let interface_name = InterfaceName::try_from(
             format!(
                 "org.freedesktop.systemd1.{}",
@@ -110,20 +116,40 @@ impl Scraper {
             )
         )?;
         for key in ["ControlGroup", "IPIngressBytes", "IPIngressPackets", "IPEgressBytes", "IPEgressPackets"] {
-            properties_proxy.get(interface_name.clone(), key).await.map_or_else(
-                |e| println!("  {} error {:?}", key, e),
-                |value| println!("  {}={:?}", key, value)
+            let value = properties_proxy.get(interface_name.clone(), key).await.map_or_else(
+                |e| {
+                    None
+                    //println!("  {} error {:?}", key, e),
+                },
+                |value| {
+                    match *value {
+                        Value::U8(v) => Some(Into::<FieldValue>::into(Into::<i64>::into(v))),
+                        Value::Bool(v) => Some(v.into()),
+                        Value::I16(v) => Some(Into::<i64>::into(v).into()),
+                        Value::U16(v) => Some(Into::<i64>::into(v).into()),
+                        Value::I32(v) => Some(Into::<i64>::into(v).into()),
+                        Value::U32(v) => Some(Into::<i64>::into(v).into()),
+                        Value::I64(v) => Some(Into::<i64>::into(v).into()),
+                        Value::U64(v) => Some((v.min(i64::MAX as u64) as i64).into()),
+                        Value::F64(v) => Some(v.into()),
+                        _ => {
+                            println!("  can't convert {}={:?}", key, value);
+                            None
+                        },
+                    }
+                },
             );
+            if let Some(v) = value {
+                builder = builder.field(key, v);
+            }
         }
+        builder.build().unwrap().write_data_point_to(io::stdout()).unwrap();
         Ok::<(), zbus::Error>(())
     }
 }
 
 #[async_std::main]
 async fn main() -> Result<()> {
-
-    let all_properties = false;
-
     let connection = connect().await?;
 
     let proxy = SystemdManagerProxy::new(&connection).await?;
@@ -133,7 +159,7 @@ async fn main() -> Result<()> {
         println!("  {}", env);
     }
     let scraper = Scraper{
-        connection: connection,
+        connection,
         all_properties: false,
     };
     println!("Units:");
