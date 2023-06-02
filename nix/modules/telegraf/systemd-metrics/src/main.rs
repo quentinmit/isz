@@ -91,7 +91,7 @@ impl Scraper {
     }
 
     async fn scrape_unit(&self, unit: &UnitStatus) -> Result<()> {
-        let mut builder = DataPoint::builder("systemd")
+        let mut builder = DataPoint::builder("systemd_unit")
             .tag("Id", &unit.name)
             ;
         //println!(" {} - {}", unit.name, unit.path);
