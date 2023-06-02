@@ -141,9 +141,15 @@ impl Scraper {
                     }
                 },
             );
-            if let Some(v) = value {
-                builder = builder.field(key, v);
-            }
+            match value {
+                Some(FieldValue::String(s)) => {
+                    builder = builder.tag(key, s);
+                },
+                Some(v) => {
+                    builder = builder.field(key, v);
+                }
+                None => {}
+            };
         }
         match builder.build() {
             Err(DataPointError::AtLeastOneFieldRequired { .. }) => {},
