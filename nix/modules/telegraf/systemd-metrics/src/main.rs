@@ -2,11 +2,11 @@ use async_std;
 use zbus::{self, dbus_proxy, Connection, ConnectionBuilder, zvariant::{Type, OwnedObjectPath, Value}, fdo::PropertiesProxy};
 use zbus_names::InterfaceName;
 use serde::{Serialize, Deserialize};
-use std::time::SystemTime;
-use futures::future::{self, FutureExt, TryFutureExt};
-use futures::stream::{self, StreamExt, TryStreamExt, FuturesUnordered};
+use std::time::Instant;
+use futures::future::{self, TryFutureExt};
+use futures::stream::{self, StreamExt, TryStreamExt};
 use influxdb2::models::{DataPoint, data_point::DataPointError, FieldValue, WriteDataPoint};
-use std::io;
+use std::io::{self, BufRead};
 use std::collections::HashSet;
 use log::{warn, info, debug, trace};
 use clap::Parser;
@@ -41,21 +41,7 @@ pub struct UnitStatus {
     default_path = "/org/freedesktop/systemd1"
 )]
 trait SystemdManager {
-    #[dbus_proxy(property)]
-    fn architecture(&self) -> zbus::Result<String>;
-    #[dbus_proxy(property)]
-    fn environment(&self) -> zbus::Result<Vec<String>>;
-
     fn list_units(&self) -> zbus::Result<Vec<UnitStatus>>;
-}
-
-fn timeit<F: Fn() -> T, T>(f: F) -> T {
-    let start = SystemTime::now();
-    let result = f();
-    let end = SystemTime::now();
-    let duration = end.duration_since(start).unwrap();
-    debug!("it took {:?}", duration);
-    result
 }
 
 async fn connect() -> zbus::Result<Connection> {
@@ -200,19 +186,18 @@ async fn main() -> zbus::Result<()> {
 
     let connection = connect().await?;
 
-    let proxy = SystemdManagerProxy::new(&connection).await?;
-    info!("Host architecture: {}", proxy.architecture().await?);
-    info!("Environment:");
-    for env in proxy.environment().await? {
-        info!("  {}", env);
-    }
     let scraper = Scraper{
         connection,
         properties: Some(cli.properties).filter(|p| p.len() > 0).map(|p| p.into_iter().collect()),
         get_all: cli.get_all,
     };
-    info!("Units:");
-    timeit(|| async_std::task::block_on(scraper.scrape()))?;
+    let stdin = io::stdin();
+    for _ in stdin.lock().lines() {
+        let start = Instant::now();
+        let result = scraper.scrape().await;
+        info!("scrape took {:?}", start.elapsed());
+        result?;
+    }
 
     Ok(())
 }
