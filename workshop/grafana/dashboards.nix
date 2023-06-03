@@ -1052,7 +1052,7 @@
           displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
         };
         fields.IPIngressBytes.custom.transform = "negative-Y";
-        unit = "Bps";
+        unit = "bps";
       };
       systemd.ip_traffic_packets = {
         panel.interval = "60s";
@@ -1066,6 +1066,33 @@
         };
         fields.IPIngressPackets.custom.transform = "negative-Y";
         unit = "pps";
+        right = true;
+      };
+      systemd.io_bytes = {
+        panel.interval = "60s";
+        graph_title = "systemd unit IO throughput";
+        graph_vlabel = "Bytes/second read (-) / write (+)";
+        influx.filter._measurement = "systemd_unit";
+        influx.filter._field = ["IOReadBytes" "IOWriteBytes"];
+        influx.fn = "derivative";
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
+        };
+        fields.IOReadBytes.custom.transform = "negative-Y";
+        unit = "binBps";
+      };
+      systemd.io_packets = {
+        panel.interval = "60s";
+        graph_title = "systemd unit IOs";
+        graph_vlabel = "IOs/second read (-) / write (+)";
+        influx.filter._measurement = "systemd_unit";
+        influx.filter._field = ["IOReadOperations" "IOWriteOperations"];
+        influx.fn = "derivative";
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
+        };
+        fields.IOReadOperations.custom.transform = "negative-Y";
+        unit = "iops";
         right = true;
       };
     };
