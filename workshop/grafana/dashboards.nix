@@ -1040,7 +1040,7 @@
       };
       systemd.ip_traffic_bytes = {
         panel.interval = "60s";
-        graph_title = "systemd unit IP traffic";
+        graph_title = "Unit IP traffic";
         graph_vlabel = "bits in (-) / out (+) per second";
         influx.filter._measurement = "systemd_unit";
         influx.filter._field = ["IPIngressBytes" "IPEgressBytes"];
@@ -1056,7 +1056,7 @@
       };
       systemd.ip_traffic_packets = {
         panel.interval = "60s";
-        graph_title = "systemd unit IP packets";
+        graph_title = "Unit IP packets";
         graph_vlabel = "packets in (-) / out (+) per second";
         influx.filter._measurement = "systemd_unit";
         influx.filter._field = ["IPIngressPackets" "IPEgressPackets"];
@@ -1070,7 +1070,7 @@
       };
       systemd.io_bytes = {
         panel.interval = "60s";
-        graph_title = "systemd unit IO throughput";
+        graph_title = "Unit IO throughput";
         graph_vlabel = "Bytes/second read (-) / write (+)";
         influx.filter._measurement = "systemd_unit";
         influx.filter._field = ["IOReadBytes" "IOWriteBytes"];
@@ -1083,7 +1083,7 @@
       };
       systemd.io_packets = {
         panel.interval = "60s";
-        graph_title = "systemd unit IOs";
+        graph_title = "Unit IOs";
         graph_vlabel = "IOs/second read (-) / write (+)";
         influx.filter._measurement = "systemd_unit";
         influx.filter._field = ["IOReadOperations" "IOWriteOperations"];
@@ -1094,6 +1094,32 @@
         fields.IOReadOperations.custom.transform = "negative-Y";
         unit = "iops";
         right = true;
+      };
+      systemd.cpu = {
+        panel.interval = "60s";
+        graph_title = "Unit CPU usage";
+        influx.filter._measurement = "systemd_unit";
+        influx.filter._field = "CPUUsageNSec";
+        influx.filter.unit_type = { op = "!="; values = "slice"; };
+        influx.fn = "derivative";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: r._value / 1000000000.}))
+        '';
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.Id} \${__field.labels.host}";
+        };
+        stacking = true;
+        unit = "percentunit";
+      };
+      systemd.memory = {
+        panel.interval = "60s";
+        graph_title = "Unit memory usage";
+        influx.filter._field = "MemoryCurrent";
+        influx.fn = "mean";
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
+        };
+        unit = "bytes";
       };
     };
   };
