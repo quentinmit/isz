@@ -167,6 +167,14 @@ const DEFAULT_PROPERTIES: &[&str] = &[
     "IPEgressBytes",
     "IPEgressPackets",
     "TasksCurrent",
+    "ActiveEnterTimestamp",
+    "ActiveExitTimestamp",
+    "InactiveEnterTimestamp",
+    "InactiveExitTimestamp",
+    // socket
+    "NConnections",
+    "NAccepted",
+    "NRefused",
 ];
 
 
