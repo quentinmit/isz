@@ -11,7 +11,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
     {
       fieldConfig.overrides = lib.mapAttrsToList
         (field: options: {
-          matcher.id = "byName";
+          matcher.id = if lib.hasPrefix "/" field then "byRegexp" else "byName";
           matcher.options = field;
           properties = lib.mapAttrsToList (id: value: {
             inherit id value;
