@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./dashboards.nix
+    ./dashboards
   ];
   config = {
     sops.secrets."grafana/influx_token" = {
