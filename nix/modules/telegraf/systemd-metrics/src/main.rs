@@ -55,6 +55,7 @@ async fn connect() -> zbus::Result<Connection> {
 
 struct Scraper {
     connection: Connection,
+    tags: HashSet<String>,
     properties: Option<HashSet<String>>,
     get_all: bool,
 }
@@ -99,17 +100,21 @@ impl Scraper {
                 to_initial_uppercase(unit_type),
             )
         )?;
+        let property_names: HashSet<&str> = match &self.properties {
+            Some(p) => (&self.tags).union(p).map(|s| s.as_str()).collect(),
+            None => self.tags.iter().map(|s| s.as_str()).collect(),
+        };
         let properties = match (self.get_all, &self.properties) {
             (true, _) | (false, None) => {
                 let mut properties = properties_proxy.get_all(InterfaceName::from_static_str_unchecked("")).await?;
-                if let Some(keys) = &self.properties {
-                    properties.retain(|key, _| keys.contains(key));
+                if let Some(_) = &self.properties {
+                    properties.retain(|key, _| property_names.contains(&key.as_str()));
                 }
                 properties
             },
-            (false, Some(p)) => {
-                stream::iter(p).filter_map(|key| async {
-                    properties_proxy.get(interface_name.clone(), &key.clone()).await.ok().map(|value| (key.clone(), value))
+            (false, Some(_)) => {
+                stream::iter(property_names).filter_map(|key| async {
+                    properties_proxy.get(interface_name.clone(), key).await.ok().map(|value| (key.into(), value))
                 }).collect().await
             }
         };
@@ -134,7 +139,7 @@ impl Scraper {
                 },
             };
             match value {
-                Some(FieldValue::String(s)) => {
+                Some(FieldValue::String(s)) if self.tags.contains(&s)=> {
                     builder = builder.tag(key, s);
                 },
                 Some(v) => {
@@ -151,10 +156,14 @@ impl Scraper {
     }
 }
 
-const DEFAULT_PROPERTIES: &[&str] = &[
-    "NRestarts",
+const DEFAULT_TAGS: &[&str] = &[
     "Slice",
     "ControlGroup",
+];
+
+const DEFAULT_PROPERTIES: &[&str] = &[
+    "ActiveState",
+    "NRestarts",
     "CPUUsageNSec",
     "IOReadBytes",
     "IOReadOperations",
@@ -180,6 +189,8 @@ const DEFAULT_PROPERTIES: &[&str] = &[
 
 #[derive(Parser)]
 struct Cli {
+    #[arg(short, long, num_args=0.., default_values_t=DEFAULT_TAGS.into_iter().map(|v| v.to_string()))]
+    tags: Vec<String>,
     #[arg(short, long, num_args=0.., default_values_t=DEFAULT_PROPERTIES.into_iter().map(|v| v.to_string()))]
     properties: Vec<String>,
     #[arg(long)]
@@ -196,6 +207,7 @@ async fn main() -> zbus::Result<()> {
 
     let scraper = Scraper{
         connection,
+        tags: cli.tags.into_iter().collect(),
         properties: Some(cli.properties).filter(|p| p.len() > 0).map(|p| p.into_iter().collect()),
         get_all: cli.get_all,
     };
