@@ -101,21 +101,27 @@
         };
         influx.query = ''
           from (bucket: v.defaultBucket)
-          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-          //|> filter(fn: (r) => r["_field"] == "IOReadBytes" or r["_field"] == "IOWriteBytes")
-          |> filter(fn: (r) => r["_measurement"] == "systemd_unit")
-          //|> filter(fn: (r) => r["host"] =~ /^${host:regex}$/)
-          |> aggregateWindow(every: v.windowPeriod, fn: last)
-          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-          |> group(columns: ["_measurement", "_field", "host", "Id"])
-          |> sort(columns: ["_time"])
-          //|> aggregateWindow(every: v.windowPeriod, fn: last)
-          |> derivative(unit: 1s, nonNegative: true, columns: ["IPIngressBytes", "IPEgressBytes", "IPIngressPackets", "IPEgressPackets", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations"])
-          |> last(column: "_stop")
-          |> drop(columns: ["_start", "_stop", "_measurement", "Slice", "unit_type"])
-          |> map(fn: (r) => ({r with CPUUsageNSec: r.CPUUsageNSec / 1000000000., ActiveEnterTimestamp: r.ActiveEnterTimestamp / 1000, ActiveExitTimestamp: r.ActiveExitTimestamp/1000, InactiveEnterTimestamp: r.InactiveEnterTimestamp/1000, InactiveExitTimestamp: r.InactiveExitTimestamp/1000}))
-          |> group()
-          |> sort(columns: ["host", "Slice", "Id"])
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "systemd_unit")
+            //|> filter(fn: (r) => r["host"] =~ /^${host:regex}$/)
+            |> aggregateWindow(every: v.windowPeriod, fn: last)
+            |> filter(fn: (r) => r._field !~ /.*Timestamp$/ or r._value > 0)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> group(columns: ["_measurement", "_field", "host", "Id"])
+            |> sort(columns: ["_time"])
+            //|> aggregateWindow(every: v.windowPeriod, fn: last)
+            |> derivative(unit: 1s, nonNegative: true, columns: ["IPIngressBytes", "IPEgressBytes", "IPIngressPackets", "IPEgressPackets", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations"])
+            |> last(column: "_stop")
+            |> drop(columns: ["_start", "_stop", "_measurement", "unit_type"])
+            |> map(fn: (r) => ({r with
+              CPUUsageNSec: r.CPUUsageNSec / 1000000000.,
+              ActiveEnterTimestamp: r.ActiveEnterTimestamp/1000,
+              ActiveExitTimestamp: r.ActiveExitTimestamp/1000,
+              InactiveEnterTimestamp: r.InactiveEnterTimestamp/1000,
+              InactiveExitTimestamp: r.InactiveExitTimestamp/1000
+            }))
+            |> group()
+            |> sort(columns: ["host", "Slice", "Id"])
         '';
         fields.CPUUsageNSec.unit = "percentunit";
         fields."/.*Bytes/".unit = "Bps";
