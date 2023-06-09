@@ -68,6 +68,7 @@
           |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
           //|> filter(fn: (r) => r["_field"] == "IOReadBytes" or r["_field"] == "IOWriteBytes")
           |> filter(fn: (r) => r["_measurement"] == "systemd_unit")
+          |> filter(fn: (r) => r._field != "ActiveState")
           //|> filter(fn: (r) => r["host"] =~ /^${host:regex}$/)
           |> aggregateWindow(every: v.windowPeriod, fn: last)
           |> derivative(unit: 1s, nonNegative: true)
@@ -91,7 +92,79 @@
           }
         ];
       }
-      {
+      (let
+        fields = [
+          { name = "host"; }
+          { name = "Slice"; properties.custom.hidden = true; }
+          { name = "Id"; properties.custom.hidden = true; }
+          {
+            name = "ControlGroup"; value = ''
+              if (exists r.ControlGroup and r.ControlGroup != "") then r.ControlGroup else ((if (exists r.Slice and r.Slice != "" and r.Slice != "-.slice") then "/" + r.Slice else "") + "/" + r.Id + " (missing)")
+            '';
+            properties = {
+              custom.width = 400;
+            };
+          }
+          {
+            name = "State"; value = ''
+              r.ActiveState + (if exists r.SubState then "/" + r.SubState else "")
+            '';
+            properties.custom.width = 115;
+          }
+          {
+            name = "Uptime";
+            unit = "dateTimeFromNow";
+            value = ''
+              if r.ActiveState == "active" then r.ActiveEnterTimestamp/1000 else debug.null(type: "int")
+            '';
+            properties.custom.width = 110;
+          }
+          {
+            name = "NRestarts";
+            properties = {
+              custom.width = 100;
+              custom.cellOptions.type = "color-background";
+              color.mode = "thresholds";
+              thresholds.mode = "absolute";
+              thresholds.steps = [
+                { value = null; color = "transparent"; }
+                { value = 0; color = "green"; }
+                { value = 1; color = "red"; }
+              ];
+            };
+          }
+          {
+            name = "CPU";
+            unit = "percentunit";
+            value = ''
+              r.CPUUsageNSec / 1000000000.
+            '';
+            properties.custom.width = 90;
+            properties.decimals = 1;
+          }
+          {
+            name = "Memory";
+            unit = "bytes";
+            value = ''
+              r.MemoryCurrent
+            '';
+            properties.custom.width = 90;
+          }
+          { name = "IPIngressBytes"; unit = "Bps"; }
+          { name = "IPEgressBytes"; unit = "Bps"; }
+          { name = "IPIngressPackets"; unit = "pps"; }
+          { name = "IPEgressPackets"; unit = "pps"; }
+          { name = "IOReadBytes"; unit = "Bps"; }
+          { name = "IOWriteBytes"; unit = "Bps"; }
+          { name = "IOReadOperations"; unit = "iops"; }
+          { name = "IOWriteOperations"; unit = "iops"; }
+        ];
+        queryRecord = lib.concatMapStringsSep ",\n" (field: let
+          name = lib.strings.escapeNixIdentifier field.name;
+          value = field.value or "r[${lib.strings.escapeNixString field.name}]";
+          in ''  ${name}: ${value}''
+        ) fields;
+      in {
         panel.gridPos = { x = 0; y = 27; w = 24; h = 20; };
         panel.title = "systemd units";
         panel.type = "table";
@@ -100,12 +173,14 @@
           custom.filterable = true;
         };
         influx.query = ''
+          import "internal/debug"
           from (bucket: v.defaultBucket)
             |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
             |> filter(fn: (r) => r["_measurement"] == "systemd_unit")
+            |> filter(fn: (r) => (not exists r.LoadState or r.LoadState != "not-found"))
             //|> filter(fn: (r) => r["host"] =~ /^${host:regex}$/)
-            |> aggregateWindow(every: v.windowPeriod, fn: last)
-            |> filter(fn: (r) => r._field !~ /.*Timestamp$/ or r._value > 0)
+            |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
+            |> filter(fn: (r) => r._field !~ /.*Timestamp$/ or int(v: r._value) > 0)
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> group(columns: ["_measurement", "_field", "host", "Id"])
             |> sort(columns: ["_time"])
@@ -113,32 +188,25 @@
             |> derivative(unit: 1s, nonNegative: true, columns: ["IPIngressBytes", "IPEgressBytes", "IPIngressPackets", "IPEgressPackets", "CPUUsageNSec", "IOReadBytes", "IOWriteBytes", "IOReadOperations", "IOWriteOperations"])
             |> last(column: "_stop")
             |> drop(columns: ["_start", "_stop", "_measurement", "unit_type"])
-            |> map(fn: (r) => ({r with
-              CPUUsageNSec: r.CPUUsageNSec / 1000000000.,
-              ActiveEnterTimestamp: r.ActiveEnterTimestamp/1000,
-              ActiveExitTimestamp: r.ActiveExitTimestamp/1000,
-              InactiveEnterTimestamp: r.InactiveEnterTimestamp/1000,
-              InactiveExitTimestamp: r.InactiveExitTimestamp/1000
+            |> map(fn: (r) => ({
+              ${queryRecord}
             }))
             |> group()
-            |> sort(columns: ["host", "Slice", "Id"])
         '';
-        fields.CPUUsageNSec.unit = "percentunit";
-        fields."/.*Bytes/".unit = "Bps";
-        fields."/.*Packets/".unit = "pps";
-        fields."/.*Operations/".unit = "iops";
-        fields."/.*Timestamp/".unit = "dateTimeAsLocalNoDateIfToday";
-        fields.MemoryCurrent.unit = "bytes";
-        fields.NRestarts = {
-          color.mode = "thresholds";
-          thresholds.mode = "absolute";
-          thresholds.steps = [
-            { value = null; color = "green"; }
-            { value = 1; color = "red"; }
-          ];
-        };
-        fields."ControlGroup\\field".custom.width = 352;
-      }
+        fields = builtins.listToAttrs (builtins.map (field: lib.nameValuePair field.name ({
+          unit = lib.mkIf (field ? unit) field.unit;
+        } // (field.properties or {}))) fields);
+        fieldOrder = builtins.map (field: field.name) fields;
+        panel.transformations = lib.mkBefore [
+          {
+            id = "sortBy";
+            options.sort = [
+              { field = "host"; }
+              { field = "ControlGroup"; }
+            ];
+          }
+        ];
+      })
     ];
   };
 }

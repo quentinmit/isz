@@ -139,7 +139,7 @@ impl Scraper {
                 },
             };
             match value {
-                Some(FieldValue::String(s)) if self.tags.contains(&s)=> {
+                Some(FieldValue::String(s)) if self.tags.contains(key) => {
                     builder = builder.tag(key, s);
                 },
                 Some(v) => {
@@ -159,10 +159,12 @@ impl Scraper {
 const DEFAULT_TAGS: &[&str] = &[
     "Slice",
     "ControlGroup",
+    "LoadState",
 ];
 
 const DEFAULT_PROPERTIES: &[&str] = &[
     "ActiveState",
+    "SubState",
     "NRestarts",
     "CPUUsageNSec",
     "IOReadBytes",
