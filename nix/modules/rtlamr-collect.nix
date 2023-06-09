@@ -87,6 +87,8 @@
         description = "RTL-SDR TCP server";
         path = [ pkgs.rtl-sdr ];
         after = [ "network.target" ];
+        # Restart whenever rtlamr-collect restarts
+        partOf = [ "rtlamr-collect.service" ];
         serviceConfig = {
           ExecStart = ''${pkgs.rtl-sdr}/bin/rtl_tcp -a 0.0.0.0'';
         };
