@@ -100,6 +100,16 @@
             ./mac/configuration.nix
           ];
         };
+        homeConfigurations.steamdeck-deck = home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+          };
+          modules = [
+            overlayModule
+            ./steamdeck/deck.nix
+          ];
+          extraSpecialArgs = specialArgs;
+        };
         nixosModules = builtins.listToAttrs (findModules ./nix/modules);
         darwinModules = builtins.listToAttrs (findModules ./nix/darwin) // {
           # Modules that work on both nixos and nix-darwin
@@ -108,7 +118,7 @@
             telegraf
           ;
         };
-        hmModules = builtins.listToAttrs (findModules ./nix/home);
+        homeModules = builtins.listToAttrs (findModules ./nix/home);
         deploy.nodes.workshop = {
           sshUser = "root";
           hostname = "workshop.isz.wtf";
@@ -118,6 +128,14 @@
           sshUser = "root";
           hostname = "bedroom-pi.isz.wtf";
           profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
+        };
+        deploy.nodes.steamdeck = {
+          hostname = "steamdeck.isz.wtf";
+          sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];
+          profiles.deck = {
+            sshUser = "deck";
+            path = deploy-rs.lib.${self.homeConfigurations.steamdeck-deck.pkgs.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
+          };
         };
         deploy.remoteBuild = true;
         checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;

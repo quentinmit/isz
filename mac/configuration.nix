@@ -434,7 +434,7 @@
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
 
-    imports = with self.hmModules; [
+    imports = with self.homeModules; [
       base
       clamav
     ];
