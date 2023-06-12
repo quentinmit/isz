@@ -4,8 +4,9 @@ let
   isz-w1 = pkgs.callPackage ./w1 {
     inherit (pkgs.unstable) python3;
   };
+  standalone = args ? standalone;
   # nix-darwin exposes "nixos" as a field on lib, but NixOS does not (??).
-  isNixDarwin = lib ? nixos;
+  isNixDarwin = !standalone && lib ? nixos;
 in {
   imports = if isNixDarwin then [ ./darwin.nix ] else [];
   options = with lib; {
@@ -89,7 +90,7 @@ in {
   };
   config = let
     cfg = config.isz.telegraf;
-    isNixOS = builtins.hasAttr "wrappers" options.security;
+    isNixOS = options ? security.wrapper;
   in lib.mkMerge [
     (lib.mkIf cfg.enable {
       services.telegraf.enable = true;
