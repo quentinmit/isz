@@ -93,7 +93,7 @@ in {
   };
   config = let
     cfg = config.isz.telegraf;
-    isNixOS = options ? security.wrapper;
+    isNixOS = options ? security.wrappers;
   in lib.mkMerge [
     (lib.mkIf cfg.enable {
       services.telegraf.enable = true;
