@@ -4,6 +4,8 @@ let
   isz-w1 = pkgs.callPackage ./w1 {
     inherit (pkgs.unstable) python3;
   };
+  intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ./intel_rapl.py);
+  powerSupply = pkgs.writers.writePython3 "power_supply" {} (lib.readFile ./power_supply.py);
   standalone = args ? standalone;
   # nix-darwin exposes "nixos" as a field on lib, but NixOS does not (??).
   isNixDarwin = !standalone && lib ? nixos;
@@ -14,6 +16,7 @@ in {
       enable = mkEnableOption "telegraf";
       docker = mkEnableOption "Docker";
       intelRapl = mkEnableOption "intel_rapl";
+      powerSupply = mkEnableOption "power_supply";
       debug = mkEnableOption "debug";
       smart.enable = mkOption {
         type = types.bool;
@@ -130,9 +133,7 @@ in {
           ++ optional cfg.w1 isz-w1;
       };
     } else {})
-    (if isNixOS then let
-      intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ./intel_rapl.py);
-    in lib.mkIf (cfg.enable && cfg.intelRapl) {
+    (if isNixOS then lib.mkIf (cfg.enable && cfg.intelRapl) {
       security.wrappers.intel_rapl_telegraf = {
         source = intelRapl;
         owner = "root";
@@ -254,7 +255,16 @@ in {
             alias = "intel_rapl";
             restart_delay = "10s";
             data_format = "influx";
-            command = ["/run/wrappers/bin/intel_rapl_telegraf"];
+            command = [(if isNixOS then "/run/wrappers/bin/intel_rapl_telegraf" else intelRapl)];
+            signal = "STDIN";
+          }];
+        })
+        (lib.mkIf cfg.powerSupply {
+          inputs.execd = [{
+            alias = "power_supply";
+            restart_delay = "10s";
+            data_format = "influx";
+            command = [powerSupply];
             signal = "STDIN";
           }];
         })
