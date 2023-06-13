@@ -166,22 +166,6 @@
         "type": "github"
       }
     },
-    "nix-sys-repo": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1637968711,
-        "narHash": "sha256-VrEgO5sMct/og/BTK9Z/O68wiqG4TbE6YXtMWKpA6Ak=",
-        "ref": "refs/heads/master",
-        "rev": "84007ad462b83aa91d6ad06cc9359244ed6c1cc6",
-        "revCount": 32,
-        "type": "git",
-        "url": "https://git.sr.ht/~kaction/nix-sys"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://git.sr.ht/~kaction/nix-sys"
-      }
-    },
     "nixos-hardware": {
       "locked": {
         "lastModified": 1683009613,
@@ -242,7 +226,6 @@
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "nix-index-database": "nix-index-database",
-        "nix-sys-repo": "nix-sys-repo",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nur-mweinelt": "nur-mweinelt",

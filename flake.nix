@@ -32,12 +32,8 @@
     cargo2nix.inputs.flake-utils.follows = "flake-utils";
     cargo2nix.inputs.nixpkgs.follows = "nixpkgs";
     cargo2nix.inputs.rust-overlay.follows = "rust-overlay";
-    nix-sys-repo = {
-      url = "git+https://git.sr.ht/~kaction/nix-sys";
-      flake = false;
-    };
   };
-  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, nix-sys-repo, ... }@args:
+  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -134,13 +130,21 @@
           hostname = "bedroom-pi.isz.wtf";
           profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
         };
+        steamdeckSys = (import ./steamdeck/sys.nix { inherit self nixpkgs specialArgs; });
+        steamdeckSysext = (import ./nix/sysext.nix {
+          inherit self nixpkgs specialArgs;
+          system = "x86_64-linux";
+          modules = [
+            ./steamdeck/configuration.nix
+          ];
+        });
         deploy.nodes.steamdeck = {
           hostname = "steamdeck.isz.wtf";
           sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];
-          profiles.sys = {
-            sshUser = "root";
-            path = deploy-rs.lib.x86_64-linux.activate.custom (import ./steamdeck/sys.nix { inherit self nixpkgs nix-sys-repo; }) "./bin/nix-sys";
-          };
+          #profiles.sys = {
+          #  sshUser = "root";
+          #  path = deploy-rs.lib.x86_64-linux.activate.custom self.steamdeckSys "./bin/nix-sys";
+          #};
           profiles.deck = {
             sshUser = "deck";
             path = deploy-rs.lib.${self.homeConfigurations.steamdeck-deck.pkgs.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
