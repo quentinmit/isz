@@ -420,8 +420,24 @@
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
   nix.settings = {
+    builders = "@/etc/nix/machines";
     bash-prompt-prefix = "(nix:$name)\\040";
+    trusted-users = [ "root" "quentin" ];
   };
+  nix.distributedBuilds = true;
+  nix.buildMachines = [{
+    hostName = "workshop.isz.wtf";
+    publicHostKey = ''
+      c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSU42REcyMDkyMzdzbkVpcEh0WUNLSlFReTJMS29FVllNWVRXTVA1V2NpL0ogcm9vdEB3b3Jrc2hvcAo=
+    '';
+    sshUser = "ssh-ng://root";
+    sshKey = "/Users/quentin/.ssh/id_rsa";
+    systems = [
+      "aarch64-linux"
+      "x86_64-linux"
+    ];
+  }];
+
   system.stateVersion = 4;
 
   users.users.quentin = {
