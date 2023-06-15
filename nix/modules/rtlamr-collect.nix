@@ -135,10 +135,12 @@
           set -e
           rtlamr | rtlamr-collect
         '';
+        unitConfig = {
+          StartLimitIntervalSec = "0";
+        };
         serviceConfig = {
           Restart = "always";
           RestartSec = "5s";
-          StartLimitIntervalSec = "0";
           User = cfg.user;
           Group = cfg.user;
           StateDirectory = "rtlamr-collect";

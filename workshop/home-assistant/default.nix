@@ -77,6 +77,8 @@ in {
       });
       extraComponents = [
         "accuweather"
+        "androidtv"
+        "androidtv_remote"
         "apple_tv"
         "backup"
         "cast"
@@ -91,6 +93,7 @@ in {
         "mqtt"
         "person"
         "sun"
+        "tasmota"
         "upnp"
         "zone"
         "zwave_js"

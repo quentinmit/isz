@@ -10,7 +10,7 @@ buildGoModule rec {
 
   src = fetchFromGitHub {
     owner = "QuadStingray";
-    repo = "docker-speedtest-influxdb.git";
+    repo = "docker-speedtest-influxdb";
     rev = "a9f610d3464d1f98bce8452395207683f61c8983";
     sha256 = "X99hXpqubbOoFnRT2Qv2S/M8nNabIL5GP+VBE+hB73c=";
   };

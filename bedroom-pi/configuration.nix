@@ -121,6 +121,8 @@
       Group = "wago-logger";
       Restart = "always";
       RestartSec = "5s";
+    };
+    unitConfig = {
       StartLimitIntervalSec = "0";
     };
     script = ''

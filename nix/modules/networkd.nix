@@ -138,7 +138,7 @@
       systemd.network.networks.vlan88 = {
         name = "vlan88";
         networkConfig = {
-          Address = "192.168.88.${toString cfg.lastOctet}";
+          Address = "192.168.88.${toString cfg.lastOctet}/24";
         };
       };
     })

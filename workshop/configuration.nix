@@ -185,12 +185,14 @@
     environment = {
       INFLUX_SERVER = "http://influx.isz.wtf:8086/";
     };
+    unitConfig = {
+      StartLimitIntervalSec = "0";
+    };
     serviceConfig = {
       User = "linkzone-logger";
       Group = "linkzone-logger";
       Restart = "always";
       RestartSec = "5s";
-      StartLimitIntervalSec = "0";
     };
     script = ''
       export INFLUX_TOKEN="$(cat ${lib.strings.escapeShellArg config.sops.secrets.logger_influx_token.path})"
