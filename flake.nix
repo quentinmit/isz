@@ -130,14 +130,14 @@
           hostname = "bedroom-pi.isz.wtf";
           profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
         };
-        steamdeckSys = (import ./steamdeck/sys.nix { inherit self nixpkgs specialArgs; });
-        steamdeckSysext = (import ./nix/sysext.nix {
+        steamdeckSys = import ./steamdeck/sys.nix { inherit self nixpkgs specialArgs; };
+        steamdeckSysext = import ./nix/sysext.nix {
           inherit self nixpkgs specialArgs;
           system = "x86_64-linux";
           modules = [
             ./steamdeck/configuration.nix
           ];
-        });
+        };
         deploy.nodes.steamdeck = {
           hostname = "steamdeck.isz.wtf";
           sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];

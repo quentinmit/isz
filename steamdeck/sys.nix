@@ -2,13 +2,13 @@
 
 let
   system = "x86_64-linux";
-  sysext = (import ../nix/sysext.nix {
+  sysext = import ../nix/sysext.nix {
     inherit system self nixpkgs specialArgs;
     modules = [
       ./configuration.nix
     ];
-  });
-  pkgs = sysext.pkgs;
+  };
+  inherit (sysext) pkgs;
   generateSystemd = name: config:
     pkgs.writeText "${name}" sysext.config.systemd.units."${name}".text;
   manifest = {

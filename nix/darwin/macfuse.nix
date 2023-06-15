@@ -3,7 +3,7 @@
   options = with lib; {
     programs.macfuse.enable = mkEnableOption "macFUSE kernel module";
   };
-  config = lib.mkIf (config.programs.macfuse.enable) {
+  config = lib.mkIf config.programs.macfuse.enable {
     environment.pathsToLink = [ "/Library/Filesystems" ];
     environment.systemPackages = [ pkgs.macfuse ];
     system.activationScripts.extraActivation.text = ''

@@ -2,7 +2,7 @@
 
 let
   inherit system;
-  lib = nixpkgs.lib;
+  inherit (nixpkgs) lib;
   onlyFields = file: names: { pkgs, ... } @ args: (
     let orig = lib.applyModuleArgsIfFunction "" (import file) args;
     in filterAttrsByPath orig names
@@ -73,5 +73,5 @@ let
     } // specialArgs;
   };
 in eval // {
-  pkgs = eval._module.args.pkgs;
+  inherit (eval._module.args) pkgs;
 }

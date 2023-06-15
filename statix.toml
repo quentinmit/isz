@@ -1,4 +1,4 @@
 disabled = ['bool_comparison']
 nix_version = '2.4'
-ignore = ['.direnv']
+ignore = ['.direnv', 'Cargo.nix']
 

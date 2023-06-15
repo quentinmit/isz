@@ -211,7 +211,7 @@ in {
             cgroup = [{
               interval = cfg.interval.cgroup;
               paths = let
-                f = (i: if i < 0 then [] else ["/sys/fs/cgroup"] ++ (map (x: x + "/*") (f (i - 1))));
+                f = i: if i < 0 then [] else ["/sys/fs/cgroup"] ++ (map (x: x + "/*") (f (i - 1)));
               in
                 f 8;
               files = [
