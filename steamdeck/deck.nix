@@ -24,6 +24,16 @@
     x11vnc
     unar
     telegraf
+    # Replacing flatpaks
+    kwalletcli
+    kwalletmanager
+    remmina
+    qpwgraph
+    helvum
+    viking
+    wireshark
+    iaito
+    gpredict
   ];
 
   programs.onboard.enable = true;
