@@ -80,7 +80,6 @@ in {
         "apple_tv"
         "backup"
         "cast"
-        "coronavirus"
         "default_config"
         "elgato"
         "esphome"

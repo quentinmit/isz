@@ -9,7 +9,7 @@
   sops.defaultSopsFile = ./secrets.yaml;
 
   boot = {
-    tmpOnTmpfs = true;
+    tmp.useTmpfs = true;
 
     loader.grub.enable = false;
   };
