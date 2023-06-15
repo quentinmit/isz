@@ -3,6 +3,7 @@
 {
   imports = with self.homeModules; [
     base
+    onboard
   ];
 
   home.username = "deck";
@@ -14,7 +15,6 @@
     htop
     wget
     ncdu
-    onboard
     #fingerterm
     dosbox
     inotify-tools
@@ -25,6 +25,8 @@
     unar
     telegraf
   ];
+
+  programs.onboard.enable = true;
 
   programs.bash = {
     shellAliases = {
