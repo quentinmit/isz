@@ -42,6 +42,11 @@
           overlays = [
             (import ./nix/pkgs/all-packages.nix)
             (import ./nix/pkgs/unstable-overlays.nix)
+            (ufinal: uprev: {
+              # Mesa 23.1 doesn't build on Darwin
+              # https://gitlab.freedesktop.org/mesa/mesa/-/issues/8634
+              mesa = final.mesa;
+            })
           ];
         };
       };

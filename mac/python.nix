@@ -57,7 +57,7 @@
             "jupyterlab"
             "jupyter_core"
             # Remaining is just to disable tests
-            "jupyter_server"
+            "jupyter-server"
             "ipywidgets"
             "nbconvert"
             "nbdime"
@@ -139,7 +139,7 @@
         jupyter-lsp
         jupyter-packaging
         jupyter-sphinx
-        jupyter_server
+        jupyter-server
         jupyterlab
         jupyterlab-git
         jupyterlab-lsp

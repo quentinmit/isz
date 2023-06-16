@@ -3,7 +3,7 @@
 , yasm, freetype, fontconfig, fribidi
 , makeWrapper, libXext, libGLU, qttools, qtbase, wrapQtAppsHook
 , alsa-lib
-, VideoToolbox
+, VideoToolbox, CoreFoundation, CoreMedia, CoreVideo, CoreAudio, CoreServices, QuartzCore
 , withX265 ? true, x265
 , withX264 ? true, x264
 , withXvid ? true, xvidcore
@@ -58,7 +58,7 @@ stdenv.mkDerivation rec {
     zlib gettext libvdpau libXv sqlite fribidi fontconfig
     freetype libXext libGLU
   ] ++ lib.optionals stdenv.isLinux [ libva alsa-lib ]
-    ++ lib.optional stdenv.isDarwin VideoToolbox
+    ++ lib.optionals stdenv.isDarwin [ VideoToolbox CoreFoundation CoreMedia CoreVideo CoreAudio CoreServices QuartzCore ]
     ++ lib.optional withX264 x264
     ++ lib.optional withX265 x265
     ++ lib.optional withXvid xvidcore

@@ -14,10 +14,14 @@
     })
     deploy-rs.overlay
   ];
+  nixpkgs.config.permittedInsecurePackages = [
+    # CVE-2023-28531 only affects ssh-add with smartcards.
+    "openssh-with-gssapi-9.0p1"
+  ];
 
   programs.macfuse.enable = true;
 
-  programs.wireshark.package = pkgs.wireshark;
+  programs.wireshark.package = pkgs.wireshark-qt5;
 
   environment.systemPackages = with pkgs; [
     # Block devices
@@ -103,7 +107,7 @@
 
     # Multimedia
     (ffmpeg-full.override {
-      nonfreeLicensing = true;
+      withUnfree = true;
     })
     atomicparsley
     avidemux
@@ -165,7 +169,9 @@
     #rx_tools
     #unsupported sdrangel
     soapyhackrf
-    xastir
+    (xastir.override {
+      rastermagick = imagemagick;
+    })
 
     # Other devices
     android-tools
@@ -235,7 +241,7 @@
     #unsupported winetricks
 
     # Performance monitoring
-    bpytop
+    btop
     htop
     pstree
     telegraf
