@@ -25,4 +25,5 @@ final: prev:
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
+  rx_tools = final.callPackage ./rx_tools {};
 }

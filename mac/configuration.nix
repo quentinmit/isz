@@ -166,7 +166,9 @@
     #unsupported pothos
     rtl-sdr
     rtl_433
-    #rx_tools
+    (rx_tools.override {
+      soapysdr = soapysdr-with-plugins;
+    })
     #unsupported sdrangel
     soapyhackrf
     (xastir.override {
