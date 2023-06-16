@@ -150,8 +150,8 @@
     youtube-dl
 
     # Radio
-    #unsupported dsd
-    #unsupported dsdcc
+    dsd
+    dsdcc
     #unsupported fldigi
     #unsupported flrig
     gnuradio
