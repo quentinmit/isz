@@ -37,6 +37,10 @@ final: prev: {
   wireshark-qt5 = (prev.wireshark.overrideAttrs (old: {
     pname = "wireshark-qt5";
     cmakeFlags = prev.lib.lists.remove "-DUSE_qt6=ON" old.cmakeFlags;
+    # https://bugreports.qt.io/browse/QTBUG-81370
+    preFixup = old.preFixup + final.lib.optionalString final.stdenv.isDarwin ''
+      qtWrapperArgs+=(--set QT_MAC_WANTS_LAYER 1)
+    '';
   })).override {
     qt6 = final.qt5 // {
       qt5compat = null;
