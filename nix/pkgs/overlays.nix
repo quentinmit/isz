@@ -36,10 +36,21 @@ final: prev: {
   });
   wireshark-qt5 = (prev.wireshark.overrideAttrs (old: {
     pname = "wireshark-qt5";
-    cmakeFlags = prev.lib.lists.remove "-DUSE_qt6=ON" old.cmakeFlags;
-    # https://bugreports.qt.io/browse/QTBUG-81370
+
+    # CMake/Ninja debug:
+    #ninjaFlags = (old.ninjaFlags or []) ++ ["-v" "-d" "explain"];
+    #NIX_DEBUG = 1;
+
+    cmakeFlags = prev.lib.lists.remove "-DUSE_qt6=ON" old.cmakeFlags ++ [
+      "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON"
+      #"-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
+      #"-DCMAKE_SKIP_INSTALL_RPATH=ON"
+    ];
     preFixup = old.preFixup + final.lib.optionalString final.stdenv.isDarwin ''
+      # https://bugreports.qt.io/browse/QTBUG-81370
       qtWrapperArgs+=(--set QT_MAC_WANTS_LAYER 1)
+      # Remove the executable bit from plugins so that Nix doesn't try to wrap them
+      find $out/Applications/Wireshark.app/Contents/PlugIns ! -type d -executable -exec chmod a-x {} \;
     '';
   })).override {
     qt6 = final.qt5 // {
