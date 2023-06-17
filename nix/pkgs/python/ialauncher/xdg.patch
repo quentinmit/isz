@@ -1,0 +1,59 @@
+diff --git a/ialauncher/game.py b/ialauncher/game.py
+index 1cdc8ff..3075f01 100644
+--- a/ialauncher/game.py
++++ b/ialauncher/game.py
+@@ -6,16 +6,20 @@ from urllib import request
+ from urllib.parse import unquote
+ from configparser import RawConfigParser
+ from threading import Thread
++from xdg import BaseDirectory
+ 
+ from .dosbox import get_dosbox_path
++from . import options
+ 
+ DOSBOX = get_dosbox_path()
+ 
++DATA_DIR = BaseDirectory.save_data_path("ialauncher")
++
+ class Game:
+     def __init__(self, path):
+         self.path = path
+-        self.gamedir = os.path.join(self.path, 'dosbox_drive_c')
+         self.identifier = os.path.basename(path)
++        self.gamedir = os.path.join(DATA_DIR, self.identifier, 'dosbox_drive_c')
+         self.configured = False
+         self.download_thread = None
+ 
+@@ -63,7 +67,9 @@ class Game:
+         """
+         batfile = os.path.join(self.gamedir, 'dosbox.bat')
+         conffile = os.path.join(self.gamedir, 'dosbox.conf')
+-        dosbox_args = [self.gamedir, '-fullscreen']
++        dosbox_args = [self.gamedir]
++        if options.fullscreen:
++            dosbox_args.append('-fullscreen')
+ 
+         if self.dosbox_conf:
+             with open(conffile, 'w') as f:
+@@ -192,7 +198,9 @@ class Download(Thread):
+     def run(self):
+         for u in self.urls:
+             filename = unquote(u.split('/')[-1]).split('/')[-1]
+-            dest = os.path.join(os.path.dirname(self.gamedir), filename)
++            downloaddir = os.path.dirname(self.gamedir)
++            os.makedirs(downloaddir, exist_ok=True)
++            dest = os.path.join(downloaddir, filename)
+             if not os.path.isfile(dest):
+                 print(f'Downloading {u}...', end='', flush=True)
+                 request.urlretrieve(u, dest)
+diff --git a/setup.py b/setup.py
+index 73be6b3..716ad43 100755
+--- a/setup.py
++++ b/setup.py
+@@ -26,5 +26,6 @@ setuptools.setup(
+     python_requires = '>=3.8',
+     install_requires = [
+         'pygame',
++        'pyxdg',
+     ],
+ )
