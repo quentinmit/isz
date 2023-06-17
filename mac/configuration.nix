@@ -568,6 +568,7 @@
 
     programs.git = {
       package = pkgs.gitFull;
+      lfs.enable = true;
     };
 
     home.file.".gdbinit".text = ''
