@@ -1,0 +1,9 @@
+[project]
+name = "cec"
+version = "0.0.1"
+dependencies = [
+    "paho-mqtt",
+    "pycec",
+]
+[project.scripts]
+cec = "cec:main"

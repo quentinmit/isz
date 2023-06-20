@@ -2,6 +2,7 @@ final: prev:
 
 {
   dashboard = final.callPackage ../../workshop/dashboard {};
+  cec = final.callPackage ../../workshop/cec {};
   rtlamr = final.callPackage ./rtlamr {};
   rtlamr-collect = final.callPackage ./rtlamr-collect {};
   speedtest-influxdb = final.callPackage ./speedtest-influxdb {};
