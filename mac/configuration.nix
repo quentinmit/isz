@@ -687,6 +687,9 @@
         status.disabled = false;
         time.disabled = false;
         git_status = {
+          # Don't report stashed
+          stashed = "";
+          # Report the number of commits ahead or behind.
           ahead = "⇡\${count}";
           diverged = "⇕⇡\${ahead_count}⇣\${behind_count}";
           behind = "⇣\${count}";
