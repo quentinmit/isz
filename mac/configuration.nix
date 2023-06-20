@@ -455,6 +455,10 @@
     shell = "/run/current-system/sw/bin/bash";
   };
 
+  fonts.fonts = with pkgs; [
+    monaco-nerd-fonts
+  ];
+
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
 
@@ -484,7 +488,7 @@
       enable = true;
       package = pkgs.unstable.alacritty;
       settings = {
-        font.normal.family = "Monaco";
+        font.normal.family = "Monaco Nerd Font";
         font.size = 10;
         font.offset = { x = 1; y = 1; };
         draw_bold_text_with_bright_colors = true;
@@ -667,6 +671,10 @@
 
     xdg.configFile."pip/pip.conf".text = pkgs.lib.generators.toINI {} {
       global.disable-pip-version-check = true;
+    };
+
+    programs.starship = {
+      enable = true;
     };
 
     programs.bash = {

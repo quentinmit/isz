@@ -27,4 +27,5 @@ final: prev:
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
   rx_tools = final.callPackage ./rx_tools {};
   ialauncher = final.callPackage ./python/ialauncher {};
+  monaco-nerd-fonts = final.callPackage ./monaco-nerd-fonts {};
 }
