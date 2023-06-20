@@ -675,6 +675,23 @@
 
     programs.starship = {
       enable = true;
+      settings = {
+        directory = {
+          truncate_to_repo = false;
+          truncation_length = 8;
+          truncation_symbol = "…/";
+          style = "bold cyan";
+          before_repo_root_style = "fg:7";
+          repo_root_style = "cyan";
+        };
+        status.disabled = false;
+        time.disabled = false;
+        git_status = {
+          ahead = "⇡\${count}";
+          diverged = "⇕⇡\${ahead_count}⇣\${behind_count}";
+          behind = "⇣\${count}";
+        };
+      };
     };
 
     programs.bash = {
