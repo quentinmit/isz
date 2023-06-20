@@ -237,6 +237,11 @@
     transmission
     websocat
     termshark
+    # TODO: Separate linkzone into its own package and/or use subPackages to limit what is built
+    (runCommandLocal "linkzone-api" {} ''
+      mkdir -p $out/bin
+      ln -s ${pkgs.callPackage ../workshop/go {}}/bin/linkzone-api $out/bin/
+    '')
 
     # Emulation
     bochs
