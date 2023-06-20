@@ -28,4 +28,5 @@ final: prev:
   rx_tools = final.callPackage ./rx_tools {};
   ialauncher = final.callPackage ./python/ialauncher {};
   monaco-nerd-fonts = final.callPackage ./monaco-nerd-fonts {};
+  git-fullstatus = final.callPackage ./git-fullstatus {};
 }

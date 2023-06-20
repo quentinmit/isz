@@ -101,6 +101,7 @@
     fossil
     #already git
     git-crypt
+    git-fullstatus
     git-secret
     mercurial
     rcs
