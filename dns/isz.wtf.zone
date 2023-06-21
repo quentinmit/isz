@@ -104,6 +104,7 @@ quentin-shiba EUI48 D4-3A-2C-48-0C-27 ; quentin Shiba
 jess-pixel-4a EUI48 F8-1A-2B-E1-FA-96 ; jess Pixel 4a
 jess-macbookair EUI48 00-88-65-3B-FE-24 ; jess MacBook Air
 jess-switch EUI48 5C-0C-E6-59-87-00 ; jess Nintendo Switch
+jess-macbookair-opal EUI48 74-A6-CD-9E-3F-08 ; jess jess-macbookair-opal
 
 ; IOT devices
 kitchen-google-home-hub EUI48 3C-8D-20-67-B2-45 ; kitchen Google Home Hub
