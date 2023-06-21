@@ -96,6 +96,7 @@ in {
       # Nix
       nix-diff
       nix-tree
+      nix-output-monitor
       nvd
 
       # Shell utilities
