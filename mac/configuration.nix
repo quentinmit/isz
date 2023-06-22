@@ -90,8 +90,8 @@
     pipenv
     #unsupported rpm
     ruby
-    rustc
-    cargo
+    # rustup provides rustc and cargo
+    rustup
     sloccount
     sourceHighlight
     upx
@@ -471,6 +471,7 @@
     imports = with self.homeModules; [
       base
       clamav
+      rustup
     ];
 
     services.clamav.updater.enable = true;
@@ -641,6 +642,21 @@
     # .xastir/config/
     # .xlog
     # .zephyr.subs
+
+    programs.rustup.enable = true;
+    programs.rustup.extensions = [
+      "rust-src"
+      "rust-analyzer"
+      "rust-analysis"
+    ];
+    programs.rustup.targets = [
+      pkgs.hostPlatform.config
+      "thumbv6m-none-eabi"
+      "thumbv7em-none-eabi"
+      "thumbv7em-none-eabihf"
+      "x86_64-unknown-linux-gnu"
+    ];
+
 
     targets.darwin.defaults = {
       NSGlobalDefaults = {
