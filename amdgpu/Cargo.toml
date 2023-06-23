@@ -11,8 +11,10 @@ members = [
 ]
 
 [dependencies]
+heapless = "0.7.16"
 itertools = "0.10.5"
 macros = { path = "./macros" }
+num-traits = "0.2.15"
 uninit = "0.5.1"
 
 [build-dependencies]

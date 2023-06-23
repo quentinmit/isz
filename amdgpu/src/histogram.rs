@@ -1,30 +1,47 @@
 use heapless;
 use itertools::Itertools;
+use num_traits::Float;
 
 pub struct ExponentialHistogram<const MAX_SIZE: usize = 160> {
+    max_scale: isize,
+    zero_threshold: Option<f64>,
     scale: Option<isize>,
-    maxScale: isize,
     sum: f64,
+    index_offset: Option<isize>,
     /// bucket 0 has bounds 0-1, bucket 1 has bounds 1-base, etc.
     buckets: heapless::Vec<u64, MAX_SIZE>,
 }
 
-fn bucket_for_value(scale: isize, value: f64) -> usize {
-    println!("bucket_for_value({:?}, {:?})", scale, value);
-    if value <= 1.0 {
-        return 0;
-    }
-    // See https://opentelemetry.io/blog/2023/exponential-histograms
-    // and https://opentelemetry.io/docs/specs/otel/metrics/sdk/#base2-exponential-bucket-histogram-aggregation
-    // base = 2 ^ (2 ^ -scale)
-    let base = 2f64.powf(2f64.powf(-scale as f64));
-    // upper bound of bucket i is base ^ (i + 1)
-    // i = log_b(n) - 1
-    let index = value.log(base);
-    println!("log_{:?}({:?}) = {:?}", base, value, index);
-    // bucket 0 is the 0-1 bucket, so add 1
-    (index as usize)+1
+fn index_scale_0_for_value(value: f64) -> isize {
+    // https://opentelemetry.io/docs/specs/otel/metrics/data-model/#scale-zero-extract-the-exponent
+    let (mantissa, exponent, sign) = value.integer_decode();
+    let log = mantissa.ilog2();
+    let power_of_2 = mantissa == 0x10000000000000;
+    (exponent as isize) + (log as isize) - (power_of_2 as isize)
 }
+
+const MAX_MANTISSA_PLUS_ONE: u64 = 1 << (f64::MANTISSA_DIGITS-1);
+
+fn index_for_value(scale: isize, value: f64) -> Option<isize> {
+    // Adapted from
+    // https://opentelemetry.io/docs/specs/otel/metrics/data-model/#scale-zero-extract-the-exponent
+    // but with support for negative scales
+    let (mantissa, exponent, sign) = value.integer_decode();
+    if mantissa == 0 {
+        return None
+    }
+    let mantissa_log = mantissa.ilog2();
+    let power_of_2 = mantissa == MAX_MANTISSA_PLUS_ONE;
+    let exponent_index = (exponent as isize) + (mantissa_log as isize);
+    if scale >= 0 {
+        let shift = mantissa_log - (scale as u32);
+        let mantissa_shifted = (mantissa & !MAX_MANTISSA_PLUS_ONE) >> shift;
+        Some((exponent_index << scale) + (mantissa_shifted as isize) - (power_of_2 as isize))
+    } else {
+        Some((exponent_index - (power_of_2 as isize)) >> -scale)
+    }
+}
+
 fn ideal_scale_for_value(value: f64, max_size: usize) -> isize {
     // "Best resolution (highest scale) is achieved when the number of positive
     // or negative range buckets exceeds half the maximum size, such that
@@ -39,9 +56,11 @@ fn ideal_scale_for_value(value: f64, max_size: usize) -> isize {
 impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
     pub fn new() -> Self {
         Self {
+            max_scale: 20,
+            zero_threshold: Some(1.0),
             scale: None,
-            maxScale: 20,
             sum: 0.0,
+            index_offset: None,
             buckets: heapless::Vec::new(),
         }
     }
@@ -61,16 +80,27 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
         }
     }
 
-    pub fn record(&mut self, value: f64) {
-        let scale = *self.scale.get_or_insert_with(|| ideal_scale_for_value(value, MAX_SIZE).min(self.maxScale));
-        let mut bucket = bucket_for_value(scale, value);
+    fn bucket_for_value(&mut self, value: f64) -> usize {
+        let scale = *self.scale.get_or_insert_with(|| ideal_scale_for_value(value, MAX_SIZE).min(self.max_scale));
+        let mut bucket = match index_for_value(scale, value) {
+            Some(index) if index >= 0 => (index as usize) + 1,
+            _ => 0,
+        };
         while bucket >= self.buckets.capacity() {
             self.compress();
-            bucket = bucket_for_value(scale, value);
+            bucket = match index_for_value(scale, value) {
+                Some(index) if index >= 0 => (index as usize) + 1,
+                _ => 0,
+            };
         }
         if bucket >= self.buckets.len() {
             self.buckets.resize_default(bucket + 1);
         }
+        bucket
+    }
+
+    pub fn record(&mut self, value: f64) {
+        let bucket = self.bucket_for_value(value);
         self.buckets[bucket] += 1;
         self.sum += value;
     }
@@ -80,11 +110,37 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_index_for_value() {
+        for (scale, value, index) in &[
+            (0, 1.0, -1),
+            (0, 1.5, 0),
+            (0, 2.0, 0),
+            (0, 4.0, 1),
+            (0, 5.0, 2),
+            (1, 1.0, -1),
+            (1, 1.5, 1),
+            (1, 2.0, 1),
+            (1, 4.0, 3),
+            (1, 5.0, 4),
+            (-1, 1.0, -1),
+            (-1, 1.5, 0),
+            (-1, 2.0, 0),
+            (-1, 4.0, 0),
+            (-1, 5.0, 1),
+        ] {
+            if *scale == 0 {
+                assert_eq!(index_scale_0_for_value(*value), *index, "index_scale_0_for_value({:?})", value);
+            }
+            assert_eq!(index_for_value(*scale, *value), Some(*index), "index_for_value({:?}, {:?})", scale, value);
+        }
+    }
+
+    #[test]
     fn test_bucket_for_value() {
-        assert_eq!(bucket_for_value(0, 0.0), 0);
-        assert_eq!(bucket_for_value(0, 1.0), 0);
-        assert_eq!(bucket_for_value(0, 1.5), 1);
-        assert_eq!(bucket_for_value(0, 2.5), 2);
+        assert_eq!(index_for_value(0, 0.0), Some(0));
+        assert_eq!(index_for_value(0, 1.0), Some(0));
+        assert_eq!(index_for_value(0, 1.5), Some(1));
+        assert_eq!(index_for_value(0, 2.5), Some(2));
     }
 
     #[test]
