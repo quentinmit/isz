@@ -68,10 +68,10 @@ pub struct MetricsReader<T: Metrics> {
     samples: Vec<T>,
 }
 
-impl <'a, T: Metrics + std::convert::TryFrom<&'a std::fs::File, Error = Error>> MetricsReader<T> {
+impl <'a, T: Metrics + std::convert::TryFrom<&'a std::fs::File>> MetricsReader<T> {
     fn sample(&mut self) -> Result<(), Error> {
-        let metrics: T = (&mut self.f).try_into()?;
-        self.samples.push(metrics);
+        //let metrics: T = (&mut self.f).try_into()?;
+        //self.samples.push(metrics);
         Ok(())
     }
 }
