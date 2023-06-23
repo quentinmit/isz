@@ -1,11 +1,14 @@
 extern crate bindgen;
 
+use std::cell::RefCell;
 use std::env;
 use std::path::PathBuf;
 use itertools::Itertools;
 
-#[derive(Debug)]
-pub struct Callbacks {}
+#[derive(Debug, Default)]
+pub struct Callbacks {
+    types: RefCell<Vec<String>>,
+}
 
 impl bindgen::callbacks::ParseCallbacks for Callbacks {
     fn include_file(&self, filename: &str) {
@@ -14,7 +17,10 @@ impl bindgen::callbacks::ParseCallbacks for Callbacks {
 
     fn add_derives(&self, name: &str) -> Vec<String> {
         match name.split("_").collect_tuple() {
-            Some(("gpu", "metrics", _, _)) => vec!["Metrics".into()],
+            Some(("gpu", "metrics", _, _)) => {
+                self.types.borrow_mut().push(String::from(name));
+                vec!["Metrics".into()]
+            },
             _ => vec![]
         }
     }
@@ -35,7 +41,7 @@ fn main() {
         .allowlist_type("gpu_metrics_.*")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
-        .parse_callbacks(Box::new(Callbacks{}))
+        .parse_callbacks(Box::new(Callbacks{..Default::default()}))
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.
