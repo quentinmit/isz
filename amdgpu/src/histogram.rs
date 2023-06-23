@@ -20,8 +20,6 @@ fn index_scale_0_for_value(value: f64) -> isize {
     (exponent as isize) + (log as isize) - (power_of_2 as isize)
 }
 
-const MAX_MANTISSA_PLUS_ONE: u64 = 1 << (f64::MANTISSA_DIGITS-1);
-
 fn index_for_value(scale: isize, value: f64) -> Option<isize> {
     // Adapted from
     // https://opentelemetry.io/docs/specs/otel/metrics/data-model/#scale-zero-extract-the-exponent
@@ -31,11 +29,12 @@ fn index_for_value(scale: isize, value: f64) -> Option<isize> {
         return None
     }
     let mantissa_log = mantissa.ilog2();
-    let power_of_2 = mantissa == MAX_MANTISSA_PLUS_ONE;
+    let mantissa_one = (mantissa >> mantissa_log) << mantissa_log;
+    let power_of_2 = mantissa == mantissa_one;
     let exponent_index = (exponent as isize) + (mantissa_log as isize);
     if scale >= 0 {
         let shift = mantissa_log - (scale as u32);
-        let mantissa_shifted = (mantissa & !MAX_MANTISSA_PLUS_ONE) >> shift;
+        let mantissa_shifted = (mantissa - mantissa_one) >> shift;
         Some((exponent_index << scale) + (mantissa_shifted as isize) - (power_of_2 as isize))
     } else {
         Some((exponent_index - (power_of_2 as isize)) >> -scale)
