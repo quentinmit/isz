@@ -69,12 +69,16 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
         self.scale -= 1;
         // Preserve first zero bucket as-is
         if self.buckets.len() > 1 {
+            let second_half = self.index_offset.unwrap() & 1;
+            // If the new first bucket consists of only the second half of the
+            // old first bucket, add an extra zero to make sure the buckets
+            // aren't misaligned.
+            let shift = shift + (second_half as usize);
             self.index_offset = self.index_offset.map(|o| o >> 1);
             let (zero, rest) = self.buckets.split_at(1);
             let rest = iter::repeat(0)
                 .take(shift)
                 .chain(rest.into_iter().map(|v| *v));
-            // TODO: if index_offset & 1 then the first bucket needs to contain only one value.
             self.buckets = zero.into_iter().map(|v| *v).chain(
                 rest
                     .chunks(2)
