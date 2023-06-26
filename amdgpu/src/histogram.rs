@@ -40,23 +40,6 @@ fn index_for_value(scale: isize, value: f64) -> Option<isize> {
             let base = (-scale as f64).exp2().exp2();
             Some(value.log(base) as isize)
         }
-        // let shift = mantissa_log - (scale as u32);
-        // let mantissa_shifted = (mantissa - mantissa_one) >> shift;
-        // let mantissa_shifted_base = (exponent_index-scale);
-        // let mantissa_delta = (mantissa_shifted as f64 * (mantissa_shifted_base as f64).exp2());
-        // // log_b(x) = log_2(x) / log_2(b)
-        // // log a = exponent_index
-        // // b = mantissa_shifted * 2 ** mantissa_shifted_base
-        // // log (a + b) = log a + log (1 + b/a)
-        // trace!("base = {:?}", base);
-        // let mantissa_value = (mantissa >> shift) as f64 * (mantissa_shifted_base as f64).exp2();
-        // let mantissa_index = match mantissa_shifted {
-        //     0 => 0.0,
-        //     _ => ((mantissa >> shift) as f64 * (exponent as f64).exp2()).log(base),//(1 + mantissa_delta / (exponent_index << scale));
-        // };
-        // trace!("mantissa = {:?} * 2**{:?} = {:?} -> additional index {:?}", (mantissa >> shift), mantissa_shifted_base, mantissa_value, mantissa_index);
-        // trace!("remaining mantissa = {:?} * 2**{:?} = {:?} -> additional index {:?}", mantissa_shifted, mantissa_shifted_base, mantissa_delta, mantissa_index);
-        // Some((exponent_index << scale) + (mantissa_index as isize) - (power_of_2 as isize))
     } else {
         Some((exponent_index - (power_of_2 as isize)) >> -scale)
     }
@@ -85,7 +68,7 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
         }
     }
 
-    fn compress(&mut self, shift: usize) {
+    fn compress(&mut self) {
         self.scale -= 1;
         // Preserve first zero bucket as-is
         if self.buckets.len() > 1 {
@@ -93,7 +76,7 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
             // If the new first bucket consists of only the second half of the
             // old first bucket, add an extra zero to make sure the buckets
             // aren't misaligned.
-            let shift = shift + (second_half as usize);
+            let shift = second_half as usize;
             self.index_offset = self.index_offset.map(|o| o >> 1);
             let (zero, rest) = self.buckets.split_at(1);
             let rest = iter::repeat(0)
@@ -137,7 +120,7 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
                 let mut i = index - index_offset + 1;
                 trace!("would need a hypothetical bucket {:?}", i);
                 if (i as usize).max(self.buckets.len()) + shift >= self.buckets.capacity() {
-                    self.compress(0);
+                    self.compress();
                     return self.resize_to_fit(value);
                 } else if shift > 0 {
                     let (zero, rest) = self.buckets.split_at(1);
@@ -207,6 +190,10 @@ mod tests {
         }
     }
 
+    fn print_samples<const N: usize>(h: &ExponentialHistogram<N>) {
+        info!("samples = {:?}", h.sample().collect::<Vec<_>>());
+    }
+
     #[test]
     fn test_zero_value() {
         let mut h = ExponentialHistogram::<160>::new();
@@ -240,10 +227,9 @@ mod tests {
     fn test_large_values() {
         let mut h = ExponentialHistogram::<10>::new();
         h.record(1024.0);
-        info!("samples = {:?}", h.sample().collect::<Vec<_>>());
+        print_samples(&h);
         h.record(1024.1);
-        let samples: Vec<(f64, u64)> = h.sample().collect();
-        info!("samples = {:?}", samples);
+        print_samples(&h);
         assert_eq!(h.scale, 15);
         assert_eq!(h.index_offset, Some(327679));
         assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 1]);
