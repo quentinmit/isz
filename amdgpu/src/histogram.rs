@@ -24,7 +24,7 @@ fn index_scale_0_for_value(value: f64) -> isize {
 fn index_for_value(scale: isize, value: f64) -> Option<isize> {
     // Adapted from
     // https://opentelemetry.io/docs/specs/otel/metrics/data-model/#scale-zero-extract-the-exponent
-    // but with support for negative scales
+    // but with support for positive scales
     let (mantissa, exponent, sign) = value.integer_decode();
     if mantissa == 0 || sign < 0 {
         return None
@@ -34,9 +34,29 @@ fn index_for_value(scale: isize, value: f64) -> Option<isize> {
     let power_of_2 = mantissa == mantissa_one;
     let exponent_index = (exponent as isize) + (mantissa_log as isize);
     if scale >= 0 {
-        let shift = mantissa_log - (scale as u32);
-        let mantissa_shifted = (mantissa - mantissa_one) >> shift;
-        Some((exponent_index << scale) + (mantissa_shifted as isize) - (power_of_2 as isize))
+        if power_of_2 {
+            Some((exponent_index << scale) - 1)
+        } else {
+            let base = (-scale as f64).exp2().exp2();
+            Some(value.log(base) as isize)
+        }
+        // let shift = mantissa_log - (scale as u32);
+        // let mantissa_shifted = (mantissa - mantissa_one) >> shift;
+        // let mantissa_shifted_base = (exponent_index-scale);
+        // let mantissa_delta = (mantissa_shifted as f64 * (mantissa_shifted_base as f64).exp2());
+        // // log_b(x) = log_2(x) / log_2(b)
+        // // log a = exponent_index
+        // // b = mantissa_shifted * 2 ** mantissa_shifted_base
+        // // log (a + b) = log a + log (1 + b/a)
+        // trace!("base = {:?}", base);
+        // let mantissa_value = (mantissa >> shift) as f64 * (mantissa_shifted_base as f64).exp2();
+        // let mantissa_index = match mantissa_shifted {
+        //     0 => 0.0,
+        //     _ => ((mantissa >> shift) as f64 * (exponent as f64).exp2()).log(base),//(1 + mantissa_delta / (exponent_index << scale));
+        // };
+        // trace!("mantissa = {:?} * 2**{:?} = {:?} -> additional index {:?}", (mantissa >> shift), mantissa_shifted_base, mantissa_value, mantissa_index);
+        // trace!("remaining mantissa = {:?} * 2**{:?} = {:?} -> additional index {:?}", mantissa_shifted, mantissa_shifted_base, mantissa_delta, mantissa_index);
+        // Some((exponent_index << scale) + (mantissa_index as isize) - (power_of_2 as isize))
     } else {
         Some((exponent_index - (power_of_2 as isize)) >> -scale)
     }
@@ -85,6 +105,8 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
                     .into_iter()
                     .map(|chunk| chunk.sum())
             ).collect();
+            trace!("compress: new scale {:?}, new index_offset {:?}, buckets {:?}", self.scale, self.index_offset, self.buckets);
+            trace!("samples = {:?}", self.sample().collect::<Vec<_>>());
         }
     }
 
@@ -94,7 +116,15 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
     }
 
     /// Returns the array index that a value with the given index at the current scale should be placed in.
-    fn resize_to_fit(&mut self, index: isize) -> usize {
+    fn resize_to_fit(&mut self, value: f64) -> usize {
+        let index = match self.index_for_value(value) {
+            None => {
+                trace!("incrementing zero bucket");
+                return 0;
+            },
+            Some(index) => index,
+        };
+        trace!("making space for index {:?} at scale {:?}", index, self.scale);
         let i = match self.index_offset {
             None => {
                 // No buckets yet; place the item in a newly created bucket.
@@ -103,11 +133,12 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
             }
             Some(index_offset) => {
                 // Calculate number of buckets to insert at the beginning.
-                let shift = (index_offset - index).max(0) as usize;
+                let shift = (index_offset.saturating_sub(index)).max(0) as usize;
                 let mut i = index - index_offset + 1;
+                trace!("would need a hypothetical bucket {:?}", i);
                 if (i as usize).max(self.buckets.len()) + shift >= self.buckets.capacity() {
-                    self.compress(shift);
-                    return self.resize_to_fit(index >> 1);
+                    self.compress(0);
+                    return self.resize_to_fit(value);
                 } else if shift > 0 {
                     let (zero, rest) = self.buckets.split_at(1);
                     self.buckets = zero
@@ -121,30 +152,17 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
                 i as usize
             }
         };
-        if i >= self.buckets.len() {
-            self.buckets.resize_default(i+1);
-        }
         i
     }
 
     pub fn record(&mut self, value: f64) {
         trace!("recording value {:?}", value);
         let index = self.index_for_value(value);
-        match index {
-            None => {
-                // Zero bucket
-                trace!("incrementing zero bucket");
-                if self.buckets.len() < 1 {
-                    self.buckets.resize_default(1);
-                }
-                self.buckets[0] += 1;
-            }
-            Some(index) => {
-                let i = self.resize_to_fit(index);
-                trace!("new scale = {:?}, new index_offset = {:?}, i = {:?}", self.scale, self.index_offset, i);
-                self.buckets[i] += 1;
-            }
+        let i = self.resize_to_fit(value);
+        if i >= self.buckets.len() {
+            self.buckets.resize_default(i+1);
         }
+        self.buckets[i] += 1;
         self.sum += value;
     }
     pub fn sample(&self) -> impl Iterator<Item = (f64, u64)> + '_ {
@@ -205,6 +223,7 @@ mod tests {
         assert_eq!(h.index_offset, Some(-1));
         assert_eq!(&h.buckets, &[0, 1]);
     }
+
     #[test]
     fn test_two_values() {
         let mut h = ExponentialHistogram::<10>::new();
@@ -215,6 +234,19 @@ mod tests {
         assert_eq!(h.scale, 1);
         assert_eq!(h.index_offset, Some(-1));
         assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 1]);
+    }
+
+    #[test]
+    fn test_large_values() {
+        let mut h = ExponentialHistogram::<10>::new();
+        h.record(1024.0);
+        info!("samples = {:?}", h.sample().collect::<Vec<_>>());
+        h.record(1024.1);
+        let samples: Vec<(f64, u64)> = h.sample().collect();
+        info!("samples = {:?}", samples);
+        assert_eq!(h.scale, 15);
+        assert_eq!(h.index_offset, Some(327679));
+        assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 1]);
     }
 
     #[test]

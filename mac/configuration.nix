@@ -36,7 +36,7 @@
 
     # Nix
     statix
-    pkgs.deploy-rs.deploy-rs
+    pkgs.deploy-rs.deploy-rs quic
 
     # Development
     arduino-cli
