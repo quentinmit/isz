@@ -52,7 +52,7 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                                         quote!{ [crate::histogram::ExponentialHistogram<20>; #len] },
                                         quote!{
                                             for (i, value) in m.#ident.iter().enumerate() {
-                                                self.#ident[i].record_weighted(value as f64, delta);
+                                                self.#ident[i].record_weighted(*value as f64, delta);
                                             }
                                         },
                                     )

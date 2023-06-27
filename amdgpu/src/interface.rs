@@ -31,6 +31,10 @@ pub trait Metrics: std::fmt::Debug {
     fn try_from_file(f: &mut File) -> Result<Self, Error> where Self: Sized;
 }
 
+pub trait Record<M: Metrics> {
+    fn record(&mut self, m: &M);
+}
+
 #[derive(Debug)]
 pub enum Error {
     BadHeader,

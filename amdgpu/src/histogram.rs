@@ -146,14 +146,18 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
     }
 
     pub fn record(&mut self, value: f64) {
-        trace!("recording value {:?}", value);
+        self.record_weighted(value, 1)
+    }
+
+    pub fn record_weighted(&mut self, value: f64, weight: u64) {
+        trace!("recording value {:?} with weight {:?}", value, weight);
         let index = self.index_for_value(value);
         let i = self.resize_to_fit(value);
         if i >= self.buckets.len() {
             self.buckets.resize_default(i+1);
         }
-        self.buckets[i] += 1;
-        self.sum += value;
+        self.buckets[i] += weight;
+        self.sum += value * (weight as f64);
     }
     pub fn sample(&self) -> impl Iterator<Item = (f64, u64)> + '_ {
         let base = base(self.scale);
