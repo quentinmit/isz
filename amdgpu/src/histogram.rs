@@ -2,7 +2,9 @@ use heapless;
 use itertools::Itertools;
 use num_traits::Float;
 use std::iter;
+use std::cell::RefCell;
 use log::{info, trace};
+use std::fmt::{Debug, self};
 
 pub struct ExponentialHistogram<const MAX_SIZE: usize = 160> {
     zero_threshold: Option<f64>,
@@ -21,6 +23,10 @@ fn index_scale_0_for_value(value: f64) -> isize {
     (exponent as isize) + (log as isize) - (power_of_2 as isize)
 }
 
+fn base(scale: isize) -> f64 {
+    (-scale as f64).exp2().exp2()
+}
+
 fn index_for_value(scale: isize, value: f64) -> Option<isize> {
     // Adapted from
     // https://opentelemetry.io/docs/specs/otel/metrics/data-model/#scale-zero-extract-the-exponent
@@ -37,7 +43,7 @@ fn index_for_value(scale: isize, value: f64) -> Option<isize> {
         if power_of_2 {
             Some((exponent_index << scale) - 1)
         } else {
-            let base = (-scale as f64).exp2().exp2();
+            let base = base(scale);
             Some(value.log(base) as isize)
         }
     } else {
@@ -149,7 +155,7 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
         self.sum += value;
     }
     pub fn sample(&self) -> impl Iterator<Item = (f64, u64)> + '_ {
-        let base = (-self.scale as f64).exp2().exp2();
+        let base = base(self.scale);
         self.buckets.iter().enumerate().map(move |(i, count)| {
             let upper_bound = match self.index_offset {
                 None => f64::INFINITY,
@@ -160,6 +166,38 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
     }
 }
 
+struct PrintIter<T> {
+    iter: RefCell<Option<T>>,
+}
+
+impl<T: IntoIterator<Item = (f64, u64)>> Debug for PrintIter<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        for iter in self.iter.take() {
+            let mut start = f64::NEG_INFINITY;
+            for (end, count) in iter {
+                if f.alternate() {
+                    f.write_str("\n    ")?;
+                }
+                write!(f, "({:20}, {:20}): {}", start, end, count)?;
+                if f.alternate() {
+                    f.write_str("")?;
+                }
+                start = end;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl<const MAX_SIZE: usize> Debug for ExponentialHistogram<MAX_SIZE> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.debug_struct("ExponentialHistogram")
+            .field("scale", &self.scale)
+            .field("base", &base(self.scale))
+            .field("buckets", &PrintIter{iter: RefCell::new(Some(self.sample()))})
+            .finish()
+    }
+}
 mod tests {
     use super::*;
     use test_log::test;
@@ -190,14 +228,15 @@ mod tests {
         }
     }
 
-    fn print_samples<const N: usize>(h: &ExponentialHistogram<N>) {
-        info!("samples = {:?}", h.sample().collect::<Vec<_>>());
+    fn record_print<const N: usize>(h: &mut ExponentialHistogram<N>, value: f64) {
+        h.record(value);
+        trace!("after recording {}: {:#?}", value, h);
     }
 
     #[test]
     fn test_zero_value() {
         let mut h = ExponentialHistogram::<160>::new();
-        h.record(0.0);
+        record_print(&mut h, 0.0);
         assert_eq!(h.index_offset, None);
         assert_eq!(&h.buckets, &[1]);
     }
@@ -205,7 +244,7 @@ mod tests {
     #[test]
     fn test_single_value() {
         let mut h = ExponentialHistogram::<160>::new();
-        h.record(1.0);
+        record_print(&mut h, 1.0);
         assert_eq!(h.scale, 20);
         assert_eq!(h.index_offset, Some(-1));
         assert_eq!(&h.buckets, &[0, 1]);
@@ -214,10 +253,8 @@ mod tests {
     #[test]
     fn test_two_values() {
         let mut h = ExponentialHistogram::<10>::new();
-        h.record(1.0);
-        h.record(10.0);
-        let samples: Vec<(f64, u64)> = h.sample().collect();
-        info!("samples = {:?}", samples);
+        record_print(&mut h, 1.0);
+        record_print(&mut h, 10.0);
         assert_eq!(h.scale, 1);
         assert_eq!(h.index_offset, Some(-1));
         assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 1]);
@@ -226,15 +263,21 @@ mod tests {
     #[test]
     fn test_large_values() {
         let mut h = ExponentialHistogram::<10>::new();
-        h.record(1024.0);
-        print_samples(&h);
-        h.record(1024.1);
-        print_samples(&h);
+        record_print(&mut h, 1024.0);
+        record_print(&mut h, 1024.1);
         assert_eq!(h.scale, 15);
         assert_eq!(h.index_offset, Some(327679));
         assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 1]);
     }
-
+    #[test]
+    fn test_shifting() {
+        let mut h = ExponentialHistogram::<10>::new();
+        record_print(&mut h, 1024.0);
+        record_print(&mut h, 512.0);
+        assert_eq!(h.scale, 14);
+        assert_eq!(h.index_offset, Some(327679));
+        assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 1]);
+    }
     #[test]
     fn test_ideal_scale_for_value() {
         assert_eq!(ideal_scale_for_value(127.0, 8), 0);
