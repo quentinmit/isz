@@ -124,8 +124,9 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
                 // Calculate number of buckets to insert at the beginning.
                 let shift = (index_offset.saturating_sub(index)).max(0) as usize;
                 let mut i = index - index_offset + 1;
-                trace!("would need a hypothetical bucket {:?}", i);
-                if (i as usize).max(self.buckets.len()) + shift >= self.buckets.capacity() {
+                let new_length = (i.max(1) as usize).max(self.buckets.len()).saturating_add(shift);
+                trace!("would need a hypothetical bucket {:?} resulting in {} buckets", i, new_length);
+                if new_length > self.buckets.capacity() {
                     self.compress();
                     return self.resize_to_fit(value);
                 } else if shift > 0 {
@@ -172,7 +173,7 @@ struct PrintIter<T> {
 
 impl<T: IntoIterator<Item = (f64, u64)>> Debug for PrintIter<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        for iter in self.iter.take() {
+        if let Some(iter) = self.iter.take() {
             let mut start = f64::NEG_INFINITY;
             for (end, count) in iter {
                 if f.alternate() {
@@ -274,9 +275,9 @@ mod tests {
         let mut h = ExponentialHistogram::<10>::new();
         record_print(&mut h, 1024.0);
         record_print(&mut h, 512.0);
-        assert_eq!(h.scale, 14);
-        assert_eq!(h.index_offset, Some(327679));
-        assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 1]);
+        assert_eq!(h.scale, 3);
+        assert_eq!(h.index_offset, Some(71));
+        assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 0, 1]);
     }
     #[test]
     fn test_ideal_scale_for_value() {
