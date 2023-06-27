@@ -32,17 +32,30 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                 .filter_map(|f| {
                     f.ident.as_ref().map(|n| n.to_string()).and_then(|field_name| {
                         match (field_name.as_ref(), &f.ty) {
-                            ("padding", _) => None,
+                            ("system_clock_counter", _) => None,
+                            ("padding"|"system_clock_counter", _) => None,
                             (_, syn::Type::Path(p)) => p.path.get_ident().and_then(|i| match i.to_string().as_ref() {
                                 "u16"|"u32"|"u64" => f.ident.as_ref().map(
-                                    |i| (i, quote!{ crate::histogram::ExponentialHistogram<20> })
+                                    |i| (
+                                        i,
+                                        quote!{ crate::histogram::ExponentialHistogram<20> },
+                                        quote!{ self.#i.record_weighted(m.#i as f64, delta) },
+                                    )
                                 ),
                                 _ => None
                             }),
                             (_, syn::Type::Array(a)) => {
                                 let len = &a.len;
                                 f.ident.as_ref().map(
-                                    |i| (i, quote!{ [crate::histogram::ExponentialHistogram<20>; #len] })
+                                    |ident| (
+                                        ident,
+                                        quote!{ [crate::histogram::ExponentialHistogram<20>; #len] },
+                                        quote!{
+                                            for (i, value) in m.#ident.iter().enumerate() {
+                                                self.#ident[i].record_weighted(value as f64, delta);
+                                            }
+                                        },
+                                    )
                                 )
                             },
                             _ => {
@@ -53,9 +66,10 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                     })
                 })
                 .collect::<Vec<_>>();
-            let instrument_fields: Vec<_> = fields.iter().map(|(ident, ty)| {
+            let instrument_fields: Vec<_> = fields.iter().map(|(ident, ty, _)| {
                 quote!{ #ident: #ty }
             }).collect();
+            let record_calls: Vec<_> = fields.iter().map(|(_, _, record)| record).collect();
             eprintln!(
                 "ident = {:?}, fields = {:?}",
                 struct_name_ident,
@@ -63,7 +77,17 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
             );
             quote!{
                 struct #instrument {
+                    last_system_clock_counter: Option<u64>,
                     #( #instrument_fields ),*
+                }
+                impl Record<#struct_name_ident> for #instrument {
+                    fn record(&mut self, m: &#struct_name_ident) {
+                        if let Some(last_system_clock_counter) = self.last_system_clock_counter {
+                            let delta = m.system_clock_counter - last_system_clock_counter;
+                            #( #record_calls );*
+                        }
+                        self.last_system_clock_counter = Some(m.system_clock_counter);
+                    }
                 }
                 impl Metrics for #struct_name_ident {
                     fn format_revision() -> usize {
@@ -71,7 +95,8 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                     }
                     fn content_revision() -> usize {
                         #content_revision
-                    }                    fn try_from_file(f: &mut File) -> Result<Self, Error> {
+                    }
+                    fn try_from_file(f: &mut File) -> Result<Self, Error> {
                         let size = mem::size_of::<Self>();
                         let mut out = mem::MaybeUninit::<Self>::uninit();
                         unsafe {
