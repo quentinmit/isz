@@ -28,6 +28,7 @@ struct_try_from!(metrics_table_header);
 pub trait Metrics: std::fmt::Debug {
     fn format_revision() -> usize where Self: Sized;
     fn content_revision() -> usize where Self: Sized;
+    fn try_from_file(f: &mut File) -> Result<Self, Error> where Self: Sized;
 }
 
 #[derive(Debug)]
@@ -68,9 +69,10 @@ pub struct MetricsReader<T: Metrics> {
     samples: Vec<T>,
 }
 
-impl <'a, T: Metrics + std::convert::TryFrom<&'a std::fs::File>> MetricsReader<T> {
+impl <'a, T: Metrics> MetricsReader<T> {
     fn sample(&mut self) -> Result<(), Error> {
-        //let metrics: T = (&mut self.f).try_into()?;
+        let metrics = T::try_from_file(&mut self.f)?;
+        println!("{:?}", metrics);
         //self.samples.push(metrics);
         Ok(())
     }
