@@ -62,8 +62,8 @@ fn ideal_scale_for_value(value: f64, max_size: usize) -> isize {
     scale.floor() as isize
 }
 
-impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
-    pub fn new() -> Self {
+impl<const MAX_SIZE: usize> Default for ExponentialHistogram<MAX_SIZE> {
+    fn default() -> Self {
         let max_scale = 20;
         Self {
             zero_threshold: Some(1.0),
@@ -73,7 +73,9 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
             buckets: heapless::Vec::new(),
         }
     }
+}
 
+impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
     fn compress(&mut self) {
         self.scale -= 1;
         // Preserve first zero bucket as-is
@@ -240,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_zero_value() {
-        let mut h = ExponentialHistogram::<160>::new();
+        let mut h = ExponentialHistogram::<160>::default();
         record_print(&mut h, 0.0);
         assert_eq!(h.index_offset, None);
         assert_eq!(&h.buckets, &[1]);
@@ -248,7 +250,7 @@ mod tests {
 
     #[test]
     fn test_single_value() {
-        let mut h = ExponentialHistogram::<160>::new();
+        let mut h = ExponentialHistogram::<160>::default();
         record_print(&mut h, 1.0);
         assert_eq!(h.scale, 20);
         assert_eq!(h.index_offset, Some(-1));
@@ -257,7 +259,7 @@ mod tests {
 
     #[test]
     fn test_two_values() {
-        let mut h = ExponentialHistogram::<10>::new();
+        let mut h = ExponentialHistogram::<10>::default();
         record_print(&mut h, 1.0);
         record_print(&mut h, 10.0);
         assert_eq!(h.scale, 1);
@@ -267,7 +269,7 @@ mod tests {
 
     #[test]
     fn test_large_values() {
-        let mut h = ExponentialHistogram::<10>::new();
+        let mut h = ExponentialHistogram::<10>::default();
         record_print(&mut h, 1024.0);
         record_print(&mut h, 1024.1);
         assert_eq!(h.scale, 15);
@@ -276,7 +278,7 @@ mod tests {
     }
     #[test]
     fn test_shifting() {
-        let mut h = ExponentialHistogram::<10>::new();
+        let mut h = ExponentialHistogram::<10>::default();
         record_print(&mut h, 1024.0);
         record_print(&mut h, 512.0);
         assert_eq!(h.scale, 3);

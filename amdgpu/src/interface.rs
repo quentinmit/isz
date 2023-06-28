@@ -1,7 +1,9 @@
 use std::{mem, fs::File, os::unix::fs::FileExt, io::Read};
 use macros::Metrics;
+use paste::paste;
 use uninit::read::ReadIntoUninit;
 use uninit::extension_traits::AsOut;
+use log::{info,trace,warn, error};
 
 include!(concat!(env!("OUT_DIR"), "/kgd_pp_interface.rs"));
 
@@ -31,7 +33,7 @@ pub trait Metrics: std::fmt::Debug {
     fn try_from_file(f: &mut File) -> Result<Self, Error> where Self: Sized;
 }
 
-pub trait Record<M: Metrics> {
+pub trait Recorder<M: Metrics> {
     fn record(&mut self, m: &M);
 }
 
@@ -68,16 +70,75 @@ fn test_parse_metrics() {
     println!("{:?}", metrics);
 }
 
-pub struct MetricsReader<T: Metrics> {
-    f: File,
-    samples: Vec<T>,
+fn record_from_file<M: Metrics, R: Recorder<M>>(f: &mut File, r: &mut R) -> Result<(), Error> {
+    let m = M::try_from_file(f)?;
+    r.record(&m);
+    Ok(())
 }
 
-impl <'a, T: Metrics> MetricsReader<T> {
-    fn sample(&mut self) -> Result<(), Error> {
-        let metrics = T::try_from_file(&mut self.f)?;
-        println!("{:?}", metrics);
-        //self.samples.push(metrics);
+macro_rules! metrics_reader {
+    ($( ( $format_revision:literal, $content_revision:literal ) ),+ ) => {
+        paste! {
+            enum RecorderType {
+                $(
+                    [<gpu_metrics_v $format_revision _ $content_revision>]([<recorder_gpu_metrics_v $format_revision _ $content_revision>]),
+                )+
+            }
+
+            impl RecorderType {
+                fn new(f: &mut File) -> Result<Self, Error> {
+                    let mut buf = [0u8; mem::size_of::<metrics_table_header>()];
+                    f.read_exact(&mut buf).map_err(|_| Error::IO)?;
+                    let header: metrics_table_header = buf.as_ref().try_into().map_err(|_| Error::BadHeader)?;
+                    match (header.format_revision, header.content_revision) {
+                        $(
+                            ($format_revision, $content_revision) => Ok(Self::[<gpu_metrics_v $format_revision _ $content_revision>](Default::default())),
+                        )+
+                            _ => Err(Error::BadVersion),
+                    }
+                }
+                fn sample(&mut self, f: &mut File) -> Result<(), Error> {
+                    match self {
+                        $(
+                            Self::[<gpu_metrics_v $format_revision _ $content_revision>](r) => record_from_file(f, r),
+                        )+
+                    }
+                }
+            }
+        }
+    };
+}
+
+metrics_reader!{
+    (1, 0),
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (2, 0),
+    (2, 1),
+    (2, 2),
+    (2, 3)
+}
+
+pub struct MetricsReader {
+    f: File,
+    r: RecorderType,
+}
+
+impl MetricsReader {
+    fn new<P: AsRef<std::path::Path>>(p: P) -> Result<Self, Error> {
+        let mut f = File::open(p).map_err(|_| Error::IO)?;
+        let mut r = RecorderType::new(&mut f)?;
+        Ok(Self{
+            f,
+            r,
+        })
+    }
+    fn record(&mut self) -> Result<(), Error> {
+        if let Err(e) = self.r.sample(&mut self.f) {
+            error!("failed reading sample: {:?}", e);
+            self.r = RecorderType::new(&mut self.f)?;
+        }
         Ok(())
     }
 }

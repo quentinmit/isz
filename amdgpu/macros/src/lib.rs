@@ -27,7 +27,7 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
       match data {
         Data::Struct(s) => {
             let (format_revision, content_revision) = parse_name(&struct_name_ident).unwrap();
-            let instrument = format_ident!("instruments_{}", &struct_name_ident);
+            let recorder = format_ident!("recorder_{}", &struct_name_ident);
             let fields = s.fields.iter()
                 .filter_map(|f| {
                     f.ident.as_ref().map(|n| n.to_string()).and_then(|field_name| {
@@ -66,7 +66,7 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                     })
                 })
                 .collect::<Vec<_>>();
-            let instrument_fields: Vec<_> = fields.iter().map(|(ident, ty, _)| {
+            let recorder_fields: Vec<_> = fields.iter().map(|(ident, ty, _)| {
                 quote!{ #ident: #ty }
             }).collect();
             let record_calls: Vec<_> = fields.iter().map(|(_, _, record)| record).collect();
@@ -76,11 +76,12 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                 fields,
             );
             quote!{
-                struct #instrument {
+                #[derive(Default)]
+                struct #recorder {
                     last_system_clock_counter: Option<u64>,
-                    #( #instrument_fields ),*
+                    #( #recorder_fields ),*
                 }
-                impl Record<#struct_name_ident> for #instrument {
+                impl Recorder<#struct_name_ident> for #recorder {
                     fn record(&mut self, m: &#struct_name_ident) {
                         if let Some(last_system_clock_counter) = self.last_system_clock_counter {
                             let delta = m.system_clock_counter - last_system_clock_counter;
