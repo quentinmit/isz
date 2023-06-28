@@ -104,6 +104,9 @@ macro_rules! metrics_reader {
                         )+
                     }
                 }
+                fn report(&self) -> std::io::Result<()> {
+                    Ok(())
+                }
             }
         }
     };
@@ -126,7 +129,7 @@ pub struct MetricsReader {
 }
 
 impl MetricsReader {
-    fn new<P: AsRef<std::path::Path>>(p: P) -> Result<Self, Error> {
+    pub fn new<P: AsRef<std::path::Path>>(p: P) -> Result<Self, Error> {
         let mut f = File::open(p).map_err(|_| Error::IO)?;
         let mut r = RecorderType::new(&mut f)?;
         Ok(Self{
@@ -134,11 +137,14 @@ impl MetricsReader {
             r,
         })
     }
-    fn record(&mut self) -> Result<(), Error> {
+    pub fn record(&mut self) -> Result<(), Error> {
         if let Err(e) = self.r.sample(&mut self.f) {
             error!("failed reading sample: {:?}", e);
             self.r = RecorderType::new(&mut self.f)?;
         }
         Ok(())
+    }
+    pub fn report(&self) -> std::io::Result<()> {
+        self.r.report()
     }
 }
