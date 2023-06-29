@@ -1,9 +1,10 @@
-use std::{mem, fs::File, os::unix::fs::FileExt, io::Read};
+use std::{mem, fs::File, os::unix::fs::FileExt, io::Read, io::Write, io::BufWriter};
 use macros::Metrics;
 use paste::paste;
 use uninit::read::ReadIntoUninit;
 use uninit::extension_traits::AsOut;
 use log::{info,trace,warn, error};
+use influxdb2::models::data_point::{DataPoint,DataPointBuilder,WriteDataPoint};
 
 include!(concat!(env!("OUT_DIR"), "/kgd_pp_interface.rs"));
 
@@ -35,6 +36,7 @@ pub trait Metrics: std::fmt::Debug {
 
 pub trait Recorder<M: Metrics> {
     fn record(&mut self, m: &M);
+    fn report<W: Write>(&self, w: W) -> std::io::Result<()>;
 }
 
 #[derive(Debug)]
@@ -70,9 +72,33 @@ fn test_parse_metrics() {
     println!("{:?}", metrics);
 }
 
+#[test]
+fn test_report() {
+    let sample_data = include_bytes!("../testdata/sample.bin");
+    let metrics: gpu_metrics_v2_2 = sample_data.as_ref().try_into().expect("sample data is v2.2");
+    let mut r: recorder_gpu_metrics_v2_2 = Default::default();
+    r.last_system_clock_counter = Some(metrics.system_clock_counter - 10);
+    r.record(&metrics);
+    let mut buf = BufWriter::new(Vec::new());
+    r.report(&mut buf);
+    info!("recorder after report: {:?}", r);
+    let bytes = buf.into_inner().unwrap();
+    let string = String::from_utf8(bytes).unwrap();
+    assert_eq!(string, "");
+}
+
 fn record_from_file<M: Metrics, R: Recorder<M>>(f: &mut File, r: &mut R) -> Result<(), Error> {
     let m = M::try_from_file(f)?;
     r.record(&m);
+    Ok(())
+}
+
+fn report<W: Write, F>(mut w: W, builder: F, field: &str, iter: impl Iterator<Item = (f64, u64)>) -> std::io::Result<()>
+    where F: Fn() -> DataPointBuilder
+{
+    for (le, value) in iter {
+        builder().tag("le", le.to_string()).field(field, value as i64).build().expect("always has field").write_data_point_to(&mut w)?;
+    }
     Ok(())
 }
 

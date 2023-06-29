@@ -32,7 +32,6 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                 .filter_map(|f| {
                     f.ident.as_ref().map(|n| n.to_string()).and_then(|field_name| {
                         match (field_name.as_ref(), &f.ty) {
-                            ("system_clock_counter", _) => None,
                             ("padding"|"system_clock_counter", _) => None,
                             (_, syn::Type::Path(p)) => p.path.get_ident().and_then(|i| match i.to_string().as_ref() {
                                 "u16"|"u32"|"u64" => f.ident.as_ref().map(
@@ -40,6 +39,7 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                                         i,
                                         quote!{ crate::histogram::ExponentialHistogram<20> },
                                         quote!{ self.#i.record_weighted(m.#i as f64, delta) },
+                                        quote!{ report(&mut w, builder, stringify!(#i), self.#i.sample())?; },
                                     )
                                 ),
                                 _ => None
@@ -55,6 +55,11 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                                                 self.#ident[i].record_weighted(*value as f64, delta);
                                             }
                                         },
+                                        quote!{
+                                            for (i, hist) in self.#ident.iter().enumerate() {
+                                                report(&mut w, || builder().tag("index", i.to_string()), stringify!(#ident), hist.sample())?;
+                                            }
+                                        },
                                     )
                                 )
                             },
@@ -66,17 +71,18 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                     })
                 })
                 .collect::<Vec<_>>();
-            let recorder_fields: Vec<_> = fields.iter().map(|(ident, ty, _)| {
+            let recorder_fields: Vec<_> = fields.iter().map(|(ident, ty, _, _)| {
                 quote!{ #ident: #ty }
             }).collect();
-            let record_calls: Vec<_> = fields.iter().map(|(_, _, record)| record).collect();
+            let record_calls: Vec<_> = fields.iter().map(|(_, _, record, _)| record).collect();
+            let report_calls: Vec<_> = fields.iter().map(|(_, _, _, report)| report).collect();
             eprintln!(
                 "ident = {:?}, fields = {:?}",
                 struct_name_ident,
                 fields.iter().map(|v| v.0).collect::<Vec<_>>(),
             );
             quote!{
-                #[derive(Default)]
+                #[derive(Debug, Default)]
                 struct #recorder {
                     last_system_clock_counter: Option<u64>,
                     #( #recorder_fields ),*
@@ -88,6 +94,11 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                             #( #record_calls );*
                         }
                         self.last_system_clock_counter = Some(m.system_clock_counter);
+                    }
+                    fn report<W: Write>(&self, mut w: W) -> std::io::Result<()> {
+                        let builder = || influxdb2::models::data_point::DataPoint::builder("amdgpu");
+                        #( #report_calls );*
+                        Ok(())
                     }
                 }
                 impl Metrics for #struct_name_ident {
