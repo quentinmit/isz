@@ -1,6 +1,8 @@
 { config, pkgs, lib, ... }:
 let
   cfg = config.programs.rustup;
+  cfgCargo = config.programs.cargo;
+  tomlFormat = pkgs.formats.toml {};
 in {
   options = with lib; {
     programs.rustup = {
@@ -14,6 +16,12 @@ in {
         default = [
           pkgs.hostPlatform.config
         ];
+      };
+    };
+    programs.cargo = {
+      settings = mkOption {
+        inherit (tomlFormat) type;
+        default = {};
       };
     };
   };
@@ -34,9 +42,13 @@ in {
     home.packages = [
       pkgs.rustup
     ];
+    programs.cargo.settings.target = {
+      "x86_64-unknown-linux-gnu".linker = "${pkgs.pkgsCross.gnu64.stdenv.cc}/bin/x86_64-unknown-linux-gnu-cc";
+    };
     home.file.".rustup/toolchains/nixpkgs-${nixpkgs.version}".source = nixpkgs;
     home.file.".rustup/toolchains/nixpkgs".source = nixpkgs;
     home.file.".rustup/toolchains/nix-stable-${stable.version}".source = stable;
     home.file.".rustup/toolchains/nix-stable".source = stable;
+    home.file.".cargo/config.toml".source = tomlFormat.generate "cargo.toml" cfgCargo.settings;
   };
 }

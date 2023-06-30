@@ -36,7 +36,7 @@
 
     # Nix
     statix
-    pkgs.deploy-rs.deploy-rs quic
+    pkgs.deploy-rs.deploy-rs
 
     # Development
     arduino-cli
@@ -656,6 +656,9 @@
       "thumbv7em-none-eabihf"
       "x86_64-unknown-linux-gnu"
     ];
+    #programs.cargo.settings.paths = [
+    #  "/Users/quentin/Software/avr-device"
+    #];
 
 
     targets.darwin.defaults = {
