@@ -39,7 +39,7 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                                         i,
                                         quote!{ crate::histogram::ExponentialHistogram<20> },
                                         quote!{ self.#i.record_weighted(m.#i as f64, delta) },
-                                        quote!{ report(&mut w, builder, stringify!(#i), self.#i.sample())?; },
+                                        quote!{ report(&mut w, builder, stringify!(#i), &self.#i)?; },
                                     )
                                 ),
                                 _ => None
@@ -57,7 +57,7 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                                         },
                                         quote!{
                                             for (i, hist) in self.#ident.iter().enumerate() {
-                                                report(&mut w, || builder().tag("index", i.to_string()), stringify!(#ident), hist.sample())?;
+                                                report(&mut w, || builder().tag("index", i.to_string()), stringify!(#ident), hist)?;
                                             }
                                         },
                                     )

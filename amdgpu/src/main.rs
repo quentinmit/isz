@@ -25,19 +25,23 @@ fn main() {
     let (send, recv) = mpsc::sync_channel(0);
 
     thread::spawn(move || {
-        for line in std::io::stdin().lock().lines() {
+        for _line in std::io::stdin().lock().lines() {
             send.send(()).unwrap();
         }
     });
 
-    while true {
+    loop {
         if recv.recv_timeout(Duration::from_millis(5)).is_ok() {
             for r in &readers {
-                r.report();
+                if let Err(e) = r.report() {
+                    warn!("failed to report: {:?}", e);
+                }
             }
         }
         for r in &mut readers {
-            r.record();
+            if let Err(e) = r.record() {
+                warn!("failed to record: {:?}", e);
+            }
         }
     }
 

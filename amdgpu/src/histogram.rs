@@ -10,17 +10,10 @@ pub struct ExponentialHistogram<const MAX_SIZE: usize = 160> {
     zero_threshold: Option<f64>,
     scale: isize,
     sum: f64,
+    count: u64,
     index_offset: Option<isize>,
     /// bucket 0 is the zero bucket, buckets 1-MAX_SIZE are positive exponential.
     buckets: heapless::Vec<u64, MAX_SIZE>,
-}
-
-fn index_scale_0_for_value(value: f64) -> isize {
-    // https://opentelemetry.io/docs/specs/otel/metrics/data-model/#scale-zero-extract-the-exponent
-    let (mantissa, exponent, sign) = value.integer_decode();
-    let log = mantissa.ilog2();
-    let power_of_2 = mantissa == 0x10000000000000;
-    (exponent as isize) + (log as isize) - (power_of_2 as isize)
 }
 
 fn base(scale: isize) -> f64 {
@@ -69,6 +62,7 @@ impl<const MAX_SIZE: usize> Default for ExponentialHistogram<MAX_SIZE> {
             zero_threshold: Some(1.0),
             scale: max_scale,
             sum: 0.0,
+            count: 0,
             index_offset: None,
             buckets: heapless::Vec::new(),
         }
@@ -153,13 +147,13 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
 
     pub fn record_weighted(&mut self, value: f64, weight: u64) {
         trace!("recording value {:?} with weight {:?}", value, weight);
-        let index = self.index_for_value(value);
         let i = self.resize_to_fit(value);
         if i >= self.buckets.len() {
-            self.buckets.resize_default(i+1);
+            self.buckets.resize_default(i+1).expect("resize_to_fit made sure it fits");
         }
         self.buckets[i] += weight;
         self.sum += value * (weight as f64);
+        self.count += weight;
     }
     pub fn sample(&self) -> impl Iterator<Item = (f64, u64)> + '_ {
         let base = base(self.scale);
@@ -171,6 +165,17 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
             (upper_bound, *count)
         })
     }
+    pub fn stats(&self) -> Stats {
+        Stats{
+            sum: self.sum,
+            count: self.count,
+        }
+    }
+}
+
+pub struct Stats {
+    pub sum: f64,
+    pub count: u64,
 }
 
 struct PrintIter<T> {
@@ -228,9 +233,6 @@ mod tests {
             (-1, 4.0, 0),
             (-1, 5.0, 1),
         ] {
-            if *scale == 0 {
-                assert_eq!(index_scale_0_for_value(*value), *index, "index_scale_0_for_value({:?})", value);
-            }
             assert_eq!(index_for_value(*scale, *value), Some(*index), "index_for_value({:?}, {:?})", scale, value);
         }
     }

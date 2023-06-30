@@ -80,8 +80,8 @@ fn test_report() {
     r.last_system_clock_counter = Some(metrics.system_clock_counter - 10);
     r.record(&metrics);
     let mut buf = BufWriter::new(Vec::new());
-    r.report(&mut buf);
-    info!("recorder after report: {:?}", r);
+    r.report(&mut buf).unwrap();
+    info!("recorder after report: {:#?}", r);
     let bytes = buf.into_inner().unwrap();
     let string = String::from_utf8(bytes).unwrap();
     assert_eq!(string, "");
@@ -93,12 +93,17 @@ fn record_from_file<M: Metrics, R: Recorder<M>>(f: &mut File, r: &mut R) -> Resu
     Ok(())
 }
 
-fn report<W: Write, F>(mut w: W, builder: F, field: &str, iter: impl Iterator<Item = (f64, u64)>) -> std::io::Result<()>
+fn report<W: Write, F, const N: usize>(mut w: W, builder: F, field: &str, h: &crate::histogram::ExponentialHistogram<N>) -> std::io::Result<()>
     where F: Fn() -> DataPointBuilder
 {
-    for (le, value) in iter {
-        builder().tag("le", le.to_string()).field(field, value as i64).build().expect("always has field").write_data_point_to(&mut w)?;
+    let field_bucket = format!("{}_bucket", field);
+    for (le, value) in h.sample() {
+        let le = if le == f64::INFINITY { "+Inf".into() }
+            else { le.to_string() };
+        builder().tag("le", le).field(&field_bucket, value as i64).build().expect("always has field").write_data_point_to(&mut w)?;
     }
+    let stats = h.stats();
+    builder().field(format!("{}_count", field), stats.count as i64).field(format!("{}_sum", field), stats.sum).build().expect("always has field").write_data_point_to(&mut w)?;
     Ok(())
 }
 
