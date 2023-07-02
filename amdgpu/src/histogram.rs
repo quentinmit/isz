@@ -288,6 +288,15 @@ mod tests {
         assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 0, 1]);
     }
     #[test]
+    fn test_exact_size() {
+        let mut h = ExponentialHistogram::<20>::default();
+        record_print(&mut h, 3.0);
+        record_print(&mut h, 7.0);
+        assert_eq!(h.scale, 4);
+        assert_eq!(h.index_offset, Some(25));
+        assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 0, 1]);
+    }
+    #[test]
     fn test_ideal_scale_for_value() {
         assert_eq!(ideal_scale_for_value(127.0, 8), 0);
         assert_eq!(ideal_scale_for_value(129.0, 8), -1);
