@@ -14,7 +14,10 @@ mod histogram;
 fn main() {
     let mut readers: Vec<_> = glob("/sys/class/drm/*/device/gpu_metrics").unwrap().filter_map(|entry|
         match entry {
-            Ok(path) => interface::MetricsReader::new(path).ok(),
+            Ok(path) => {
+                info!("Found metrics at {:?}", path);
+                interface::MetricsReader::new(path).ok()
+            },
             Err(e) => {
                 warn!("failed to read: {}", e);
                 None

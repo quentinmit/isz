@@ -109,6 +109,7 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                         #content_revision
                     }
                     fn try_from_file(f: &mut File) -> Result<Self, Error> {
+                        f.seek(SeekFrom::Start(0)).map_err(|_| Error::IO)?;
                         let size = mem::size_of::<Self>();
                         let mut out = mem::MaybeUninit::<Self>::uninit();
                         unsafe {

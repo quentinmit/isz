@@ -1,4 +1,5 @@
-use std::{mem, fs::File, os::unix::fs::FileExt, io::Read, io::Write, io::BufWriter};
+use std::{mem, fs::File, os::unix::fs::FileExt};
+use std::io::{Read, Write, Seek, SeekFrom, BufWriter};
 use macros::Metrics;
 use paste::paste;
 use uninit::read::ReadIntoUninit;
@@ -118,6 +119,7 @@ macro_rules! metrics_reader {
 
             impl RecorderType {
                 fn new(f: &mut File) -> Result<Self, Error> {
+                    f.seek(SeekFrom::Start(0)).map_err(|_| Error::IO)?;
                     let mut buf = [0u8; mem::size_of::<metrics_table_header>()];
                     f.read_exact(&mut buf).map_err(|_| Error::IO)?;
                     let header: metrics_table_header = buf.as_ref().try_into().map_err(|_| Error::BadHeader)?;
