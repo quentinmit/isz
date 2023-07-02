@@ -7,11 +7,13 @@ use std::sync::mpsc;
 use std::io::BufRead;
 use glob::glob;
 use log::{info,warn};
+use env_logger;
 
 mod interface;
 mod histogram;
 
 fn main() {
+    env_logger::init();
     let mut readers: Vec<_> = glob("/sys/class/drm/*/device/gpu_metrics").unwrap().filter_map(|entry|
         match entry {
             Ok(path) => {
