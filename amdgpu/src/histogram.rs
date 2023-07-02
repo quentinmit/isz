@@ -120,7 +120,7 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
                 // Calculate number of buckets to insert at the beginning.
                 let shift = (index_offset.saturating_sub(index)).max(0) as usize;
                 let mut i = index - index_offset + 1;
-                let new_length = (i.max(1) as usize).max(self.buckets.len()).saturating_add(shift);
+                let new_length = (1 + i.max(1) as usize).max(self.buckets.len()).saturating_add(shift);
                 trace!("would need a hypothetical bucket {:?} resulting in {} buckets", i, new_length);
                 if new_length > self.buckets.capacity() {
                     self.compress();
@@ -292,9 +292,10 @@ mod tests {
         let mut h = ExponentialHistogram::<20>::default();
         record_print(&mut h, 3.0);
         record_print(&mut h, 7.0);
-        assert_eq!(h.scale, 4);
-        assert_eq!(h.index_offset, Some(25));
-        assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 0, 1]);
+        // Scale 4 would put 7.0 in bucket 20 (i.e. the 21st element).
+        assert_eq!(h.scale, 3);
+        assert_eq!(h.index_offset, Some(12));
+        assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
     }
     #[test]
     fn test_ideal_scale_for_value() {
