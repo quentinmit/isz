@@ -7,6 +7,8 @@
 , llvmPackages
 }:
 
+# Modified from https://hoverbear.org/blog/rust-bindgen-in-nix/
+
 let
     cargoToml = (builtins.fromTOML (builtins.readFile ./Cargo.toml));
     rust = rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -41,4 +43,6 @@ rustPlatform.buildRustPackage rec {
       ${lib.optionalString stdenv.cc.isGNU "-isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc} -isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc}/${stdenv.hostPlatform.config} -idirafter ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${lib.getVersion stdenv.cc.cc}/include"} \
     "
   '';
+
+  shellHook = preBuild;
 }
