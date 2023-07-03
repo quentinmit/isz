@@ -6,7 +6,7 @@ use std::time::Duration;
 use std::sync::mpsc;
 use std::io::BufRead;
 use glob::glob;
-use log::{info,warn};
+use log::{info, warn, trace};
 use env_logger;
 
 mod interface;
@@ -31,12 +31,14 @@ fn main() {
 
     thread::spawn(move || {
         for _line in std::io::stdin().lock().lines() {
+            trace!("triggering metrics");
             send.send(()).unwrap();
         }
     });
 
     loop {
         if recv.recv_timeout(Duration::from_millis(5)).is_ok() {
+            trace!("reporting metrics");
             for r in &readers {
                 if let Err(e) = r.report() {
                     warn!("failed to report: {:?}", e);
