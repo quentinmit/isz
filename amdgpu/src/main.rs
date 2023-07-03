@@ -2,11 +2,11 @@
 #![feature(maybe_uninit_write_slice)]
 
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::sync::mpsc;
 use std::io::BufRead;
 use glob::glob;
-use log::{info, warn, trace};
+use log::{info, warn, debug, trace};
 use env_logger;
 
 mod interface;
@@ -31,26 +31,27 @@ fn main() {
 
     thread::spawn(move || {
         for _line in std::io::stdin().lock().lines() {
-            trace!("triggering metrics");
             send.send(()).unwrap();
         }
     });
 
     loop {
         if recv.recv_timeout(Duration::from_millis(5)).is_ok() {
-            trace!("reporting metrics");
+            let start = Instant::now();
+            let mut w = std::io::stdout().lock();
             for r in &readers {
-                if let Err(e) = r.report() {
+                if let Err(e) = r.report(&mut w) {
                     warn!("failed to report: {:?}", e);
                 }
             }
+            debug!("reporting took {:?}", start.elapsed());
         }
+        let start = Instant::now();
         for r in &mut readers {
             if let Err(e) = r.record() {
                 warn!("failed to record: {:?}", e);
             }
         }
+        debug!("recording took {:?}", start.elapsed());
     }
-
-    println!("Hello, world!");
 }

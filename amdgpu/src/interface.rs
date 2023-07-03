@@ -138,8 +138,12 @@ macro_rules! metrics_reader {
                         )+
                     }
                 }
-                fn report(&self) -> std::io::Result<()> {
-                    Ok(())
+                fn report<W: Write>(&self, mut w: W) -> std::io::Result<()> {
+                    match self {
+                        $(
+                            Self::[<gpu_metrics_v $format_revision _ $content_revision>](r) => r.report(w),
+                        )+
+                    }
                 }
             }
         }
@@ -178,7 +182,7 @@ impl MetricsReader {
         }
         Ok(())
     }
-    pub fn report(&self) -> std::io::Result<()> {
-        self.r.report()
+    pub fn report<W: Write>(&self, mut w: W) -> std::io::Result<()> {
+        self.r.report(w)
     }
 }
