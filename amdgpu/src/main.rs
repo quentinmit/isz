@@ -2,9 +2,11 @@
 #![feature(maybe_uninit_write_slice)]
 
 use std::thread;
+use std::collections::HashSet;
 use std::time::{Duration, Instant};
 use std::sync::mpsc;
 use std::io::BufRead;
+use std::fs;
 use glob::glob;
 use log::{info, warn, debug, trace};
 use env_logger;
@@ -14,11 +16,11 @@ mod histogram;
 
 fn main() {
     env_logger::init();
-    let mut readers: Vec<_> = glob("/sys/class/drm/*/device/gpu_metrics").unwrap().filter_map(|entry|
+    let devices: HashSet<_> = glob("/sys/class/drm/*/device/gpu_metrics").unwrap().filter_map(|entry|
         match entry {
             Ok(path) => {
                 info!("Found metrics at {:?}", path);
-                interface::MetricsReader::new(path).ok()
+                fs::canonicalize(path).ok()
             },
             Err(e) => {
                 warn!("failed to read: {}", e);
@@ -26,6 +28,10 @@ fn main() {
             },
         }
     ).collect();
+    let mut readers: Vec<_> = devices.iter().filter_map(|path| {
+        info!("Found metrics at {:?}", path);
+        interface::MetricsReader::new(path).ok()
+    }).collect();
 
     let (send, recv) = mpsc::sync_channel(0);
 
