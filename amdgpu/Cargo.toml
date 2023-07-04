@@ -20,7 +20,9 @@ log = "0.4.19"
 macros = { path = "./macros" }
 num-traits = "0.2.15"
 paste = "1.0.12"
+shlex = "1.1.0"
 test-log = "0.2.12"
+thiserror = "1.0.40"
 uninit = "0.5.1"
 
 [build-dependencies]

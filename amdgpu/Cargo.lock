@@ -40,7 +40,9 @@ dependencies = [
  "macros",
  "num-traits",
  "paste",
+ "shlex",
  "test-log",
+ "thiserror",
  "uninit",
 ]
 

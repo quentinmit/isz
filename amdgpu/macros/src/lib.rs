@@ -78,8 +78,8 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
             let report_calls: Vec<_> = fields.iter().map(|(_, _, _, report)| report).collect();
             eprintln!(
                 "ident = {:?}, fields = {:?}",
-                struct_name_ident,
-                fields.iter().map(|v| v.0).collect::<Vec<_>>(),
+                struct_name_ident.to_string(),
+                fields.iter().map(|v| v.0.to_string()).collect::<Vec<_>>(),
             );
             quote!{
                 #[derive(Debug, Default)]

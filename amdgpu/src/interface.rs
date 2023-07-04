@@ -1,3 +1,4 @@
+#![allow(non_camel_case_types)]
 use std::{mem, fs::File, os::unix::fs::FileExt};
 use std::io::{Read, Write, Seek, SeekFrom, BufWriter};
 use macros::Metrics;
@@ -112,6 +113,7 @@ fn report<W: Write, F, const N: usize>(mut w: W, builder: F, field: &str, h: &cr
 macro_rules! metrics_reader {
     ($( ( $format_revision:literal, $content_revision:literal ) ),+ ) => {
         paste! {
+            #[allow(non_camel_case_types)]
             enum RecorderType {
                 $(
                     [<gpu_metrics_v $format_revision _ $content_revision>]([<recorder_gpu_metrics_v $format_revision _ $content_revision>]),

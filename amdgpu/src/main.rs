@@ -13,6 +13,7 @@ use env_logger;
 
 mod interface;
 mod histogram;
+mod lspci;
 
 fn main() {
     env_logger::init();
