@@ -6,6 +6,7 @@
     isz.telegraf = {
       enable = true;
       intelRapl = true;
+      amdgpu = true;
       openweathermap = {
         appId = "$OPENWEATHERMAP_APP_ID";
         cityIds = ["4931972" "4930956" "5087559"];

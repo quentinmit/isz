@@ -16,6 +16,7 @@ in {
       enable = mkEnableOption "telegraf";
       docker = mkEnableOption "Docker";
       intelRapl = mkEnableOption "intel_rapl";
+      amdgpu = mkEnableOption "amdgpu";
       powerSupply = mkEnableOption "power_supply";
       debug = mkEnableOption "debug";
       smart.enable = mkOption {
@@ -256,6 +257,18 @@ in {
             restart_delay = "10s";
             data_format = "influx";
             command = [(if isNixOS then "/run/wrappers/bin/intel_rapl_telegraf" else intelRapl)];
+            signal = "STDIN";
+          }];
+        })
+        (lib.mkIf cfg.amdgpu {
+          inputs.execd = [{
+            alias = "amdgpu";
+            restart_delay = "10s";
+            data_format = "influx";
+            command = ["${pkgs.amdgpu}/bin/amdgpu"];
+            environment = [
+              #"RUST_LOG=debug"
+            ];
             signal = "STDIN";
           }];
         })
