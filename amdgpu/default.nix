@@ -24,7 +24,7 @@ rustPlatform.buildRustPackage rec {
   src = ./.;
 
   #cargoSha256 = lib.fakeSha256;
-  cargoSha256 = "8xMwSvtZKUoii/lHNkySkTClXrv96lvsa8vbv+ewjYg=";
+  cargoSha256 = "";
 
   LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
   doCheck = false;

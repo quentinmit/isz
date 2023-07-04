@@ -9,6 +9,7 @@ use uninit::extension_traits::AsOut;
 use log::{info,trace,warn, error};
 use influxdb2::models::data_point::{DataPoint,DataPointBuilder,WriteDataPoint};
 use thiserror::Error;
+use itertools::Itertools;
 
 include!(concat!(env!("OUT_DIR"), "/kgd_pp_interface.rs"));
 
@@ -109,7 +110,19 @@ fn report<W: Write, F, const N: usize>(mut w: W, builder: F, field: &str, h: &cr
     where F: Fn() -> DataPointBuilder
 {
     let field_bucket = format!("{}_bucket", field);
-    for (le, value) in h.sample() {
+    // OTel histograms are not cumulative, but Prometheus histograms are.
+    // https://www.robustperception.io/why-are-prometheus-histograms-cumulative/
+    // Also, Prometheus histograms must contain a +Inf bucket.
+    let infinity_bucket = vec![(f64::INFINITY, 0)];
+    let mut samples = h.sample()
+        .chain(infinity_bucket);
+    let cumulative_samples = samples
+        .take_while_inclusive(|(le, _)| *le != f64::INFINITY)
+        .scan(0, |state, (le, value)| {
+            *state = *state + value;
+            Some((le, *state))
+        });
+    for (le, value) in cumulative_samples {
         let le = if le == f64::INFINITY { "+Inf".into() }
             else { le.to_string() };
         builder().tag("le", le).field(&field_bucket, value as i64).build().expect("always has field").write_data_point_to(&mut w)?;
