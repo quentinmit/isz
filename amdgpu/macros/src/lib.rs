@@ -39,7 +39,7 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                                         i,
                                         quote!{ crate::histogram::ExponentialHistogram<20> },
                                         quote!{ self.#i.record_weighted(m.#i as f64, delta) },
-                                        quote!{ report(&mut w, builder, stringify!(#i), &self.#i)?; },
+                                        quote!{ report(&mut w, || builder(), stringify!(#i), &self.#i)?; },
                                     )
                                 ),
                                 _ => None
@@ -95,8 +95,9 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                         }
                         self.last_system_clock_counter = Some(m.system_clock_counter);
                     }
-                    fn report<W: Write>(&self, mut w: W) -> std::io::Result<()> {
-                        let builder = || influxdb2::models::data_point::DataPoint::builder("amdgpu");
+                    fn report<W: Write, F>(&self, mut w: W, builder: F) -> std::io::Result<()>
+                        where F: Fn() -> DataPointBuilder
+                    {
                         #( #report_calls );*
                         Ok(())
                     }
@@ -109,14 +110,14 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                         #content_revision
                     }
                     fn try_from_file(f: &mut File) -> Result<Self, Error> {
-                        f.seek(SeekFrom::Start(0)).map_err(|_| Error::IO)?;
+                        f.seek(SeekFrom::Start(0))?;
                         let size = mem::size_of::<Self>();
                         let mut out = mem::MaybeUninit::<Self>::uninit();
                         unsafe {
                             let buf = std::slice::from_raw_parts_mut(out.as_mut_ptr() as *mut u8, size);
-                            f.read_exact(buf).map_err(|_| Error::IO)?;
+                            f.read_exact(buf)?;
                             // TODO: Switch when read_into_uninit_exact is implemented for &File
-                            //f.read_into_uninit_exact(out.as_out()).map_err(|_| Error::IO)?;
+                            //f.read_into_uninit_exact(out.as_out())?;
                             Ok(out.assume_init())
                         }.and_then(|s|
                                    match (s.common_header.format_revision as usize, s.common_header.content_revision as usize) {

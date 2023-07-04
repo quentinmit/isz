@@ -1,12 +1,14 @@
 #![allow(non_camel_case_types)]
 use std::{mem, fs::File, os::unix::fs::FileExt};
 use std::io::{Read, Write, Seek, SeekFrom, BufWriter};
+use std::collections::HashMap;
 use macros::Metrics;
 use paste::paste;
 use uninit::read::ReadIntoUninit;
 use uninit::extension_traits::AsOut;
 use log::{info,trace,warn, error};
 use influxdb2::models::data_point::{DataPoint,DataPointBuilder,WriteDataPoint};
+use thiserror::Error;
 
 include!(concat!(env!("OUT_DIR"), "/kgd_pp_interface.rs"));
 
@@ -38,15 +40,22 @@ pub trait Metrics: std::fmt::Debug {
 
 pub trait Recorder<M: Metrics> {
     fn record(&mut self, m: &M);
-    fn report<W: Write>(&self, w: W) -> std::io::Result<()>;
+    fn report<W: Write, F>(&self, w: W, builder: F) -> std::io::Result<()>
+        where F: Fn() -> DataPointBuilder;
 }
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
+    #[error("bad header")]
     BadHeader,
+    #[error("bad version")]
     BadVersion,
+    #[error("bad length")]
     BadLength,
-    IO,
+    #[error("IO: {0:?}")]
+    IoError(#[from] std::io::Error),
+    #[error("lspci error: {0:?}")]
+    lspci(#[from] crate::lspci::Error),
 }
 
 pub fn parse_metrics(buf: &[u8]) -> Result<Box<dyn Metrics>, Error> {
@@ -122,9 +131,9 @@ macro_rules! metrics_reader {
 
             impl RecorderType {
                 fn new(f: &mut File) -> Result<Self, Error> {
-                    f.seek(SeekFrom::Start(0)).map_err(|_| Error::IO)?;
+                    f.seek(SeekFrom::Start(0))?;
                     let mut buf = [0u8; mem::size_of::<metrics_table_header>()];
-                    f.read_exact(&mut buf).map_err(|_| Error::IO)?;
+                    f.read_exact(&mut buf)?;
                     let header: metrics_table_header = buf.as_ref().try_into().map_err(|_| Error::BadHeader)?;
                     match (header.format_revision, header.content_revision) {
                         $(
@@ -140,10 +149,12 @@ macro_rules! metrics_reader {
                         )+
                     }
                 }
-                fn report<W: Write>(&self, mut w: W) -> std::io::Result<()> {
+                fn report<W: Write, F>(&self, mut w: W, builder: F) -> std::io::Result<()>
+                    where F: Fn() -> DataPointBuilder
+                {
                     match self {
                         $(
-                            Self::[<gpu_metrics_v $format_revision _ $content_revision>](r) => r.report(w),
+                            Self::[<gpu_metrics_v $format_revision _ $content_revision>](r) => r.report(w, builder),
                         )+
                     }
                 }
@@ -166,15 +177,19 @@ metrics_reader!{
 pub struct MetricsReader {
     f: File,
     r: RecorderType,
+    tags: Option<HashMap<String, String>>,
 }
 
 impl MetricsReader {
     pub fn new<P: AsRef<std::path::Path>>(p: P) -> Result<Self, Error> {
-        let mut f = File::open(p).map_err(|_| Error::IO)?;
+        let mut f = File::open(p.as_ref())?;
         let mut r = RecorderType::new(&mut f)?;
+        let slot = p.as_ref().parent().and_then(|p| p.file_name());
+        let tags = slot.map(|slot| crate::lspci::lspci_info(slot)).transpose()?;
         Ok(Self{
             f,
             r,
+            tags,
         })
     }
     pub fn record(&mut self) -> Result<(), Error> {
@@ -185,6 +200,14 @@ impl MetricsReader {
         Ok(())
     }
     pub fn report<W: Write>(&self, mut w: W) -> std::io::Result<()> {
-        self.r.report(w)
+        let tags = &self.tags;
+        let builder = || {
+            let builder = influxdb2::models::data_point::DataPoint::builder("amdgpu");
+            match tags {
+                None => builder,
+                Some(tags) => tags.iter().fold(builder, |builder, (key, value)| builder.tag(key, value)),
+            }
+        };
+        self.r.report(w, builder)
     }
 }

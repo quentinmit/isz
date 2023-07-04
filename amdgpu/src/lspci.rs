@@ -1,5 +1,6 @@
 use std::process::Command;
 use std::collections::HashMap;
+use std::ffi::OsStr;
 
 use shlex;
 use thiserror::Error;
@@ -23,7 +24,7 @@ pub enum Error {
 
 
 
-pub fn lspci_info(slot: &str) -> Result<HashMap<String, String>, Error> {
+pub fn lspci_info(slot: &OsStr) -> Result<HashMap<String, String>, Error> {
     let output = Command::new("lspci")
     .arg("-s")
     .arg(slot)
