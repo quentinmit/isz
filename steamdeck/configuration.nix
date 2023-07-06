@@ -15,6 +15,7 @@
     isz.telegraf = {
       enable = true;
       intelRapl = true;
+      amdgpu = true;
       powerSupply = true;
     };
   };
