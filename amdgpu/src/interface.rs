@@ -198,7 +198,13 @@ impl MetricsReader {
         let mut f = File::open(p.as_ref())?;
         let mut r = RecorderType::new(&mut f)?;
         let slot = p.as_ref().parent().and_then(|p| p.file_name());
-        let tags = slot.map(|slot| crate::lspci::lspci_info(slot)).transpose()?;
+        let tags = slot
+            .map(|slot| crate::lspci::lspci_info(slot))
+            .transpose()
+            .unwrap_or_else(|e| {
+                error!("failed to run lspci: {:?}", e);
+                None
+            });
         Ok(Self{
             f,
             r,
