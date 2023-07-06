@@ -267,7 +267,6 @@ in {
             data_format = "influx";
             command = ["${pkgs.amdgpu}/bin/amdgpu"];
             environment = [
-              "PATH=${pkgs.pciutils}/bin"
               #"RUST_LOG=debug"
             ];
             signal = "STDIN";

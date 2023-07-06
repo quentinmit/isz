@@ -1,7 +1,9 @@
 # default.nix
 { lib
 , rust-bin
+, pciutils
 , makeRustPlatform
+, makeWrapper
 , stdenv
 , hostPlatform
 , llvmPackages
@@ -45,4 +47,13 @@ rustPlatform.buildRustPackage rec {
   '';
 
   shellHook = preBuild;
+
+  nativeBuildInputs = [ makeWrapper ];
+
+  postInstall = ''
+    wrapProgram $out/bin/amdgpu \
+      --set PATH ${lib.makeBinPath [
+        pciutils
+      ]}
+  '';
 }
