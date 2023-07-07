@@ -7,22 +7,26 @@ let
     panel.gridPos = { x = 0; y = 0; w = 12; h = 8; };
     influx.query = ''
       import "join"
-      buckets = from(bucket: v.defaultBucket)
+
+      cumulative = from(bucket: v.defaultBucket)
         |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
         |> filter(fn: (r) => r["_measurement"] == "amdgpu")
         |> filter(fn: (r) => r["_field"] == "${name}_bucket")
         |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
         |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
         |> difference(nonNegative: true, columns: ["_value"])
-      //  |> group()
+        |> group(columns: ["_value", "le"], mode: "except")
+        |> map(fn: (r) => ({r with le: float(v: r.le)}))
+
+      zeros = cumulative |> first()
+        |> map(fn: (r) => ({r with _value: 0, le: 0.0}))
+
+      buckets = union(tables: [zeros, cumulative])
+        |> sort(columns: ["le"])
+        |> difference(nonNegative: true)
         |> keep(columns: ["_time", "_value", "le"])
         |> group(columns: ["_time", "le"])
         |> sum()
-        |> group(columns: ["_time"])
-        |> map(fn: (r) => ({r with le: float(v: r.le)}))
-        |> sort(columns: ["le"])
-        |> difference(nonNegative: true)
-      //  |> group(columns: ["le"])
         |> group()
 
       counts = from(bucket: v.defaultBucket)
@@ -43,14 +47,15 @@ let
         on: (l, r) => l._time == r._time,
         as: (l, r) => ({l with counts: r._value}),
       )
-      |> group(columns: ["le"])
-      |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)/float(v: r.counts), le: r.le}))
+        |> group(columns: ["le"])
+        |> map(fn: (r) => ({_time: r._time, _value: float(v: r._value)/float(v: r.counts), le: r.le}))
       joined
     '';
     panel.type = "heatmap";
     panel.options = {
       calculate = false;
       cellGap = 0;
+      color.scheme = "Turbo";
       yAxis.unit = unit;
       cellValues.unit = "percentunit";
       tooltip.yHistogram = true;
