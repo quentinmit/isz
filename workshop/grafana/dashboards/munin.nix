@@ -286,12 +286,12 @@
         influx.fn = "derivative";
         influx.imports = ["strings"];
         influx.extra = ''
-        |> group(columns: ["_measurement", "_field", "_time"])
-        |> sum()
-        |> group(columns: ["_measurement", "_field"])
-        |> map(fn: (r) => ({r with _field: strings.trimPrefix(v: r._field, prefix: "time_")}))
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-      '';
+          |> group(columns: ["_measurement", "_field", "_time"])
+          |> sum()
+          |> group(columns: ["_measurement", "_field"])
+          |> map(fn: (r) => ({r with _field: strings.trimPrefix(v: r._field, prefix: "time_")}))
+          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '';
         stacking = true;
         unit = "percentunit";
         fields.idle.color.mode = "fixed";
