@@ -24,43 +24,15 @@
       - com.github.unrud.RemoteTouchpad
       - com.github.iwalton3.jellyfin-media-player
       - de.shorsh.discord-screenaudio
-      - me.kozec.syncthingtk
       - io.freetubeapp.FreeTube
-      - org.netsurf_browser.NetSurf
-      - org.qgis.qgis
-      - org.remmina.Remmina
       - org.mozilla.firefox
       - org.signal.Signal
-      - org.wireshark.Wireshark
       - uk.org.greenend.chiark.sgtatham.putty
       # Productivity
       - ch.theologeek.Manuskript
-      - com.abisource.AbiWord
-      - com.calibre_ebook.calibre
-      - com.github.flxzt.rnote
-      - com.github.johnfactotum.Foliate
-      - com.github.marktext.marktext
-      - com.github.xournalpp.xournalpp
-      - com.sigil_ebook.Sigil
-      - io.github.wereturtle.ghostwriter
-      - me.mitya57.ReText
-      - net.xm1math.Texmaker
-      - org.cvfosammmm.Setzer
-      - org.gnome.gitlab.somas.Apostrophe
-      - org.kde.kile
       - org.libreoffice.LibreOffice
-      - org.onlyoffice.desktopeditors
-      - org.texstudio.TeXstudio
-      - org.tug.texworks
       # Graphics
       - com.boxy_svg.BoxySVG
-      - net.scribus.Scribus
-      - org.darktable.Darktable
-      - org.freecadweb.FreeCAD
-      - org.gimp.GIMP
-      - org.inkscape.Inkscape
-      - org.kde.krita
-      - org.kde.digikam
       # Games
       - com.github.k4zmu2a.spacecadetpinball
       - com.heroicgameslauncher.hgl
@@ -69,7 +41,6 @@
       - net.supertuxkart.SuperTuxKart
       - org.libretro.RetroArch
       - com.steamgriddb.steam-rom-manager
-      - com.dosbox.DOSBox
       - io.github.dosbox-staging
       - org.duckstation.DuckStation
       - app.xemu.xemu
@@ -91,44 +62,21 @@
       - com.visualstudio.code.insiders # flathub-beta
       - io.github.shiftey.Desktop
       - org.gnu.emacs
-      - org.ghidra_sre.Ghidra
       - com.github.treagod.spectator
-      - com.gitlab.cutecom.cutecom
       - com.google.AndroidStudio
       - org.fritzing.Fritzing
-      - org.radare.iaito
       - re.sonny.Playhouse
       # Multimedia
       - com.obsproject.Studio
       #- com.obsproject.Studio.Plugin.InputOverlay
-      - org.videolan.VLC
-      - fr.natron.Natron
-      - com.github.wwmm.easyeffects
-      - org.pipewire.Helvum
-      - org.rncbc.qpwgraph
-      - net.sourceforge.VMPK
-      - org.kde.kdenlive
       # Radio
-      - com.w1hkj.fldigi
-      - com.w1hkj.flrig
-      - net.oz9aec.Gpredict
-      - net.qsl.QSSTV
       - info.mumble.Mumble
-      - org.sdrangel.SDRangel
-      - org.viking.Viking
       # Utilities
       - com.whitemagicsoftware.kmcaster
-      - org.cubocore.CoreKeyboard
       - org.linux_hardware.hw-probe
       - net.davidotek.pupgui2
-      - com.usebottles.bottles
       - com.steamgriddb.SGDBoop
-      - com.dosbox.DOSBox
-      - org.kde.kwalletmanager5
-      - com.github.donadigo.appeditor
-      - io.gitlab.jstest_gtk.jstest_gtk
       - io.qt.qdbusviewer
-      - ca.desrt.dconf-editor
       - io.github.arunsivaramanneo.GPUViewer
       - org.bluesabre.MenuLibre
       - org.gnome.dspy
@@ -164,28 +112,15 @@
     vars:
       packages:
       - base-devel
-      - git-lfs
-      - cmake
-      - htop
-      - wget
-      - ncdu
       - "{{ holo_repo }}/linux-headers"
       - linux-neptune-headers
       - "{{ holo_repo }}/linux-lts-headers"
       # Other packages to consider from
       # https://www.reddit.com/r/SteamDeck/comments/t92ozw/comment/i8qxemd/?utm_source=share&utm_medium=web2x&context=3
       # tmux git podman yay-git mlocate
-      - onboard
       - fingerterm
       - qt5-xmlpatterns # missing dependency of fingerterm
-      - dosbox
-      - inotify-tools
-      - timidity++
       - python-pyqt5
-      #- mosh # perl-io-tty is uninstallable because gpg error
-      - gnu-netcat
-      - x11vnc # gpg error
-      - unarchiver
       #- wayvnc # gpg error
       aur_packages:
       - telegraf-bin

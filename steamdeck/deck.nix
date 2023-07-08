@@ -12,31 +12,94 @@
   home.stateVersion = "23.05";
 
   home.packages = with pkgs; [
-    htop
-    wget
-    ncdu
-    #fingerterm
-    dosbox
-    inotify-tools
-    timidity
+    # Network
     mosh
     netcat-gnu
+    netsurf.browser
+    qgis
+    remmina
+    wget
+    wireshark
     x11vnc
-    unar
-    telegraf
-    # Replacing flatpaks
+
+    # Productivity
+    abiword
+    apostrophe
+    calibre
+    foliate
+    kile
+    libsForQt5.ghostwriter
+    marktext
+    onlyoffice-bin
+    retext
+    rnote
+    setzer
+    sigil
+    texmaker
+    texstudio
+    texworks
+    xournalpp
+
+    # Graphics
+    darktable
+    digikam
+    freecad
+    gimp-with-plugins
+    inkscape-with-extensions
+    krita
+    scribus
+
+    # Games
+    dosbox
+
+    # Development
+    cutecom
+    ghidra-bin
+    iaito
+
+    # Multimedia
+    easyeffects
+    helvum
+    libsForQt5.kdenlive
+    natron
+    qpwgraph
+    timidity
+    vlc
+    vmpk
+
+    # Radio
+    fldigi
+    flrig
+    gpredict
+    qsstv
+    sdrangel
+    viking
+
+    # Utilities
+    appeditor
+    bottles
+    CuboCore.corekeyboard
+    #fingerterm
+    gnome.dconf-editor
+    htop
+    inotify-tools
+    jstest-gtk
     kwalletcli
     kwalletmanager
-    remmina
-    qpwgraph
-    helvum
-    viking
-    wireshark
-    iaito
-    gpredict
+    ncdu
+    telegraf
+    unar
   ];
 
   programs.onboard.enable = true;
+
+  services.syncthing = {
+    enable = true;
+    tray = {
+      enable = true;
+      package = pkgs.syncthingtray;
+    };
+  };
 
   programs.bash = {
     shellAliases = {
