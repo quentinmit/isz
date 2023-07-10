@@ -61,7 +61,7 @@
     easyeffects
     helvum
     libsForQt5.kdenlive
-    natron
+    #natron
     qpwgraph
     timidity
     vlc
@@ -77,7 +77,7 @@
 
     # Utilities
     appeditor
-    bottles
+    bottles-unwrapped
     CuboCore.corekeyboard
     #fingerterm
     gnome.dconf-editor
