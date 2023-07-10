@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }@args:
+{ config, pkgs, lib, self, ... }@args:
 let
   inherit (pkgs.stdenv) isLinux;
 in {
@@ -6,6 +6,8 @@ in {
     programs.home-manager.enable = true;
 
     targets.genericLinux.enable = !(args ? osConfig) && pkgs.stdenv.hostPlatform.isLinux;
+
+    nix.registry.isz.flake = self;
 
     # ~/.gitconfig and ~/.config/git/ignore
     programs.git = {

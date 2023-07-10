@@ -1,4 +1,4 @@
-{ lib, pkgs, config, nix-index-database, home-manager, sops-nix, ... }:
+{ lib, pkgs, config, nix-index-database, home-manager, options, sops-nix, ... }:
 let
   isNixDarwin = lib ? nixos;
   isNixOS = !isNixDarwin;
@@ -27,6 +27,7 @@ in {
 
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
+    home-manager.extraSpecialArgs = options._module.specialArgs.value;
 
     environment.systemPackages = with pkgs; [
       # Filesystem
