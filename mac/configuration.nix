@@ -432,7 +432,6 @@
   };
 
   services.nix-daemon.enable = true;
-  nix.package = pkgs.nix;
   nix.settings = {
     builders = "@/etc/nix/machines";
     bash-prompt-prefix = "(nix:$name)\\040";

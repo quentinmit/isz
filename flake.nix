@@ -90,6 +90,7 @@
         nixosConfigurations = nixpkgs.lib.genAttrs [
           "workshop"
           "bedroom-pi"
+          "droid"
         ] (name: nixpkgs.lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [
@@ -124,6 +125,11 @@
           ;
         };
         homeModules = builtins.listToAttrs (findModules ./nix/home);
+        deploy.nodes.droid = {
+          sshUser = "root";
+          hostname = "droid.isz.wtf";
+          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.droid.pkgs.system}.activate.nixos self.nixosConfigurations.droid;
+        };
         deploy.nodes.workshop = {
           sshUser = "root";
           hostname = "workshop.isz.wtf";

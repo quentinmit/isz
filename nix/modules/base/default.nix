@@ -18,6 +18,8 @@ in {
 
     nixpkgs.config.allowUnfree = true;
 
+    nix.package = lib.mkDefault pkgs.nixVersions.nix_2_16;
+
     nix.settings = {
       extra-experimental-features = [ "nix-command" "flakes" "repl-flake" ];
       # Nix on macOS has a race condition when this is turned on.

@@ -99,7 +99,7 @@ in {
     (lib.mkIf cfg.enable {
       services.telegraf.enable = true;
     })
-    (if isNixOS then lib.mkIf cfg.smart.enable {
+    (if isNixOS then lib.mkIf (cfg.enable && cfg.smart.enable) {
       isz.telegraf.smart.smartctl = lib.mkDefault "/run/wrappers/bin/smartctl_telegraf";
       isz.telegraf.smart.nvme = lib.mkDefault "/run/wrappers/bin/nvme_telegraf";
       security.wrappers.smartctl_telegraf = lib.mkIf (cfg.smart.smartctl != null) {
@@ -117,9 +117,9 @@ in {
         setuid = true;
       };
     } else {})
-    (if isNixOS then lib.mkIf cfg.enable {
+    (if (isNixOS && options ? sops) then lib.mkIf cfg.enable {
       sops.secrets.telegraf = {
-        owner = config.systemd.services.telegraf.serviceConfig.User;
+        owner = config.systemd.services.telegraf.serviceConfig.User or "";
       };
       systemd.services.telegraf.serviceConfig.EnvironmentFile = [
         config.sops.secrets.telegraf.path
