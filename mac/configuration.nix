@@ -467,12 +467,6 @@
   home-manager.users.quentin = {
     home.stateVersion = "22.11";
 
-    imports = with self.homeModules; [
-      base
-      clamav
-      rustup
-    ];
-
     services.clamav.updater.enable = true;
 
     programs.atuin = {

@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ../nix/base.nix
     ../nix/raspi.nix
   ];
 
@@ -137,7 +136,6 @@
   users.extraGroups.wago-logger = {};
 
   nix = {
-    settings.auto-optimise-store = true;
     gc = {
       automatic = true;
       dates = "weekly";

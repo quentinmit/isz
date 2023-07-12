@@ -1,11 +1,6 @@
 { config, pkgs, self, ... }:
 
 {
-  imports = with self.homeModules; [
-    base
-    onboard
-  ];
-
   home.username = "deck";
   home.homeDirectory = "/home/deck";
 

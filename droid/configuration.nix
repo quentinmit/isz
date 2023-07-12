@@ -5,7 +5,6 @@ with lib;
 {
   imports = [
     "${nixpkgs}/nixos/modules/virtualisation/lxc-container.nix"
-    ../nix/base.nix
   ];
 
   nixpkgs.hostPlatform = { system = "aarch64-linux"; };

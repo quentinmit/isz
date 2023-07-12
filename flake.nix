@@ -120,7 +120,6 @@
         darwinModules = builtins.listToAttrs (findModules ./nix/darwin) // {
           # Modules that work on both nixos and nix-darwin
           inherit (self.nixosModules)
-            base
             telegraf
           ;
         };

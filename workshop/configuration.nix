@@ -15,7 +15,6 @@
       ./dashboard.nix
       ./grafana
       ../nix/zwave-js-ui.nix
-      ../nix/base.nix
       ../nix/speedtest.nix
     ];
 
