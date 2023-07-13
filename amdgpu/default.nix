@@ -12,7 +12,7 @@
 # Modified from https://hoverbear.org/blog/rust-bindgen-in-nix/
 
 let
-    cargoToml = (builtins.fromTOML (builtins.readFile ./Cargo.toml));
+    cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
     rust = rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
     rustPlatform = makeRustPlatform {
       cargo = rust;
@@ -21,7 +21,7 @@ let
 in
 rustPlatform.buildRustPackage rec {
   pname = cargoToml.package.name;
-  version = cargoToml.package.version;
+  inherit (cargoToml.package) version;
 
   src = ./.;
 

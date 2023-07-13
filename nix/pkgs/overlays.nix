@@ -58,14 +58,14 @@ final: prev: {
     };
     stdenv = if final.stdenv.isDarwin then final.darwin.apple_sdk_11_0.stdenv else final.stdenv;
     buildPackages = final.buildPackages // final.lib.optionalAttrs final.stdenv.isDarwin {
-      stdenv = final.buildPackages.darwin.apple_sdk_11_0.stdenv;
+      inherit (final.buildPackages.darwin.apple_sdk_11_0) stdenv;
     };
   };
   itpp = prev.itpp.overrideAttrs (old: {
     postPatch = (old.postPatch or "") + ''
       rm VERSION
     '';
-    cmakeFlags = if final.stdenv.isDarwin then map (s: builtins.replaceStrings [".so"] [".dylib"] s) old.cmakeFlags else old.cmakeFlags;
+    cmakeFlags = if final.stdenv.isDarwin then map (builtins.replaceStrings [".so"] [".dylib"]) old.cmakeFlags else old.cmakeFlags;
     # TODO: Investigate failing test
     doCheck = old.doCheck && !final.stdenv.isDarwin;
     meta.broken = false;

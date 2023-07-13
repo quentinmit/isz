@@ -28,7 +28,7 @@ in {
   config = let
     nixpkgs = pkgs.symlinkJoin rec {
       name = "rust-${version}";
-      version = pkgs.rustc.version;
+      inherit (pkgs.rustc) version;
       paths = with pkgs; [
         rustc
         cargo
