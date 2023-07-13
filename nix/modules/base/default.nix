@@ -12,50 +12,6 @@
 
     networking.domain = "isz.wtf";
 
-    environment.systemPackages = with pkgs; [
-      # Partition/MBR tools
-      ms-sys
-      efibootmgr
-      efivar
-      parted
-      gptfdisk
-
-      # Filesystems
-      exfatprogs
-      fuse
-      fuse3
-
-      # Block devices
-      sdparm
-      hdparm
-      nvme-cli
-      cryptsetup
-
-      # Other devices
-      drm_info
-      usbutils
-      input-utils
-      v4l-utils
-      lm_sensors
-      i2c-tools
-
-      # Performance tools
-      iotop
-      psmisc
-      strace
-      sysstat
-      cpuset
-
-      # Networking
-      bridge-utils
-      iptables
-      vlan
-      netcat-openbsd
-
-      # Utilities
-      util-linux
-    ];
-
     services.locate.enable = true;
     services.locate.locate = pkgs.mlocate;
     services.locate.localuser = null;
