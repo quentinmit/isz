@@ -282,11 +282,12 @@ mod tests {
     #[test]
     fn test_shifting() {
         let mut h = ExponentialHistogram::<10>::default();
+        record_print(&mut h, 0.0);
         record_print(&mut h, 1024.0);
         record_print(&mut h, 512.0);
         assert_eq!(h.scale, 3);
         assert_eq!(h.index_offset, Some(71));
-        assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 0, 1]);
+        assert_eq!(&h.buckets, &[1, 1, 0, 0, 0, 0, 0, 0, 0, 1]);
         let samples: Vec<_> = h.sample().collect();
         assert_eq!(samples[1], (512.0, 1));
         assert_eq!(samples[9], (1024.0, 1));
