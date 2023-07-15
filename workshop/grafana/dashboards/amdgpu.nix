@@ -1,8 +1,11 @@
 { config, pkgs, lib, ... }:
 
-with import ../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; };
+with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; };
 let
-  heatmapPanel = name: unit: {
+  heatmapPanel = name: unit: let
+    scalingFactor = if unit == "MHz" then 1000000.0 else 1.0;
+    unitName = if unit == "MHz" then "hertz" else unit;
+  in {
     panel.title = name;
     panel.gridPos = { x = 0; y = 0; w = 12; h = 8; };
     influx.query = ''
@@ -16,7 +19,7 @@ let
         |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
         |> difference(nonNegative: true, columns: ["_value"])
         |> group(columns: ["_value", "le"], mode: "except")
-        |> map(fn: (r) => ({r with le: float(v: r.le)}))
+        |> map(fn: (r) => ({r with le: float(v: r.le) * ${fluxValue scalingFactor}}))
 
       zeros = cumulative |> first()
         |> map(fn: (r) => ({r with _value: 0, le: 0.0}))
@@ -56,9 +59,10 @@ let
       calculate = false;
       cellGap = 0;
       color.scheme = "Turbo";
-      yAxis.unit = unit;
+      yAxis.unit = unitName;
       cellValues.unit = "percentunit";
       tooltip.yHistogram = true;
+      filterValues.le = -1; # Don't filter cells
     };
   };
 in {
@@ -76,7 +80,7 @@ in {
     panels = [
       (heatmapPanel "average_core_power" "mwatt")
       (heatmapPanel "average_cpu_power" "mwatt")
-      (heatmapPanel "current_coreclk" "hertz")
+      (heatmapPanel "current_coreclk" "MHz")
     ];
   };
 }
