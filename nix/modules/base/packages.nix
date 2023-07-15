@@ -17,7 +17,7 @@ let
     glances
     htop
     lsof
-    pstree
+    (lib.lowPrio pstree) # low priority to prefer pstree from psmisc on Linux
 
     # Networking
     w3m-nographics
