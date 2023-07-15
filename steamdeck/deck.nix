@@ -8,12 +8,9 @@
 
   home.packages = with pkgs; [
     # Network
-    mosh
-    netcat-gnu
     netsurf.browser
     qgis
     remmina
-    wget
     wireshark
     x11vnc
 
@@ -76,12 +73,10 @@
     CuboCore.corekeyboard
     #fingerterm
     gnome.dconf-editor
-    htop
     inotify-tools
     jstest-gtk
     kwalletcli
     kwalletmanager
-    ncdu
     telegraf
     unar
   ];

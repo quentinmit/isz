@@ -25,7 +25,6 @@
 
   environment.systemPackages = with pkgs; [
     # Block devices
-    ddrescue
     f3
     #unsupported gptfdisk
     simg2img
@@ -201,7 +200,6 @@
     #why chrony
     #csshX
     #already curl
-    fping
     geoip
     iftop
     inetutils
@@ -216,7 +214,6 @@
     libpsl
     libupnp
     miniupnpc
-    mosh
     mosquitto
     mtr  # TODO: setuid wrapper
     nbd
@@ -250,8 +247,6 @@
 
     # Performance monitoring
     btop
-    htop
-    pstree
     telegraf
     zenith
 

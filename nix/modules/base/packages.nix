@@ -17,6 +17,7 @@ let
     glances
     htop
     lsof
+    pstree
 
     # Networking
     w3m-nographics
@@ -27,6 +28,7 @@ let
     host # already present
     dig
     fping
+    mosh
     # mtr # programs.mtr.enable
     net-snmp
     nmap
@@ -39,6 +41,7 @@ let
     unzip
     zip
     ccrypt
+    unar
 
     # Development
     bintools # FIXME: Needed for lesspipe?

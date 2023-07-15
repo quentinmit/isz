@@ -9,6 +9,8 @@ in {
 
     nix.registry.isz.flake = self;
 
+    home.packages = import ../modules/base/packages.nix { inherit pkgs; };
+
     # ~/.gitconfig and ~/.config/git/ignore
     programs.git = {
       enable = true;
