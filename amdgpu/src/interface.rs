@@ -109,10 +109,11 @@ fn record_from_file<M: Metrics, R: Recorder<M>>(f: &mut File, r: &mut R) -> Resu
 fn report<W: Write, F, const N: usize>(mut w: W, builder: F, field: &str, h: &crate::histogram::ExponentialHistogram<N>) -> std::io::Result<()>
     where F: Fn() -> DataPointBuilder
 {
-    let field_bucket = format!("{}_bucket", field);
     // OTel histograms are not cumulative, but Prometheus histograms are.
     // https://www.robustperception.io/why-are-prometheus-histograms-cumulative/
     // Also, Prometheus histograms must contain a +Inf bucket.
+    // Note that while Prometheus names histograms "{name}_bucket", Influx strips the "_bucket":
+    // https://docs.influxdata.com/influxdb/v2.7/reference/prometheus-metrics/
     let infinity_bucket = vec![(f64::INFINITY, 0)];
     let mut samples = h.sample()
         .chain(infinity_bucket);
@@ -125,7 +126,7 @@ fn report<W: Write, F, const N: usize>(mut w: W, builder: F, field: &str, h: &cr
     for (le, value) in cumulative_samples {
         let le = if le == f64::INFINITY { "+Inf".into() }
             else { le.to_string() };
-        builder().tag("le", le).field(&field_bucket, value as i64).build().expect("always has field").write_data_point_to(&mut w)?;
+        builder().tag("le", le).field(field, value as i64).build().expect("always has field").write_data_point_to(&mut w)?;
     }
     let stats = h.stats();
     builder().field(format!("{}_count", field), stats.count as i64).field(format!("{}_sum", field), stats.sum).build().expect("always has field").write_data_point_to(&mut w)?;

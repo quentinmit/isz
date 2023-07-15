@@ -14,7 +14,7 @@ let
       cumulative = from(bucket: v.defaultBucket)
         |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
         |> filter(fn: (r) => r["_measurement"] == "amdgpu")
-        |> filter(fn: (r) => r["_field"] == "${name}_bucket")
+        |> filter(fn: (r) => r["_field"] == "${name}")
         |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
         |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
         |> difference(nonNegative: true, columns: ["_value"])
