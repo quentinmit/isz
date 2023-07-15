@@ -157,10 +157,15 @@ impl<const MAX_SIZE: usize> ExponentialHistogram<MAX_SIZE> {
     }
     pub fn sample(&self) -> impl Iterator<Item = (f64, u64)> + '_ {
         let base = base(self.scale);
+        let scale_integer_multiple = Some(self.scale).filter(|scale| *scale >= 0).and_then(|scale| 1isize.checked_shl(scale.try_into().ok()?));
         self.buckets.iter().enumerate().map(move |(i, count)| {
-            let upper_bound = match self.index_offset {
+            let upper_bound = match self.index_offset
+                .map(|index_offset| (i as isize)+index_offset) {
                 None => f64::INFINITY,
-                Some(index_offset) => base.powi(((i as isize)+index_offset) as i32),
+                Some(index) => scale_integer_multiple
+                        .filter(|scale_integer_multiple| index % scale_integer_multiple == 0)
+                        .map(|scale_integer_multiple| 2usize.pow((index / scale_integer_multiple) as u32) as f64)
+                        .unwrap_or_else(|| base.powi(index as i32)),
             };
             (upper_bound, *count)
         })
@@ -286,6 +291,8 @@ mod tests {
         assert_eq!(h.scale, 3);
         assert_eq!(h.index_offset, Some(71));
         assert_eq!(&h.buckets, &[0, 1, 0, 0, 0, 0, 0, 0, 0, 1]);
+        let samples: Vec<_> = h.sample().collect();
+        assert_eq!(samples[1], (512.0, 1));
     }
     #[test]
     fn test_exact_size() {

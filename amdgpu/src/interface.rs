@@ -92,7 +92,7 @@ fn test_report() {
     r.last_system_clock_counter = Some(metrics.system_clock_counter - 10);
     r.record(&metrics);
     let mut buf = BufWriter::new(Vec::new());
-    r.report(&mut buf).unwrap();
+    r.report(&mut buf, || influxdb2::models::data_point::DataPoint::builder("amdgpu").tag("tag", "value")).unwrap();
     info!("recorder after report: {:#?}", r);
     let bytes = buf.into_inner().unwrap();
     let string = String::from_utf8(bytes).unwrap();
