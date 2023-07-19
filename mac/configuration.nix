@@ -218,6 +218,7 @@
     mtr  # TODO: setuid wrapper
     nbd
     ncftp
+    ngrok
     nmap
     #ntpsec
     #unsupported nx-libs
@@ -630,6 +631,7 @@
     # .xastir/config/
     # .xlog
     # .zephyr.subs
+    # Library/Application Support/ngrok/ngrok.yml
 
     programs.rustup.enable = true;
     programs.rustup.extensions = [
