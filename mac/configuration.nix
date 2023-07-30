@@ -91,6 +91,17 @@
     ruby
     # rustup provides rustc and cargo
     rustup
+    cargo-asm
+    cargo-binutils
+    cargo-bloat
+    cargo-edit
+    cargo-expand
+    cargo-feature
+    cargo-flash
+    cargo-generate
+    cargo-hf2
+    cargo-outdated
+    cargo-ui
     sloccount
     sourceHighlight
     upx
