@@ -52,6 +52,8 @@
     linkzone = true;
   };
 
+  hardware.bluetooth.enable = true;
+
   # Select internationalisation properties.
   # console = {
   #   font = "Lat2-Terminus16";
