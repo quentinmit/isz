@@ -97,6 +97,10 @@ in {
         "upnp"
         "zone"
         "zwave_js"
+        # Bluetooth dynamically loads integrations for every device that is seen.
+        "bluetooth"
+        "ibeacon"
+        "govee_ble"
       ];
       config = let
         cleanName = name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name);
