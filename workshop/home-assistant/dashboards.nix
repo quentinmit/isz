@@ -218,7 +218,17 @@ in {
                     "living_room_floor_lamp"
                     "hg02"
                     "elgato_key_light_air"
-                  ];
+                  ] ++ [{
+                    type = "button";
+                    show_name = true;
+                    show_icon = true;
+                    tap_action = {
+                      action = "navigate";
+                      navigation_path = "/living-room";
+                    };
+                    icon = "mdi:sofa";
+                    name = "Living Room";
+                  }];
                 }
                 {
                   type = "entities";
