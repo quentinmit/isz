@@ -131,12 +131,12 @@
         };
         deploy.nodes.workshop = {
           sshUser = "root";
-          hostname = "workshop.isz.wtf";
+          hostname = "workshop.mgmt.isz.wtf";
           profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.workshop.pkgs.system}.activate.nixos self.nixosConfigurations.workshop;
         };
         deploy.nodes.bedroom-pi = {
           sshUser = "root";
-          hostname = "bedroom-pi.isz.wtf";
+          hostname = "bedroom-pi.mgmt.isz.wtf";
           profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
         };
         steamdeckSys = import ./steamdeck/sys.nix { inherit self nixpkgs specialArgs; };
