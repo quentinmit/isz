@@ -642,7 +642,23 @@
     # .xastir/config/
     # .xlog
     # .zephyr.subs
-    # Library/Application Support/ngrok/ngrok.yml
+
+    home.file."Library/Application Support/ngrok/ngrok.yml".text = let
+      secrets = builtins.fromTOML (builtins.readFile ./ngrok-secrets.env);
+    in lib.generators.toYAML {} {
+      version = "2";
+      authtoken = secrets.NGROK_AUTHTOKEN;
+      tunnels = {
+        "8000" = {
+          proto = "http";
+          addr = 8000;
+        };
+        "8080" = {
+          proto = "http";
+          addr = 8080;
+        };
+      };
+    };
 
     programs.rustup.enable = true;
     programs.rustup.extensions = [
