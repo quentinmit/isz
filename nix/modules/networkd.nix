@@ -99,6 +99,7 @@
     })
     (lib.mkIf cfg.linkzone {
       environment.systemPackages = with pkgs; [
+        android-tools
         (writeShellScriptBin "linkzone-debug" ''
           # https://alex.studer.dev/2021/01/04/mw41-1
           exec ${pkgs.sg3_utils}/bin/sg_raw -r 192 /dev/disk/by-id/usb-ONETOUCH_MobileBroadBand_1234567890ABCDE-0:0 16 f9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 -v
@@ -109,7 +110,8 @@
         "00-usb0" = {
           matchConfig = {
             # Alcatel / Mobilebroadband
-            Property = "ID_USB_DRIVER=* ID_VENDOR_ID=1bbb ID_MODEL_ID=0192";
+            Property = "ID_USB_DRIVER=* ID_VENDOR_ID=1bbb";
+            # ID_MODEL_ID=0192 when booting, ID_MODEL_ID=0908 after boot
           };
           networkConfig = {
             Bridge = "br0";
