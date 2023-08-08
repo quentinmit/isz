@@ -31,6 +31,7 @@ in {
         in lib.escapeShellArgs ["log" "--pretty=format:${format}"];
       };
       extraConfig = {
+        core.pager = "less -F";
         color.ui = "auto";
         url = {
           "git@github.com:".pushInsteadOf = [
@@ -55,7 +56,9 @@ in {
       };
     };
 
+    programs.less.enable = true;
     programs.lesspipe.enable = true;
+    home.sessionVariables.LESS = lib.mkDefault "-RM";
 
     programs.dircolors = {
       enable = true;

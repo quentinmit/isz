@@ -70,4 +70,9 @@ final: prev: {
     doCheck = old.doCheck && !final.stdenv.isDarwin;
     meta.broken = false;
   });
+  lesspipe = prev.lesspipe.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      sed -i -e '/html\\\|xml)/,+1d' lesspipe.sh
+    '';
+  });
 }
