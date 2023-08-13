@@ -23,6 +23,8 @@ final: prev:
     (python-final: python-prev: with python-final; {
       RouterOS-api = callPackage ./python/routeros-api {};
       Dozer = callPackage ./python/dozer {};
+      pyweatherflowudp = callPackage ./python/pyweatherflowudp {};
+      psychrolib = callPackage ./python/psychrolib {};
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
@@ -31,4 +33,5 @@ final: prev:
   ialauncher = final.callPackage ./python/ialauncher {};
   monaco-nerd-fonts = final.callPackage ./monaco-nerd-fonts {};
   git-fullstatus = final.callPackage ./git-fullstatus {};
+  weatherflow2mqtt = final.callPackage ./python/weatherflow2mqtt {};
 }

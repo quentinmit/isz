@@ -1,0 +1,47 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 111569a..57113e9 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -11,7 +11,7 @@ keywords = ["WeatherFlow", "UDP", "asynchronous", "local"]
+ 
+ [tool.poetry.dependencies]
+ python = "^3.8"
+-Pint = "^0.19"
++Pint = ">=0.19"
+ PsychroLib = "^2.5.0"
+ 
+ [tool.poetry.group.test.dependencies]
+diff --git a/pyweatherflowudp/const.py b/pyweatherflowudp/const.py
+index b79e6c8..a22522a 100644
+--- a/pyweatherflowudp/const.py
++++ b/pyweatherflowudp/const.py
+@@ -12,12 +12,11 @@ units = pint.UnitRegistry(
+             r"(?<=[A-Za-z])(?![A-Za-z])(?<![0-9\-][eE])(?<![0-9\-])(?=[0-9\-])",
+             "**",
+         ),
+-        lambda string: string.replace("%", "percent"),
+     ],
+ )
+-units.define(
+-    pint.unit.UnitDefinition("percent", "%", (), pint.converters.ScaleConverter(0.01))
+-)
++if not hasattr(units, "percent"):
++    units.preprocessors.append(lambda string: string.replace("%", "percent"))
++    units.define("percent = 100 * dimensionless = %")
+ units.default_format = "P~"
+ 
+ DEFAULT_HOST = "0.0.0.0"
+diff --git a/pyweatherflowudp/helpers.py b/pyweatherflowudp/helpers.py
+index b1d396d..1cd8fe4 100644
+--- a/pyweatherflowudp/helpers.py
++++ b/pyweatherflowudp/helpers.py
+@@ -4,8 +4,7 @@ from __future__ import annotations
+ from datetime import datetime, timezone
+ from typing import Any, TypeVar, cast
+ 
+-from pint import Quantity
+-from pint.unit import Unit
++from pint import Quantity, Unit
+ 
+ DIRECTIONS = [
+     "N",
