@@ -12,7 +12,7 @@ index 111569a..57113e9 100644
  
  [tool.poetry.group.test.dependencies]
 diff --git a/pyweatherflowudp/const.py b/pyweatherflowudp/const.py
-index b79e6c8..a22522a 100644
+index b79e6c8..365e083 100644
 --- a/pyweatherflowudp/const.py
 +++ b/pyweatherflowudp/const.py
 @@ -12,12 +12,11 @@ units = pint.UnitRegistry(
@@ -27,7 +27,7 @@ index b79e6c8..a22522a 100644
 -)
 +if not hasattr(units, "percent"):
 +    units.preprocessors.append(lambda string: string.replace("%", "percent"))
-+    units.define("percent = 100 * dimensionless = %")
++    units.define("percent = 100 = %")
  units.default_format = "P~"
  
  DEFAULT_HOST = "0.0.0.0"
