@@ -238,4 +238,16 @@
   # TODO: Configure postgres
   # TODO: Configure atuin
   # TODO: Configure freepbx-app
+  sops.secrets."weatherflow2mqtt_station_token" = {
+    owner = config.services.weatherflow2mqtt.user;
+  };
+  services.weatherflow2mqtt = {
+    enable = true;
+    unitSystem = "imperial";
+    elevation = 12.0; # meters
+    inherit (config.services.home-assistant.config.homeassistant) latitude longitude;
+    mqtt.host = "mqtt.isz.wtf";
+    station.id = 115731;
+    station.tokenPath = config.sops.secrets.weatherflow2mqtt_station_token.path;
+  };
 }
