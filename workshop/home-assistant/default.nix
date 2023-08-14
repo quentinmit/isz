@@ -135,6 +135,13 @@ in {
             };
           }) config.services.home-assistant.dashboards;
         };
+        logbook = {
+          exclude.entities = [
+            "sensor.tempest_st_00122016_wind_direction"
+            "sensor.tempest_st_00122016_wind_direction_avg"
+            "sensor.tempest_st_00122016_zambretti_text"
+          ];
+        };
         google_assistant = {
           project_id = "api-project-64499786246";
           service_account = "!include service-account.json";
