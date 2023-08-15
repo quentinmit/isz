@@ -137,9 +137,19 @@ in {
         };
         logbook = {
           exclude.entities = [
+            # Don't show frequently-changing text.
             "sensor.tempest_st_00122016_wind_direction"
             "sensor.tempest_st_00122016_wind_direction_avg"
             "sensor.tempest_st_00122016_zambretti_text"
+          ];
+        };
+        recorder = {
+          exclude.entities = [
+            # Rapid updates too frequently.
+            # We'll still record the _avg versions that update every minute.
+            "sensor.tempest_st_00122016_wind_speed"
+            "sensor.tempest_st_00122016_wind_bearing"
+            "sensor.tempest_st_00122016_wind_direction"
           ];
         };
         google_assistant = {
@@ -364,6 +374,28 @@ in {
             };
           }
         ];
+        weather = [
+          {
+            platform = "template";
+            name = "WeatherFlow";
+            unique_id = "weatherflow";
+            condition_template = "{{ states('sensor.hub_hb_00122953_weather') }}";
+            # condition_template: "{{ states('tempest_st_00122016_current_conditions') }}" # Local Only Option
+            temperature_template = "{{ states('sensor.tempest_st_00122016_temperature') | float}}";
+            temperature_unit = "°F";
+            apparent_temperature_template = "{{ states('sensor.tempest_st_00122016_feels_like_temperature') | float}}";
+            humidity_template = "{{ states('sensor.tempest_st_00122016_humidity')| int }}";
+            pressure_template = "{{ states('sensor.tempest_st_00122016_sea_level_pressure')| float }}";
+            pressure_unit = "inHg";
+            wind_speed_template = "{{ states('sensor.tempest_st_00122016_wind_speed_avg') | float }}";
+            wind_speed_unit = "mph";
+            wind_bearing_template = "{{ states('sensor.tempest_st_00122016_wind_bearing_avg')| int }}";
+            visibility_template = "{{ states('sensor.tempest_st_00122016_visibility')| float * 1.15078 }}";
+            visibility_unit = "mi";
+            forecast_template = "{{ state_attr('sensor.hub_hb_00122953_weather', 'hourly_forecast') }}";
+          }
+        ];
+
         tts = [
           {
             platform = "google_translate";
