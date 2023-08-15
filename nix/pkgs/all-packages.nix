@@ -34,4 +34,5 @@ final: prev:
   monaco-nerd-fonts = final.callPackage ./monaco-nerd-fonts {};
   git-fullstatus = final.callPackage ./git-fullstatus {};
   weatherflow2mqtt = final.callPackage ./python/weatherflow2mqtt {};
+  grafanaPlugins = prev.grafanaPlugins // prev.grafanaPlugins.callPackage ./grafana-plugins.nix {};
 }

@@ -60,7 +60,15 @@
         security.allow_embedding = true;
         feature_toggles.enable = "timeSeriesTable";
         dataproxy.timeout = 300;
+        plugins.allow_loading_unsigned_plugins = "operato-windrose-panel";
       };
+      declarativePlugins = with pkgs.grafanaPlugins; [
+        fetzerch-sunandmoon-datasource
+        grafana-worldmap-panel
+        marcusolsson-json-datasource
+        mxswat-separator-panel
+        operato-windrose-panel
+      ];
     };
   };
 }
