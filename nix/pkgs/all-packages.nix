@@ -37,5 +37,6 @@ final: prev:
   grafanaPlugins = prev.grafanaPlugins // prev.grafanaPlugins.callPackage ./grafana-plugins.nix {};
   hassLovelaceModules = {
     compass-card = final.callPackage ./homeassistant/compass-card.nix {};
+    layout-card = final.callPackage ./homeassistant/layout-card.nix {};
   };
 }

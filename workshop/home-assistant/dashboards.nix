@@ -33,7 +33,7 @@ in {
           multiple-entity-row
           slider-button-card
         ;
-        inherit (pkgs.hassLovelaceModules) compass-card;
+        inherit (pkgs.hassLovelaceModules) compass-card layout-card;
         mini-graph-card-bundle = mini-graph-card;
       };
       dashboards.nix-test = {
