@@ -26,13 +26,15 @@ let
 in {
   config = {
     services.home-assistant = {
-      extraLovelaceModules = {
-        inherit (nur-mweinelt.packages.${pkgs.system}.hassLovelaceModules)
+      extraLovelaceModules = with nur-mweinelt.packages.${pkgs.system}.hassLovelaceModules; {
+        inherit
           mushroom
           apexcharts-card
           multiple-entity-row
           slider-button-card
         ;
+        inherit (pkgs.hassLovelaceModules) compass-card;
+        mini-graph-card-bundle = mini-graph-card;
       };
       dashboards.nix-test = {
         title = "Nix Test";
