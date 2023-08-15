@@ -13,8 +13,9 @@ import time
 from zoneinfo import ZoneInfo
 
 from astropy import units as u
-from astropy.table import QTable
+from astropy.table import Table, QTable
 from astropy.time import Time
+import astropy.units.cds
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -48,6 +49,10 @@ mpl.use("module://dashboard.backend_pil")
 mpl.rc("axes", unicode_minus=False)
 
 u.imperial.enable()
+u.add_enabled_units([
+    u.cds.mmHg,
+    u.def_unit("inHg", u.imperial.inch / u.mm * u.cds.mmHg, "inches of Mercury"),
+])
 u.set_enabled_equivalencies(u.temperature())
 
 TZ = ZoneInfo('America/New_York')
@@ -277,6 +282,20 @@ import "strings"
 import "dict"
 
 field_units = ["temp": "deg_C", "temperature": "deg_C", "humidity": "%", "wind_degrees": "deg", "wind_speed": "m/s"]
+hass_units = [
+  "°F": "deg_F", "g/m³": "g / m3", "lb/ft³": "lb / ft3", "in/h": "inch / h", "W/m²": "W / m2", "%": "pct", "°": "deg",
+  "ft": "ft", "lx": "lx", "mi": "mi", "min": "min", "in": "inch", "inHg": "inHg", "nmi": "nmi", "V": "V", "mph": "mph"
+]
+
+from(bucket: "home_assistant")
+  |> range(start: timeRangeStart, stop: timeRangeStop)
+  |> filter(fn: (r) => r["entity_id"] =~ /tempest_st_00122016_/)
+  |> filter(fn: (r) => r["_field"] == "value")
+  |> map(fn: (r) => ({r with entity_id: strings.replace(v: r.entity_id, t: "tempest_st_00122016_", u: "", i: 1)}))
+  |> aggregateWindow(every: windowPeriod, fn: mean, createEmpty: false)
+  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.entity_id, _unit: dict.get(dict: hass_units, key: r._measurement, default: "")}))
+  |> group(columns: ["_field"])
+  |> yield(name: "tempest")
 
 from(bucket: defaultBucket)
   |> range(start: timeRangeStart, stop: timeRangeStop)
@@ -328,15 +347,18 @@ from(bucket: defaultBucket)
                 lambda r: r["_time"],
             )
             rows = []
+            row = {}
             for t in measurements:
-                row = {"_time": Time(t)}
+                # Propagate previous row's value (hass only reports when values change)
+                row = dict(row)
+                row["_time"] = Time(t)
                 for r in measurements[t]:
                     value = r["_value"]
                     if unit := r.values.get("_unit"):
                         value *= u.Unit(unit)
                     row[r["_field"]] = value
                 rows.append(row)
-            out[result] = QTable(rows)
+            out[result] = QTable(Table(rows=rows))
         return out
 
     def plot_meteogram(self, days=4, humidity=False):
@@ -374,7 +396,9 @@ from(bucket: defaultBucket)
             ax2.axis["right"].major_ticklabels.set_visible(True)
             ax2.axis["right"].invert_ticklabel_direction()
             ax2.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["humidity"], linewidth=0.8)
+
         ax.plot(tables["local"]["_time"].plot_date, tables["local"]["temp"], linewidth=1.5, label='Observed')
+        ax.plot(tables["tempest"]["_time"].plot_date, tables["tempest"]["temperature"], linewidth=1.5, label='Observed')
 
         ax.grid(axis='x', linestyle='dotted')
 
