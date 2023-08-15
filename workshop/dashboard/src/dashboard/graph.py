@@ -13,7 +13,7 @@ import time
 from zoneinfo import ZoneInfo
 
 from astropy import units as u
-from astropy.table import Table, QTable
+from astropy.table import Table, QTable, vstack
 from astropy.time import Time
 import astropy.units.cds
 import matplotlib as mpl
@@ -24,7 +24,6 @@ import matplotlib.text as mtext
 import matplotlib.ticker as mticker
 import matplotlib.quiver as mquiver
 from matplotlib.transforms import Bbox
-from matplotlib.tight_layout import get_renderer
 import matplotlib.units as munits
 import matplotlib.backend_bases
 from more_itertools import bucket
@@ -284,7 +283,7 @@ import "dict"
 field_units = ["temp": "deg_C", "temperature": "deg_C", "humidity": "%", "wind_degrees": "deg", "wind_speed": "m/s"]
 hass_units = [
   "°F": "deg_F", "g/m³": "g / m3", "lb/ft³": "lb / ft3", "in/h": "inch / h", "W/m²": "W / m2", "%": "pct", "°": "deg",
-  "ft": "ft", "lx": "lx", "mi": "mi", "min": "min", "in": "inch", "inHg": "inHg", "nmi": "nmi", "V": "V", "mph": "mph"
+  "ft": "ft", "lx": "lx", "mi": "mi", "min": "min", "in": "inch", "inHg": "inHg", "nmi": "nmi", "V": "V", "mph": "mi / h"
 ]
 
 from(bucket: "home_assistant")
@@ -402,7 +401,22 @@ from(bucket: defaultBucket)
 
         ax.grid(axis='x', linestyle='dotted')
 
+        tempest = tables.get("tempest")
+
+        try:
+            latest_tempest_time = tables["tempest"]["_time"].max()
+        except IndexError:
+            latest_tempest_time = None
+
         if forecast := tables.get("forecast"):
+            if latest_tempest_time:
+                future = forecast[forecast["_time"] > latest_tempest_time]
+                tempest_data = tempest[("_time", "wind_speed_avg", "wind_bearing_avg")]
+                tempest_data.rename_column("wind_speed_avg", "wind_speed")
+                tempest_data.rename_column("wind_bearing_avg", "wind_degrees")
+                joined = vstack([tempest_data, future], 'inner', 'error')
+            else:
+                joined = forecast
             ax.plot(forecast["_time"].plot_date, forecast["temperature"], linewidth=0.8, label='Forecast')
 
             # Plot min and max temperature
@@ -427,7 +441,7 @@ from(bucket: defaultBucket)
                     )
 
             # Plot wind barbs
-            if "wind_speed" in forecast.columns and "wind_degrees" in forecast.columns:
+            if "wind_speed" in joined.columns and "wind_degrees" in joined.columns:
                 ax2 = divider.append_axes(
                     'bottom',
                     Fixed(20/72.),
@@ -439,15 +453,15 @@ from(bucket: defaultBucket)
                 ax2.axis[:].minor_ticklabels.set_visible(False)
                 ax2.axis[:].set_visible(False)
                 ax2.axis("off")
-                wind_speed = forecast["wind_speed"].to(u.imperial.mile/u.hour).value
+                wind_speed = joined["wind_speed"].to(u.imperial.mile/u.hour).value
                 # wind_angle is direction wind is blowing FROM, clockwise from north
-                wind_angle = ((450-180)*u.degree-forecast["wind_degrees"]).to(u.radian).value
+                wind_angle = ((450-180)*u.degree-joined["wind_degrees"]).to(u.radian).value
                 # barbs takes the direction the shaft should point, so we subtract 180 degrees.
                 wind_u = wind_speed * np.cos(wind_angle)
                 wind_v = wind_speed * np.sin(wind_angle)
 
                 args = (
-                    forecast["_time"].plot_date, np.zeros(forecast["_time"].shape),
+                    joined["_time"].plot_date, np.zeros(joined["_time"].shape),
                     wind_u, wind_v
                 )
                 kwargs = dict(
