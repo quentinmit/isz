@@ -81,6 +81,7 @@
             import nixpkgs {
               inherit system;
               inherit overlays;
+              config.allowUnfree = true;
             })) pkgs;
       in {
         legacyPackages = pkgs;
