@@ -23,4 +23,15 @@
       rm MANIFEST.txt
     '';
   };
+  grafana-mqtt-datasource = grafanaPlugin {
+    pname = "grafana-mqtt-datasource";
+    version = "1.0.0-beta.2";
+    zipHash = {
+      # TODO: Build from source
+      x86_64-linux = "sha256-euVsBw2mMZlf7Ylw1+XFAcyJcXaTdC1EtMqyZ5p7/6c=";
+      aarch64-linux = "sha256-ka9b2GZxzFtUQsMNK86F8/hOMPkdnZuoNXEwswmLN7M=";
+      x86_64-darwin = "sha256-3LuSPvKGhaV9KK2O7NrmUHUJSD1mZpZ3CndgevxxQnY=";
+      aarch64-darwin = "sha256-ocUZlwycLG3jK8IMaWUtNAYgMJtJGARh9R/H+gaUtaE=";
+    };
+  };
 }

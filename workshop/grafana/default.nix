@@ -51,6 +51,13 @@
           longitude = -71.0947244;
         };
       };
+      MQTT = {
+        uid = "a90e8f00-e24a-4a3e-9f9c-b905ca44db2a";
+        type = "mqtt";
+        jsonData = {
+          uri = "tcp://mqtt.isz.wtf:1883";
+        };
+      };
     };
     services.grafana = {
       enable = true;
@@ -68,6 +75,7 @@
         marcusolsson-json-datasource
         mxswat-separator-panel
         operato-windrose-panel
+        grafana-mqtt-datasource
       ];
     };
   };
