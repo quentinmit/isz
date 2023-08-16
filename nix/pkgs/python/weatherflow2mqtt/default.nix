@@ -10,8 +10,8 @@ buildPythonApplication rec {
   src = fetchFromGitHub {
     owner = "quentinmit";
     repo = "hass-weatherflow2mqtt";
-    rev = "setuptools";
-    sha256 = "sha256-20nxCvSc9OCoEGWdr0zv9gXvYEpKLxicUCG0ayYqqgE=";
+    rev = "main";
+    sha256 = "sha256-WzY9w6NG4FF7p0NylnskANWfQdn0yvzD3FtppFEBGSg=";
   };
 
   prePatch = ''
