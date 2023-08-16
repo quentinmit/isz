@@ -169,6 +169,8 @@ in {
               token = "$INFLUX_TOKEN";
               organization = "icestationzebra";
               bucket = "icestationzebra";
+              bucket_tag = "influxdb_bucket";
+              exclude_bucket_tag = true;
             }];
             # TODO: Add option for stdout
           };
