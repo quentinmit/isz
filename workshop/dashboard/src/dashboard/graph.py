@@ -279,6 +279,7 @@ class Grapher:
 import "experimental"
 import "strings"
 import "dict"
+import "types"
 
 field_units = ["temp": "deg_C", "temperature": "deg_C", "humidity": "%", "wind_degrees": "deg", "wind_speed": "m/s"]
 hass_units = [
@@ -286,14 +287,12 @@ hass_units = [
   "ft": "ft", "lx": "lx", "mi": "mi", "min": "min", "in": "inch", "inHg": "inHg", "nmi": "nmi", "V": "V", "mph": "mi / h"
 ]
 
-from(bucket: "home_assistant")
+from(bucket: "weatherflow")
   |> range(start: timeRangeStart, stop: timeRangeStop)
-  |> filter(fn: (r) => r["entity_id"] =~ /tempest_st_00122016_/)
-  |> filter(fn: (r) => r["_field"] == "value")
-  |> map(fn: (r) => ({r with entity_id: strings.replace(v: r.entity_id, t: "tempest_st_00122016_", u: "", i: 1)}))
+  |> filter(fn: (r) => r["_measurement"] == "observation")
+  |> filter(fn: (r) => types.isNumeric(v: r._value))
   |> aggregateWindow(every: windowPeriod, fn: mean, createEmpty: false)
-  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.entity_id, _unit: dict.get(dict: hass_units, key: r._measurement, default: "")}))
-  |> group(columns: ["_field"])
+  |> map(fn: (r) => ({r with _unit: dict.get(dict: hass_units, key: r.unit_of_measurement, default: "")}))
   |> yield(name: "tempest")
 
 from(bucket: defaultBucket)
@@ -397,7 +396,7 @@ from(bucket: defaultBucket)
             ax2.plot(tables["forecast"]["_time"].plot_date, tables["forecast"]["humidity"], linewidth=0.8)
 
         ax.plot(tables["local"]["_time"].plot_date, tables["local"]["temp"], linewidth=1.5, label='Observed')
-        ax.plot(tables["tempest"]["_time"].plot_date, tables["tempest"]["temperature"], linewidth=1.5, label='Observed')
+        ax.plot(tables["tempest"]["_time"].plot_date, tables["tempest"]["air_temperature"], linewidth=1.5, label='Observed')
 
         ax.grid(axis='x', linestyle='dotted')
 
