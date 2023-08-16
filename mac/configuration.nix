@@ -330,6 +330,7 @@
     xdelta
     xmlstarlet
     xqilla
+    yj
     yq
     #unsupported gnome.zenity
 
