@@ -6,6 +6,11 @@
     sops-nix.nixosModules.sops
   ];
   config = {
+    environment.systemPackages = with pkgs; [
+      linux-manual
+      man-pages
+      man-pages-posix
+    ];
     i18n.defaultLocale = "en_US.UTF-8";
 
     hardware.enableAllFirmware = true;
