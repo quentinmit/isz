@@ -35,6 +35,8 @@ in {
         ;
         inherit (pkgs.hassLovelaceModules) compass-card layout-card;
         mini-graph-card-bundle = mini-graph-card;
+        # TODO: Install https://github.com/thomasloven/lovelace-card-mod, which needs to be a frontend module
+        # TODO: Fix mini-graph-card to properly handle show_state: false on first line, and to show extrema from an arbitrary query.
       };
       dashboards.nix-test = {
         title = "Nix Test";
