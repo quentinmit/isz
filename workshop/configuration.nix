@@ -244,6 +244,12 @@
       "UTF8"
     ];
   };
+  services.postgresqlBackup = {
+    enable = true;
+    startAt = "*-*-* 05:15:00";
+    compression = "zstd";
+    compressionLevel = 9;
+  };
   # TODO: Configure atuin
   # TODO: Configure freepbx-app
   sops.secrets."weatherflow2mqtt_station_token" = {
