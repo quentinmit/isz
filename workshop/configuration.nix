@@ -235,7 +235,15 @@
   services.zwave-js-ui = {
     enable = true;
   };
-  # TODO: Configure postgres
+  # Configure postgres
+  services.postgresql = {
+    enable = true;
+    enableJIT = true;
+    initdbArgs = [
+      "--encoding"
+      "UTF8"
+    ];
+  };
   # TODO: Configure atuin
   # TODO: Configure freepbx-app
   sops.secrets."weatherflow2mqtt_station_token" = {

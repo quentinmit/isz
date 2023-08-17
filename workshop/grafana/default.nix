@@ -53,7 +53,7 @@
       };
       MQTT = {
         uid = "a90e8f00-e24a-4a3e-9f9c-b905ca44db2a";
-        type = "mqtt";
+        type = "grafana-mqtt-datasource";
         jsonData = {
           uri = "tcp://mqtt.isz.wtf:1883";
         };

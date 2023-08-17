@@ -50,12 +50,33 @@ in {
       };
     };
   };
-  config = {
+  config = let
+    dbName = "homeassistant";
+    dbUser = config.systemd.services.home-assistant.serviceConfig.User;
+    dbEnabled = config.services.postgresql.enable;
+  in {
     nixpkgs.overlays = [
       (self: super: {
         inherit (pkgs.unstable) home-assistant;
       })
     ];
+    services.postgresql = {
+      ensureDatabases = [dbName];
+      ensureUsers = [{
+        name = dbUser;
+        ensurePermissions = {
+          "DATABASE ${dbName}" = "ALL PRIVILEGES";
+        };
+      }];
+    };
+    systemd.services.home-assistant = lib.mkIf dbEnabled {
+      after = [
+        "postgresql.service"
+      ];
+      requires = [
+        "postgresql.service"
+      ];
+    };
     sops.secrets."home-assistant/secrets.yaml" = {
       owner = config.systemd.services.home-assistant.serviceConfig.User;
       path = "${config.services.home-assistant.configDir}/secrets.yaml";
@@ -75,6 +96,10 @@ in {
           ./patches/esphome-entity-ids.patch
         ];
       });
+      extraPackages = lib.mkIf dbEnabled (python3Packages: with python3Packages; [
+        # postgresql support in recorder
+        psycopg2
+      ]);
       extraComponents = [
         "accuweather"
         "androidtv"
@@ -151,6 +176,8 @@ in {
             "sensor.tempest_st_00122016_wind_bearing"
             "sensor.tempest_st_00122016_wind_direction"
           ];
+          db_url = lib.mkIf dbEnabled "postgresql://@/${dbName}";
+          db_retry_wait = 10; # Wait 10 seconds before retrying
         };
         google_assistant = {
           project_id = "api-project-64499786246";
