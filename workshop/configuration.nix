@@ -10,6 +10,7 @@
       ./hardware-configuration.nix
       ./nginx.nix
       ./postfix.nix
+      ./postgresql.nix
       ./home-assistant
       ./telegraf.nix
       ./dashboard.nix
@@ -234,21 +235,6 @@
   # Configure zwave-js-ui
   services.zwave-js-ui = {
     enable = true;
-  };
-  # Configure postgres
-  services.postgresql = {
-    enable = true;
-    enableJIT = true;
-    initdbArgs = [
-      "--encoding"
-      "UTF8"
-    ];
-  };
-  services.postgresqlBackup = {
-    enable = true;
-    startAt = "*-*-* 05:15:00";
-    compression = "zstd";
-    compressionLevel = 9;
   };
   # TODO: Configure atuin
   # TODO: Configure freepbx-app

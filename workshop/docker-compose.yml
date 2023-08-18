@@ -24,13 +24,6 @@ services:
     volumes:
       - /srv/isz/workshop/esphome:/config
     network_mode: host
-  postgres:
-    container_name: postgres
-    image: postgres
-    restart: unless-stopped
-    env_file: postgres.env
-    volumes:
-      - /srv/postgresql/data:/var/lib/postgresql/data
   atuin:
     container_name: atuin
     image: ellieh/atuin
