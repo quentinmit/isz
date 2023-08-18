@@ -222,7 +222,7 @@
     interval = 3600;
     showExternalIp = true;
   };
-  # TODO: Configure dashboard (for esphome)
+  # Configure dashboard
   sops.secrets."dashboard_influx_token" = {
     owner = config.services.dashboard.user;
   };

@@ -10,12 +10,6 @@ services:
     devices:
       - "/dev/ttyPwrgate:/dev/ttyACM0"
     restart: always
-  dashboard:
-    restart: always
-    build: dashboard
-    env_file: dashboard.env
-    volumes:
-      - /srv/isz/workshop/esphome:/esphome
   esphome:
     container_name: esphome
     image: esphome/esphome
