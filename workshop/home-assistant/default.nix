@@ -17,6 +17,10 @@ in {
         type = with types; attrsOf package;
         default = {};
       };
+      customComponents = mkOption {
+        type = with types; attrsOf path;
+        default = {};
+      };
       dashboards = mkOption {
         type = types.attrsOf (types.submodule ({ name, config, ... }: {
           options = {
@@ -51,8 +55,10 @@ in {
     };
   };
   config = let
+    user = config.systemd.services.home-assistant.serviceConfig.User;
+    group = config.systemd.services.home-assistant.serviceConfig.Group;
     dbName = "homeassistant";
-    dbUser = config.systemd.services.home-assistant.serviceConfig.User;
+    dbUser = user;
     dbEnabled = config.services.postgresql.enable;
   in {
     nixpkgs.overlays = [
@@ -78,15 +84,26 @@ in {
       ];
     };
     sops.secrets."home-assistant/secrets.yaml" = {
-      owner = config.systemd.services.home-assistant.serviceConfig.User;
+      owner = user;
       path = "${config.services.home-assistant.configDir}/secrets.yaml";
       restartUnits = [ "home-assistant.service" ];
     };
     sops.secrets."home-assistant/service-account.json" = {
-      owner = config.systemd.services.home-assistant.serviceConfig.User;
+      owner = user;
       path = "${config.services.home-assistant.configDir}/service-account.json";
       restartUnits = [ "home-assistant.service" ];
     };
+    # Type Path Mode User Group Age Argument
+    systemd.tmpfiles.rules = let
+      components = config.services.home-assistant.customComponents;
+      componentRules = lib.mapAttrsToList (
+        name: value:
+        # Symlink
+        "L /var/lib/hass/custom_components/${name} - - - - ${if lib.isDerivation value then "${value}/custom_components/${name}" else value}") components;
+    in lib.mkIf (components != {}) (componentRules ++ [
+      # Set permissions of existing directory
+      "Z /var/lib/hass/custom_components 770 ${user} ${group} - -"
+    ]);
     services.home-assistant = {
       enable = true;
       package = pkgs.home-assistant.overrideAttrs (old: {
@@ -96,10 +113,19 @@ in {
           ./patches/esphome-entity-ids.patch
         ];
       });
-      extraPackages = lib.mkIf dbEnabled (python3Packages: with python3Packages; [
-        # postgresql support in recorder
-        psycopg2
-      ]);
+      customComponents = with pkgs.hassCustomComponents; {
+        inherit pyscript;
+      };
+      extraPackages = lib.mkMerge [
+        (lib.mkIf dbEnabled (python3Packages: with python3Packages; [
+          # postgresql support in recorder
+          psycopg2
+        ]))
+        (python3Packages: with python3Packages; [
+          # pyscript
+          croniter
+        ])
+      ];
       extraComponents = [
         "accuweather"
         "androidtv"
@@ -159,6 +185,10 @@ in {
               inherit (content) title views;
             };
           }) config.services.home-assistant.dashboards;
+        };
+        pyscript = {
+          allow_all_imports = true;
+          hass_is_global = true;
         };
         logbook = {
           exclude.entities = [

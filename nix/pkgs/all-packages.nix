@@ -39,4 +39,7 @@ final: prev:
     compass-card = final.callPackage ./homeassistant/compass-card.nix {};
     layout-card = final.callPackage ./homeassistant/layout-card.nix {};
   };
+  hassCustomComponents = {
+    pyscript = final.callPackage ./homeassistant/pyscript.nix {};
+  };
 }
