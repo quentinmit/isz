@@ -1,6 +1,7 @@
 final: prev:
 
 {
+  gcn64tools = final.callPackage ./gcn64tools {};
   dashboard = final.callPackage ../../workshop/dashboard {};
   cec = final.callPackage ../../workshop/cec {};
   rtlamr = final.callPackage ./rtlamr {};

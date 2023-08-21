@@ -43,6 +43,7 @@
 
     # Games
     dosbox
+    gcn64tools
 
     # Development
     cutecom
