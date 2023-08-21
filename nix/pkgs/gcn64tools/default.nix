@@ -25,6 +25,10 @@ stdenv.mkDerivation rec {
   preInstall = ''
     mkdir -p $out/bin
   '';
+  postInstall = ''
+    mkdir -p $out/lib/udev/rules.d
+    cp ../scripts/*.rules $out/lib/udev/rules.d
+  '';
 
   hardeningDisable = [
     "format"
