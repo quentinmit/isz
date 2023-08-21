@@ -111,7 +111,7 @@
           pkgs = import nixpkgs {
             system = "x86_64-linux";
           };
-          modules = [
+          modules = (builtins.attrValues self.homeModules) ++ [
             overlayModule
             ./steamdeck/deck.nix
           ];
