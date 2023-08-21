@@ -150,7 +150,8 @@
         };
         deploy.nodes.steamdeck = {
           hostname = "steamdeck.isz.wtf";
-          sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];
+          # sshOpts doesn't work because of https://github.com/NixOS/nix/issues/8292
+          #sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];
           #profiles.sys = {
           #  sshUser = "root";
           #  path = deploy-rs.lib.x86_64-linux.activate.custom self.steamdeckSys "./bin/nix-sys";

@@ -102,6 +102,10 @@
       if [ -d "/home/deck/stl/prefix" ]; then export PATH="$PATH:/home/deck/stl/prefix"; fi
     '';
   };
+
+  # Set a basic PATH for sshd
+  pam.sessionVariables.PATH = "/home/deck/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/sbin:/usr/local/bin:/usr/bin";
+
   gtk = {
     enable = true;
     theme.name = "Breeze";
