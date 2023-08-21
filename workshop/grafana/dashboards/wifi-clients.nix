@@ -55,6 +55,7 @@
             |> filter(fn: (r) => r["_field"] == "tx-rate-name" or r._field == "rx-rate-name" or r._field == "uptime-ns" or r._field == "signal-strength" or r._field == "tx-ccq")
             |> group(columns: ["_measurement", "_field", "_start", "_stop", "agent_host", "hostname", "interface", "mac-address"])
             |> last()
+            |> map(fn: (r) => ({r with "last-ip": if exists r["last-ip"] then r["last-ip"] else ""}))
             |> pivot(rowKey: ["_time", "last-ip"], columnKey: ["_field"], valueColumn: "_value")
             |> group(columns: ["hostname"])
 
