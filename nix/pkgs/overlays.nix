@@ -75,4 +75,18 @@ final: prev: {
       sed -i -e '/html\\\|xml)/,+1d' lesspipe.sh
     '';
   });
+  pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+    (python-final: python-prev: with python-final; {
+      ntc-templates = python-prev.ntc-templates.overrideAttrs (old: {
+        postInstall = (old.postInstall or "") + ''
+          rm $out/lib/*/site-packages/README.md
+        '';
+      });
+      jedi-language-server = python-prev.jedi-language-server.overrideAttrs (old: {
+        postInstall = (old.postInstall or "") + ''
+          rm $out/lib/*/site-packages/README.md
+        '';
+      });
+    })
+  ];
 }

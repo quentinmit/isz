@@ -25,6 +25,7 @@ final: prev:
       Dozer = callPackage ./python/dozer {};
       pyweatherflowudp = callPackage ./python/pyweatherflowudp {};
       psychrolib = callPackage ./python/psychrolib {};
+      hass-pyscript-kernel = callPackage ./python/hass-pyscript-kernel {};
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
