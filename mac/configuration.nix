@@ -251,6 +251,11 @@
       mkdir -p $out/bin
       ln -s ${pkgs.callPackage ../workshop/go {}}/bin/linkzone-api $out/bin/
     '')
+    (writeShellScriptBin "hass-cli" ''
+      export HASS_SERVER=https://homeassistant.isz.wtf
+      export HASS_TOKEN=$(${python3Packages.keyring}/bin/keyring get $HASS_SERVER "")
+      exec ${home-assistant-cli}/bin/hass-cli "$@"
+    '')
 
     # Emulation
     bochs
