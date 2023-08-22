@@ -104,7 +104,10 @@
   };
 
   # Set a basic PATH for sshd
-  pam.sessionVariables.PATH = "/home/deck/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/sbin:/usr/local/bin:/usr/bin";
+  pam.sessionVariables = {
+    PATH = "/home/deck/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/sbin:/usr/local/bin:/usr/bin";
+    inherit (config.home.sessionVariables) LOCALE_ARCHIVE_2_27;
+  };
 
   gtk = {
     enable = true;
