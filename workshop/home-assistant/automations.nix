@@ -29,7 +29,7 @@
         entity_id = [
           "sensor.pixel_4a_5g_next_alarm"
           "sensor.pixel_7_pro_next_alarm"
-          "sensor.shiba_next_alarm"
+          "sensor.pixel_8_next_alarm"
         ];
         from = "unavailable";
       }];
