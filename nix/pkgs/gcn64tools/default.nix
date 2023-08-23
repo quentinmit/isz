@@ -21,6 +21,11 @@ stdenv.mkDerivation rec {
 
   sourceRoot = "source/src";
 
+  postPatch = ''
+    substituteInPlace gui_fwupd.c \
+      --replace '"../firmwares"' "\"$out/lib/gcn64tools/firmwares\""
+  '';
+
   makeFlags = [ "PREFIX=$(out)" ];
   preInstall = ''
     mkdir -p $out/bin
@@ -28,6 +33,8 @@ stdenv.mkDerivation rec {
   postInstall = ''
     mkdir -p $out/lib/udev/rules.d
     cp ../scripts/*.rules $out/lib/udev/rules.d
+    mkdir -p $out/lib/gcn64tools/firmwares
+    cp -R ../firmwares/* $out/lib/gcn64tools/firmwares
   '';
 
   hardeningDisable = [
