@@ -115,7 +115,10 @@
       SUBSYSTEM = "tty";
       "ATTRS{product}" = "Epic-PWRgate";
       RUN = { op = "+="; value = "${pkgs.coreutils}/bin/ln -f $devnode /dev/ttyPwrgate"; };
-    }
+      OWNER = { op = "="; value = "pwrgate-logger"; };
+      GROUP = { op = "="; value = "pwrgate-logger"; };
+      "ENV{SYSTEMD_WANTS}" = { op = "+="; value = "pwrgate-logger"; };
+     }
     {
       SUBSYSTEM = "tty";
       "ATTRS{idProduct}" = "0200";
@@ -174,10 +177,42 @@
   };
   # Configure services.grafana
   users.users."${config.services.nginx.user}".extraGroups = [ "grafana" ];
-  # TODO: Configure pwrgate-logger
+  # Configure pwrgate-logger
+  sops.secrets.pwrgate-logger_influx_token = {
+    owner = "pwrgate-logger";
+    key = "logger_influx_token";
+  };
+  systemd.services.pwrgate-logger = {
+    description = "Pwrgate Logger";
+    wants = [ "network-online.target" "influxdb2.service" ];
+    after = [ "network-online.target" "influxdb2.service" ];
+    environment = {
+      INFLUX_SERVER = "http://influx.isz.wtf:8086/";
+    };
+    unitConfig = {
+      StartLimitIntervalSec = "0";
+    };
+    serviceConfig = {
+      User = "pwrgate-logger";
+      Group = "pwrgate-logger";
+      Restart = "always";
+      RestartSec = "5s";
+    };
+    script = ''
+      export INFLUX_TOKEN="$(cat ${lib.strings.escapeShellArg config.sops.secrets.pwrgate-logger_influx_token.path})"
+      exec ${pkgs.callPackage ./go {}}/bin/pwrgate-logger
+    '';
+  };
+  users.extraUsers.pwrgate-logger = {
+    isSystemUser = true;
+    group = "pwrgate-logger";
+  };
+  users.extraGroups.pwrgate-logger = {};
+
   # Configure linkzone-logger
-  sops.secrets.logger_influx_token = {
+  sops.secrets.linkzone-logger_influx_token = {
     owner = "linkzone-logger";
+    key = "logger_influx_token";
   };
   systemd.services.linkzone-logger = {
     description = "Linkzone Logger";
@@ -197,7 +232,7 @@
       RestartSec = "5s";
     };
     script = ''
-      export INFLUX_TOKEN="$(cat ${lib.strings.escapeShellArg config.sops.secrets.logger_influx_token.path})"
+      export INFLUX_TOKEN="$(cat ${lib.strings.escapeShellArg config.sops.secrets.linkzone-logger_influx_token.path})"
       exec ${pkgs.callPackage ./go {}}/bin/linkzone-logger
     '';
   };

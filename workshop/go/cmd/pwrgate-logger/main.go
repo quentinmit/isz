@@ -49,7 +49,7 @@ var valueRE = regexp.MustCompile(`([0-9.]+)([A-Za-z]*)`)
 func logData(ctx context.Context, writeApi api.WriteAPI) error {
 	defer writeApi.Flush()
 
-	port, err := serial.Open(&serial.Config{Address: "/dev/ttyACM0"})
+	port, err := serial.Open(&serial.Config{Address: "/dev/ttyPwrgate"})
 	if err != nil {
 		return err
 	}
