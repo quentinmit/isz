@@ -53,6 +53,12 @@ func logData(ctx context.Context, writeApi api.WriteAPI) error {
 	if err != nil {
 		return err
 	}
+	// Always have PS, Bat, Sol, Min
+	// G enables TargetV (charge voltage), TargetI (charge current), Stop (charge stop threshold), Temp (internal temperature), and PSS (charge enable boolean)
+	// P enables P (charger energy output) and adc (raw charge current)
+	if _, err := port.Write([]byte("GP")); err != nil {
+		return err
+	}
 	pingCh := make(chan struct{})
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
