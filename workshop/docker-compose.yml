@@ -1,15 +1,5 @@
 version: '3.4'
 services:
-  pwrgate-logger:
-    build:
-      context: go
-      target: pwrgate-logger
-    environment:
-      - INFLUX_SERVER=http://influxdb:8086/
-    env_file: logger.env
-    devices:
-      - "/dev/ttyPwrgate:/dev/ttyACM0"
-    restart: always
   esphome:
     container_name: esphome
     image: esphome/esphome
