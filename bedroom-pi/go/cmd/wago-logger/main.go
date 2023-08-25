@@ -20,8 +20,8 @@ import (
 )
 
 var (
-	device = flag.String("d", "", "device node to connect to")
-	file   = flag.String("f", "", "file to read packets from")
+	device  = flag.String("d", "", "device node to connect to")
+	file    = flag.String("f", "", "file to read packets from")
 	verbose = flag.Bool("v", false, "log individual packets")
 )
 
@@ -50,10 +50,9 @@ type Status struct {
 	BatteryOutAmps            float64 `wago:"2,1000"`
 	TemperatureDegreesCelsius float64 `wago:"3,100"`
 	OutputVolts               float64 `wago:"4,100"`
-	// centivolts?
-	Unknown5      int16   `wago:"5"`
-	BatteryInAmps float64 `wago:"6,1000"`
-	Status        uint16  `wago:"7"`
+	PSUVolts                  float64 `wago:"5,100"`
+	BatteryInAmps             float64 `wago:"6,1000"`
+	Status                    uint16  `wago:"7"`
 	// 3 = infinite, 2 = PC mode, 4 = custom
 	SwitchPosition uint16 `wago:"8"`
 }
@@ -63,11 +62,11 @@ func (s *Status) LoadAmps() float64 {
 }
 
 func (s *Status) String() string {
-	return fmt.Sprintf("PSU: %0.2fA Output: %0.2fV %0.2fA Battery: %0.2fV %+0.2fA %+0.2fA Temperature: %0.2f°C Status: %04x SwitchPosition: %04x 5: %x",
-		s.PSUAmps,
+	return fmt.Sprintf("PSU: %0.2fV %0.2fA Output: %0.2fV %0.2fA Battery: %0.2fV %+0.2fA %+0.2fA Temperature: %0.2f°C Status: %04x SwitchPosition: %04x 5: %x",
+		s.PSUVolts, s.PSUAmps,
 		s.OutputVolts, s.LoadAmps(),
 		s.BatteryVolts, -s.BatteryOutAmps, s.BatteryInAmps,
-		s.TemperatureDegreesCelsius, s.Status, s.SwitchPosition, s.Unknown5,
+		s.TemperatureDegreesCelsius, s.Status, s.SwitchPosition,
 	)
 }
 
