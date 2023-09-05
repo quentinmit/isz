@@ -152,6 +152,7 @@ in {
         "bluetooth"
         "ibeacon"
         "govee_ble"
+        "yalexs_ble"
       ];
       config = let
         cleanName = name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name);
