@@ -8,10 +8,10 @@ buildPythonApplication rec {
   version = "3.2.1";
 
   src = fetchFromGitHub {
-    owner = "briis";
+    owner = "quentinmit";
     repo = "hass-weatherflow2mqtt";
-    rev = "4004687fbf257044e8922ecc3b20408bcc1d7d3f";
-    sha256 = "sha256-7lnsy8vlLWK11vwVTxIkc/lg0WBIanrLi6mfiKDX3wI=";
+    rev = "main";
+    sha256 = "sha256-Yf+gxj3z6IQ0fo1KD8A1pq0OeVKqy16jGALXkJpE2EA=";
   };
 
   prePatch = ''
