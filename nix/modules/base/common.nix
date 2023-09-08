@@ -17,6 +17,13 @@
       # Nix on macOS has a race condition when this is turned on.
       # https://github.com/NixOS/nix/issues/7273
       auto-optimise-store = lib.mkIf (!pkgs.stdenv.isDarwin) true;
+      # sops-nix uses garnix.io
+      substituters = [
+        "https://cache.garnix.io"
+      ];
+      trusted-public-keys = [
+        "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+      ];
     };
 
     home-manager.useGlobalPkgs = true;
