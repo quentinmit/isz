@@ -30,6 +30,10 @@ final: prev:
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
+  isz-mikrotik = final.callPackage ../modules/telegraf/mikrotik {};
+  isz-w1 = final.callPackage ../modules/telegraf/w1 {
+    inherit (final.unstable) python3;
+  };
   amdgpu = final.callPackage ../../amdgpu {};
   rx_tools = final.callPackage ./rx_tools {};
   ialauncher = final.callPackage ./python/ialauncher {};

@@ -1,9 +1,5 @@
 { lib, pkgs, config, options, ... }@args:
 let
-  isz-mikrotik = pkgs.callPackage ./mikrotik {};
-  isz-w1 = pkgs.callPackage ./w1 {
-    inherit (pkgs.unstable) python3;
-  };
   intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ./intel_rapl.py);
   powerSupply = pkgs.writers.writePython3 "power_supply" {} (lib.readFile ./power_supply.py);
   standalone = args ? standalone;
@@ -130,8 +126,8 @@ in {
           pkgs.nvme-cli
         ];
         reloadTriggers = with lib.lists;
-          optional (cfg.mikrotik.api.targets != [] || cfg.mikrotik.swos.targets != []) isz-mikrotik
-          ++ optional cfg.w1 isz-w1;
+          optional (cfg.mikrotik.api.targets != [] || cfg.mikrotik.swos.targets != []) pkgs.isz-mikrotik
+          ++ optional cfg.w1 pkgs.isz-w1;
       };
     } else {})
     (if isNixOS then lib.mkIf (cfg.enable && cfg.intelRapl) {
@@ -296,7 +292,7 @@ in {
           inputs.execd = map (host: {
             alias = "mikrotik_api_${host.ip}";
             command = [
-              "${isz-mikrotik}/bin/mikrotik_metrics.py"
+              "${pkgs.isz-mikrotik}/bin/mikrotik_metrics.py"
               "--server"
               host.ip
               "--user"
@@ -315,7 +311,7 @@ in {
           inputs.execd = map (host: {
             alias = "mikrotik_swos_${host.ip}";
             command = [
-              "${isz-mikrotik}/bin/mikrotik_swos_metrics.py"
+              "${pkgs.isz-mikrotik}/bin/mikrotik_swos_metrics.py"
               "--server"
               host.ip
               "--user"
@@ -441,7 +437,7 @@ in {
         (lib.mkIf cfg.w1 {
           inputs.execd = [{
             alias = "w1";
-            command = ["${isz-w1}/bin/w1_metrics.py"];
+            command = ["${pkgs.isz-w1}/bin/w1_metrics.py"];
             signal = "STDIN";
             restart_delay = "10s";
             data_format = "influx";
