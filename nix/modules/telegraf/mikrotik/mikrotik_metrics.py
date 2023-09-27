@@ -172,11 +172,17 @@ STRING_FIELDS = {
     "active-mac-address",
     "active-client-id",
     "active-server",
+    "state",
     "status",
+    "ph2-state",
     "host-name",
     "wireless-protocol",
     "local-address",
     "remote-address",
+    "src-address",
+    "dst-address",
+    "sa-src-address",
+    "sa-dst-address",
     "encoding",
 }
 
@@ -276,6 +282,42 @@ TAGS = {
             "dhcp-option",
         },
     },
+    "/ip/ipsec/active-peers": {
+        "tag_props": {
+            "side",
+            "responder",
+            "local-address",
+            "port",
+            "remote-address",
+        },
+        "skip_props": {
+            "spii",
+            "spir",
+        },
+    },
+    "/ip/ipsec/policy": {
+        "tag_props": {
+            "id",
+            "comment",
+            "disabled",
+            "dynamic",
+            "default",
+            #"invalid",
+            "template",
+            "proposal",
+            "peer",
+            "group",
+            "src-address",
+            "dst-address",
+            "src-port",
+            "dst-port",
+            "protocol",
+            "ipsec-protocols",
+            "action",
+            "level",
+        },
+    },
+    "/ip/ipsec/statistics": {},
 }
 
 async def main():
@@ -315,7 +357,7 @@ async def main():
     for name, props in tags.items():
         r = api.get_resource(name)
 
-        tag_props = props['tag_props']
+        tag_props = props.get('tag_props', set())
         skip_props = props.get('skip_props', set())
         # Find all integer properties once
         field_props = set()
@@ -403,14 +445,16 @@ async def main():
                     if value := entry.get(tag):
                         p.tag(tag, value)
                 process_field_props(p, entry, m['field_props'])
-                points[entry['id']] = p
+                points[entry.get('id')] = p
             if 'monitor' in m:
                 for entry in m['r'].call('monitor', {'.proplist': m['monitor']['proplist'], '.id': ','.join(points.keys()), 'once': ''}):
                     p = points[entry['id']]
                     process_field_props(p, entry, m['monitor']['field_props'])
             for p in points.values():
                 try:
-                    print(p.to_line_protocol())
+                    l = p.to_line_protocol()
+                    if l:
+                        print(l)
                 except ValueError:
                     logging.exception("failed to print %s", p._fields)
                     raise
