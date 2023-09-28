@@ -15,6 +15,7 @@ avaya            CNAME workshop-pi.mgmt
 pbx              CNAME workshop-pi.mgmt
 mqtt             CNAME workshop.mgmt
 jellyfin         CNAME workshop.mgmt
+bluechips        CNAME workshop.mgmt
 
 ; Internal hosts
 
