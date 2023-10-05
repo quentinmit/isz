@@ -17,7 +17,7 @@ mqtt             CNAME workshop.mgmt
 jellyfin         CNAME workshop.mgmt
 bluechips        CNAME workshop.mgmt
 
-; Internal hosts
+; Internal hosts on VLAN 3096 (172.30.96.0/24)
 
 router           A 172.30.96.1
 workshop-pi      A 172.30.96.32
@@ -45,7 +45,7 @@ steamdeck        A 172.30.96.102
 pap2t            CNAME pap2t.guest
 bedroom-tasmota  CNAME bedroom-tasmota.guest
 
-; Management hosts
+; Management hosts on VLAN 3097 (172.30.97.0/24)
 $ORIGIN mgmt.isz.wtf.
 
 quentin-ap-1     A 172.30.97.1
@@ -63,7 +63,14 @@ workshop         A 172.30.97.34
 mac              A 172.30.97.100
 heartofgold      A 172.30.97.101
 
-; Guest hosts
+; Profinet hosts on vlan 981 (172.30.98.0/26)
+$ORIGIN profinet.isz.wtf.
+router           A 172.30.98.1
+workshop-caparoc A 172.30.98.2
+                 EUI48 A8-74-1D-10-25-EB
+workshop         A 172.30.98.34
+
+; Guest hosts on vlan 88 (192.168.88.0/24)
 
 $ORIGIN guest.isz.wtf.
 
