@@ -51,6 +51,7 @@
     macAddress = "04:42:1A:C9:93:8B";
     vlan88 = true;
     linkzone = true;
+    profinet = true;
   };
 
   hardware.bluetooth.enable = true;

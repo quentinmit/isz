@@ -1,5 +1,7 @@
 { lib, pkgs, config, options, ... }:
-{
+let
+  vlanIdType = lib.types.ints.between 1 4094;
+in {
   options = with lib; {
     isz.networking = {
       lastOctet = mkOption {
@@ -9,14 +11,26 @@
       macAddress = mkOption {
         type = types.strMatching "^([0-9a-fA-F]{2}\:){5}[0-9a-fA-F]{2}$";
       };
+      vlans = mkOption {
+        type = types.listOf vlanIdType;
+      };
+      pvid = mkOption {
+        type = vlanIdType;
+        default = 3096;
+      };
       vlan88 = mkEnableOption "VLAN 88";
       linkzone = mkEnableOption "Attach Linkzone to VLAN 500";
+      profinet = mkEnableOption "VLAN 981 (Profinet)";
     };
   };
   config = let
     cfg = config.isz.networking;
   in lib.mkMerge [
     (lib.mkIf (cfg.lastOctet != null) {
+      isz.networking.vlans = [
+        3096
+        3097
+      ];
       networking.useDHCP = false;
       networking.useNetworkd = true;
       systemd.network.netdevs = {
@@ -46,7 +60,15 @@
           };
         };
       };
-      systemd.network.networks = {
+      systemd.network.networks = let
+        bridgeVLANs = builtins.map (id:
+          { bridgeVLANConfig =
+              if id == cfg.pvid
+              then { PVID = id; EgressUntagged = id; }
+              else { VLAN = id; };
+          }
+        ) cfg.vlans;
+      in {
         br0 = {
           name = "br0";
           networkConfig = {
@@ -55,12 +77,7 @@
               "vlan3097"
             ];
           };
-          bridgeVLANs = [
-            { bridgeVLANConfig = { PVID = 3096; EgressUntagged = 3096; }; }
-            { bridgeVLANConfig = { VLAN = 3097; }; }
-            { bridgeVLANConfig = { VLAN = 500; }; }
-            { bridgeVLANConfig = { VLAN = 88; }; }
-          ];
+          inherit bridgeVLANs;
         };
         eth = {
           matchConfig = {
@@ -70,12 +87,7 @@
             Bridge = "br0";
             LinkLocalAddressing = "no";
           };
-          bridgeVLANs = [
-            { bridgeVLANConfig = { PVID = 3096; EgressUntagged = 3096; }; }
-            { bridgeVLANConfig = { VLAN = 3097; }; }
-            { bridgeVLANConfig = { VLAN = 500; }; }
-            { bridgeVLANConfig = { VLAN = 88; }; }
-          ];
+          inherit bridgeVLANs;
         };
         vlan3097 = {
           name = "vlan3097";
@@ -86,6 +98,9 @@
       };
     })
     (lib.mkIf cfg.linkzone {
+      isz.networking.vlans = [
+        500
+      ];
       environment.systemPackages = with pkgs; [
         android-tools
         (writeShellScriptBin "linkzone-debug" ''
@@ -111,6 +126,9 @@
       };
     })
     (lib.mkIf cfg.vlan88 {
+      isz.networking.vlans = [
+        88
+      ];
       systemd.network.networks.br0.networkConfig.VLAN = ["vlan88"];
       systemd.network.netdevs.vlan88 = {
         enable = true;
@@ -129,5 +147,30 @@
         };
       };
     })
+    (lib.mkIf cfg.profinet (let
+      profinetVLAN = 981;
+      intf = "vlan${toString profinetVLAN}";
+    in {
+      isz.networking.vlans = [
+        profinetVLAN
+      ];
+      systemd.network.networks.br0.networkConfig.VLAN = [intf];
+      systemd.network.netdevs."${intf}" = {
+        enable = true;
+        netdevConfig = {
+          Name = intf;
+          Kind = "vlan";
+        };
+        vlanConfig = {
+          Id = profinetVLAN;
+        };
+      };
+      systemd.network.networks."${intf}" = {
+        name = intf;
+        networkConfig = {
+          Address = "172.30.98.${toString cfg.lastOctet}/26";
+        };
+      };
+    }))
   ];
 }
