@@ -55,18 +55,12 @@
               "vlan3097"
             ];
           };
-          extraConfig =
-            ''
-              [BridgeVLAN]
-              PVID=3096
-              EgressUntagged=3096
-              [BridgeVLAN]
-              VLAN=3097
-              [BridgeVLAN]
-              VLAN=500
-              [BridgeVLAN]
-              VLAN=88
-            '';
+          bridgeVLANs = [
+            { bridgeVLANConfig = { PVID = 3096; EgressUntagged = 3096; }; }
+            { bridgeVLANConfig = { VLAN = 3097; }; }
+            { bridgeVLANConfig = { VLAN = 500; }; }
+            { bridgeVLANConfig = { VLAN = 88; }; }
+          ];
         };
         eth = {
           matchConfig = {
@@ -76,18 +70,12 @@
             Bridge = "br0";
             LinkLocalAddressing = "no";
           };
-          extraConfig =
-            ''
-              [BridgeVLAN]
-              PVID=3096
-              EgressUntagged=3096
-              [BridgeVLAN]
-              VLAN=3097
-              [BridgeVLAN]
-              VLAN=500
-              [BridgeVLAN]
-              VLAN=88
-            '';
+          bridgeVLANs = [
+            { bridgeVLANConfig = { PVID = 3096; EgressUntagged = 3096; }; }
+            { bridgeVLANConfig = { VLAN = 3097; }; }
+            { bridgeVLANConfig = { VLAN = 500; }; }
+            { bridgeVLANConfig = { VLAN = 88; }; }
+          ];
         };
         vlan3097 = {
           name = "vlan3097";
@@ -116,12 +104,9 @@
           networkConfig = {
             Bridge = "br0";
           };
-          extraConfig =
-            ''
-              [BridgeVLAN]
-              PVID=500
-              EgressUntagged=500
-            '';
+          bridgeVLANs = [
+            { bridgeVLANConfig = { PVID = 500; EgressUntagged = 500; }; }
+          ];
         };
       };
     })
