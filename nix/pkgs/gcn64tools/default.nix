@@ -19,7 +19,7 @@ stdenv.mkDerivation rec {
     hash = "sha256-3VrLZDW5qzj/EL7+KxgjVw/W3fLoeQ1stVjLeEZm0sA=";
   };
 
-  sourceRoot = "source/src";
+  sourceRoot = "${src.name}/src";
 
   postPatch = ''
     substituteInPlace gui_fwupd.c \
