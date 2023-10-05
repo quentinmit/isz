@@ -153,6 +153,11 @@ in {
         "ibeacon"
         "govee_ble"
         "yalexs_ble"
+        "kegtron"
+        "led_ble"
+        "switchbot"
+        "bluemaestro"
+        "oralb"
       ];
       config = let
         cleanName = name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name);
