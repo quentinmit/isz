@@ -46,6 +46,8 @@
               # Mesa 23.1 doesn't build on Darwin
               # https://gitlab.freedesktop.org/mesa/mesa/-/issues/8634
               inherit (final) mesa;
+              # glu 9.0.3 fails to link on Darwin Nix
+              mesa_glu = if ufinal.stdenv.isDarwin then final.mesa_glu else uprev.mesa_glu;
             })
           ];
         };

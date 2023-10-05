@@ -1,18 +1,19 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index 15c136f17c..a1dae4a953 100644
+index db300ab1b2..fc0a7b06f7 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
-@@ -7,6 +7,7 @@ import math
- from typing import (  # pylint: disable=unused-import
-     Any,
-     Generic,
-+    Optional,
-     TypeVar,
-     cast,
- )
-@@ -30,11 +31,12 @@ from homeassistant.helpers.dispatcher import (
- )
- from homeassistant.helpers.entity import DeviceInfo, Entity
+@@ -4,7 +4,7 @@ from __future__ import annotations
+ from collections.abc import Callable
+ import functools
+ import math
+-from typing import Any, Generic, TypeVar, cast
++from typing import Any, Generic, Optional, TypeVar, cast
+ 
+ from aioesphomeapi import (
+     EntityCategory as EsphomeEntityCategory,
+@@ -23,11 +23,12 @@ from homeassistant.helpers.device_registry import DeviceInfo
+ from homeassistant.helpers.dispatcher import async_dispatcher_connect
+ from homeassistant.helpers.entity import Entity
  from homeassistant.helpers.entity_platform import AddEntitiesCallback
 +from homeassistant.util import slugify
  
@@ -24,7 +25,7 @@ index 15c136f17c..a1dae4a953 100644
  from .enum_mapper import EsphomeEnumMapper
  
  _R = TypeVar("_R")
-@@ -141,6 +143,7 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
+@@ -135,6 +136,7 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
      _static_info: _InfoT
      _state: _StateT
      _has_state: bool
@@ -32,9 +33,9 @@ index 15c136f17c..a1dae4a953 100644
  
      def __init__(
          self,
-@@ -163,6 +166,20 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
-         )
-         self._entry_id = entry_data.entry_id
+@@ -177,6 +179,20 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
+         self._attr_has_entity_name = True
+         self.entity_id = f"{domain}.{device_info.name}_{entity_info.object_id}"
  
 +    @property
 +    def entity_id(self):
