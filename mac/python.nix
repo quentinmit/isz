@@ -221,6 +221,7 @@
         pytest
         pyusb
         pywinrm
+        pyx
         re2
         regex
         reportlab
@@ -232,6 +233,7 @@
         roman
         rsa
         ruamel-yaml
+        scapy
         scikitimage
         scipy
         selenium
