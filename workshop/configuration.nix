@@ -286,4 +286,5 @@
     station.id = 115731;
     station.tokenPath = config.sops.secrets.weatherflow2mqtt_station_token.path;
   };
+  virtualisation.libvirtd.enable = true;
 }

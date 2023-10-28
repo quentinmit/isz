@@ -261,6 +261,8 @@
     bochs
     qemu
     #unsupported winetricks
+    virt-manager
+    #unsupported virt-manager-qt
 
     # Performance monitoring
     btop
