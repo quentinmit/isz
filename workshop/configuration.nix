@@ -78,6 +78,8 @@
   environment.systemPackages = with pkgs; [
     sg3_utils
     mqttui
+    virtiofsd
+    termshark
   ];
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
@@ -287,4 +289,26 @@
     station.tokenPath = config.sops.secrets.weatherflow2mqtt_station_token.path;
   };
   virtualisation.libvirtd.enable = true;
+
+  isz.networking.vlans = [981];
+  systemd.network.networks.vm-plc-guest = {
+    matchConfig = {
+      MACAddress = "fe:54:00:81:73:d3";
+    };
+    networkConfig = {
+      Bridge = "br0";
+      LinkLocalAddressing = "no";
+    };
+    bridgeVLANs = [{ bridgeVLANConfig = { PVID = 88; EgressUntagged = 88; }; }];
+  };
+  systemd.network.networks.vm-plc-profinet = {
+    matchConfig = {
+      MACAddress = "fe:54:00:df:c3:9a";
+    };
+    networkConfig = {
+      Bridge = "br0";
+      LinkLocalAddressing = "no";
+    };
+    bridgeVLANs = [{ bridgeVLANConfig = { PVID = 981; EgressUntagged = 981; }; }];
+  };
 }
