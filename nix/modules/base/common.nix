@@ -37,6 +37,7 @@
 
     environment.etc."snmp/snmp.conf".text = ''
       mibdirs +${pkgs.snmp-mibs}/share/snmp/mibs
+      mibdirs +${pkgs.cisco-mibs}/v2
     '';
   };
 }

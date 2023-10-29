@@ -48,4 +48,10 @@ final: prev:
   hassCustomComponents = {
     pyscript = final.callPackage ./homeassistant/pyscript.nix {};
   };
+  cisco-mibs = final.fetchFromGitHub {
+    owner = "cisco";
+    repo = "cisco-mibs";
+    rev = "0ddd4b1dfa82dd32b2b98185e584e39e69d26e96";
+    hash = "sha256-XAWKhPWvtc/iSf4Dlz+dJt5a9uxZM8T/SYEYqeFSwW0=";
+  };
 }
