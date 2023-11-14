@@ -142,7 +142,10 @@
   services.mosquitto = {
     enable = true;
     listeners = [ {
-      acl = [ "pattern readwrite #" ];
+      acl = [
+        "topic read $SYS/#"
+        "pattern readwrite #"
+      ];
       omitPasswordAuth = true;
       settings.allow_anonymous = true;
       # TODO: Restrict to 172.30.96.0/24 and 192.168.88.0/24
