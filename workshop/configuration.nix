@@ -15,6 +15,7 @@
       ./telegraf.nix
       ./dashboard.nix
       ./grafana
+      #./containers.nix
       ../nix/zwave-js-ui.nix
       ../nix/speedtest.nix
     ];
