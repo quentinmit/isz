@@ -161,6 +161,7 @@
     youtube-dl
 
     # Radio
+    #unsupported csdr
     dsd
     dsdcc
     #unsupported fldigi

@@ -250,6 +250,7 @@
         sphinxcontrib-qthelp
         sphinxcontrib-serializinghtml
         sqlalchemy
+        structlog
         #suds
         #broken suds-jurko
         sympy
