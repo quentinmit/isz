@@ -11,6 +11,12 @@
   nixpkgs.overlays = [
     (final: prev: {
       openssh = final.openssh_gssapi;
+      gnuplot = prev.gnuplot.override {
+        aquaterm = true;
+        withCaca = true;
+        withLua = true;
+        withWxGTK = true;
+      };
     })
     deploy-rs.overlay
   ];
