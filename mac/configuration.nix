@@ -303,14 +303,19 @@
       withOffensive = true;
     })
     fd
+    feedgnuplot
     file-rename
     gcab
     gnutar
     units
     htmlq
     jc
-    jp
+    (pkgs.runCommand "jmespath-jp" {} ''
+      mkdir -p $out/bin
+      cp ${jp}/bin/jp $out/bin/jmespath
+    '')
     #already jq
+    json-plot
     less
     libzip
     lzip
