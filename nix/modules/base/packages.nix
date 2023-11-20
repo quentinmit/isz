@@ -136,6 +136,7 @@ let
     strace
     sysstat
     cpuset
+    s-tui
 
     # Networking
     bridge-utils
