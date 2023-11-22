@@ -239,6 +239,7 @@
         selenium
         semver
         pyserial
+        snakeviz
         sniffio
         snowballstemmer
         soapysdr-with-plugins
