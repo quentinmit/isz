@@ -194,10 +194,10 @@
         "org.kde.spectacle.desktop"."WindowUnderCursorScreenShot" = "Meta+Ctrl+Print";
         "org.kde.spectacle.desktop"."_launch" = "Print";
         "org_kde_powerdevil"."Decrease Keyboard Brightness" = "Keyboard Brightness Down";
-        "org_kde_powerdevil"."Decrease Screen Brightness" = "Monitor Brightness Down";
+        "org_kde_powerdevil"."Decrease Screen Brightness" = ["Monitor Brightness Down" "Alt+Volume Down"];
         "org_kde_powerdevil"."Hibernate" = "Hibernate";
         "org_kde_powerdevil"."Increase Keyboard Brightness" = "Keyboard Brightness Up";
-        "org_kde_powerdevil"."Increase Screen Brightness" = "Monitor Brightness Up";
+        "org_kde_powerdevil"."Increase Screen Brightness" = ["Monitor Brightness Up" "Alt+Volume Up"];
         "org_kde_powerdevil"."PowerDown" = "Power Down";
         "org_kde_powerdevil"."PowerOff" = "Power Off";
         "org_kde_powerdevil"."Sleep" = "Sleep";
