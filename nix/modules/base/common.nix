@@ -31,7 +31,26 @@
     home-manager.extraSpecialArgs = options._module.specialArgs.value;
     home-manager.sharedModules = builtins.attrValues self.homeModules;
 
-    environment.systemPackages = import ./packages.nix { inherit pkgs; };
+    environment.systemPackages = import ./packages.nix { inherit pkgs; } ++ [
+      # Editors
+      (pkgs.vim.customize {
+        name = "vim";
+        vimrcConfig.packages.default = {
+          start = [ pkgs.vimPlugins.vim-nix ];
+        };
+        vimrcConfig.customRC = "syntax on";
+      })
+      (if pkgs.stdenv.buildPlatform.config != pkgs.stdenv.hostPlatform.config then
+          emacs-nox
+        else
+          ((emacsPackagesFor emacs-nox).emacsWithPackages (epkgs: [
+            epkgs.nix-mode
+            epkgs.magit
+            epkgs.go-mode
+            epkgs.yaml-mode
+          ]))
+      )
+    ];
 
     programs.wireshark.enable = true;
 

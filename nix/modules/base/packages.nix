@@ -1,4 +1,6 @@
-{ pkgs, ... }:
+{ pkgs,
+graphical ? false,
+... }:
 let
   packages = with pkgs; [
     # Filesystem
@@ -20,7 +22,7 @@ let
     (lib.lowPrio pstree) # low priority to prefer pstree from psmisc on Linux
 
     # Networking
-    w3m-nographics
+    (if graphical then w3m else w3m-nographics)
     socat
     tcpdump
     bwm_ng
@@ -47,26 +49,6 @@ let
     bintools # FIXME: Needed for lesspipe?
     go
     sqlite-interactive
-
-    # Editors
-    (pkgs.vim.customize {
-      name = "vim";
-      vimrcConfig.packages.default = {
-        start = [ pkgs.vimPlugins.vim-nix ];
-      };
-      vimrcConfig.customRC = "syntax on";
-    })
-    (
-      if pkgs.stdenv.buildPlatform.config != pkgs.stdenv.hostPlatform.config then
-        emacs-nox
-      else
-        ((emacsPackagesFor emacs-nox).emacsWithPackages (epkgs: [
-          epkgs.nix-mode
-          epkgs.magit
-          epkgs.go-mode
-          epkgs.yaml-mode
-        ]))
-    )
 
     # Nix
     nix-diff

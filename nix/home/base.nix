@@ -2,6 +2,9 @@
 let
   inherit (pkgs.stdenv) isLinux;
 in {
+  options = {
+    isz.graphical = lib.mkEnableOption "prefer graphical software";
+  };
   config = {
     programs.home-manager.enable = true;
 
@@ -9,7 +12,26 @@ in {
 
     nix.registry.isz.flake = self;
 
-    home.packages = import ../modules/base/packages.nix { inherit pkgs; };
+    home.packages = import ../modules/base/packages.nix { inherit pkgs; inherit (config.isz) graphical; };
+
+    programs.vim = {
+      enable = true;
+      plugins = [
+        pkgs.vimPlugins.vim-nix
+      ];
+      extraConfig = ''
+        syntax on
+      '';
+    };
+
+    programs.emacs = {
+      extraPackages = epkgs: [
+        epkgs.nix-mode
+        epkgs.magit
+        epkgs.go-mode
+        epkgs.yaml-mode
+      ];
+    };
 
     # ~/.gitconfig and ~/.config/git/ignore
     programs.git = {
