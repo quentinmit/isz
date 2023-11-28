@@ -54,4 +54,5 @@ final: prev:
     rev = "0ddd4b1dfa82dd32b2b98185e584e39e69d26e96";
     hash = "sha256-XAWKhPWvtc/iSf4Dlz+dJt5a9uxZM8T/SYEYqeFSwW0=";
   };
+  equivs = final.callPackage ./equivs {};
 }
