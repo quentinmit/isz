@@ -238,6 +238,7 @@
         "systemsettings.desktop"."screenlocker" = [ ];
       };
       configFile = {
+        "kdeglobals"."KDE"."SingleClick" = false;
       };
     };
   };
