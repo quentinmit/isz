@@ -1,15 +1,10 @@
-{lib, stdenv, fetchurl, xz, dpkg
-, libxslt, docbook_xsl, makeWrapper, writeShellScript
-, python3Packages
-, perlPackages, curl, gnupg, diffutils, nano, pkg-config, bash-completion, help2man
+{lib, stdenv, fetchurl
+, makeWrapper, writeShellScript
+, perlPackages, dpkg, rsync
 , sendmailPath ? "/run/wrappers/bin/sendmail"
 }:
 
-let
-  sensible-editor = writeShellScript "sensible-editor" ''
-    exec ''${EDITOR-${nano}/bin/nano} "$@"
-  '';
-in stdenv.mkDerivation rec {
+stdenv.mkDerivation rec {
   version = "2.3.1";
   pname = "equivs";
 
@@ -20,7 +15,7 @@ in stdenv.mkDerivation rec {
 
   postPatch = ''
     substituteInPlace Makefile --replace pod2man ${perlPackages.perl}/bin/pod2man
-    substituteInPlace usr/bin/equivs-build usr/bin/equivs-control --replace /usr/share $out/share --replace dpkg-buildpackage ${dpkg}/bin/dpkg-buildpackage
+    substituteInPlace usr/bin/equivs-build usr/bin/equivs-control --replace /usr/share $out/share --replace dpkg-buildpackage ${dpkg}/bin/dpkg-buildpackage --replace "cp -R" "${rsync}/bin/rsync -rltE --chmod=u+w" --replace "cp " "cp --no-preserve=mode "
     patchShebangs usr/bin
   '';
 
@@ -30,7 +25,7 @@ in stdenv.mkDerivation rec {
     (with perlPackages; [ perl ]);
 
   installPhase = ''
-    cp -R usr $out
+    cp -R --preserve=mode usr $out
     mkdir -p $out/share/man/man1
     cp -R *.1 $out/share/man/man1
   '';
