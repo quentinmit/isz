@@ -31,6 +31,9 @@
     cargo2nix.inputs.flake-utils.follows = "flake-utils";
     cargo2nix.inputs.nixpkgs.follows = "nixpkgs";
     cargo2nix.inputs.rust-overlay.follows = "rust-overlay";
+    plasma-manager.url = "github:pjones/plasma-manager";
+    plasma-manager.inputs.nixpkgs.follows = "nixpkgs";
+    plasma-manager.inputs.home-manager.follows = "home-manager";
   };
   outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, ... }@args:
     let
