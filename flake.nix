@@ -57,8 +57,8 @@
       };
       overlays = [
         overlay
-        (import ./nix/pkgs/all-packages.nix)
-        (import ./nix/pkgs/overlays.nix)
+        self.overlays.default
+        self.overlays.patches
         cargo2nix.overlays.default
       ];
       # Overlays-module makes "pkgs.unstable" available in configuration.nix
@@ -93,6 +93,8 @@
         devShells.esphome = import ./workshop/esphome/shell.nix { inherit pkgs; };
       })) // {
         inherit overlayModule;
+        overlays.default = (import ./nix/pkgs/all-packages.nix);
+        overlays.patches = (import ./nix/pkgs/overlays.nix);
         nixosConfigurations = nixpkgs.lib.genAttrs [
           "workshop"
           "bedroom-pi"
