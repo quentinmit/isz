@@ -1,7 +1,6 @@
 {lib, stdenv, fetchurl
 , makeWrapper, writeShellScript
 , perlPackages, dpkg, rsync
-, sendmailPath ? "/run/wrappers/bin/sendmail"
 }:
 
 stdenv.mkDerivation rec {

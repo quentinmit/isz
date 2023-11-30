@@ -2,7 +2,7 @@
 let
   mkEquivs = packages: pkgs.runCommand "equivs-dpkg" {
     nativeBuildInputs = [ pkgs.equivs ];
-    equivsFile = ''
+    equivsFile = pkgs.writeText "home-manager-debs-${config.home.username}.equivs" ''
       Section: misc
       Priority: optional
       Standards-Version: 3.9.2
@@ -12,7 +12,7 @@ let
     '';
   } ''
     env
-    equivs-build $equivsFile
+    EMAIL=root@localhost equivs-build $equivsFile
     mkdir $out
     mv *.deb $out/
   '';
