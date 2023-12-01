@@ -1,0 +1,94 @@
+From 430293c8bc97e59d1e2b94993d538c1c031c94ee Mon Sep 17 00:00:00 2001
+From: Quentin Smith <quentin@mit.edu>
+Date: Fri, 1 Dec 2023 13:25:52 -0500
+Subject: [PATCH] Use ioctls to read IP and MAC addresses on Darwin
+
+---
+ scapy/arch/bpf/consts.py |  6 +++++-
+ scapy/arch/bpf/core.py   | 26 ++++++++++++++++++++++++--
+ 2 files changed, 29 insertions(+), 3 deletions(-)
+
+diff --git a/scapy/arch/bpf/consts.py b/scapy/arch/bpf/consts.py
+index df207a33..6b0d395b 100644
+--- a/scapy/arch/bpf/consts.py
++++ b/scapy/arch/bpf/consts.py
+@@ -18,7 +18,6 @@ from typing import (
+     Callable,
+ )
+ 
+-SIOCGIFFLAGS = 0xc0206911
+ BPF_BUFFER_LENGTH = MTU
+ 
+ # From sys/ioccom.h
+@@ -61,4 +60,9 @@ BIOCSHDRCMPLT = _IOW('B', 117, ctypes.c_uint)
+ BIOCSDLT = _IOW('B', 120, ctypes.c_uint)
+ BIOCSTSTAMP = _IOW('B', 132, ctypes.c_uint)
+ 
++# from sys/sockio.h
++SIOCGIFFLAGS = _IOWR('i', 17, _ifreq)
++SIOCGIFADDR = _IOWR('i', 33, _ifreq)
++SIOCGIFLLADDR = _IOWR('i', 158, _ifreq)
++
+ BPF_T_NANOTIME = 0x0001
+diff --git a/scapy/arch/bpf/core.py b/scapy/arch/bpf/core.py
+index b7c31ff8..dd8bb41f 100644
+--- a/scapy/arch/bpf/core.py
++++ b/scapy/arch/bpf/core.py
+@@ -11,6 +11,7 @@ Scapy *BSD native support - core
+ from ctypes import cdll, cast, pointer
+ from ctypes import c_int, c_ulong, c_uint, c_char_p, Structure, POINTER
+ from ctypes.util import find_library
++import errno
+ import fcntl
+ import os
+ import re
+@@ -19,9 +20,9 @@ import struct
+ import subprocess
+ 
+ import scapy
+-from scapy.arch.bpf.consts import BIOCSETF, SIOCGIFFLAGS, BIOCSETIF
++from scapy.arch.bpf.consts import BIOCSETF, SIOCGIFFLAGS, BIOCSETIF, SIOCGIFADDR, SIOCGIFLLADDR
+ from scapy.arch.common import compile_filter, _iff_flags
+-from scapy.arch.unix import get_if, in6_getifaddr
++from scapy.arch.unix import get_if, get_if_raw_hwaddr as unix_get_if_raw_hwaddr, in6_getifaddr
+ from scapy.compat import plain_str
+ from scapy.config import conf
+ from scapy.consts import LINUX
+@@ -83,6 +84,16 @@ def get_if_raw_addr(ifname):
+ 
+     ifname = network_name(ifname)
+ 
++    try:
++        # Darwin supports SIOCGIFADDR
++        _, _, address = struct.unpack("16xHH4s8x", get_if(ifname, SIOCGIFADDR))
++        return address
++    except OSError as e:
++        if e.errno == errno.EADDRNOTAVAIL:
++            warning("No IPv4 address found on %s !", ifname)
++            return b"\0\0\0\0"
++        # Unknown error, try ifconfig.
++
+     # Get ifconfig output
+     subproc = subprocess.Popen(
+         [conf.prog.ifconfig, ifname],
+@@ -121,6 +132,17 @@ def get_if_raw_hwaddr(ifname):
+     if ifname == conf.loopback_name:
+         return (ARPHDR_LOOPBACK, NULL_MAC_ADDRESS)
+ 
++    try:
++        # Darwin supports SIOCGIFLLADDR
++        sa_type, addr = unix_get_if_raw_hwaddr(ifname, SIOCGIFLLADDR)
++        if sa_type == 0x1206: # AF_LINK, length 6
++            return (ARPHDR_ETHER, addr)
++        # TODO: 0x1208 is AF_LINK, lenght 6 for ARPHDR_IEEE1394; should we return it?
++    except OSError as e:
++        if e.errno == errno.EADDRNOTAVAIL:
++            raise Scapy_Exception("No MAC address found on %s !" % ifname)
++        # Unknown error, try ifconfig
++
+     # Get ifconfig output
+     subproc = subprocess.Popen(
+         [conf.prog.ifconfig, ifname],
+-- 
+2.40.1
+

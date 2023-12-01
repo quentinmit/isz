@@ -87,6 +87,11 @@ final: prev: {
           rm $out/lib/*/site-packages/README.md
         '';
       });
+      scapy = python-prev.scapy.overrideAttrs (old: {
+        patches = (old.patches or []) ++ (lib.optionals python-final.stdenv.isDarwin [
+          ./scapy/darwin-ioctl.patch
+        ]);
+      });
     })
   ];
 }
