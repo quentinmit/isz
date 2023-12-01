@@ -31,7 +31,7 @@
     home-manager.extraSpecialArgs = options._module.specialArgs.value;
     home-manager.sharedModules = builtins.attrValues self.homeModules;
 
-    environment.systemPackages = import ./packages.nix { inherit pkgs; } ++ [
+    environment.systemPackages = with pkgs; import ./packages.nix { inherit pkgs; } ++ [
       # Editors
       (pkgs.vim.customize {
         name = "vim";
