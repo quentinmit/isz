@@ -94,6 +94,7 @@
         alabaster
         ansible
         ansible-core
+        aocd
         #argparse-manpage
         #astroplan
         astropy
