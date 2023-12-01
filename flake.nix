@@ -57,7 +57,7 @@
       };
       overlays = [
         overlay
-        self.overlays.default
+        self.overlays.new
         self.overlays.patches
         cargo2nix.overlays.default
       ];
@@ -93,8 +93,9 @@
         devShells.esphome = import ./workshop/esphome/shell.nix { inherit pkgs; };
       })) // {
         inherit overlayModule;
-        overlays.default = (import ./nix/pkgs/all-packages.nix);
+        overlays.new = (import ./nix/pkgs/all-packages.nix);
         overlays.patches = (import ./nix/pkgs/overlays.nix);
+        overlays.default = nixpkgs.lib.composeManyExtensions [ overlays.new overlays.patches ];
         nixosConfigurations = nixpkgs.lib.genAttrs [
           "workshop"
           "bedroom-pi"
