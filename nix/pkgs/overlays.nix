@@ -88,7 +88,7 @@ final: prev: {
         '';
       });
       scapy = python-prev.scapy.overrideAttrs (old: {
-        patches = (old.patches or []) ++ (lib.optionals python-final.stdenv.isDarwin [
+        patches = (old.patches or []) ++ (lib.optionals stdenv.isDarwin [
           ./scapy/darwin-ioctl.patch
         ]);
       });

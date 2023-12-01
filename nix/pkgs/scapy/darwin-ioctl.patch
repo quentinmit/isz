@@ -1,12 +1,12 @@
-From 430293c8bc97e59d1e2b94993d538c1c031c94ee Mon Sep 17 00:00:00 2001
+From f1f45beccea9057c5b0b6d79ea808cb5b343c05e Mon Sep 17 00:00:00 2001
 From: Quentin Smith <quentin@mit.edu>
 Date: Fri, 1 Dec 2023 13:25:52 -0500
 Subject: [PATCH] Use ioctls to read IP and MAC addresses on Darwin
 
 ---
  scapy/arch/bpf/consts.py |  6 +++++-
- scapy/arch/bpf/core.py   | 26 ++++++++++++++++++++++++--
- 2 files changed, 29 insertions(+), 3 deletions(-)
+ scapy/arch/bpf/core.py   | 27 +++++++++++++++++++++++++--
+ 2 files changed, 30 insertions(+), 3 deletions(-)
 
 diff --git a/scapy/arch/bpf/consts.py b/scapy/arch/bpf/consts.py
 index df207a33..6b0d395b 100644
@@ -31,7 +31,7 @@ index df207a33..6b0d395b 100644
 +
  BPF_T_NANOTIME = 0x0001
 diff --git a/scapy/arch/bpf/core.py b/scapy/arch/bpf/core.py
-index b7c31ff8..dd8bb41f 100644
+index b7c31ff8..9fb31a33 100644
 --- a/scapy/arch/bpf/core.py
 +++ b/scapy/arch/bpf/core.py
 @@ -11,6 +11,7 @@ Scapy *BSD native support - core
@@ -71,7 +71,7 @@ index b7c31ff8..dd8bb41f 100644
      # Get ifconfig output
      subproc = subprocess.Popen(
          [conf.prog.ifconfig, ifname],
-@@ -121,6 +132,17 @@ def get_if_raw_hwaddr(ifname):
+@@ -121,6 +132,18 @@ def get_if_raw_hwaddr(ifname):
      if ifname == conf.loopback_name:
          return (ARPHDR_LOOPBACK, NULL_MAC_ADDRESS)
  
@@ -80,7 +80,8 @@ index b7c31ff8..dd8bb41f 100644
 +        sa_type, addr = unix_get_if_raw_hwaddr(ifname, SIOCGIFLLADDR)
 +        if sa_type == 0x1206: # AF_LINK, length 6
 +            return (ARPHDR_ETHER, addr)
-+        # TODO: 0x1208 is AF_LINK, lenght 6 for ARPHDR_IEEE1394; should we return it?
++        # TODO: 0x1208 is AF_LINK, length 6 for ARPHDR_IEEE1394; should we return it?
++        raise Scapy_Exception("No MAC address found on %s !" % ifname)
 +    except OSError as e:
 +        if e.errno == errno.EADDRNOTAVAIL:
 +            raise Scapy_Exception("No MAC address found on %s !" % ifname)
