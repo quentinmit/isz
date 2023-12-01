@@ -1,6 +1,6 @@
 {lib, stdenv, fetchurl
 , makeWrapper, writeShellScript
-, perlPackages, dpkg, rsync
+, perlPackages, dpkg, debhelper, rsync
 }:
 
 stdenv.mkDerivation rec {
@@ -20,7 +20,8 @@ stdenv.mkDerivation rec {
 
   # debhelper
   nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ ] ++
+  propagatedBuildInputs = [ dpkg debhelper ];
+  buildInputs =
     (with perlPackages; [ perl ]);
 
   installPhase = ''

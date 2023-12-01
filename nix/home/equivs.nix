@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 let
   mkEquivs = packages: pkgs.runCommand "equivs-dpkg" {
-    nativeBuildInputs = [ pkgs.equivs ];
+    nativeBuildInputs = [ pkgs.dpkg pkgs.debhelper pkgs.equivs ];
     equivsFile = pkgs.writeText "home-manager-debs-${config.home.username}.equivs" ''
       Section: misc
       Priority: optional
@@ -11,7 +11,6 @@ let
       Description: Home Manager-controlled debs for ${config.home.username}
     '';
   } ''
-    env
     EMAIL=root@localhost equivs-build $equivsFile
     mkdir $out
     mv *.deb $out/
