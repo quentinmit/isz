@@ -15,6 +15,7 @@
       ./telegraf.nix
       ./dashboard.nix
       ./grafana
+      ./pnio2mqtt
       #./containers.nix
       ../nix/zwave-js-ui.nix
       ../nix/speedtest.nix

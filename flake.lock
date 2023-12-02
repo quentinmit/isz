@@ -240,6 +240,30 @@
         "type": "github"
       }
     },
+    "py-profinet": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1701504207,
+        "narHash": "sha256-R4x+EFgQeQSjGnXeh4GGAyH4lmDCFtYzFh9A/44hg0U=",
+        "owner": "quentinmit",
+        "repo": "py-profinet",
+        "rev": "b3fc9c063ddbf506285fae420290ff025f346ea9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "quentinmit",
+        "ref": "asyncio",
+        "repo": "py-profinet",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "cargo2nix": "cargo2nix",
@@ -253,6 +277,7 @@
         "nixpkgs": "nixpkgs",
         "nur-mweinelt": "nur-mweinelt",
         "plasma-manager": "plasma-manager",
+        "py-profinet": "py-profinet",
         "rust-overlay": "rust-overlay",
         "sops-nix": "sops-nix",
         "unstable": "unstable"

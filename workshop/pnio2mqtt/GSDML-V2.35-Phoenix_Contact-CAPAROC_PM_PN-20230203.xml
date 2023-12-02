@@ -1,0 +1,1284 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<ISO15745Profile xmlns="http://www.profibus.com/GSDML/2003/11/DeviceProfile" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.profibus.com/GSDML/2003/11/DeviceProfile ..\xsd\GSDML-DeviceProfile-V2.35.xsd">
+	<ProfileHeader>
+		<ProfileIdentification>PROFINET Device Profile</ProfileIdentification>
+		<ProfileRevision>1.00</ProfileRevision>
+		<ProfileName>Device Profile for PROFINET Devices</ProfileName>
+		<ProfileSource>PROFIBUS Nutzerorganisation e. V. (PNO)</ProfileSource>
+		<ProfileClassID>Device</ProfileClassID>
+		<ISO15745Reference>
+			<ISO15745Part>4</ISO15745Part>
+			<ISO15745Edition>1</ISO15745Edition>
+			<ProfileTechnology>GSDML</ProfileTechnology>
+		</ISO15745Reference>
+	</ProfileHeader>
+	<ProfileBody>
+		<DeviceIdentity VendorID="0x00B0" DeviceID="0x015F">
+			<InfoText TextId="T_ID_DevIdent_InfoText"/>
+			<VendorName Value="Phoenix Contact"/>
+		</DeviceIdentity>
+		<DeviceFunction>
+			<Family MainFamily="General" ProductFamily="Electronic Circuit Breaker"/>
+		</DeviceFunction>
+		<ApplicationProcess>
+			<DeviceAccessPointList>
+				<DeviceAccessPointItem ID="DAP_CAPAROC_FEED_IN" PhysicalSlots="0..17" ModuleIdentNumber="0x00000001" MinDeviceInterval="8" DNS_CompatibleName="CAPAROC-PM-PN" FixedInSlots="0" ObjectUUID_LocalIndex="1" MultipleWriteSupported="true" PowerOnToCommReady="16000" DeviceAccessSupported="true" NumberOfDeviceAccessAR="1" RequiredSchemaVersion="V2.31" PNIO_Version="V2.35" NameOfStationNotTransferable="true" SharedDeviceSupported="true" LLDP_NoD_Supported="true" ResetToFactoryModes="2 8" CheckDeviceID_Allowed="false" ParameterizationSpeedupSupported="false">
+					<ModuleInfo>
+						<Name TextId="T_ID_DAP_CAPAROC"/>
+						<InfoText TextId="T_ID_InfoTextId_DAP_CAPAROC"/>
+						<VendorName Value="Phoenix Contact"/>
+						<OrderNumber Value="1110986"/>
+						<!--<HardwareRelease Value="00"/>-->
+						<SoftwareRelease Value="V1.0.3"/>
+					</ModuleInfo>
+					<CertificationInfo ApplicationClass="Isochronous" ConformanceClass="C" NetloadClass="III"/>
+					<SubslotList>
+						<SubslotItem SubslotNumber="32768" TextId="T_ID_Subslot_8000"/>
+						<SubslotItem SubslotNumber="32769" TextId="T_ID_Subslot_8001"/>
+						<SubslotItem SubslotNumber="32770" TextId="T_ID_Subslot_8002"/>
+					</SubslotList>
+					<IOConfigData MaxDataLength="720" MaxInputLength="520" MaxOutputLength="200"/>
+					<UseableModules>
+						<!-- 1 Ch --> 
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E1_12_24DC_1A"    AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E1_12_24DC_2A"    AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E1_12_24DC_4A"    AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E1_12_24DC_6A"    AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E1_12_24DC_8A"    AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E1_12_24DC_10A"   AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E1_12_24DC_1_4A"  AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E1_12_24DC_1_10A" AllowedInSlots="1..16"/>
+						<!-- 2 Ch --> 
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E2_12_24DC_1_4A"  AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E2_12_24DC_2_10A" AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E2_12_24DC_1_4A_EX"  AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E2_12_24DC_2_10A_EX" AllowedInSlots="1..16"/>
+						<!-- 4 Ch --> 
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E4_12_24DC_1_4A"  AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="IDM_CAPAROC_E4_12_24DC_1_10A" AllowedInSlots="1..16"/>
+						<!-- Power Supply --> 
+						<ModuleItemRef ModuleItemTarget="IDM_QUINT_4_PS_20A_3P" AllowedInSlots="17"/>
+						<ModuleItemRef ModuleItemTarget="IDM_QUINT_4_PS_40A_3P" AllowedInSlots="17"/>
+					</UseableModules>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="VID_IRT_Submodule" SubmoduleIdentNumber="0x00000001" FixedInSubslots="1" Writeable_IM_Records="1 2 3 4" MayIssueProcessAlarm="false">
+							<IOData/>
+							<ModuleInfo>
+								<Name TextId="T_ID_CAPAROC_Name"/>
+								<InfoText TextId="T_ID_CAPAROC_Info"/>
+							</ModuleInfo>
+							<IsochroneMode T_DC_Base="4" T_DC_Min="1" T_DC_Max="8" T_IO_Base="1000" T_IO_InputMin="40" T_IO_OutputMin="40" IsochroneModeRequired="false"/>
+						</VirtualSubmoduleItem>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_General_System_Data" SubmoduleIdentNumber="0x00000032" FixedInSubslots="2" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>									
+									<DataItem DataType="Unsigned16" UseAsBits="false" TextId="T_ID_TotalCurrent"/>
+									<DataItem DataType="Unsigned16" UseAsBits="false" TextId="T_ID_InputVoltage"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_GlobalStatus"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_OutputsGeneralSystem"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="11" Length="1" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLockAll"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLockAllGeneralSys" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="12" Length="1" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalUserInterfaceLock"/>
+									<Ref TextId="T_ID_LocalUserInterfaceLockGeneralSys" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="13" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_REC_SwitchOnDelay"/>
+									<Ref TextId="T_ID_SwitchOnDelayGeneralSys" DataType="Unsigned16" ByteOffset="0" AllowedValues="0 25 50 100 150 200 500 65535" DefaultValue="65535" Changeable="true" Visible="true" ValueItemTarget="VAL_SwitchOnDelay"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="14" Length="1" TransferSequence="0">
+									<Name TextId="T_ID_REC_OperatingMode"/>
+									<Ref TextId="T_ID_OperatingModeGeneralSys" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_OperatingMode"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="17" Length="1" TransferSequence="0">
+									<Name TextId="T_ID_REC_WebserverEnableDisable"/>
+									<Ref TextId="T_ID_REC_Webserver" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_General_System_Data_Name"/>
+								<InfoText TextId="T_ID_MOD_CAPAROC_General_System_Data_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+					<SystemDefinedSubmoduleList>
+						<InterfaceSubmoduleItem ID="IDS_2" SubslotNumber="32768" SubmoduleIdentNumber="0x000a" DelayMeasurementSupported="true" IsochroneModeSupported="true" SupportedRT_Classes="RT_CLASS_1;RT_CLASS_3" IsochroneModeInRT_Classes="RT_CLASS_3" TextId="T_ID_DAP_InterfaceModule" SupportedProtocols="LLDP;SNMP" NetworkComponentDiagnosisSupported="true" DCP_BoundarySupported="true" PTP_BoundarySupported="true" DCP_HelloSupported="true">
+							<RT_Class3Properties StartupMode="Legacy;Advanced" MaxBridgeDelay="3860" MaxNumberIR_FrameData="128" ForwardingMode="Relative"/>
+							<SynchronisationMode SupportedRole="SyncSlave" MaxLocalJitter="10" T_PLL_MAX="1000" SupportedSyncProtocols="PTCP"/>
+							<ApplicationRelations StartupMode="Legacy;Advanced" NumberOfAdditionalInputCR="0" NumberOfAdditionalMulticastProviderCR="0" NumberOfAdditionalOutputCR="0" NumberOfMulticastConsumerCR="0" NumberOfAR="2">
+								<TimingProperties SendClock="8 16 32" ReductionRatio="1 2 4 8 16 32 64 128 256 512"/>
+								<RT_Class3TimingProperties SendClock="8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120 124 128" ReductionRatio="1" ReductionRatioPow2="2 4 8 16 32 64 128"/>
+							</ApplicationRelations>
+							<MediaRedundancy SupportedRole="Client"/>
+						</InterfaceSubmoduleItem>
+						<PortSubmoduleItem ID="IDS_2P1" SubslotNumber="32769" SubmoduleIdentNumber="0x000b" MAUTypes="16" TextId="T_ID_Port1" MaxPortRxDelay="173" MaxPortTxDelay="74" PortDeactivationSupported="false" LinkStateDiagnosisCapability="Up+Down" SupportsRingportConfig="true" IsDefaultRingport="true" CheckMAUTypeSupported="true" CheckMAUTypeDifferenceSupported="true">
+							<MAUTypeList>
+								<MAUTypeItem Value="16" AdjustSupported="true"/>
+							</MAUTypeList>
+						</PortSubmoduleItem>
+						<PortSubmoduleItem ID="IDS_2P2" SubslotNumber="32770" SubmoduleIdentNumber="0x000c" MAUTypes="16" TextId="T_ID_Port2" MaxPortRxDelay="173" MaxPortTxDelay="74" PortDeactivationSupported="false" LinkStateDiagnosisCapability="Up+Down" SupportsRingportConfig="true" IsDefaultRingport="true" CheckMAUTypeSupported="true" CheckMAUTypeDifferenceSupported="true">
+							<MAUTypeList>
+								<MAUTypeItem Value="16" AdjustSupported="true"/>
+							</MAUTypeList>
+						</PortSubmoduleItem>
+					</SystemDefinedSubmoduleList>
+					<Graphics>
+						<GraphicItemRef Type="DeviceSymbol" GraphicItemTarget="ID_Graph_CAPAROC_PM_PN"/>
+					</Graphics>
+				</DeviceAccessPointItem>
+			</DeviceAccessPointList>
+			<ModuleList>
+				<ModuleItem ID="IDM_CAPAROC_E1_12_24DC_1A" ModuleIdentNumber="0x00000065" >
+					<ModuleInfo>	
+						<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1A_Name" />
+						<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1A_Info" />
+						<OrderNumber Value="1157288"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>	
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E1_12_24DC_1A" SubmoduleIdentNumber="0x00000065" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+								</Output>
+							</IOData>	
+							<RecordDataList>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1A_Name" />
+								<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1A_Info" />
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E1_12_24DC_2A" ModuleIdentNumber="0x00000066" >
+					<ModuleInfo>	
+						<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_2A_Name" />
+						<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_2A_Info" />
+						<OrderNumber Value="1157290"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E1_12_24DC_2A" SubmoduleIdentNumber="0x00000066" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_2A_Name" />
+								<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_2A_Info" />
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E1_12_24DC_4A" ModuleIdentNumber="0x00000068" >
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_4A_Name" />
+						<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_4A_Info" />
+						<OrderNumber Value="1157285"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E1_12_24DC_4A" SubmoduleIdentNumber="0x00000068" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_4A_Name" />
+								<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_4A_Info" />
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E1_12_24DC_6A" ModuleIdentNumber="0x0000006A" >
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_6A_Name" />
+						<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_6A_Info" />
+						<OrderNumber Value="1157286"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E1_12_24DC_6A" SubmoduleIdentNumber="0x0000006A" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_6A_Name" />
+								<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_6A_Info" />
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E1_12_24DC_8A" ModuleIdentNumber="0x0000006C" >
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_8A_Name" />
+						<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_8A_Info" />
+						<OrderNumber Value="1157279"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E1_12_24DC_8A" SubmoduleIdentNumber="0x0000006C" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_8A_Name" />
+								<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_8A_Info" />
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E1_12_24DC_10A" ModuleIdentNumber="0x0000006E" >
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_10A_Name" />
+						<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_10A_Info" />
+						<OrderNumber Value="1157284"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E1_12_24DC_10A" SubmoduleIdentNumber="0x0000006E" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_10A_Name" />
+								<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_10A_Info" />
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E1_12_24DC_1_4A" ModuleIdentNumber="0x00002778" >
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_4A_Name" />
+						<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_4A_Info" />
+						<OrderNumber Value="1115415"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E1_12_24DC_1_4A" SubmoduleIdentNumber="0x00002778" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="1" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="2" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLock"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_4A_Name" />
+								<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_4A_Info" />
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E1_12_24DC_1_10A" ModuleIdentNumber="0x0000277E" >
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_10A_Name" /> 
+						<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_10A_Info" /> 
+						<OrderNumber Value="1115649"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>	
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E1_12_24DC_1_10A" SubmoduleIdentNumber="0x0000277E" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+								</Output>
+							</IOData>	
+							<RecordDataList>
+								<ParameterRecordDataItem Index="1" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="2" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLock"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_10A_Name" />
+								<InfoText TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_10A_Info" />
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E2_12_24DC_1_4A" ModuleIdentNumber="0x000027DC">
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Name"/> 
+						<InfoText TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Info"/> 
+						<OrderNumber Value="1115655"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>	
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E2_12_24DC_1_4A" SubmoduleIdentNumber="0x000027DC" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH2"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH2"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="1" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="2" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLock"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>			
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Name"/>
+								<InfoText TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>	
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E2_12_24DC_2_10A" ModuleIdentNumber="0x000027E2">
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Name"/>
+						<InfoText TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Info"/>
+						<OrderNumber Value="1110984"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>	
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E2_12_24DC_2_10A" SubmoduleIdentNumber="0x000027E2" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH2"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH2"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="1" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="2" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLock"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Name"/>
+								<InfoText TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E2_12_24DC_1_4A_EX" ModuleIdentNumber="0x0000280E">
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_EX_Name"/> 
+						<InfoText TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Info"/> 
+						<OrderNumber Value="1344361"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E2_12_24DC_1_4A_EX" SubmoduleIdentNumber="0x0000280E" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH2"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH2"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="1" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="2" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLock"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>			
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Name"/>
+								<InfoText TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>	
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E2_12_24DC_2_10A_EX" ModuleIdentNumber="0x00002814">
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_EX_Name"/>
+						<InfoText TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Info"/>
+						<OrderNumber Value="1344364"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>	
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E2_12_24DC_2_10A_EX" SubmoduleIdentNumber="0x00002814" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH2"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH2"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="1" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_NominalCurrents"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="2" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLock"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0" DefaultValue="0" Changeable="false" Visible="false" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Name"/>
+								<InfoText TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E4_12_24DC_1_4A" ModuleIdentNumber="0x000028A4">
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_4A_Name"/>
+						<InfoText TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_4A_Info"/>
+						<OrderNumber Value="1115657"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E4_12_24DC_1_4A" SubmoduleIdentNumber="0x000028A4" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH3"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH3"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH3"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH4"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH4"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH4"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH3"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH4"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="1" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0 1 2 3 4" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="2" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLock"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_4A_Name"/>
+								<InfoText TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_4A_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_CAPAROC_E4_12_24DC_1_10A" ModuleIdentNumber="0x000028AA">
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_10A_Name"/> 
+						<InfoText TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_10A_Info"/> 
+						<OrderNumber Value="1115658"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>	
+						<VirtualSubmoduleItem ID="IDS_CAPAROC_E4_12_24DC_1_10A" SubmoduleIdentNumber="0x000028AA" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH3"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH3"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH3"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_ChannelInfo_CH4"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_NominalCurrent_CH4"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_LoadCurrent_CH4"/>
+								</Input>
+								<Output>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH1"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH2"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH3"/>
+									<DataItem DataType="Unsigned8" UseAsBits="false" TextId="T_ID_Control_CH4"/>
+								</Output>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="1" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+									<Ref TextId="T_ID_NominalCurrent_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0 1 2 3 4 5 6 7 8 9 10" DefaultValue="0" Changeable="true" Visible="true" ValueItemTarget="VAL_NominalCurrents"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="2" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_LocalCurrentProgrammingLock"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_LocalCurrentProgrammingLock_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="3" Length="4" TransferSequence="0">
+									<Name TextId="T_ID_REC_ChannelOutputs"/>
+									<Ref TextId="T_ID_Output_CH1" DataType="Unsigned8" ByteOffset="0" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH2" DataType="Unsigned8" ByteOffset="1" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH3" DataType="Unsigned8" ByteOffset="2" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+									<Ref TextId="T_ID_Output_CH4" DataType="Unsigned8" ByteOffset="3" AllowedValues="0 1 2" DefaultValue="2" Changeable="true" Visible="true" ValueItemTarget="VAL_Disable_Enable_or_NoChange"/>
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_10A_Name"/>
+								<InfoText TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_10A_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+				<ModuleItem ID="IDM_QUINT_4_PS_20A_3P" ModuleIdentNumber="0x00006001">
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_QUINT_4_20A_3P_Name"/>  
+						<InfoText TextId="T_ID_MOD_QUINT_4_20A_3P_Info"/> 
+						<OrderNumber Value="1151048"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>	
+						<VirtualSubmoduleItem ID="IDS_QUINT_4_PS_20A_3P" SubmoduleIdentNumber="0x00006001" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned16" UseAsBits="false" TextId="T_ID_PS_StatusReg"/>
+								</Input>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="65" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_OutputVoltage"/>
+									<Ref TextId="T_ID_PS_OutputVoltageRef" DataType="Unsigned16" ByteOffset="0"  DefaultValue="2410" AllowedValues="2390..2960" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="66" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Config"/>	<!-- Index accessed by WORD (LSB in Byte[1]) --> 
+									<Ref TextId="T_ID_PS_ParallelMode" DataType="Bit" BitOffset="0" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_ParallelMode" />
+									<Ref TextId="T_ID_PS_ButtonLock" DataType="Bit" BitOffset="1" ByteOffset="1"  DefaultValue="0" ValueItemTarget="VAL_PS_ButtonLock" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="80" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_ConfigRelayOutput"/> <!-- Index accessed by WORD (LSB in Byte[1]) --> 
+									<Ref TextId="T_ID_PS_EnOutputVoltage" DataType="Bit" BitOffset="0" ByteOffset="1" DefaultValue="1" ValueItemTarget="VAL_PS_Disable_or_Enable" />	
+									<Ref TextId="T_ID_PS_EnOutputCurrent" DataType="Bit" BitOffset="1" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />	
+									<Ref TextId="T_ID_PS_EnOperatingHours" DataType="Bit" BitOffset="2" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnTemperatureOK" DataType="Bit" BitOffset="3" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnInputVoltageOK" DataType="Bit" BitOffset="4" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnOvVoltageProtection" DataType="Bit" BitOffset="5" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnPhaseMonitoring" DataType="Bit" BitOffset="6" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnRemainingLifetime" DataType="Bit" BitOffset="7" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnPhaseSequence" DataType="Bit" BitOffset="0" ByteOffset="0" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnInvertRelayFunction" DataType="Bit" BitOffset="7" ByteOffset="0" DefaultValue="0" ValueItemTarget="VAL_PS_RelayPolarity" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="81" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Setting_LimitVout"/>
+									<Ref TextId="T_ID_PS_Setting_LimitVout_Unit" DataType="Unsigned16" ByteOffset="0"  DefaultValue="90" AllowedValues="25..135" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="82" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Setting_LimitPout"/>
+									<Ref TextId="T_ID_PS_Setting_LimitPout_Unit" DataType="Unsigned16" ByteOffset="0"  DefaultValue="100" AllowedValues="5..200" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="83" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Setting_LimitTotalRuntime"/>
+									<Ref TextId="T_ID_PS_Setting_LimitTotalRuntime_Unit" DataType="Unsigned16" ByteOffset="0"  DefaultValue="3650" AllowedValues="0..65535" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="84" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Setting_LimitRemainingLifetime"/>
+									<Ref TextId="T_ID_PS_Setting_LimitRemainingLifetime_Unit" DataType="Unsigned16" ByteOffset="0"  DefaultValue="0" AllowedValues="0..5475" />
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_QUINT_4_20A_3P_Name"/>
+								<InfoText TextId="T_ID_MOD_QUINT_4_20A_3P_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+					<Graphics>
+						<GraphicItemRef Type="DeviceSymbol" GraphicItemTarget="ID_Graph_QUINT4_PS_3AC_24DC_20_IOL"/>
+					</Graphics>
+				</ModuleItem>
+				<ModuleItem ID="IDM_QUINT_4_PS_40A_3P" ModuleIdentNumber="0x00006000">
+					<ModuleInfo>
+						<Name TextId="T_ID_MOD_QUINT_4_40A_3P_Name"/>  
+						<InfoText TextId="T_ID_MOD_QUINT_4_40A_3P_Info"/> 
+						<OrderNumber Value="1151047"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>	
+						<VirtualSubmoduleItem ID="IDS_QUINT_4_PS_40A_3P" SubmoduleIdentNumber="0x00006000" MayIssueProcessAlarm="true">
+							<IOData>
+								<Input>
+									<DataItem DataType="Unsigned16" UseAsBits="false" TextId="T_ID_PS_StatusReg"/>
+								</Input>
+							</IOData>
+							<RecordDataList>
+								<ParameterRecordDataItem Index="65" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_OutputVoltage"/>
+									<Ref TextId="T_ID_PS_OutputVoltageRef" DataType="Unsigned16" ByteOffset="0"  DefaultValue="2410" AllowedValues="2390..2960" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="66" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Config"/>	<!-- Index accessed by WORD (LSB in Byte[1]) --> 
+									<Ref TextId="T_ID_PS_ParallelMode" DataType="Bit" BitOffset="0" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_ParallelMode" />
+									<Ref TextId="T_ID_PS_ButtonLock" DataType="Bit" BitOffset="1" ByteOffset="1"  DefaultValue="0" ValueItemTarget="VAL_PS_ButtonLock" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="80" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_ConfigRelayOutput"/> <!-- Index accessed by WORD (LSB in Byte[1]) --> 
+									<Ref TextId="T_ID_PS_EnOutputVoltage" DataType="Bit" BitOffset="0" ByteOffset="1" DefaultValue="1" ValueItemTarget="VAL_PS_Disable_or_Enable" />	
+									<Ref TextId="T_ID_PS_EnOutputCurrent" DataType="Bit" BitOffset="1" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />	
+									<Ref TextId="T_ID_PS_EnOperatingHours" DataType="Bit" BitOffset="2" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnTemperatureOK" DataType="Bit" BitOffset="3" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnInputVoltageOK" DataType="Bit" BitOffset="4" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnOvVoltageProtection" DataType="Bit" BitOffset="5" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnPhaseMonitoring" DataType="Bit" BitOffset="6" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnRemainingLifetime" DataType="Bit" BitOffset="7" ByteOffset="1" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnPhaseSequence" DataType="Bit" BitOffset="0" ByteOffset="0" DefaultValue="0" ValueItemTarget="VAL_PS_Disable_or_Enable" />
+									<Ref TextId="T_ID_PS_EnInvertRelayFunction" DataType="Bit" BitOffset="7" ByteOffset="0" DefaultValue="0" ValueItemTarget="VAL_PS_RelayPolarity" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="81" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Setting_LimitVout"/>
+									<Ref TextId="T_ID_PS_Setting_LimitVout_Unit" DataType="Unsigned16" ByteOffset="0"  DefaultValue="90" AllowedValues="25..135" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="82" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Setting_LimitPout"/>
+									<Ref TextId="T_ID_PS_Setting_LimitPout_Unit" DataType="Unsigned16" ByteOffset="0"  DefaultValue="100" AllowedValues="5..200" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="83" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Setting_LimitTotalRuntime"/>
+									<Ref TextId="T_ID_PS_Setting_LimitTotalRuntime_Unit" DataType="Unsigned16" ByteOffset="0"  DefaultValue="3650" AllowedValues="0..65535" />
+								</ParameterRecordDataItem>
+								<ParameterRecordDataItem Index="84" Length="2" TransferSequence="0">
+									<Name TextId="T_ID_PS_Setting_LimitRemainingLifetime"/>
+									<Ref TextId="T_ID_PS_Setting_LimitRemainingLifetime_Unit" DataType="Unsigned16" ByteOffset="0"  DefaultValue="0" AllowedValues="0..5475" />
+								</ParameterRecordDataItem>
+							</RecordDataList>
+							<ModuleInfo>
+								<Name TextId="T_ID_MOD_QUINT_4_40A_3P_Name"/>
+								<InfoText TextId="T_ID_MOD_QUINT_4_40A_3P_Info"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+					<Graphics>
+						<GraphicItemRef Type="DeviceSymbol" GraphicItemTarget="ID_Graph_QUINT4_PS_3AC_24DC_40_IOL"/>
+					</Graphics>
+				</ModuleItem>
+			</ModuleList>
+			<ValueList>
+				<ValueItem ID="VAL_Disable_Enable_or_NoChange">
+					<Assignments>
+						<Assign Content="0" TextId="T_ID_Disable"/>
+						<Assign Content="1" TextId="T_ID_Enable"/>
+						<Assign Content="2" TextId="T_ID_NoChange"/>
+					</Assignments>
+				</ValueItem>
+				<ValueItem ID="VAL_NominalCurrents">
+					<Assignments>
+						<Assign Content="0" TextId="T_ID_NoChange"/>
+						<Assign Content="1" TextId="T_ID_1A"/>
+						<Assign Content="2" TextId="T_ID_2A"/>
+						<Assign Content="3" TextId="T_ID_3A"/>
+						<Assign Content="4" TextId="T_ID_4A"/>
+						<Assign Content="5" TextId="T_ID_5A"/>
+						<Assign Content="6" TextId="T_ID_6A"/>
+						<Assign Content="7" TextId="T_ID_7A"/>
+						<Assign Content="8" TextId="T_ID_8A"/>
+						<Assign Content="9" TextId="T_ID_9A"/>
+						<Assign Content="10" TextId="T_ID_10A"/>
+					</Assignments>
+				</ValueItem>
+				<ValueItem ID="VAL_SwitchOnDelay">
+					<Assignments>
+						<Assign Content="0" TextId="T_ID_NoDelay"/> 
+						<Assign Content="25" TextId="T_ID_25ms_Delay"/> 
+						<Assign Content="50" TextId="T_ID_50ms_Delay"/>
+						<Assign Content="100" TextId="T_ID_100ms_Delay"/>
+						<Assign Content="150" TextId="T_ID_150ms_Delay"/>
+						<Assign Content="200" TextId="T_ID_200ms_Delay"/>
+						<Assign Content="500" TextId="T_ID_500ms_Delay"/>
+						<Assign Content="65535" TextId="T_ID_NoChange"/>
+					</Assignments>
+				</ValueItem>
+				<ValueItem ID="VAL_OperatingMode">
+					<Assignments>
+						<Assign Content="0" TextId="I_ID_IndependentMode"/>
+						<Assign Content="1" TextId="T_ID_WaitFieldbus"/>
+						<Assign Content="2" TextId="T_ID_NoChange"/>
+					</Assignments>
+				</ValueItem>
+				<ValueItem ID="VAL_PS_ParallelMode">
+					<Assignments>
+						<Assign Content="0" TextId="I_ID_PS_ParallelModeDisabled"/> 
+						<Assign Content="1" TextId="I_ID_PS_ParallelModeEnabled"/>
+					</Assignments>
+				</ValueItem>
+				<ValueItem ID="VAL_PS_ButtonLock">
+					<Assignments>
+						<Assign Content="0" TextId="T_ID_PS_ButtonUnlocked"/>
+						<Assign Content="1" TextId="T_ID_PS_ButtonLocked"/>
+					</Assignments>
+				</ValueItem>
+				<ValueItem ID="VAL_PS_Disable_or_Enable">
+					<Assignments>
+						<Assign Content="0" TextId="T_ID_PS_Disable"/>
+						<Assign Content="1" TextId="T_ID_PS_Enable"/>
+					</Assignments>
+				</ValueItem>
+				<ValueItem ID="VAL_PS_RelayPolarity">
+					<Assignments>
+						<Assign Content="0" TextId="T_ID_PS_HighActive"/>
+						<Assign Content="1" TextId="T_ID_PS_LowActive"/>
+					</Assignments>
+				</ValueItem>					
+			</ValueList>
+			<GraphicsList>
+				<GraphicItem ID="ID_Graph_CAPAROC_PM_PN" GraphicFile="GSDML-00B0-015F-CAPAROC-PM-PN"/>
+				<GraphicItem ID="ID_Graph_QUINT4_PS_3AC_24DC_20_IOL" GraphicFile="GSDML-00B0-015F-QUINT4-PS-3AC-24DC-20-IOL"/>
+				<GraphicItem ID="ID_Graph_QUINT4_PS_3AC_24DC_40_IOL" GraphicFile="GSDML-00B0-015F-QUINT4-PS-3AC-24DC-40-IOL"/>
+			</GraphicsList>
+			<CategoryList>
+				<CategoryItem ID="ID_CAPAROC" TextId="T_ID_CAPAROC"/>
+			</CategoryList>
+			<ExternalTextList>
+				<PrimaryLanguage>
+					<!-- DAP -->
+					<Text TextId="T_ID_DAP_CAPAROC" Value="CAPAROC PM PN"/>
+					<Text TextId="T_ID_CAPAROC" Value="Electronic Circuit Breaker"/>
+					<Text TextId="T_ID_CAPAROC_Name" Value="CAPAROC PM PN"/>
+					<Text TextId="T_ID_CAPAROC_Info" Value="CAPAROC Feed-In Power Module"/>
+					<Text TextId="T_ID_Subslot_8000" Value="X1"/>
+					<Text TextId="T_ID_Subslot_8001" Value="X1 P1"/>
+					<Text TextId="T_ID_Subslot_8002" Value="X1 P2"/>
+					<Text TextId="T_ID_DAP_InterfaceModule" Value="Interface"/>
+					<Text TextId="T_ID_Port1" Value="Port 1 - RJ45"/>
+					<Text TextId="T_ID_Port2" Value="Port 2 - RJ45"/>
+					<Text TextId="T_ID_DevIdent_InfoText" Value="Electronic Circuit Breaker"/>
+					<Text TextId="T_ID_InfoTextId_DAP_CAPAROC" Value="CAPAROC Feed-In Power Module"/>
+					<Text TextId="T_ID_MOD_CAPAROC_General_System_Data_Name" Value="Global status and data"/>
+					<Text TextId="T_ID_MOD_CAPAROC_General_System_Data_Info" Value="Global status and data"/>
+					<!-- Modules/Submodules -->
+					<!-- 1 Channel -->
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1A_Name"    Value="CAPAROC E1 12-24DC/1A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1A_Info"    Value="1 channel (1 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_2A_Name"    Value="CAPAROC E1 12-24DC/2A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_2A_Info"    Value="1 channel (2 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_4A_Name"    Value="CAPAROC E1 12-24DC/4A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_4A_Info"    Value="1 channel (4 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_6A_Name"    Value="CAPAROC E1 12-24DC/6A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_6A_Info"    Value="1 channel (6 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_8A_Name"    Value="CAPAROC E1 12-24DC/8A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_8A_Info"    Value="1 channel (8 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_10A_Name"   Value="CAPAROC E1 12-24DC/10A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_10A_Info"   Value="1 channel (10 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_4A_Name"  Value="CAPAROC E1 12-24DC/1-4A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_4A_Info"  Value="1 channel (1-4 A)" />
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_10A_Name" Value="CAPAROC E1 12-24DC/1-10A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_10A_Info" Value="1 channel (1-10 A)" />
+					<!-- 2 Channel -->
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Name"  Value="CAPAROC E2 12-24DC/1-4A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_EX_Name"  Value="CAPAROC E2 12-24DC/1-4A EX"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Info"  Value="2 channel (1-4 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Name" Value="CAPAROC E2 12-24DC/2-10A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_EX_Name" Value="CAPAROC E2 12-24DC/2-10A EX"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Info" Value="2 channel (1-10 A)"/>
+					<!-- 4 Channel -->
+					<Text TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_4A_Name"  Value="CAPAROC E4 12-24DC/1-4A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_4A_Info"  Value="4 channel (1-4 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_10A_Name" Value="CAPAROC E4 12-24DC/1-10A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_10A_Info" Value="4 channel (1-10 A)"/>
+					<!-- Power Supply -->
+					<Text TextId="T_ID_MOD_QUINT_4_20A_3P_Name" Value="QUINT4-PS/3AC/24DC/20/IOL"/>
+					<Text TextId="T_ID_MOD_QUINT_4_20A_3P_Info" Value="Primary-switched QUINT POWER power supply, input: 3-phase, output: 24 V DC/20 A"/>
+					<Text TextId="T_ID_MOD_QUINT_4_40A_3P_Name" Value="QUINT4-PS/3AC/24DC/40/IOL"/>
+					<Text TextId="T_ID_MOD_QUINT_4_40A_3P_Info" Value="Primary-switched QUINT POWER power supply, input: 3-phase, output: 24 V DC/40 A"/>
+					<!-- Process Data -->
+					<!-- Global System's Process Data PDin -->
+					<Text TextId="T_ID_GlobalStatus" Value="Global system status flags"/>
+					<Text TextId="T_ID_TotalCurrent" Value="Total system current"/>
+					<Text TextId="T_ID_InputVoltage" Value="System input voltage"/>
+					<!-- Global System's Process Data PDout -->
+					<Text TextId="T_ID_OutputsGeneralSystem" Value="Process data output for whole system"/>
+					<!-- Overcurrent Protection Module's Process Data  PDin -->
+					<Text TextId="T_ID_ChannelInfo_CH1" Value="Channel 1 status information"/>
+					<Text TextId="T_ID_ChannelInfo_CH2" Value="Channel 2 status information"/>
+					<Text TextId="T_ID_ChannelInfo_CH3" Value="Channel 3 status information"/>
+					<Text TextId="T_ID_ChannelInfo_CH4" Value="Channel 4 status information"/>
+					<Text TextId="T_ID_NominalCurrent_CH1" Value="Channel 1 nominal current"/>
+					<Text TextId="T_ID_NominalCurrent_CH2" Value="Channel 2 nominal current"/>
+					<Text TextId="T_ID_NominalCurrent_CH3" Value="Channel 3 nominal current"/>
+					<Text TextId="T_ID_NominalCurrent_CH4" Value="Channel 4 nominal current"/>
+					<Text TextId="T_ID_LoadCurrent_CH1" Value="Channel 1 load current"/>
+					<Text TextId="T_ID_LoadCurrent_CH2" Value="Channel 2 load current"/>
+					<Text TextId="T_ID_LoadCurrent_CH3" Value="Channel 3 load current"/>
+					<Text TextId="T_ID_LoadCurrent_CH4" Value="Channel 4 load current"/>
+					<!-- Overcurrent Protection Module's Process Data  PDin -->
+					<Text TextId="T_ID_PS_StatusReg" Value="Quint4-PS cyclic status register"/>
+					<!-- Overcurrent Protection Module's Process Data PDout -->
+					<Text TextId="T_ID_Control_CH1" Value="Control channel 1"/>
+					<Text TextId="T_ID_Control_CH2" Value="Control channel 2"/>
+					<Text TextId="T_ID_Control_CH3" Value="Control channel 3"/>
+					<Text TextId="T_ID_Control_CH4" Value="Control channel 4"/>
+					<!-- Parameters -->
+					<Text TextId="T_ID_REC_LocalUserInterfaceLock" Value="Local user interface lock"/>
+					<Text TextId="T_ID_LocalUserInterfaceLockGeneralSys" Value="Local user interface lock"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLockAllGeneralSys" Value="Lock current programming for all channels"/>
+					<Text TextId="T_ID_REC_LocalCurrentProgrammingLockAll" Value="Lock current programming for all channels"/>
+					<Text TextId="T_ID_REC_SwitchOnDelay" Value="Switch-on delay"/>
+					<Text TextId="T_ID_SwitchOnDelayGeneralSys" Value="Switch-on delay"/>
+					<Text TextId="T_ID_NoDelay" Value="No delay"/>
+					<Text TextId="T_ID_25ms_Delay" Value="25 ms"/>
+					<Text TextId="T_ID_50ms_Delay" Value="50 ms"/>
+					<Text TextId="T_ID_100ms_Delay" Value="100 ms"/>
+					<Text TextId="T_ID_150ms_Delay" Value="150 ms"/>
+					<Text TextId="T_ID_200ms_Delay" Value="200 ms"/>
+					<Text TextId="T_ID_500ms_Delay" Value="500 ms"/>
+					<Text TextId="T_ID_REC_OperatingMode" Value="Operating mode after startup"/>
+					<Text TextId="T_ID_OperatingModeGeneralSys" Value="Operating mode after startup"/>
+					<Text TextId="I_ID_IndependentMode" Value="Independent mode "/>
+					<Text TextId="T_ID_WaitFieldbus" Value="Wait for Profinet connection"/>
+					<Text TextId="T_ID_REC_Webserver" Value="Webserver"/>
+					<Text TextId="T_ID_REC_WebserverEnableDisable" Value="Webserver enable/disable"/>
+					<Text TextId="T_ID_REC_NominalCurrents" Value="Nominal currents"/>
+					<Text TextId="T_ID_1A" Value="1 A"/>
+					<Text TextId="T_ID_2A" Value="2 A"/>
+					<Text TextId="T_ID_3A" Value="3 A"/>
+					<Text TextId="T_ID_4A" Value="4 A"/>
+					<Text TextId="T_ID_5A" Value="5 A"/>
+					<Text TextId="T_ID_6A" Value="6 A"/>
+					<Text TextId="T_ID_7A" Value="7 A"/>
+					<Text TextId="T_ID_8A" Value="8 A"/>
+					<Text TextId="T_ID_9A" Value="9 A"/>
+					<Text TextId="T_ID_10A" Value="10 A"/>
+					<Text TextId="T_ID_REC_LocalCurrentProgrammingLock" Value="Local current programming lock"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLock_CH1" Value="Channel 1 local current programming lock"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLock_CH2" Value="Channel 2 local current programming lock"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLock_CH3" Value="Channel 3 local current programming lock"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLock_CH4" Value="Channel 4 local current programming lock"/>
+					<Text TextId="T_ID_Disable" Value="Disable"/>
+					<Text TextId="T_ID_Enable" Value="Enable"/>
+					<Text TextId="T_ID_NoChange" Value="No change"/>
+					<Text TextId="T_ID_REC_ChannelOutputs" Value="Channel outputs"/>
+					<Text TextId="T_ID_Output_CH1" Value="Channel 1 output state"/>
+					<Text TextId="T_ID_Output_CH2" Value="Channel 2 output state"/>
+					<Text TextId="T_ID_Output_CH3" Value="Channel 3 output state"/>
+					<Text TextId="T_ID_Output_CH4" Value="Channel 4 output state"/>
+					<!-- Power supply parameters -->
+					<Text TextId="T_ID_PS_ParallelMode" Value="Parallel mode"/>
+					<Text TextId="I_ID_PS_ParallelModeDisabled" Value="Parallel mode disabled"/>
+					<Text TextId="I_ID_PS_ParallelModeEnabled" Value="Parallel mode enabled"/>
+					<Text TextId="T_ID_PS_ButtonLock" Value="Power supply button lock"/>
+					<Text TextId="T_ID_PS_ButtonUnlocked" Value="Buttons unlocked"/>
+					<Text TextId="T_ID_PS_ButtonLocked" Value="Buttons locked"/>
+					<Text TextId="T_ID_PS_Config" Value="Configuration QUINT POWER"/>
+					<Text TextId="T_ID_PS_OutputVoltage" Value="Output voltage QUINT POWER"/>
+					<Text TextId="T_ID_PS_OutputVoltageRef" Value="Output voltage: 2390...2960 = 23,90...29,60 V"/>
+					<Text TextId="T_ID_PS_ConfigRelayOutput" Value="Configuration collective notification relay 13/14"/>
+					<Text TextId="T_ID_PS_EnOutputVoltage" Value="Output voltage"/>
+					<Text TextId="T_ID_PS_EnOutputCurrent" Value="Output power"/>
+					<Text TextId="T_ID_PS_EnOperatingHours" Value="Operating time"/>
+					<Text TextId="T_ID_PS_EnTemperatureOK" Value="Early warning of high temperature"/>
+					<Text TextId="T_ID_PS_EnInputVoltageOK" Value="Input voltage OK"/>
+					<Text TextId="T_ID_PS_EnOvVoltageProtection" Value="Voltage limitation active"/>
+					<Text TextId="T_ID_PS_EnPhaseMonitoring" Value="Phase monitoring"/>
+					<Text TextId="T_ID_PS_EnRemainingLifetime" Value="Lifetime monitoring"/>
+					<Text TextId="T_ID_PS_EnPhaseSequence" Value="Phase sequence monitoring"/>
+					<Text TextId="T_ID_PS_EnInvertRelayFunction" Value="Relay13/14"/>
+					<Text TextId="T_ID_PS_HighActive" Value="High active"/>
+					<Text TextId="T_ID_PS_LowActive" Value="Low active"/>
+					<Text TextId="T_ID_PS_Disable" Value="Disabled"/>
+					<Text TextId="T_ID_PS_Enable" Value="Enabled"/>					
+					<Text TextId="T_ID_PS_Setting_LimitVout" Value="Threshold output voltage"/>
+					<Text TextId="T_ID_PS_Setting_LimitVout_Unit" Value="Threshold 25...135 %"/>
+					<Text TextId="T_ID_PS_Setting_LimitPout" Value="Threshold output power"/>
+					<Text TextId="T_ID_PS_Setting_LimitPout_Unit" Value="Threshold 5...200 %"/>
+					<Text TextId="T_ID_PS_Setting_LimitTotalRuntime" Value="Threshold operating time"/>
+					<Text TextId="T_ID_PS_Setting_LimitTotalRuntime_Unit" Value="Days"/>
+					<Text TextId="T_ID_PS_Setting_LimitRemainingLifetime" Value="Threshold remaining lifetime"/>
+					<Text TextId="T_ID_PS_Setting_LimitRemainingLifetime_Unit" Value="Days"/>
+				</PrimaryLanguage>
+				<Language xml:lang="de">
+					<!-- DAP -->
+					<Text TextId="T_ID_DAP_CAPAROC" Value="CAPAROC PM PN"/>
+					<Text TextId="T_ID_CAPAROC" Value="Electronic Circuit Breaker"/>
+					<Text TextId="T_ID_CAPAROC_Name" Value="CAPAROC DAP"/>
+					<Text TextId="T_ID_CAPAROC_Info" Value="CAPAROC Einspeisemodul"/>
+					<Text TextId="T_ID_Subslot_8000" Value="X1"/>
+					<Text TextId="T_ID_Subslot_8001" Value="X1 P1"/>
+					<Text TextId="T_ID_Subslot_8002" Value="X1 P2"/>
+					<Text TextId="T_ID_DAP_InterfaceModule" Value="Interface"/>
+					<Text TextId="T_ID_Port1" Value="Port 1 - RJ45"/>
+					<Text TextId="T_ID_Port2" Value="Port 2 - RJ45"/>
+					<Text TextId="T_ID_DevIdent_InfoText" Value="Electronic Circuit Breaker"/>
+					<Text TextId="T_ID_InfoTextId_DAP_CAPAROC" Value="CAPAROC Einspeisemodul"/>
+					<Text TextId="T_ID_MOD_CAPAROC_General_System_Data_Name" Value="Globale System-Daten"/>
+					<Text TextId="T_ID_MOD_CAPAROC_General_System_Data_Info" Value="Globaler Status and Daten"/>
+					<!-- Modules/Submodules -->
+					<!-- 1 Channel -->
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1A_Name"    Value="CAPAROC E1 12-24DC/1A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1A_Info"    Value="1 Kanal (1 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_2A_Name"    Value="CAPAROC E1 12-24DC/2A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_2A_Info"    Value="1 Kanal (2 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_4A_Name"    Value="CAPAROC E1 12-24DC/4A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_4A_Info"    Value="1 Kanal (4 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_6A_Name"    Value="CAPAROC E1 12-24DC/6A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_6A_Info"    Value="1 Kanal (6 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_8A_Name"    Value="CAPAROC E1 12-24DC/8A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_8A_Info"    Value="1 Kanal (8 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_10A_Name"   Value="CAPAROC E1 12-24DC/10A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_10A_Info"   Value="1 Kanal (10 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_4A_Name"  Value="CAPAROC E1 12-24DC/1-4A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_4A_Info"  Value="1 Kanal (1-4 A)" />
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_10A_Name" Value="CAPAROC E1 12-24DC/1-10A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E1_12_24DC_1_10A_Info" Value="1 Kanal (1-10 A)" />
+					<!-- 2 Channel -->
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Name"  Value="CAPAROC E2 12-24DC/1-4A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_EX_Name"  Value="CAPAROC E2 12-24DC/1-4A EX"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_1_4A_Info"  Value="2 Kanal (1-4 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Name" Value="CAPAROC E2 12-24DC/2-10A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_EX_Name" Value="CAPAROC E2 12-24DC/2-10A EX"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E2_12_24DC_2_10A_Info" Value="2 Kanal (1-10 A)"/>
+					<!-- 4 Channel -->
+					<Text TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_4A_Name"  Value="CAPAROC E4 12-24DC/1-4A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_4A_Info"  Value="4 Kanal (1-4 A)"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_10A_Name" Value="CAPAROC E4 12-24DC/1-10A"/>
+					<Text TextId="T_ID_MOD_CAPAROC_E4_12_24DC_1_10A_Info" Value="4 Kanal (1-10 A)"/>
+					<!-- Power Supply -->
+					<Text TextId="T_ID_MOD_QUINT_4_20A_3P_Name" Value="QUINT4-PS/3AC/24DC/20/IOL"/>
+					<Text TextId="T_ID_MOD_QUINT_4_20A_3P_Info" Value="Primär getaktete Stromversorgung QUINT POWER, Eingang: 3-phasig, Ausgang: 24 V DC / 20 A"/>
+					<Text TextId="T_ID_MOD_QUINT_4_40A_3P_Name" Value="QUINT4-PS/3AC/24DC/40/IOL "/>
+					<Text TextId="T_ID_MOD_QUINT_4_40A_3P_Info" Value="Primär getaktete Stromversorgung QUINT POWER, Eingang: 3-phasig, Ausgang: 24 V DC / 40 A"/>
+					<!-- Process Data -->
+					<!-- Global System's Process Data PDin -->
+					<Text TextId="T_ID_GlobalStatus" Value="Globale Systemstatus-Flags"/>
+					<Text TextId="T_ID_TotalCurrent" Value="System-Gesamtstrom"/>
+					<Text TextId="T_ID_InputVoltage" Value="System-Eingangsspannung"/>
+					<!-- Global System's Process Data PDout -->
+					<Text TextId="T_ID_OutputsGeneralSystem" Value="Prozessdatenausgang Gesamtsystem"/>
+					<!-- Overcurrent Protection Module's Process Data  PDin -->
+					<Text TextId="T_ID_ChannelInfo_CH1" Value="Statusinformationen Kanal 1 "/>
+					<Text TextId="T_ID_ChannelInfo_CH2" Value="Statusinformationen Kanal 2"/>
+					<Text TextId="T_ID_ChannelInfo_CH3" Value="Statusinformationen Kanal 3 "/>
+					<Text TextId="T_ID_ChannelInfo_CH4" Value="Statusinformationen Kanal 4"/>
+					<Text TextId="T_ID_NominalCurrent_CH1" Value="Nennstrom Kanal 1"/>
+					<Text TextId="T_ID_NominalCurrent_CH2" Value="Nennstrom Kanal 2"/>
+					<Text TextId="T_ID_NominalCurrent_CH3" Value="Nennstrom Kanal 3"/>
+					<Text TextId="T_ID_NominalCurrent_CH4" Value="Nennstrom Kanal 4"/>
+					<Text TextId="T_ID_LoadCurrent_CH1" Value="Laststrom Kanal 1"/>
+					<Text TextId="T_ID_LoadCurrent_CH2" Value="Laststrom Kanal 2"/>
+					<Text TextId="T_ID_LoadCurrent_CH3" Value="Laststrom Kanal 3"/>
+					<Text TextId="T_ID_LoadCurrent_CH4" Value="Laststrom Kanal 4"/>
+					<!-- Overcurrent Protection Module's Process Data  PDin -->
+					<Text TextId="T_ID_PS_StatusReg" Value="Quint4-PS zyklisches Statusregister"/>
+					<!-- Overcurrent Protection Module's Process Data PDout --> 
+					<Text TextId="T_ID_Control_CH1" Value="Control channel 1"/>
+					<Text TextId="T_ID_Control_CH2" Value="Control channel 2"/>
+					<Text TextId="T_ID_Control_CH3" Value="Control channel 3"/>
+					<Text TextId="T_ID_Control_CH4" Value="Control channel 4"/>
+					<!-- Parameters -->
+					<Text TextId="T_ID_REC_LocalUserInterfaceLock" Value="Lokale Benutzerinterface-Sperre"/>
+					<Text TextId="T_ID_LocalUserInterfaceLockGeneralSys" Value="Lokale Benutzerinterface-Sperre"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLockAllGeneralSys" Value="Parameterisierungsperre für alle Kanäle"/>
+					<Text TextId="T_ID_REC_LocalCurrentProgrammingLockAll" Value="Strom-Parameterisierungsperre für alle Kanäle"/>
+					<Text TextId="T_ID_REC_SwitchOnDelay" Value="Einschaltverzögerung"/>
+					<Text TextId="T_ID_SwitchOnDelayGeneralSys" Value="Einschaltverzögerung"/>
+					<Text TextId="T_ID_NoDelay" Value="Keine Verzögerung"/>
+					<Text TextId="T_ID_25ms_Delay" Value="25 ms"/>
+					<Text TextId="T_ID_50ms_Delay" Value="50 ms"/>
+					<Text TextId="T_ID_100ms_Delay" Value="100 ms"/>
+					<Text TextId="T_ID_150ms_Delay" Value="150 ms"/>
+					<Text TextId="T_ID_200ms_Delay" Value="200 ms"/>
+					<Text TextId="T_ID_500ms_Delay" Value="500 ms"/>
+					<Text TextId="T_ID_REC_OperatingMode" Value="Kanalzustand nach Spannungsreset"/>
+					<Text TextId="T_ID_OperatingModeGeneralSys" Value="Kanalzustand nach Spannungsreset"/>
+					<Text TextId="I_ID_IndependentMode" Value="Unabhängiger Betrieb"/>
+					<Text TextId="T_ID_WaitFieldbus" Value="Warte auf Profinet-Verbindung"/>
+					<Text TextId="T_ID_REC_Webserver" Value="Webserver"/>
+					<Text TextId="T_ID_REC_WebserverEnableDisable" Value="Webserver ein-/ausschalten"/>
+					<Text TextId="T_ID_REC_NominalCurrents" Value="Nennstrom"/>
+					<Text TextId="T_ID_1A" Value="1 A"/>
+					<Text TextId="T_ID_2A" Value="2 A"/>
+					<Text TextId="T_ID_3A" Value="3 A"/>
+					<Text TextId="T_ID_4A" Value="4 A"/>
+					<Text TextId="T_ID_5A" Value="5 A"/>
+					<Text TextId="T_ID_6A" Value="6 A"/>
+					<Text TextId="T_ID_7A" Value="7 A"/>
+					<Text TextId="T_ID_8A" Value="8 A"/>
+					<Text TextId="T_ID_9A" Value="9 A"/>
+					<Text TextId="T_ID_10A" Value="10 A"/>
+					<Text TextId="T_ID_REC_LocalCurrentProgrammingLock" Value="Lokale Programmiersperre"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLock_CH1" Value="Lokale Programmiersperre Kanal 1"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLock_CH2" Value="Lokale Programmiersperre Kanal 2"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLock_CH3" Value="Lokale Programmiersperre Kanal 3"/>
+					<Text TextId="T_ID_LocalCurrentProgrammingLock_CH4" Value="Lokale Programmiersperre Kanal 4"/>
+					<Text TextId="T_ID_Disable" Value="Ausschalten"/>
+					<Text TextId="T_ID_Enable" Value="Einschalten"/>
+					<Text TextId="T_ID_NoChange" Value="Keine Änderung"/>
+					<Text TextId="T_ID_REC_ChannelOutputs" Value="Kanalausgänge"/>
+					<Text TextId="T_ID_Output_CH1" Value="Schaltzustand Kanal 1"/>
+					<Text TextId="T_ID_Output_CH2" Value="Schaltzustand Kanal 2"/>
+					<Text TextId="T_ID_Output_CH3" Value="Schaltzustand Kanal 3"/>
+					<Text TextId="T_ID_Output_CH4" Value="Schaltzustand Kanal 4"/>
+					<!-- Power supply parameters -->
+					<Text TextId="T_ID_PS_ParallelMode" Value="Parallelbetrieb"/>
+					<Text TextId="I_ID_PS_ParallelModeDisabled" Value="Parallelbetrieb inaktiv"/>
+					<Text TextId="I_ID_PS_ParallelModeEnabled" Value="Parallelbetrieb aktiv"/>
+					<Text TextId="T_ID_PS_ButtonLock" Value="Tastensperre"/>
+					<Text TextId="T_ID_PS_ButtonUnlocked" Value="Tasten nicht gesperrt"/>
+					<Text TextId="T_ID_PS_ButtonLocked" Value="Tasten gesperrt"/>
+					<Text TextId="T_ID_PS_Config" Value="Konfiguration QUINT POWER"/>
+					<Text TextId="T_ID_PS_OutputVoltage" Value="Ausgangsspannung QUINT POWER"/>
+					<Text TextId="T_ID_PS_OutputVoltageRef" Value="Ausgangsspannung: 2390...2960 = 23,90...29,60 V"/>
+					<Text TextId="T_ID_PS_ConfigRelayOutput" Value="Konfiguration Sammelmeldung Relaiskontakt 13/14"/>
+					<Text TextId="T_ID_PS_EnOutputVoltage" Value="Ausgangsspannung"/>
+					<Text TextId="T_ID_PS_EnOutputCurrent" Value="Ausgangsleistung"/>
+					<Text TextId="T_ID_PS_EnOperatingHours" Value="Betriebslaufzeit"/>
+					<Text TextId="T_ID_PS_EnTemperatureOK" Value="Frühwarnung hohe Temperatur"/>
+					<Text TextId="T_ID_PS_EnInputVoltageOK" Value="Eingangsspannung OK"/>
+					<Text TextId="T_ID_PS_EnOvVoltageProtection" Value="Spannungsbegrenzung aktiv"/>
+					<Text TextId="T_ID_PS_EnPhaseMonitoring" Value="Phasenüberwachung"/>
+					<Text TextId="T_ID_PS_EnRemainingLifetime" Value="Lebensdauerüberwachung"/>
+					<Text TextId="T_ID_PS_EnPhaseSequence" Value="Phasenfolge-Überwachung"/>
+					<Text TextId="T_ID_PS_EnInvertRelayFunction" Value="Ausgang Relais 13/14"/>
+					<Text TextId="T_ID_PS_HighActive" Value="High aktiv"/>
+					<Text TextId="T_ID_PS_LowActive" Value="Low aktiv"/>
+					<Text TextId="T_ID_PS_Disable" Value="Deaktiviert"/>
+					<Text TextId="T_ID_PS_Enable" Value="Aktiviert"/>							
+					<Text TextId="T_ID_PS_Setting_LimitVout" Value="Schwellwert Ausgangsspannung"/>
+					<Text TextId="T_ID_PS_Setting_LimitVout_Unit" Value="Schwellwert 25...135 %"/>
+					<Text TextId="T_ID_PS_Setting_LimitPout" Value="Schwellwert Ausgangsleistung"/>
+					<Text TextId="T_ID_PS_Setting_LimitPout_Unit" Value="Schwellwert 5...200 %"/>
+					<Text TextId="T_ID_PS_Setting_LimitTotalRuntime" Value="Schwellwert Betriebslaufzeit"/>
+					<Text TextId="T_ID_PS_Setting_LimitTotalRuntime_Unit" Value="Tage"/>
+					<Text TextId="T_ID_PS_Setting_LimitRemainingLifetime" Value="Schwellwert restliche Lebensdauer"/>
+					<Text TextId="T_ID_PS_Setting_LimitRemainingLifetime_Unit" Value="Tage"/>
+				</Language>
+			</ExternalTextList>
+		</ApplicationProcess>
+	</ProfileBody>
+</ISO15745Profile>

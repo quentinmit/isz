@@ -34,8 +34,11 @@
     plasma-manager.url = "github:pjones/plasma-manager";
     plasma-manager.inputs.nixpkgs.follows = "nixpkgs";
     plasma-manager.inputs.home-manager.follows = "home-manager";
+    py-profinet.url = "github:quentinmit/py-profinet/asyncio";
+    py-profinet.inputs.nixpkgs.follows = "nixpkgs";
+    py-profinet.inputs.flake-utils.follows = "flake-utils";
   };
-  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, ... }@args:
+  outputs = { self, darwin, nixpkgs, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -52,6 +55,7 @@
               # glu 9.0.3 fails to link on Darwin Nix
               mesa_glu = if ufinal.stdenv.isDarwin then final.mesa_glu else uprev.mesa_glu;
             })
+            py-profinet.overlays.default
           ];
         };
       };
