@@ -30,6 +30,7 @@ stdenv.mkDerivation rec {
     cp -R --preserve=mode usr $out
     mkdir -p $out/share/man/man1
     cp -R *.1 $out/share/man/man1
+    # https://superuser.com/a/1274900
     mkdir -p $out/share/equivs/admindir/info
     mkdir -p $out/share/equivs/admindir/updates
     touch $out/share/equivs/admindir/status
