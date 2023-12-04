@@ -56,4 +56,8 @@ final: prev:
   };
   equivs = final.callPackage ./equivs {};
   debhelper = final.callPackage ./debhelper {};
+  knockd = final.callPackage ./knockd {};
+  knock = final.knockd.override {
+    withKnockd = false;
+  };
 }
