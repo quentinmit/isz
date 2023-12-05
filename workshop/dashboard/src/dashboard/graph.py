@@ -30,7 +30,7 @@ from more_itertools import bucket
 import mpl_toolkits.axisartist as axisartist
 from mpl_toolkits.axes_grid1.parasite_axes import host_axes
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-from mpl_toolkits.axes_grid1.axes_size import Fixed, SizeFromFunc
+from mpl_toolkits.axes_grid1.axes_size import Fixed, _Base as AxesSize_Base
 import numpy as np
 from dozer import Dozer
 import cherrypy
@@ -103,7 +103,7 @@ class AutoAnnotation(mtext.Annotation):
         super().update_positions(renderer)
 
         bbox = mtext.Text.get_window_extent(self, renderer)
-        axbbox = self.axes.get_window_extent(self, renderer)
+        axbbox = self.axes.get_window_extent(renderer)
         if not inside(bbox, axbbox):
             self._adjust_alignment(bbox, axbbox)
             super().update_positions(renderer)
@@ -202,6 +202,19 @@ class QuantityTickFormatter(mticker.Formatter):
     def __call__(self, x, pos=None):
         logging.debug("tick formatter called for %r", x)
         return str(x)
+
+class SizeFromFunc(AxesSize_Base):
+    def __init__(self, func):
+        self._func = func
+
+    def get_size(self, renderer):
+        rel_size = 0.
+
+        bb = self._func(renderer)
+        dpi = renderer.points_to_pixels(72.)
+        abs_size = bb/dpi
+
+        return rel_size, abs_size
 
 _ICON_GLYPHS = {
     "cloudy": "\U000F0590",

@@ -5,10 +5,10 @@
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "nixpkgs/nixos-23.05";
+    nixpkgs.url = "nixpkgs/nixos-23.11";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
-    home-manager.url = "github:nix-community/home-manager/release-23.05";
+    home-manager.url = "github:nix-community/home-manager/release-23.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
@@ -16,7 +16,7 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.inputs.nixpkgs-stable.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    darwin.url = "github:quentinmit/nix-darwin/master";
+    darwin.url = "github:LnL7/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     nur-mweinelt.url = "github:mweinelt/nur-packages";
     nur-mweinelt.inputs.nixpkgs.follows = "nixpkgs";

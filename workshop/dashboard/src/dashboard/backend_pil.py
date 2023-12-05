@@ -27,7 +27,7 @@ from matplotlib.transforms import Affine2D
 _log = logging.getLogger(__name__)
 
 
-FLIPY = Affine2D.identity().scale(1, -1)
+FLIPY = Affine2D().scale(1, -1)
 
 @dataclass
 class BitmapFontEntry(FontEntry):
@@ -557,8 +557,8 @@ class RendererPIL(RendererBase):
             mask, offset = font.getmask2(s, self.draw.fontmode, anchor='ls') # baseline
         except AttributeError:
             mask = font.getmask(s, self.draw.fontmode)
-            width, height = self.draw.textsize(s, font=font)
-            offset = 0, -0.8*height
+            _, top, _, bottom = self.draw.textbbox((0, 0), text=s, font=font)
+            offset = 0, -0.8*(bottom-top)
 
         if angle in (1,3):
             coord = coord[0] + offset[1], coord[1] + offset[0]
@@ -585,7 +585,8 @@ class RendererPIL(RendererBase):
 
     def get_text_width_height_descent(self, s, prop, ismath):
         font = loadfont(prop)
-        width, height = self.draw.textsize(s, font=font)
+        left, top, right, bottom = self.draw.textbbox((0, 0), text=s, font=font)
+        width, height = right - left, bottom - top
         try:
             ascent, descent = font.getmetrics()
             return width, ascent+descent, descent
