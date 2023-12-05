@@ -449,6 +449,8 @@
     '';
   };
 
+  home.sessionVariables.LESSCOLORIZER = "pygmentize -O style=github-dark";
+
   isz.telegraf.enable = true;
   services.telegraf.environmentFiles = [
     ./telegraf.env
