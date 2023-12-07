@@ -155,7 +155,6 @@
     #unsupported mikmod
     #mpeg2vidcodec
     #mpgtx
-    mpv
     opencv
     #unsupported pavucontrol
     pulseaudio
@@ -562,6 +561,7 @@
 
     programs.mpv = {
       enable = true;
+      package = pkgs.nixpkgs-23_05.mpv;
       bindings = {
         PGDWN = "seek -600";
         PGUP = "seek 600";
