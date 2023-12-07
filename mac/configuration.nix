@@ -8,7 +8,8 @@
 
   environment.shells = with pkgs; [ bashInteractive ];
 
-  nixpkgs.overlays = [
+  nixpkgs.overlays = lib.mkAfter [
+    deploy-rs.overlay
     (final: prev: {
       openssh = final.openssh_gssapi;
       gnuplot = prev.gnuplot.override {
@@ -17,8 +18,8 @@
         withLua = true;
         withWxGTK = true;
       };
+      mesa = final.mesa23_3_0_main;
     })
-    deploy-rs.overlay
   ];
   nixpkgs.config.permittedInsecurePackages = [
     # CVE-2023-28531 only affects ssh-add with smartcards.
@@ -45,14 +46,14 @@
 
     # Development
     arduino-cli
-    pkgsCross.arm-embedded.buildPackages.binutils
+    pkgsCross.arm-embedded.buildPackages.bintools # arm-none-eabi-{ld,objdump,strings,nm,...}
     # gcc provides info pages that overlap; prioritize one to prevent a conflict message.
     (lib.setPrio 15 pkgsCross.arm-embedded.stdenv.cc)
     pkgsCross.arm-embedded.buildPackages.gdb
     #arm-none-linux-gnueabi-binutils
     pkgsCross.avr.buildPackages.gcc
     pkgsCross.avr.avrlibc
-    pkgsCross.mingwW64.buildPackages.binutils
+    pkgsCross.mingwW64.buildPackages.bintools
     (lowPrio (pkgs.extend (self: super: {
       threadsCross.model = "win32";
       threadsCross.package = null;
@@ -60,7 +61,7 @@
     (lowPrio pkgsCross.mingwW64.stdenv.cc)
     avrdude
     #already binutils
-    unstable.bossa
+    bossa
     #carthage
     #cctools
     cdecl
@@ -90,7 +91,7 @@
     nodePackages.npm
     #nvm
     fnm
-    octaveFull
+    #broken octaveFull # build error from CFURL.h with sdk 11.0
     openocd
     pipenv
     #unsupported rpm
@@ -103,7 +104,7 @@
     cargo-edit
     cargo-expand
     cargo-feature
-    cargo-flash
+    probe-rs
     cargo-generate
     cargo-hf2
     cargo-outdated
@@ -127,7 +128,7 @@
       withUnfree = true;
     })
     atomicparsley
-    avidemux
+    #broken avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
     cdparanoia
     codec2
     (dav1d.override {
@@ -189,9 +190,7 @@
     })
     #unsupported sdrangel
     soapyhackrf
-    (xastir.override {
-      rastermagick = imagemagick;
-    })
+    xastir
 
     # Other devices
     android-tools
@@ -279,7 +278,7 @@
     # Security
     binwalk
     capstone
-    fcrackzip
+    #broken fcrackzip
     gnupg
     gpgme
     metasploit

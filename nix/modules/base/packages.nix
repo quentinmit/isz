@@ -46,7 +46,8 @@ let
     unar
 
     # Development
-    bintools # FIXME: Needed for lesspipe?
+    #bintools # FIXME: Needed for lesspipe?
+    binutils
     go
     sqlite-interactive
 

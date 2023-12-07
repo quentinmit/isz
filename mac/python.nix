@@ -119,7 +119,6 @@
         configargparse
         configobj
         configparser
-        contextlib2
         cryptography
         cssselect
         debugpy
@@ -154,6 +153,7 @@
         importmagic
         #removed ipaddress
         ipympl
+        ipynbname
         ipython
         ipywidgets
         isodate

@@ -33,6 +33,12 @@ final: prev: {
   });
   tsduck = prev.tsduck.overrideAttrs (old: {
     meta.broken = false;
+    makeFlags = old.makeFlags ++ [
+      "CXXFLAGS_WARNINGS=-Wno-error"
+    ];
+    postPatch = old.postPatch + ''
+      substituteInPlace src/utest/Makefile --replace '$(CC)' '$(CXX)'
+    '';
   });
   wireshark-qt5 = (prev.wireshark.overrideAttrs (old: {
     pname = "wireshark-qt5";
@@ -82,16 +88,186 @@ final: prev: {
           rm $out/lib/*/site-packages/README.md
         '';
       });
-      jedi-language-server = python-prev.jedi-language-server.overrideAttrs (old: {
-        postInstall = (old.postInstall or "") + ''
-          rm $out/lib/*/site-packages/README.md
-        '';
-      });
       scapy = python-prev.scapy.overrideAttrs (old: {
         patches = (old.patches or []) ++ (lib.optionals stdenv.isDarwin [
           ./scapy/darwin-ioctl.patch
         ]);
       });
+      basemap = python-prev.basemap.overrideAttrs (old: {
+        CFLAGS = "-Wno-int-conversion -Wno-incompatible-function-pointer-types";
+      });
     })
   ];
+  mesa_glu = let
+    inherit (final) lib stdenv;
+  in prev.mesa_glu.overrideAttrs (old: {
+    mesonFlags = (old.mesonFlags or []) ++ lib.optionals stdenv.isDarwin [
+      "-Dgl_provider=gl" # glvnd is default
+    ];
+  });
+  mesa23_3_0_main = let
+    inherit (final) fetchFromGitLab fetchurl lib;
+    version = "23.3.0-main";
+    hash = "sha256-kHrUNnUedCAc6uOWCHdd/2LMMcz3BAqJPcXnCbHLlaw=";
+    branch = lib.versions.major version;
+  in prev.mesa.overrideAttrs (old: {
+    inherit version;
+    src = fetchFromGitLab {
+      domain = "gitlab.freedesktop.org";
+      owner = "mesa";
+      repo = "mesa";
+      rev = "4ef573735efc7f15d8b8700622a5865d33c34bf1";
+      inherit hash;
+    };
+    # src = fetchurl {
+    #   urls = [
+    #     "https://archive.mesa3d.org/mesa-${version}.tar.xz"
+    #     "https://mesa.freedesktop.org/archive/mesa-${version}.tar.xz"
+    #     "ftp://ftp.freedesktop.org/pub/mesa/mesa-${version}.tar.xz"
+    #     "ftp://ftp.freedesktop.org/pub/mesa/${version}/mesa-${version}.tar.xz"
+    #     "ftp://ftp.freedesktop.org/pub/mesa/older-versions/${branch}.x/${version}/mesa-${version}.tar.xz"
+    #   ];
+    #   inherit hash;
+    # };
+    patches = builtins.filter (
+      p: let b = builtins.baseNameOf p; in
+         b != "opencl.patch"
+         && b != "disk_cache-include-dri-driver-path-in-cache-key.patch"
+    ) old.patches ++ [
+    ];
+    mesonFlags =
+      (builtins.filter (f: !(lib.hasPrefix "-Ddisk-cache-key=" f)) old.mesonFlags) ++ [
+        "-Dgbm=disabled"
+        "-Dxlib-lease=disabled"
+        "-Degl=disabled"
+        "-Dgallium-vdpau=disabled"
+        "-Dgallium-va=disabled"
+        "-Dgallium-xa=disabled"
+        "-Dlmsensors=disabled"
+      ];
+    meta = old.meta // {
+      broken = false;
+      platforms = lib.platforms.darwin;
+    };
+  });
+  ncftp = prev.ncftp.overrideAttrs (old: {
+    # preAutoreconf = ''
+    #   #mv configure.in configure.ac
+    #   sed -i 's@\(AC_DEFINE_UNQUOTED.PREFIX_BINDIR.*\))@\1, "Define to the full path of $prefix/bin")@' configure.in
+    #   #autoupdate
+    # '';
+    # nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ final.autoreconfHook ];
+    patches = (old.patches or []) ++ [
+      ./ncftp/patch-configure
+    ];
+    CC = final.stdenv.cc;
+    CFLAGS = "-Wno-implicit-int";
+  });
+  fpc = let
+    inherit (final) lib stdenv darwin;
+  in prev.fpc.overrideAttrs (old: {
+    # Needs strip from cctools-port, but ld from cctools-llvm
+    prePatch = (old.prePatch or "") + lib.optionalString stdenv.isDarwin ''
+      substituteInPlace fpcsrc/compiler/Makefile{,.fpc} \
+        --replace "strip -no_uuid" "${darwin.cctools-port}/bin/strip -no_uuid"
+    '';
+    #nativeBuildInputs = (old.nativeBuildInputs or []) ++ lib.optionals stdenv.isDarwin [
+    #  darwin.cctools-port
+    #];
+  });
+  motif = let
+    inherit (final) fetchpatch;
+  in prev.motif.overrideAttrs (old: {
+    patches = old.patches ++ [
+      (fetchpatch rec {
+        name = "wcs-functions.patch";
+        url = "https://github.com/macports/macports-ports/raw/1a671cae6888e36dc95718b2d0b80ae239e289de/x11/openmotif/files/${name}";
+        hash = "sha256-w3zCUs/RbnRoUJ0sNCI00noEOkov/IGV/zIygakSQqc=";
+        extraPrefix = ""; # Patches are applied with -p1; this gives it a prefix to strip.
+      })
+    ];
+    CFLAGS = "-Wno-incompatible-function-pointer-types -Wno-implicit-function-declaration";
+  });
+  cdecl = let
+    inherit (final) lib stdenv;
+  in prev.cdecl.overrideAttrs (old: {
+    preBuild = old.preBuild + lib.optionalString stdenv.cc.isClang ''
+      makeFlagsArray=(CFLAGS="-DBSD -DUSE_READLINE -std=gnu89 -Wno-int-conversion -Wno-incompatible-function-pointer-types" LIBS=-lreadline);
+    '';
+  });
+  emacs-nox = let
+    inherit (final) lib stdenv;
+  in prev.emacs-nox.overrideAttrs (old: {
+    # https://github.com/NixOS/nixpkgs/pull/253892
+    configureFlags = old.configureFlags ++ lib.optionals stdenv.isDarwin [
+      "ac_cv_func_aligned_alloc=no"
+      "ac_cv_have_decl_aligned_alloc=no"
+      "ac_cv_func_posix_spawn_file_actions_addchdir_np=no"
+    ];
+  });
+  wordnet = prev.wordnet.overrideAttrs (old: {
+    configureFlags = (old.configureFlags or []) ++ [
+      "CFLAGS=-Wno-implicit-int"
+    ];
+  });
+  nbd = let
+    inherit (final) lib stdenv;
+  in prev.nbd.overrideAttrs (old: {
+    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
+      "CPPFLAGS=-Dfdatasync=fsync"
+    ];
+  });
+  bochs = let
+    inherit (final) lib stdenv;
+  in prev.bochs.overrideAttrs (old: {
+    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
+      "CXXFLAGS=-fno-aligned-allocation"
+    ];
+  });
+  cdparanoia = let
+    inherit (final) lib stdenv;
+  in prev.cdparanoia.overrideAttrs (old: {
+    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
+      "CFLAGS=-Wno-implicit-function-declaration"
+    ];
+  });
+  bossa = let
+    inherit (final) lib stdenv;
+  in prev.bossa.overrideAttrs (old: {
+    env = old.env // {
+      NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "") + " -Wno-error=unqualified-std-cast-call";
+    };
+  });
+  xqilla = let
+    inherit (final) lib stdenv;
+  in prev.xqilla.overrideAttrs (old: {
+    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
+      "CXXFLAGS=-Wno-register"
+    ];
+    buildInputs = (old.buildInputs or []) ++ lib.optionals stdenv.isDarwin [
+      final.darwin.apple_sdk.frameworks.CoreFoundation
+      final.darwin.apple_sdk.frameworks.CoreServices
+      final.darwin.apple_sdk.frameworks.SystemConfiguration
+    ];
+  });
+  mdbtools = let
+    inherit (final) lib stdenv;
+  in prev.mdbtools.overrideAttrs (old: {
+    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
+      "CFLAGS=-Wno-error=unused-but-set-variable"
+    ];
+  });
+  dsd = let
+    inherit (final) lib stdenv;
+  in prev.dsd.overrideAttrs (old: {
+    CXXFLAGS = (old.CXXFLAGS or "") + " -Wno-error=register";
+  });
+  pidgin = let
+    inherit (final) lib stdenv;
+  in prev.pidgin.overrideAttrs (old: {
+    CFLAGS = (old.CFLAGS or "") + " -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion";
+  });
+  clamav = prev.clamav.override {
+    inherit (final.darwin.apple_sdk.frameworks) Foundation;
+  };
 }

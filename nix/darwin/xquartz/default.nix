@@ -8,7 +8,7 @@
    };
   config = let
     cfg = config.services.xserver;
-    xquartz = pkgs.unstable.xquartz.override {
+    xquartz = pkgs.xquartz.override {
       unfreeFonts = true;
       extraFontDirs = config.fonts.fonts;
     };

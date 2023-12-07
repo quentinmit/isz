@@ -46,15 +46,9 @@
           inherit (prev) system;
           config.allowUnfree = true;
           overlays = [
-            (import ./nix/pkgs/all-packages.nix)
-            (import ./nix/pkgs/unstable-overlays.nix)
-            (ufinal: uprev: {
-              # Mesa 23.1 doesn't build on Darwin
-              # https://gitlab.freedesktop.org/mesa/mesa/-/issues/8634
-              inherit (final) mesa;
-              # glu 9.0.3 fails to link on Darwin Nix
-              mesa_glu = if ufinal.stdenv.isDarwin then final.mesa_glu else uprev.mesa_glu;
-            })
+            self.overlays.new
+            self.overlays.patches
+            self.overlays.unstable
             py-profinet.overlays.default
           ];
         };
@@ -97,9 +91,13 @@
         devShells.esphome = import ./workshop/esphome/shell.nix { inherit pkgs; };
       })) // {
         inherit overlayModule;
-        overlays.new = (import ./nix/pkgs/all-packages.nix);
-        overlays.patches = (import ./nix/pkgs/overlays.nix);
-        overlays.default = nixpkgs.lib.composeManyExtensions [ overlays.new overlays.patches ];
+        overlays.new = import ./nix/pkgs/all-packages.nix;
+        overlays.patches = import ./nix/pkgs/overlays.nix;
+        overlays.default = nixpkgs.lib.composeManyExtensions [
+          overlays.new
+          overlays.patches
+        ];
+        overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
         nixosConfigurations = nixpkgs.lib.genAttrs [
           "workshop"
           "bedroom-pi"
