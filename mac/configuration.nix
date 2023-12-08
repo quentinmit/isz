@@ -758,8 +758,6 @@
       };
     };
 
-    home.sessionVariables.LESSCOLORIZER = "pygmentize -O style=github-dark";
-
     programs.bash = {
       shellAliases = {
         mit-kinit = "kinit";

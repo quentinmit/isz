@@ -12,7 +12,9 @@ in {
 
     nix.registry.isz.flake = self;
 
-    home.packages = import ../modules/base/packages.nix { inherit pkgs; inherit (config.isz) graphical; };
+    home.packages = import ../modules/base/packages.nix { inherit pkgs; inherit (config.isz) graphical; } ++ [
+      pkgs.python3Packages.pygments # for lesspipe
+    ];
 
     programs.vim = {
       enable = true;
@@ -81,6 +83,7 @@ in {
     programs.less.enable = true;
     programs.lesspipe.enable = true;
     home.sessionVariables.LESS = lib.mkDefault "-RM";
+    home.sessionVariables.LESSCOLORIZER = "pygmentize -O style=github-dark";
 
     programs.dircolors = {
       enable = true;
