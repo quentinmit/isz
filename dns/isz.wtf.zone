@@ -109,6 +109,7 @@ quentin-pixel-2-xl EUI48 10-F1-F2-81-CB-C8 ; quentin Pixel 2 XL
 quentin-pixel-4a-5g EUI48 58-24-29-72-A4-EE ; quentin Pixel 4a 5G
 quentin-macbookpro3 EUI48 BC-D0-74-02-35-D9 ; quentin quentin-macbookpro3
 quentin-pixel-7-pro EUI48 D4-3A-2C-95-DC-95 ; quentin quentin-pixel-7-pro
+quentin-pixel-8 EUI48 D4-3A-2C-48-49-BA ; quentin quentin-pixel-8
 quentin-onyx-boox-note-3 EUI48 00-2A-E7-20-B0-0F ; quentin Onyx Boox Note 3
 quentin-shiba EUI48 D4-3A-2C-48-0C-27 ; quentin Shiba
 jess-pixel-4a EUI48 F8-1A-2B-E1-FA-96 ; jess Pixel 4a
@@ -124,6 +125,7 @@ livingroom-chromecast-ultra-wifi EUI48 F4-F5-D8-EF-7B-B9 ; livingroom Chromecast
 livingroom-chromecast-ultra-eth EUI48 44-09-B8-30-81-88 ; livingroom Chromecast Ultra (eth)
 livingroom-chromecast-boreal EUI48 EE-4D-F2-65-87-8E ; livingroom Chromecast Boreal (wifi)
 livingroom-chromecast-boreal-2 EUI48 BA-52-69-42-23-2D ; livingroom Chromecast Boreal 2 (wifi)
+livingroom-google-home-hd EUI48 20-1F-3B-9D-93-09 ; livingroom Google Home HD
 livingroom-google-nest-audio EUI48 D8-8C-79-35-BB-34 ; livingroom Google Nest Audio
 livingroom-led-bulb EUI48 D8-F1-5B-95-99-46 ; livingroom LED bulb
 livingroom-tasmota-bulb EUI48 D8-F1-5B-95-C5-AB ; livingroom LED bulb (tasmota)
