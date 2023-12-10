@@ -188,15 +188,24 @@ in {
             "sensor.tempest_st_00122016_wind_direction"
             "sensor.tempest_st_00122016_wind_direction_avg"
             "sensor.tempest_st_00122016_zambretti_text"
+            "sensor.tempest_st_00122016_current_conditions"
           ];
         };
         recorder = {
           exclude.entities = [
+            # Don't show frequently-changing text.
+            "sensor.tempest_st_00122016_wind_direction"
+            "sensor.tempest_st_00122016_wind_direction_avg"
+            "sensor.tempest_st_00122016_zambretti_text"
+            "sensor.tempest_st_00122016_current_conditions"
             # Rapid updates too frequently.
             # We'll still record the _avg versions that update every minute.
             "sensor.tempest_st_00122016_wind_speed"
             "sensor.tempest_st_00122016_wind_bearing"
             "sensor.tempest_st_00122016_wind_direction"
+          ];
+          exclude.entity_globs = [
+            "sensor.workshop_caparoc_*"
           ];
           db_url = lib.mkIf dbEnabled "postgresql://@/${dbName}";
           db_retry_wait = 10; # Wait 10 seconds before retrying
@@ -230,6 +239,9 @@ in {
           tags_attributes = [
             "friendly_name"
             "device_class"
+          ];
+          exclude.entity_globs = [
+            "sensor.workshop_caparoc_*"
           ];
         };
         sensor = [
