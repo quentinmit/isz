@@ -41,6 +41,8 @@ heartofgold      A 172.30.96.101
                  EUI48 8C-89-A5-1B-60-B2 ; heartofgold (public 8C:89:A5:1B:60:B2)
 steamdeck        A 172.30.96.102
                  EUI48 2C-3B-70-EF-B6-6D
+steamdeckoled    A 172.30.96.103
+                 EUI48 E8-8D-A6-E3-69-E3
 
 pap2t            CNAME pap2t.guest
 bedroom-tasmota  CNAME bedroom-tasmota.guest
