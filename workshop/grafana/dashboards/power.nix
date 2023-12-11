@@ -56,6 +56,7 @@
           custom.fillBelowTo = "min_${field}";
         };
         fields."min_${field}".displayName = "Min";
+        panel.interval = "1s";
     } args;
   in {
     uid = "f96fd7e1-33eb-47c1-89ec-e8fe2741e043";
@@ -215,6 +216,7 @@
           custom.fillOpacity = 10;
         };
         panel.options.tooltip.mode = "multi";
+        panel.interval = "1s";
       }
       {
         panel.gridPos = { x = 12; y = 24; w = 10; h = 8; };
@@ -261,6 +263,7 @@
           custom.fillOpacity = 10;
         };
         panel.options.tooltip.mode = "multi";
+        panel.interval = "1s";
       }
       # Per-channel current and power
       (channelGraph {
