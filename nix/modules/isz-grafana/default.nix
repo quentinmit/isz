@@ -38,6 +38,10 @@ in {
             type = types.listOf types.str;
             default = [];
           };
+          graphTooltip = mkOption {
+            type = types.enum [0 1 2];
+            default = 0;
+          };
           defaultDatasourceName = mkOption {
             type = types.str;
           };
@@ -109,7 +113,7 @@ in {
         inherit (cfg.datasources.${dashboard.defaultDatasourceName}) uid type;
       };
       in {
-        inherit (dashboard) uid title tags links;
+        inherit (dashboard) uid title tags links graphTooltip;
         panels = map (p: p.panel) dashboard.panels;
         templating.list = lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
           inherit (args) tag query;

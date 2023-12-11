@@ -40,6 +40,11 @@ with import ../grafana/types.nix { inherit pkgs lib; };
     Query = types.submodule ({ config, ... }: {
       key = "Query";
       options = {
+        bucket = mkOption {
+          type = with types; nullOr str;
+          default = null;
+          description = "Bucket name (or null for default)";
+        };
         filter = mkOption {
           type = with types; attrsOf (
             coercedTo str (s: { values = [s]; })
@@ -63,7 +68,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           default = [];
         };
         fn = mkOption {
-          type = types.nullOr (types.enum ["derivative" "mean" "last1"]);
+          type = types.nullOr (types.enum ["derivative" "mean" "min" "max" "last1"]);
         };
         createEmpty = mkOption {
           type = types.bool;
@@ -85,7 +90,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
             ''|> filter(fn: (r) => ${fluxFilter field values})'');
         in lib.mkDefault (
           lib.concatMapStrings (x: ''import ${fluxValue x}'' + "\n") config.imports + ''
-            from (bucket: v.defaultBucket)
+            from (bucket: ${if config.bucket != null then (fluxValue config.bucket) else "v.defaultBucket"})
             |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
             ${lib.concatStringsSep "\n" (filters (extraInfluxFilter // config.filter))}
           '' + (
