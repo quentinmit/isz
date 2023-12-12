@@ -2,8 +2,8 @@
 
 {
   config.isz.grafana.dashboards."Workshop Power" = let
-    channelGraph = { field, integralField, filter }: args: lib.recursiveUpdate {
-        influx = [
+    channelGraph = { field, integralField, filter, influx ? [] }: args: lib.recursiveUpdate {
+        influx = influx ++ [
           {
             bucket = "profinet";
             filter = {
@@ -40,8 +40,6 @@
           }
         ];
         panel.fieldConfig.defaults = {
-          color.mode = "fixed";
-          custom.lineWidth = 0;
           custom.fillOpacity = 0;
         };
         panel.options.tooltip.mode = "multi";
@@ -52,10 +50,16 @@
         };
         fields."max_${field}" = {
           displayName = "Max";
+          custom.lineWidth = 0;
           custom.fillOpacity = 25;
           custom.fillBelowTo = "min_${field}";
+          color.mode = "fixed";
         };
-        fields."min_${field}".displayName = "Min";
+        fields."min_${field}" = {
+          displayName = "Min";
+          custom.lineWidth = 0;
+          color.mode = "fixed";
+        };
         panel.interval = "1s";
     } args;
   in {
@@ -92,33 +96,53 @@
       # Battery
       {
         panel.gridPos = { x = 0; y = 0; w = 2; h = 8; };
-        panel.title = "Battery Voltage";
         panel.type = "gauge";
-        influx.filter._measurement = "epicpwrgate.status";
-        influx.filter._field = "Bat.V";
-        influx.fn = "last1";
+        influx = [
+          {
+            bucket = "profinet";
+            filter._measurement = "caparoc";
+            filter._field = "average_voltage_volts";
+            filter.channel = "total";
+            fn = "last1";
+          }
+          {
+            filter._measurement = "epicpwrgate.status";
+            filter._field = ["Bat.V" "PS.V"];
+            fn = "last1";
+          }
+        ];
         panel.fieldConfig.defaults = {
           unit = "volt";
           decimals = 1;
           min = 10;
           max = 16;
         };
-        panel.options.tooltip.mode = "multi";
-      }
-      {
-        panel.gridPos = { x = 2; y = 0; w = 10; h = 8; };
-        panel.title = "Voltage";
-        influx.filter._measurement = "epicpwrgate.status";
-        influx.filter._field = ["Bat.V" "PS.V"];
-        influx.fn = "mean";
-        panel.fieldConfig.defaults = {
-          unit = "volt";
-          decimals = 2;
-        };
-        panel.options.tooltip.mode = "multi";
         fields."Bat.V".displayName = "Battery Voltage";
         fields."PS.V".displayName = "PSU Voltage";
+        fields."average_voltage_volts" = {
+          displayName = "System Voltage";
+          decimals = 2;
+        };
       }
+      (channelGraph {
+        field = "voltage_volts";
+        integralField = "voltage_time_volt_seconds";
+        filter.channel = "total";
+        influx = [{
+          filter._measurement = "epicpwrgate.status";
+          filter._field = ["Bat.V" "PS.V"];
+          fn = "mean";
+        }];
+      } {
+        panel.gridPos = { x = 2; y = 0; w = 10; h = 8; };
+        panel.title = "Workshop System Voltage";
+        panel.fieldConfig.defaults = {
+          unit = "volt";
+          decimals = 3;
+        };
+        fields."Bat.V".displayName = "Battery Voltage";
+        fields."PS.V".displayName = "PSU Voltage";
+      })
       {
         panel.gridPos = { x = 12; y = 0; w = 10; h = 8; };
         panel.title = "Battery Temperature";
@@ -177,6 +201,7 @@
         panel.title = "Workshop Total Current";
         panel.fieldConfig.defaults = {
           unit = "amp";
+          decimals = 2;
         };
       })
       (channelGraph {
@@ -190,22 +215,9 @@
           unit = "watt";
         };
       })
-      # System Voltage (TODO: rearrange?)
-      (channelGraph {
-        field = "voltage_volts";
-        integralField = "voltage_time_volt_seconds";
-        filter.channel = "total";
-      } {
-        panel.gridPos = { x = 2; y = 16; w = 10; h = 8; };
-        panel.title = "Workshop System Voltage";
-        panel.fieldConfig.defaults = {
-          unit = "volt";
-          decimals = 2;
-        };
-      })
       # Stacked current/power
       {
-        panel.gridPos = { x = 2; y = 24; w = 10; h = 8; };
+        panel.gridPos = { x = 2; y = 16; w = 10; h = 8; };
         panel.title = "Current";
         influx.query = ''
           import "join"
@@ -252,7 +264,7 @@
         panel.interval = "1s";
       }
       {
-        panel.gridPos = { x = 12; y = 24; w = 10; h = 8; };
+        panel.gridPos = { x = 12; y = 16; w = 10; h = 8; };
         panel.title = "Power";
         influx.query = ''
           import "join"
@@ -304,7 +316,7 @@
         integralField = "charge_coulombs";
         filter.channel = "\${caparoc_channel}";
       } {
-        panel.gridPos = { x = 2; y = 32; w = 10; h = 8; };
+        panel.gridPos = { x = 2; y = 24; w = 10; h = 8; };
         panel.title = "\${caparoc_channel} Current";
         panel.fieldConfig.defaults = {
           unit = "amp";
@@ -317,7 +329,7 @@
         integralField = "energy_joules";
         filter.channel = "\${caparoc_channel}";
       } {
-        panel.gridPos = { x = 12; y = 32; w = 10; h = 8; };
+        panel.gridPos = { x = 12; y = 24; w = 10; h = 8; };
         panel.title = "\${caparoc_channel} Power";
         panel.fieldConfig.defaults = {
           unit = "watt";
