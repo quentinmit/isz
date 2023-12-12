@@ -7,8 +7,8 @@
   };
   marcusolsson-json-datasource = grafanaPlugin {
     pname = "marcusolsson-json-datasource";
-    version = "1.3.6";
-    zipHash = "sha256-hZNvkqevJO47tV9S4QkAf/skqj0Gr6inoMNhvZyOZCs=";
+    version = "1.3.9";
+    zipHash = "sha256-N/Bngnjv0lLanQ8ucqsMpTm1iqa+MEigqM2O+/TG9J4=";
   };
   mxswat-separator-panel = grafanaPlugin {
     pname = "mxswat-separator-panel";
@@ -17,8 +17,8 @@
   };
   operato-windrose-panel = grafanaPlugin {
     pname = "operato-windrose-panel";
-    version = "1.1.0";
-    zipHash = "sha256-uYCYV1cv7zRG53J22bP5KCjFYPPp+58ZLn6KVDEqYug=";
+    version = "1.1.1";
+    zipHash = "sha256-/iUO/an2CFPbx9Z3SU2EXixgMM4/1goi5c40TZ8RC/g=";
     postPatch = ''
       rm MANIFEST.txt
     '';
