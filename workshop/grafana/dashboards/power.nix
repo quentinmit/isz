@@ -135,6 +135,39 @@
         panel.options.tooltip.mode = "multi";
       }
       # Total Current/Power
+      {
+        panel.gridPos = { x = 0; y = 8; w = 2; h = 8; };
+        panel.type = "gauge";
+        influx.bucket = "profinet";
+        influx.filter._measurement = "caparoc";
+        influx.filter._field = ["average_current_amps" "average_power_watts"];
+        influx.filter.channel = "total";
+        influx.fn = "last1";
+        panel.fieldConfig.defaults = {
+          color.mode = "thresholds";
+        };
+        panel.options.showThresholdMarkers = false;
+        fields.average_current_amps = {
+          displayName = "Average Current";
+          unit = "amp";
+          min = 0;
+          max = 30;
+          thresholds.steps = [
+            { value = null; color = "green"; }
+            { value = 25; color = "red"; }
+          ];
+        };
+        fields.average_power_watts = {
+          displayName = "Average Power";
+          unit = "watt";
+          min = 0;
+          max = 360;
+          thresholds.steps = [
+            { value = null; color = "green"; }
+            { value = 300; color = "red"; }
+          ];
+        };
+      }
       (channelGraph {
         field = "current_amps";
         integralField = "charge_coulombs";
