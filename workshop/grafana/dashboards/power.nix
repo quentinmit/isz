@@ -54,11 +54,13 @@
           custom.fillOpacity = 25;
           custom.fillBelowTo = "min_${field}";
           color.mode = "fixed";
+          custom.hideFrom.legend = true;
         };
         fields."min_${field}" = {
           displayName = "Min";
           custom.lineWidth = 0;
           color.mode = "fixed";
+          custom.hideFrom.legend = true;
         };
         panel.interval = "1s";
     } args;
