@@ -220,8 +220,8 @@ in {
                   type = "horizontal-stack";
                   cards = map light [
                     "living_room_floor_lamp"
+                    "tree"
                     "hg02"
-                    "elgato_key_light_air"
                   ] ++ [{
                     type = "button";
                     show_name = true;

@@ -110,6 +110,7 @@ in {
         (python3Packages: with python3Packages; [
           # pyscript
           croniter
+          watchdog
         ])
       ];
       extraComponents = [
@@ -132,6 +133,7 @@ in {
         "sun"
         "tasmota"
         "upnp"
+        "wled"
         "zone"
         "zwave_js"
         # Bluetooth dynamically loads integrations for every device that is seen.

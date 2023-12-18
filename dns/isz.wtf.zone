@@ -94,6 +94,8 @@ hg02             A 192.168.88.9
                  EUI48 EC-FA-BC-57-D6-2F
 imsai8080        A 192.168.88.10
                  EUI48 30-83-98-FA-83-7C
+tree             A 192.168.88.11
+                 EUI48 F4-12-FA-5D-77-AC
 ; DHCP range is 88.50-254
 
 mac              A 192.168.88.100
