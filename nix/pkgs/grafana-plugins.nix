@@ -34,4 +34,9 @@
       x86_64-darwin = "sha256-o7Jx4H4H1gykjVYvS1htO9WJDlKUzUSMYjADr6v5jGM=";
     };
   };
+  volkovlabs-echarts-panel = grafanaPlugin {
+    pname = "volkovlabs-echarts-panel";
+    version = "5.1.0";
+    zipHash = "sha256-0de2nlcAScumMimvEpvzwpXnynLPTmRW52G1yFwUxHg=";
+  };
 }

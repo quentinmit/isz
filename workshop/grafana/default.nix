@@ -76,6 +76,7 @@
         mxswat-separator-panel
         operato-windrose-panel
         grafana-mqtt-datasource
+        volkovlabs-echarts-panel
       ];
     };
   };
