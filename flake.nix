@@ -122,7 +122,7 @@
             ./mac/configuration.nix
           ];
         };
-        homeConfigurations.steamdeck-deck = home-manager.lib.homeManagerConfiguration {
+        homeConfigurations.deck = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             system = "x86_64-linux";
           };
@@ -173,7 +173,7 @@
           #};
           profiles.deck = {
             sshUser = "deck";
-            path = deploy-rs.lib.${self.homeConfigurations.steamdeck-deck.pkgs.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
+            path = deploy-rs.lib.${self.homeConfigurations.deck.pkgs.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
           };
         };
         deploy.remoteBuild = true;

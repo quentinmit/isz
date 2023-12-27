@@ -47,7 +47,7 @@ let
 
     # Development
     #bintools # FIXME: Needed for lesspipe?
-    binutils
+    #binutils # FIXME: Propagates glibc
     go
     sqlite-interactive
 
