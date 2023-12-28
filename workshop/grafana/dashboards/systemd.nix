@@ -215,63 +215,54 @@
         influx.filter._field = "MemoryCurrent";
         influx.filter.host = "workshop.isz.wtf";
         influx.fn = "last1";
+        influx.imports = ["regexp"];
+        influx.extra = ''
+          |> map(fn: (r) => ({r with ControlGroup: if (exists r.ControlGroup and r.ControlGroup != "") then r.ControlGroup else ((if (exists r.Slice and r.Slice != "" and r.Slice != "-.slice") then "/" + r.Slice else "") + "/" + r.Id)}))
+          |> map(fn: (r) => ({r with Parent: if exists r.Slice then regexp.replaceAllString(r: /^(((.+)\/)|(\/))[^\/]+$/, v: r.ControlGroup, t: "$3$4") else ""}))
+          |> group(columns: ["_start", "_stop", "_measurement", "_field", "ControlGroup", "Slice", "host", "Id", "LoadState", "unit_type", "Parent"])
+        '';
         panel.options = {
           renderer = "canvas";
-          #"map": "none",
-          # "themeEditor": {
-          #                 "name": "default",
-          #                 "height": 400,
-          #                 "config": "{}"
-          #                       },
-          #         "baidu": {
-          #                 "key": "",
-          #                 "callback": "bmapReady"
-          #                       },
-          #         "gaode": {
-          #                 "key": "",
-          #                 "plugin": "AMap.Scale,AMap.ToolBar"
-          #                       },
-          #         "google": {
-          #                 "key": "",
-          #                 "callback": "gmapReady"
-          #                       },
-          #         "editor": {
-          #                 "height": 600,
-          #                 "format": "auto"
-          #                       },
           getOption = ''
-            //console.log("data", data)
+            const { getValueFormat, formattedValueToString } = System.get(System.resolve("@grafana/data"));
 
             const memoryCurrent = data.series.map((s) => s.fields.find(f => f.name == "MemoryCurrent"));
 
             const seriesData = memoryCurrent.map(
               (f) => ({
-                name: f.labels.Id,
+                id: f.labels.ControlGroup,
+                labelText: f.labels.Id,
+                value: (f.values.buffer || f.values)[0],
+                depth: (f.labels.ControlGroup == "/") ? 0 : (Array.from(f.labels.ControlGroup).filter(c => c == "/").length),
               })
             );
-            //console.log(seriesData);
 
             const links = memoryCurrent.map(
               (f) => {
                 return {
-                  source: f.labels.Slice || "/",
-                  target: f.labels.Id,
+                  source: f.labels.Parent || "",
+                  target: f.labels.ControlGroup,
                   value: (f.values.buffer || f.values)[0],
                 }
               }
             );
 
+            const bytesFormat = getValueFormat("bytes");
+
             const series = {
               type: 'sankey',
               layout: 'none',
               emphasis: {
-                focus: 'adjacency'
+                focus: 'trajectory'
+              },
+              label: { formatter: params => params.data.labelText },
+              edgeLabel: {
+                show: true,
+                formatter: params => formattedValueToString(bytesFormat(params.value, undefined, undefined, undefined))
               },
               data: seriesData,
               links: links
             }
-
-            //console.log("series", series);
 
             return {
               backgroundColor: 'transparent',
