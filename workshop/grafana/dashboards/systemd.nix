@@ -207,6 +207,79 @@
           }
         ];
       })
+      {
+        panel.gridPos = { x = 0; y = 47; w = 24; h = 20; };
+        panel.type = "volkovlabs-echarts-panel";
+        panel.title = "Unit Memory Usage";
+        influx.filter._measurement = "systemd_unit";
+        influx.filter._field = "MemoryCurrent";
+        influx.filter.host = "workshop.isz.wtf";
+        influx.fn = "last1";
+        panel.options = {
+          renderer = "canvas";
+          #"map": "none",
+          # "themeEditor": {
+          #                 "name": "default",
+          #                 "height": 400,
+          #                 "config": "{}"
+          #                       },
+          #         "baidu": {
+          #                 "key": "",
+          #                 "callback": "bmapReady"
+          #                       },
+          #         "gaode": {
+          #                 "key": "",
+          #                 "plugin": "AMap.Scale,AMap.ToolBar"
+          #                       },
+          #         "google": {
+          #                 "key": "",
+          #                 "callback": "gmapReady"
+          #                       },
+          #         "editor": {
+          #                 "height": 600,
+          #                 "format": "auto"
+          #                       },
+          getOption = ''
+            //console.log("data", data)
+
+            const memoryCurrent = data.series.map((s) => s.fields.find(f => f.name == "MemoryCurrent"));
+
+            const seriesData = memoryCurrent.map(
+              (f) => ({
+                name: f.labels.Id,
+              })
+            );
+            //console.log(seriesData);
+
+            const links = memoryCurrent.map(
+              (f) => {
+                return {
+                  source: f.labels.Slice || "/",
+                  target: f.labels.Id,
+                  value: (f.values.buffer || f.values)[0],
+                }
+              }
+            );
+
+            const series = {
+              type: 'sankey',
+              layout: 'none',
+              emphasis: {
+                focus: 'adjacency'
+              },
+              data: seriesData,
+              links: links
+            }
+
+            //console.log("series", series);
+
+            return {
+              backgroundColor: 'transparent',
+              series,
+            };
+          '';
+        };
+      }
     ];
   };
 }
