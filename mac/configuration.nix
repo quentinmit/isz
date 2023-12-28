@@ -79,7 +79,7 @@
     ghc
     gperftools
     #why imake
-    #unsupported julia
+    julia-bin
     #ld64
     lua
     #mlir-14
