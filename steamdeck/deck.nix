@@ -1,10 +1,14 @@
-{ config, pkgs, self, ... }:
+{ config, pkgs, self, Jovian-NixOS, ... }:
 
 {
   home.username = "deck";
   home.homeDirectory = "/home/deck";
 
   home.stateVersion = "23.05";
+
+  nixpkgs.overlays = [
+    Jovian-NixOS.overlays.default
+  ];
 
   home.packages = with pkgs; [
     # Network
@@ -83,6 +87,17 @@
   ];
 
   programs.onboard.enable = true;
+
+  systemd.user.services.sdgyrodsu = {
+    Unit.Description = "Cemuhook DSU server for the Steam Deck Gyroscope";
+    Unit.WantedBy = [ "graphical-session.target" ];
+    Service = {
+      ExecStart = "${pkgs.sdgyrodsu}/bin/sdgyrodsu";
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+    };
+  };
 
   services.syncthing = {
     enable = true;
