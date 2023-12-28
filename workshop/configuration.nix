@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, nixos-hardware, ... }:
 
 {
   imports =
@@ -19,6 +19,8 @@
       #./containers.nix
       ../nix/zwave-js-ui.nix
       ../nix/speedtest.nix
+      nixos-hardware.nixosModules.common-cpu-amd
+      nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];
 
   sops.defaultSopsFile = ./secrets.yaml;
