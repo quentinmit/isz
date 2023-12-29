@@ -15,6 +15,9 @@
       shortcuts = {
         "KDE Keyboard Layout Switcher"."Switch to Next Keyboard Layout" = "Meta+Alt+K";
         "kaccess"."Toggle Screen Reader On and Off" = "Meta+Alt+S";
+        "kcm_touchpad"."Disable Touchpad" = "Touchpad Off";
+        "kcm_touchpad"."Enable Touchpad" = "Touchpad On";
+        "kcm_touchpad"."Toggle Touchpad" = "Touchpad Toggle";
         "kded5"."Show System Activity" = "Ctrl+Shift+Esc";
         "kded5"."display" = ["Display" "Meta+P"];
         "kmix"."increase_volume" = "Volume Up";
@@ -23,8 +26,11 @@
         "kmix"."decrease_microphone_volume" = ["Microphone Volume Down" "Meta+Volume Down"];
         "kmix"."increase_microphone_volume" = ["Microphone Volume Up" "Meta+Volume Up"];
         "kmix"."mic_mute" = ["Microphone Mute" "Meta+Volume Mute"];
+        "ksmserver"."Halt Without Confirmation" = [ ];
         "ksmserver"."Lock Session" = ["Ctrl+Alt+L" "Meta+L" "Screensaver"];
         "ksmserver"."Log Out" = "Ctrl+Alt+Del";
+        "ksmserver"."Log Out Without Confirmation" = [ ];
+        "ksmserver"."Reboot Without Confirmation" = [ ];
         "kwin"."Activate Window Demanding Attention" = "Meta+Ctrl+A";
         "kwin"."Decrease Opacity" = [ ];
         "kwin"."Edit Tiles" = "Meta+T";
@@ -180,9 +186,19 @@
         "kwin"."view_actual_size" = "Meta+0";
         "kwin"."view_zoom_in" = ["Meta++" "Meta+="];
         "kwin"."view_zoom_out" = "Meta+-";
-        "org.kde.konsole.desktop"."_launch" = "Ctrl+Alt+T";
+        "mediacontrol"."mediavolumedown" = [ ];
+        "mediacontrol"."mediavolumeup" = [ ];
+        "mediacontrol"."nextmedia" = "Media Next";
+        "mediacontrol"."pausemedia" = "Media Pause";
+        "mediacontrol"."playmedia" = [ ];
+        "mediacontrol"."playpausemedia" = "Media Play";
+        "mediacontrol"."previousmedia" = "Media Previous";
+        "mediacontrol"."stopmedia" = "Media Stop";
         "org.kde.dolphin.desktop"."_launch" = "Meta+E";
         "org.kde.kcalc.desktop"."_launch" = "Launch (1)";
+        "org.kde.konsole.desktop"."NewTab" = [ ];
+        "org.kde.konsole.desktop"."NewWindow" = [ ];
+        "org.kde.konsole.desktop"."_launch" = "Ctrl+Alt+T";
         "org.kde.krunner.desktop"."RunClipboard" = "Alt+Shift+F2";
         "org.kde.krunner.desktop"."_launch" = ["Alt+F2" "Search"];
         "org.kde.plasma.emojier.desktop"."_launch" = ["Meta+." "Meta+Ctrl+Alt+Shift+Space"];
@@ -238,7 +254,9 @@
         "systemsettings.desktop"."screenlocker" = [ ];
       };
       configFile = {
+        "dolphinrc"."DetailsMode"."PreviewSize" = 16;
         "kdeglobals"."KDE"."SingleClick" = false;
+        "systemsettingsrc"."systemsettings_sidebar_mode"."HighlightNonDefaultSettings" = true;
       };
     };
   };
