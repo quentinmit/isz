@@ -1,4 +1,4 @@
-{ config, pkgs, self, Jovian-NixOS, ... }:
+{ config, pkgs, self, Jovian-NixOS, nixgl, ... }:
 
 {
   home.username = "deck";
@@ -8,6 +8,7 @@
 
   nixpkgs.overlays = [
     Jovian-NixOS.overlays.default
+    nixgl.overlay
   ];
 
   home.packages = with pkgs; [
@@ -82,6 +83,7 @@
     jstest-gtk
     kwalletcli
     kwalletmanager
+    pkgs.nixgl.nixGLIntel
     telegraf
     unar
   ];

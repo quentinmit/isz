@@ -40,6 +40,9 @@
     py-profinet.inputs.flake-utils.follows = "flake-utils";
     Jovian-NixOS.url = "github:Jovian-Experiments/Jovian-NixOS";
     Jovian-NixOS.inputs.nixpkgs.follows = "nixpkgs";
+    nixgl.url = "github:guibou/nixGL";
+    nixgl.inputs.nixpkgs.follows = "nixpkgs";
+    nixgl.inputs.flake-utils.follows = "flake-utils";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, ... }@args:
     let
