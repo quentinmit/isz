@@ -7,7 +7,28 @@
     defaultDatasourceName = "workshop";
     panels = [
       {
-        panel.gridPos = { x = 0; y = 0; w = 24; h = 9; };
+        panel.gridPos = { x = 0; y = 0; w = 24; h = 18; };
+        panel.title = "CPU Usage";
+        panel.type = "table";
+        panel.fieldConfig.defaults = {
+          custom.filterable = true;
+        };
+        panel.interval = "60s";
+        influx.filter._measurement = "systemd_unit";
+        influx.filter._field = "CPUUsageNSec";
+        influx.fn = "derivative";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: r._value / 1000000000.}))
+        '';
+        panel.fieldConfig.defaults = {
+          unit = "percentunit";
+        };
+        panel.transformations = [
+          { id = "timeSeriesTable"; }
+        ];
+      }
+      {
+        panel.gridPos = { x = 0; y = 18; w = 24; h = 9; };
         panel.title = "Unit CPU usage";
         panel.interval = "60s";
         influx.query = ''
@@ -56,7 +77,7 @@
         '';
       }
       {
-        panel.gridPos = { x = 0; y = 9; w = 24; h = 18; };
+        panel.gridPos = { x = 0; y = 27; w = 24; h = 18; };
         panel.title = "trend test";
         panel.type = "table";
         panel.fieldConfig.defaults = {
@@ -165,7 +186,7 @@
           in ''  ${name}: ${value}''
         ) fields;
       in {
-        panel.gridPos = { x = 0; y = 27; w = 24; h = 20; };
+        panel.gridPos = { x = 0; y = 45; w = 24; h = 20; };
         panel.title = "systemd units";
         panel.type = "table";
         panel.interval = "60s";
@@ -208,7 +229,7 @@
         ];
       })
       {
-        panel.gridPos = { x = 0; y = 47; w = 24; h = 20; };
+        panel.gridPos = { x = 0; y = 65; w = 24; h = 20; };
         panel.type = "volkovlabs-echarts-panel";
         panel.title = "Unit Memory Usage";
         influx.filter._measurement = "systemd_unit";
