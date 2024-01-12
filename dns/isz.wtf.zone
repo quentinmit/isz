@@ -96,6 +96,9 @@ imsai8080        A 192.168.88.10
                  EUI48 30-83-98-FA-83-7C
 tree             A 192.168.88.11
                  EUI48 F4-12-FA-5D-77-AC
+dho924s          A 192.168.88.12
+                 EUI48 B6-74-19-EA-62-8E
+rigol-scope      CNAME dho924s
 ; DHCP range is 88.50-254
 
 mac              A 192.168.88.100
