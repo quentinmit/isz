@@ -137,7 +137,6 @@
     })
     #unsupported dvdbackup
     #dvdrw-tools
-    exiftool
     feh
     #already ffmpeg
     flac
@@ -164,7 +163,6 @@
     tsduck
     #broken vapoursynth
     wxSVG
-    youtube-dl
 
     # Radio
     #unsupported csdr
@@ -494,20 +492,9 @@
 
     services.clamav.updater.enable = true;
 
-    programs.atuin = {
-      enable = true;
-      enableBashIntegration = true;
-      package = pkgs.unstable.atuin;
-      flags = [
-        "--disable-up-arrow"
-      ];
-      settings = {
-        dialect = "us";
-        sync_address = "https://atuin.isz.wtf";
-        search_mode = "fulltext";
-        filter_mode_shell_up_key_binding = "session";
-      };
-    };
+    isz.quentin = true;
+
+    programs.atuin.settings.sync_address = "https://atuin.isz.wtf";
 
     programs.alacritty = {
       enable = true;
@@ -559,88 +546,7 @@
       };
     };
 
-    programs.mpv = {
-      enable = true;
-      package = pkgs.nixpkgs-23_05.mpv;
-      bindings = {
-        PGDWN = "seek -600";
-        PGUP = "seek 600";
-        "Shift+PGDWN" = "add chapter -1";
-        "Shift+PGUP" = "add chapter 1";
-
-        KP1 = "add video-rotate -90";
-        KP2 = "add video-pan-y -0.01";
-        KP3 = "add video-rotate +90";
-        KP4 = "add video-pan-x +0.01";
-        KP5 = "set video-pan-x 0; set video-pan-y 0; set video-zoom 0";
-        KP6 = "add video-pan-x -0.01";
-        KP7 = "add video-zoom -0.01";
-        KP8 = "add video-pan-y +0.01";
-        KP9 = "add video-zoom +0.01";
-        b = "osd-msg script-message curves-brighten-show";
-        y = "osd-msg script-message curves-cooler-show";
-        c = "script_message show-clock";
-      };
-    };
-    xdg.configFile."youtube-dl/config".text = ''
-      --netrc
-    '';
-    xdg.configFile."yt-dlp/config".text = ''
-      --ap-mso Spectrum
-      --netrc
-    '';
-
-    home.file.".ExifTool_config".text = ''
-      %Image::ExifTool::UserDefined::Options = (
-          LargeFileSupport => 1,
-      );
-    '';
-
-    programs.git = {
-      package = pkgs.gitFull;
-      lfs.enable = true;
-    };
-
-    home.file.".gdbinit".text = ''
-      set history filename ~/.gdb_history
-      set history save on
-    '';
-
-    programs.gpg = {
-      enable = true;
-      settings = rec {
-        ask-cert-level = true;
-        default-key = "1C71A0665400AACD142EB1A004EE05A8FCEFB697";
-        encrypt-to = default-key;
-        no-comments = false;
-        no-emit-version = false;
-        keyid-format = "long";
-        no-symkey-cache = false;
-      };
-    };
-
-    programs.ssh = {
-      enable = true;
-      extraConfig = ''
-        GSSAPIAuthentication yes
-        GSSAPIKeyExchange yes
-        PubkeyAcceptedKeyTypes +ssh-dss,ssh-rsa
-      '';
-      matchBlocks."hercules.comclub.org" = {
-        user = "quentins";
-        proxyJump = "atlas.comclub.org";
-      };
-      matchBlocks."sipb-isilon-*" = {
-        extraOptions.HostKeyAlgorithms = "+ssh-dss";
-      };
-      matchBlocks."mattermost.mit.edu" = {
-        hostname = "mattermost.mit.edu";
-      };
-    };
-
-    home.file.".snmp/snmp.conf".text = ''
-      mibAllowUnderline yes
-    '';
+    programs.mpv.package = pkgs.nixpkgs-23_05.mpv;
 
     # .emacs
     # .influxdbv2/configs
@@ -730,38 +636,9 @@
       };
     };
 
-    xdg.configFile."pip/pip.conf".text = pkgs.lib.generators.toINI {} {
-      global.disable-pip-version-check = true;
-    };
-
-    programs.starship = {
-      enable = true;
-      settings = {
-        directory = {
-          truncate_to_repo = false;
-          truncation_length = 8;
-          truncation_symbol = "…/";
-          style = "bold cyan";
-          before_repo_root_style = "fg:7";
-          repo_root_style = "cyan";
-        };
-        status.disabled = false;
-        time.disabled = false;
-        git_status = {
-          # Don't report stashed
-          stashed = "";
-          # Report the number of commits ahead or behind.
-          ahead = "⇡\${count}";
-          diverged = "⇕⇡\${ahead_count}⇣\${behind_count}";
-          behind = "⇣\${count}";
-        };
-      };
-    };
-
     programs.bash = {
       shellAliases = {
         mit-kinit = "kinit";
-        krootrsync = ''kdo quentin/root@ATHENA.MIT.EDU rsync -e 'ssh -o "GSSAPIDelegateCredentials no"' '';
         xvm-pssh = "kdo quentin/root@ATHENA.MIT.EDU pssh -h ~/lib/xvm-hosts.txt -O GSSAPIDelegateCredentials=no -l root";
         xvm-csshX = "PATH=~/bin:$PATH csshX --login root --ssh ~/bin/mit-ssh $(cat ~/lib/xvm-hosts.txt)";
         xdh-pssh = "kdo quentin/root@ATHENA.MIT.EDU pssh -h ~/lib/xvm-dev-hosts.txt -O GSSAPIDelegateCredentials=no -l root";
@@ -786,9 +663,6 @@
       '';
       initExtra = ''
         export CDPATH=:~
-
-        . ~/Documents/MIT/SIPB/snippets/kerberos/kdo
-        kdo_args=(-r7d -F)
 
         ec-1e-goodale-torrent() {
           scp "$@" ec-1e-goodale-tv.mit.edu:/srv/media/torrents/watch/ && rm "$@";
@@ -817,93 +691,7 @@
             sudo bash -c 'openvpn2 --config /Users/quentin/Documents/MIT/EC/ecmr-vpn.cfg --auth-user-pass <(sudo -u quentin pass ecmr | head -2 | tac)'
         }
 
-        function histoff {
-          unset HISTFILE
-          export -n HISTFILE
-          unset preexec_functions
-          unset precmd_functions
-        }
-
         # . /opt/local/share/nvm/init-nvm.sh
-      '';
-      profileExtra = ''
-        if ! type _compopt_o_filenames &> /dev/null; then
-          _compopt_o_filenames ()
-          {
-            compopt -o filenames 2>/dev/null
-          }
-        fi
-
-        # FIXME: Why do some apps not have kMDItemAlternateNames? Missing Info.plist?
-        _open_apps_by_name ()
-        {
-          local IFS='
-        ';
-          _quote_readline_by_ref "$1" quoted;
-          local -a apps;
-          apps=($(mdfind -literal "kMDItemContentTypeTree == 'com.apple.application' && kMDItemAlternateNames == '$1*'"));
-          if [ ''${#apps[@]} -ne 0 ]; then
-            COMPREPLY=($(basename -a -- "''${apps[@]}" | sort -u));
-            _compopt_o_filenames;
-          fi
-        }
-
-        # If compgen ever gains the ability to match case-insensitive against -W, switch to this.
-        _open_apps_by_name_slow ()
-        {
-          local IFS='
-        ';
-          _quote_readline_by_ref "$1" quoted;
-          local -a apps;
-          local -a toks;
-          apps=($(basename -a -- $(mdfind -literal "kMDItemContentTypeTree == 'com.apple.application'") | sort -u));
-          toks=($(compgen -W "''${apps[*]}" "$1"));
-          if [ ''${#toks[@]} -ne 0 ]; then
-            _compopt_o_filenames;
-            COMPREPLY=("''${toks[@]}");
-          fi
-        }
-
-        _open_apps_by_bundle_id ()
-        {
-          local IFS='
-        ';
-          _quote_readline_by_ref "$1" quoted;
-          local -a apps;
-          local -a toks;
-          apps=($(~/bin/list_apps_by_bundle_id | sort -u));
-          toks=($(compgen -W "''${apps[*]}" "$1"));
-          if [ ''${#toks[@]} -ne 0 ]; then
-            _compopt_o_filenames;
-            COMPREPLY=("''${toks[@]}");
-          fi
-        }
-
-        _open ()
-        {
-          COMPREPLY=();
-          local cur prev;
-          _get_comp_words_by_ref cur prev;
-          case $prev in
-            -a)
-              _open_apps_by_name "$cur";
-              return 0
-              ;;
-            -b)
-              _open_apps_by_bundle_id "$cur";
-              return 0
-              ;;
-          esac;
-          if [[ "$cur" == -* ]]; then
-            COMPREPLY=($( compgen -W '-a -b -e -t -f -F --fresh -R --reveal -W --wait-apps --args -n --new -j --hide -g --background -h --header' -- "$cur" ));
-            return 0;
-          fi;
-          _filedir
-        }
-
-        if [ -f /opt/local/etc/bash_completion ]; then
-            complete -F _open open
-        fi
       '';
     };
   };

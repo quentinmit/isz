@@ -118,5 +118,56 @@ in {
 
       variables.completion-ignore-case = true;
     };
+
+    programs.atuin = {
+      enable = true;
+      enableBashIntegration = true;
+      package = pkgs.unstable.atuin;
+      flags = [
+        "--disable-up-arrow"
+      ];
+      settings = {
+        dialect = "us";
+        search_mode = "fulltext";
+        filter_mode_shell_up_key_binding = "session";
+      };
+    };
+
+    programs.bash.initExtra = ''
+      function histoff {
+        unset HISTFILE
+        export -n HISTFILE
+        unset preexec_functions
+        unset precmd_functions
+      }
+    '';
+
+    xdg.configFile."pip/pip.conf".text = pkgs.lib.generators.toINI {} {
+      global.disable-pip-version-check = true;
+    };
+
+    programs.starship = {
+      enable = true;
+      settings = {
+        directory = {
+          truncate_to_repo = false;
+          truncation_length = 8;
+          truncation_symbol = "…/";
+          style = "bold cyan";
+          before_repo_root_style = "fg:7";
+          repo_root_style = "cyan";
+        };
+        status.disabled = false;
+        time.disabled = false;
+        git_status = {
+          # Don't report stashed
+          stashed = "";
+          # Report the number of commits ahead or behind.
+          ahead = "⇡\${count}";
+          diverged = "⇕⇡\${ahead_count}⇣\${behind_count}";
+          behind = "⇣\${count}";
+        };
+      };
+    };
   };
 }
