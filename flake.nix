@@ -49,12 +49,7 @@
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
         unstable = import unstable {
-          inherit (prev) system;
-          config.allowUnfree = true;
-          # For home-assistant
-          config.permittedInsecurePackages = [
-            "openssl-1.1.1w"
-          ];
+          inherit (final) system config;
           overlays = [
             self.overlays.new
             self.overlays.patches
@@ -63,8 +58,7 @@
           ];
         };
         nixpkgs-23_05 = import nixpkgs-23_05 {
-          inherit (prev) system;
-          config.allowUnfree = true;
+          inherit (final) system config;
         };
       };
       overlays = [

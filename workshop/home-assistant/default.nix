@@ -63,6 +63,9 @@ in {
         inherit (pkgs.unstable) home-assistant;
       })
     ];
+    nixpkgs.config.permittedInsecurePackages = [
+      "openssl-1.1.1w"
+    ];
     services.postgresql = {
       ensureDatabases = [dbName];
       ensureUsers = [{
