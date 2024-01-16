@@ -51,6 +51,10 @@
         unstable = import unstable {
           inherit (prev) system;
           config.allowUnfree = true;
+          # For home-assistant
+          config.permittedInsecurePackages = [
+            "openssl-1.1.1w"
+          ];
           overlays = [
             self.overlays.new
             self.overlays.patches

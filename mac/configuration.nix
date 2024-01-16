@@ -18,7 +18,7 @@
         withLua = true;
         withWxGTK = true;
       };
-      mesa = final.mesa23_3_0_main;
+      #mesa = final.mesa23_3_0_main;
     })
   ];
   nixpkgs.config.permittedInsecurePackages = [

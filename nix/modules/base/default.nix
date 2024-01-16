@@ -17,7 +17,7 @@
     networking.domain = "isz.wtf";
 
     services.locate.enable = true;
-    services.locate.locate = pkgs.mlocate;
+    services.locate.package = pkgs.mlocate;
     services.locate.localuser = null;
 
     programs.mtr.enable = true;
