@@ -168,6 +168,7 @@
   };
   programs.plasma.configFile = {
     "kcminputrc"."Mouse"."X11LibInputXAccelProfileFlat" = true;
+    "kdeglobals"."General"."BrowserApplication" = "com.google.Chrome.desktop";
 #       "khotkeysrc"."Data_4"."Comment" = "Comment";
 #       "khotkeysrc"."Data_4"."DataCount" = 1;
 #       "khotkeysrc"."Data_4"."Enabled" = true;
@@ -197,7 +198,7 @@
 
   xdg.configFile."kate/lspclient/settings.json".text = lib.generators.toJSON {} {
     servers.nix = {
-      command = ["${pkgs.nil}/bin/nil"];
+      command = ["${pkgs.unstable.nil}/bin/nil"];
       url = "https://github.com/oxalica/nil";
       highlightingModeRegex = "^Nix$";
     };
