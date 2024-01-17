@@ -43,6 +43,8 @@
     nixgl.url = "github:guibou/nixGL";
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
     nixgl.inputs.flake-utils.follows = "flake-utils";
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, ... }@args:
     let
@@ -111,6 +113,7 @@
           "workshop"
           "bedroom-pi"
           "droid"
+          "goddard"
         ] (name: nixpkgs.lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [
