@@ -1,4 +1,4 @@
-{ config, pkgs, self, Jovian-NixOS, nixgl, ... }:
+{ config, pkgs, lib, self, Jovian-NixOS, nixgl, ... }:
 
 {
   home.username = "deck";
@@ -17,7 +17,7 @@
   home.packages = with pkgs; [
     # Network
     netsurf.browser
-    qgis
+    qgis-ltr
     remmina
     wireshark
     x11vnc
@@ -193,5 +193,13 @@
 #       "khotkeysrc"."Data_4_1Triggers0"."Key" = "Meta+K";
 #       "khotkeysrc"."Data_4_1Triggers0"."Type" = "SHORTCUT";
 #       "khotkeysrc"."Data_4_1Triggers0"."Uuid" = "{e521ea71-a8c8-4e23-9b72-4c9ca63c6874}";
+  };
+
+  xdg.configFile."kate/lspclient/settings.json".text = lib.generators.toJSON {} {
+    servers.nix = {
+      command = ["${pkgs.nil}/bin/nil"];
+      url = "https://github.com/oxalica/nil";
+      highlightingModeRegex = "^Nix$";
+    };
   };
 }
