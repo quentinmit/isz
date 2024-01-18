@@ -57,6 +57,35 @@
 
   programs.dconf.enable = true;
 
+  krb5.enable = true;
+  krb5.libdefaults.default_realm = "ATHENA.MIT.EDU";
+  krb5.realms = {
+    "ATHENA.MIT.EDU" = {
+      admin_server = "kerberos.mit.edu";
+      default_domain = "mit.edu";
+      kdc = [
+        "kerberos.mit.edu:88"
+        "kerberos-1.mit.edu:88"
+        "kerberos-2.mit.edu:88"
+      ];
+    };
+    "ZONE.MIT.EDU" = {
+      admin_server = "casio.mit.edu";
+      kdc = [
+        "casio.mit.edu"
+        "seiko.mit.edu"
+      ];
+    };
+  };
+  krb5.domain_realm = {
+    "exchange.mit.edu" = "EXCHANGE.MIT.EDU";
+    "mit.edu" = "ATHENA.MIT.EDU";
+    "win.mit.edu" = "WIN.MIT.EDU";
+    "csail.mit.edu" = "CSAIL.MIT.EDU";
+    "media.mit.edu" = "MEDIA-LAB.MIT.EDU";
+    "whoi.edu" = "ATHENA.MIT.EDU";
+  };
+
   users.users.quentin = {
     isNormalUser = true;
     description = "Quentin Smith";
