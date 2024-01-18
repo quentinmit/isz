@@ -37,6 +37,8 @@
     enable = true;
   };
 
+  security.polkit.enable = true;
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -50,14 +52,19 @@
   services.xserver.windowManager.twm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
 
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+
   programs.dconf.enable = true;
 
   users.users.quentin = {
     isNormalUser = true;
     description = "Quentin Smith";
     extraGroups = [
-      "wheel"
+      "dialout"
       "networkmanager"
+      "video"
+      "wheel"
     ];
   };
 
