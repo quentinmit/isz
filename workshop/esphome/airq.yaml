@@ -1,0 +1,189 @@
+# https://docs.m5stack.com/en/core/AirQ
+
+# Pin configuration:
+# G0 - Button A (+ BOOT)
+# G1 - eInk BUSY
+# G2 - eInk RST
+# G3 - eInk D/C
+# G4 - eInk CS
+# G5 - eInk SCK
+# G6 - eInk MOSI
+# G7
+# G8 - Button B
+# G9 - beep
+# G10 - AirPWREN (SEN55 Power)
+# G11 - SDA
+# G12 - SCL
+# G13 - Grove SDA
+# G14 - 1/2 Vbat
+# G15 - Grove SCL
+# G19 - USB D-
+# G20 - USB D+
+# G39
+# G40
+# G41
+# G42 - Button WAKE
+# G43
+# G46 - HOLD (power latch)
+
+# I2C devices:
+# 0x62 - SCD40
+# 0x69 - SEN55
+# 0x51 - RTC8563
+
+substitutions:
+  name: airq
+  friendly_name: AirQ
+
+esp32:
+  board: m5stack-stamps3
+  variant: esp32s3
+  framework:
+    version: 2.0.14
+    platform_version: 6.2.0
+
+packages:
+  isz_base: !include include/isz-base.yaml
+
+logger:
+  level: VERBOSE
+
+mqtt:
+  broker: !secret mqtt_broker
+  discovery: false
+
+power_supply:
+  - id: sen55_power_supply
+    pin:
+      number: 10
+      inverted: true
+    enable_on_boot: true
+    enable_time: 50ms
+
+esphome:
+  on_boot:
+    then:
+      # read the RTC time once when the system boots
+      pcf8563.read_time:
+
+time:
+  - platform: pcf8563
+    address: 0x51
+    # repeated synchronization is not necessary unless the external RTC
+    # is much more accurate than the internal clock
+    update_interval: never
+  - platform: homeassistant
+    # instead try to synchronize via network repeatedly ...
+    on_time_sync:
+      then:
+        # ... and update the RTC when the synchronization was successful
+        pcf8563.write_time:
+
+i2c:
+  sda: 11
+  scl: 12
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: Button A
+  - platform: gpio
+    pin:
+      number: 8
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: Button B
+  - platform: gpio
+    pin:
+      number: 42
+      # External pullup
+      inverted: true
+    name: WAKE
+
+sensor:
+  # - platform: adc
+  #   pin: 14
+  #   name: "Battery Voltage"
+  #   attenuation: 11db
+  #   filters:
+  #   - multiply: 2
+  #   accuracy_decimals: 3
+  #   unit_of_measurement: V
+  #   update_interval: 10s
+  - platform: sen5x
+    id: sen54
+    pm_1_0:
+      name: "PM <1µm Weight concentration"
+      id: pm_1_0
+      accuracy_decimals: 1
+    pm_2_5:
+      name: "PM <2.5µm Weight concentration"
+      id: pm_2_5
+      accuracy_decimals: 1
+    pm_4_0:
+      name: "PM <4µm Weight concentration"
+      id: pm_4_0
+      accuracy_decimals: 1
+    pm_10_0:
+      name: "PM <10µm Weight concentration"
+      id: pm_10_0
+      accuracy_decimals: 1
+    temperature:
+      name: "SEN55 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "SEN55 Humidity"
+      accuracy_decimals: 0
+    voc:
+      name: "VOC"
+      id: voc
+      algorithm_tuning:
+        index_offset: 100
+        learning_time_offset_hours: 12
+        learning_time_gain_hours: 12
+        gating_max_duration_minutes: 180
+        std_initial: 50
+        gain_factor: 230
+    nox:
+      name: "NOx"
+      id: nox
+      algorithm_tuning:
+        index_offset: 100
+        learning_time_offset_hours: 12
+        learning_time_gain_hours: 12
+        gating_max_duration_minutes: 180
+        std_initial: 50
+        gain_factor: 230
+    temperature_compensation:
+      offset: 0
+      normalized_offset_slope: 0
+      time_constant: 0
+    acceleration_mode: low
+    store_baseline: true
+    address: 0x69
+    update_interval: 10s
+  - platform: scd4x
+    id: my_scd40
+    co2:
+      name: "CO2"
+    temperature:
+      name: "SCD40 Temperature"
+    humidity:
+      name: "SCD40 Humidity"
+    measurement_mode: periodic
+    update_interval: 30s
+
+api:
+  services:
+    - service: set_ambient_pressure
+      variables:
+        pressure_mbar: int
+      then:
+        - lambda: "id(my_scd40)->set_ambient_pressure_compensation(pressure_mbar);"

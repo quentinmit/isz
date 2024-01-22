@@ -99,6 +99,8 @@ tree             A 192.168.88.11
 dho924s          A 192.168.88.12
                  EUI48 B6-74-19-EA-62-8E
 rigol-scope      CNAME dho924s
+airq             A 192.168.88.13
+                 EUI48 48-27-E2-E3-08-EC
 ; DHCP range is 88.50-254
 
 mac              A 192.168.88.100
