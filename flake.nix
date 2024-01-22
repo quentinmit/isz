@@ -54,7 +54,7 @@
           inherit (final) system config;
           overlays = [
             self.overlays.new
-            self.overlays.patches
+            #self.overlays.stable
             self.overlays.unstable
             py-profinet.overlays.default
             Jovian-NixOS.overlays.default
@@ -67,7 +67,7 @@
       overlays = [
         overlay
         self.overlays.new
-        self.overlays.patches
+        self.overlays.stable
         cargo2nix.overlays.default
       ];
       # Overlays-module makes "pkgs.unstable" available in configuration.nix
@@ -99,14 +99,14 @@
             })) pkgs;
       in {
         legacyPackages = pkgs;
-        devShells.esphome = import ./workshop/esphome/shell.nix { inherit pkgs; };
+        devShells.esphome = import ./workshop/esphome/shell.nix { pkgs = pkgs.unstable; };
       })) // {
         inherit overlayModule;
         overlays.new = import ./nix/pkgs/all-packages.nix;
-        overlays.patches = import ./nix/pkgs/overlays.nix;
+        overlays.stable = import ./nix/pkgs/overlays.nix;
         overlays.default = nixpkgs.lib.composeManyExtensions [
           overlays.new
-          overlays.patches
+          overlays.stable
         ];
         overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
         nixosConfigurations = nixpkgs.lib.genAttrs [

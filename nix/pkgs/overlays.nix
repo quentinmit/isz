@@ -18,7 +18,6 @@ final: prev: {
   })).override {
     libax25 = null;
   };
-  inherit (final.unstable) esphome;
   net-snmp = prev.net-snmp.overrideAttrs (old: {
     buildInputs = old.buildInputs ++ final.lib.optionals final.stdenv.isDarwin (with final.darwin.apple_sdk.frameworks; [
       DiskArbitration
