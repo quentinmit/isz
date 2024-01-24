@@ -58,16 +58,31 @@ power_supply:
       number: 10
       inverted: true
     enable_on_boot: true
-    enable_time: 50ms
+    # Data sheet requires 50ms
+    enable_time: 1s
+
+switch:
+  - platform: gpio
+    id: hold
+    name: Battery Power
+    pin:
+      number: 46
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
 
 esphome:
   on_boot:
     then:
       # read the RTC time once when the system boots
-      pcf8563.read_time:
+      - lambda: |-
+          ESP_LOGD("rtc", "Control reg 1: 0x%02x", id(rtc).reg(1).get());
+          // Disable interrupts.
+          id(rtc).reg(1) = 0;
+      - pcf8563.read_time:
 
 time:
   - platform: pcf8563
+    id: rtc
     address: 0x51
     # repeated synchronization is not necessary unless the external RTC
     # is much more accurate than the internal clock
@@ -177,13 +192,11 @@ sensor:
       name: "SCD40 Temperature"
     humidity:
       name: "SCD40 Humidity"
+    ambient_pressure_compensation_source: station_pressure_mbar
     measurement_mode: periodic
     update_interval: 30s
-
-api:
-  services:
-    - service: set_ambient_pressure
-      variables:
-        pressure_mbar: int
-      then:
-        - lambda: "id(my_scd40)->set_ambient_pressure_compensation(pressure_mbar);"
+  - platform: homeassistant
+    id: station_pressure_mbar
+    entity_id: sensor.tempest_st_00122016_station_pressure
+    filters:
+      - multiply: 33.8639  # 1 inHg = 33.8639 mbar
