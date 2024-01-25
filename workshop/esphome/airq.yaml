@@ -57,9 +57,8 @@ power_supply:
     pin:
       number: 10
       inverted: true
-    enable_on_boot: true
     # Data sheet requires 50ms
-    enable_time: 1s
+    enable_time: 100ms
 
 switch:
   - platform: gpio
@@ -72,7 +71,18 @@ switch:
 
 esphome:
   on_boot:
-    then:
+    - priority: 700
+      then:
+      - lambda: |-
+          ESP_LOGD("on_boot", "Waiting 1s for sensor to reset");
+          delay(1000);
+          id(sen55_power_supply).request_high_power();
+          ESP_LOGD("on_boot", "SEN55 power on");
+          static const uint16_t SEN5X_CMD_DEVICE_RESET = 0xD304;
+          id(sen55).write_command(SEN5X_CMD_DEVICE_RESET);
+          delay(200);
+          ESP_LOGD("on_boot", "SEN55 device reset");
+    - then:
       # read the RTC time once when the system boots
       - lambda: |-
           ESP_LOGD("rtc", "Control reg 1: 0x%02x", id(rtc).reg(1).get());
@@ -133,7 +143,7 @@ sensor:
   #   unit_of_measurement: V
   #   update_interval: 10s
   - platform: sen5x
-    id: sen54
+    id: sen55
     pm_1_0:
       name: "PM <1µm Weight concentration"
       id: pm_1_0
