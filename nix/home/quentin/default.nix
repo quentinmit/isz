@@ -1,13 +1,41 @@
 { config, lib, pkgs, ... }:
 {
   options = {
-    isz.quentin = lib.mkEnableOption "User environment for quentin";
+    isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
   };
-  config = lib.mkIf config.isz.quentin (lib.mkMerge [
+  config = lib.mkIf config.isz.quentin.enable (lib.mkMerge [
+    # Multimedia
     {
       home.packages = with pkgs; [
+        atomicparsley
+        cdparanoia
+        codec2
+        (dav1d.override {
+          withTools = true;
+          withExamples = true;
+        })
+        flac
+        (ffmpeg-full.override {
+          withUnfree = true;
+        })
+        gsm
+        id3lib
+        #id3tool
+        libde265
+        mediainfo
+        rav1e
+        sox
+        tsduck
         youtube-dl
         yt-dlp
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
+        dvdbackup
+        lxqt.pavucontrol-qt
+        mikmod
+        pavucontrol
+        ncpamixer
+        vapoursynth
       ];
       programs.mpv = {
         enable = true;
@@ -39,9 +67,20 @@
         --netrc
       '';
     }
+    # Imaging
     {
-      home.packages = [
-        pkgs.exiftool
+      home.packages = with pkgs; [
+        exiftool
+        feh
+        graphicsmagick_q16
+        imagemagickBig
+        #makeicns
+        libicns
+        libjpeg
+        libraw
+        opencv
+        rawtherapee
+        wxSVG
       ];
       home.file.".ExifTool_config".text = ''
         %Image::ExifTool::UserDefined::Options = (

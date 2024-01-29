@@ -38,7 +38,6 @@
 
     # Filesystems
     gvfs
-    squashfsTools
 
     # Nix
     statix
@@ -124,45 +123,10 @@
     rcs
 
     # Multimedia
-    (ffmpeg-full.override {
-      withUnfree = true;
-    })
-    atomicparsley
-    #broken avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
-    cdparanoia
-    codec2
-    (dav1d.override {
-      withTools = true;
-      withExamples = true;
-    })
-    #unsupported dvdbackup
     #dvdrw-tools
-    feh
-    #already ffmpeg
-    flac
-    graphicsmagick_q16
-    gsm
-    id3lib
-    #id3tool
-    imagemagickBig
-    libde265
-    libjpeg
-    libraw
-    #makeicns
-    libicns
-    mediainfo
-    #unsupported mikmod
     #mpeg2vidcodec
     #mpgtx
-    opencv
-    #unsupported pavucontrol
     pulseaudio
-    rav1e
-    rawtherapee
-    sox
-    tsduck
-    #broken vapoursynth
-    wxSVG
 
     # Radio
     #unsupported csdr
@@ -492,7 +456,7 @@
 
     services.clamav.updater.enable = true;
 
-    isz.quentin = true;
+    isz.quentin.enable = true;
 
     programs.atuin.settings.sync_address = "https://atuin.isz.wtf";
 

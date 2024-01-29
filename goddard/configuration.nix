@@ -100,7 +100,7 @@
   home-manager.users.quentin = {
     home.stateVersion = "23.11";
 
-    isz.quentin = true;
+    isz.quentin.enable = true;
     isz.graphical = true;
     isz.plasma.enable = true;
 

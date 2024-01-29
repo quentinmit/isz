@@ -5,6 +5,7 @@ let
   packages = with pkgs; [
     # Filesystem
     sshfs-fuse
+    squashfsTools
 
     # Block devices
     testdisk
