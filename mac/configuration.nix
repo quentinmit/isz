@@ -39,38 +39,21 @@
     # Filesystems
     gvfs
 
-    # Nix
-    statix
-    pkgs.deploy-rs.deploy-rs
-
     # Development
-    arduino-cli
-    pkgsCross.arm-embedded.buildPackages.bintools # arm-none-eabi-{ld,objdump,strings,nm,...}
-    # gcc provides info pages that overlap; prioritize one to prevent a conflict message.
-    (lib.setPrio 15 pkgsCross.arm-embedded.stdenv.cc)
-    pkgsCross.arm-embedded.buildPackages.gdb
-    #arm-none-linux-gnueabi-binutils
-    pkgsCross.avr.buildPackages.gcc
-    pkgsCross.avr.avrlibc
     pkgsCross.mingwW64.buildPackages.bintools
     (lowPrio (pkgs.extend (self: super: {
       threadsCross.model = "win32";
       threadsCross.package = null;
     })).pkgsCross.mingw32.stdenv.cc)
     (lowPrio pkgsCross.mingwW64.stdenv.cc)
-    avrdude
     #already binutils
-    bossa
     #carthage
     #cctools
     cdecl
     #clang
     #why cmake
     #unsupported createrepo_c
-    cvsps
-    dfu-util
     #elftoolchain
-    esptool
     fdroidserver
     fpc
     #why gcc9
@@ -91,7 +74,6 @@
     #nvm
     fnm
     #broken octaveFull # build error from CFURL.h with sdk 11.0
-    openocd
     pipenv
     #unsupported rpm
     ruby
@@ -112,15 +94,6 @@
     sourceHighlight
     upx
     yarn
-
-    # (D)VCS
-    fossil
-    #already git
-    git-crypt
-    git-fullstatus
-    git-secret
-    mercurial
-    rcs
 
     # Multimedia
     #dvdrw-tools
@@ -237,23 +210,9 @@
     zenith
 
     # Security
-    binwalk
-    capstone
     #broken fcrackzip
     gnupg
-    gpgme
     metasploit
-    oath-toolkit
-    pass
-    passExtensions.pass-import
-    passExtensions.pass-otp
-    passExtensions.pass-update
-    passExtensions.pass-genphrase
-    passExtensions.pass-checkup
-    pass-git-helper
-    radare2
-    rizin
-    sops
 
     # Shell utilities
     ack
@@ -566,6 +525,9 @@
     #  "/Users/quentin/Software/avr-device"
     #];
 
+    programs.password-store.settings = {
+      PASSWORD_STORE_DIR = "${config.users.users.quentin.home}/.password-store";
+    };
 
     targets.darwin.defaults = {
       NSGlobalDefaults = {

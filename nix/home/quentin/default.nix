@@ -4,6 +4,15 @@
     isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
   };
   config = lib.mkIf config.isz.quentin.enable (lib.mkMerge [
+    # Nix
+    {
+      home.packages = with pkgs; [
+        statix
+        pkgs.deploy-rs.deploy-rs
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        nix-du
+      ];
+    }
     # Multimedia
     {
       home.packages = with pkgs; [
@@ -88,19 +97,66 @@
         );
       '';
     }
+    # (D)VCS
     {
+      home.packages = with pkgs; [
+        cvsps
+        fossil
+        git-crypt
+        git-fullstatus
+        git-secret
+        mercurial
+        rcs
+      ];
       programs.git = {
         package = pkgs.gitFull;
         lfs.enable = true;
       };
     }
+    # Embedded development
+    {
+      home.packages = with pkgs; [
+        arduino-cli
+        pkgsCross.arm-embedded.buildPackages.bintools # arm-none-eabi-{ld,objdump,strings,nm,...}
+        # gcc provides info pages that overlap; prioritize one to prevent a conflict message.
+        (lib.setPrio 15 pkgsCross.arm-embedded.stdenv.cc)
+        pkgsCross.arm-embedded.buildPackages.gdb
+        #arm-none-linux-gnueabi-binutils
+        pkgsCross.avr.buildPackages.gcc
+        pkgsCross.avr.avrlibc
+        avrdude
+        bossa
+        dfu-util
+        esptool
+        openocd
+      ];
+    }
+    # Development
     {
       home.file.".gdbinit".text = ''
         set history filename ~/.gdb_history
         set history save on
       '';
     }
+    # Reverse engineering
     {
+      home.packages = with pkgs; [
+        binwalk
+        capstone
+        radare2
+        rizin
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        imhex
+      ];
+    }
+    # Security
+    {
+      home.packages = with pkgs; [
+        gpgme
+        oath-toolkit
+        pass-git-helper
+        sops
+      ];
       programs.gpg = {
         enable = true;
         settings = rec {
@@ -112,6 +168,16 @@
           keyid-format = "long";
           no-symkey-cache = false;
         };
+      };
+      programs.password-store = {
+        enable = true;
+        package = pkgs.pass.withExtensions (exts: with exts; [
+          pass-import
+          pass-otp
+          pass-update
+          pass-genphrase
+          pass-checkup
+        ]);
       };
     }
     {
