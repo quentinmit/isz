@@ -131,22 +131,132 @@
         openocd
       ];
     }
+    # Rust development
+    {
+      home.packages = with pkgs; [
+        # rustup provides rustc and cargo
+        cargo-asm
+        cargo-binutils
+        cargo-bloat
+        cargo-edit
+        cargo-expand
+        cargo-feature
+        cargo-generate
+        cargo-hf2
+        cargo-outdated
+        cargo-ui
+        probe-rs
+      ];
+      programs.rustup.enable = true;
+      programs.rustup.extensions = [
+        "rust-src"
+        "rust-analyzer"
+        "rust-analysis"
+      ];
+      programs.rustup.targets = lib.unique [
+        pkgs.hostPlatform.config
+        "thumbv6m-none-eabi"
+        "thumbv7em-none-eabi"
+        "thumbv7em-none-eabihf"
+        "x86_64-unknown-linux-gnu"
+      ];
+      #programs.cargo.settings.paths = [
+      #  "/Users/quentin/Software/avr-device"
+      #];
+    }
+    # Android development
+    {
+      home.packages = with pkgs; [
+        android-tools
+        fdroidserver
+      ];
+    }
+    # Node.js development
+    {
+      home.packages = with pkgs; [
+        nodePackages.npm
+        #nodejs15
+        #nodejs17
+        #why npm6
+        #why npm7
+        #nvm
+        fnm
+        yarn
+      ];
+    }
     # Development
     {
+      home.packages = with pkgs; [
+        pkgsCross.mingwW64.buildPackages.bintools
+        (lowPrio (pkgs.extend (self: super: {
+          threadsCross.model = "win32";
+          threadsCross.package = null;
+        })).pkgsCross.mingw32.stdenv.cc)
+        (lowPrio pkgsCross.mingwW64.stdenv.cc)
+        #already binutils
+        cdecl
+        fpc
+        ghc
+        gperftools
+        upx
+      ];
       home.file.".gdbinit".text = ''
         set history filename ~/.gdb_history
         set history save on
       '';
+    }
+    # Emulation
+    {
+      home.packages = with pkgs; [
+        bochs
+        qemu
+        virt-manager
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        winetricks
+        virt-manager-qt
+      ];
     }
     # Reverse engineering
     {
       home.packages = with pkgs; [
         binwalk
         capstone
+        hecate
+        hexedit
         radare2
         rizin
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         imhex
+        okteta
+      ];
+    }
+    # Radio
+    {
+      home.packages = with pkgs; [
+        dsd
+        dsdcc
+        gnuradio
+        #already gpsbabel
+        gpsbabel-gui
+        unstable.gqrx-portaudio
+        #grig
+        hamlib_4
+        #already from soapysdr-with-plugins limesuite
+        multimon-ng
+        rtl-sdr
+        rtl_433
+        (rx_tools.override {
+          soapysdr = soapysdr-with-plugins;
+        })
+        soapyhackrf
+        xastir
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        csdr
+        fldigi
+        flrig
+        gpsd
+        pothos
+        sdrangel
       ];
     }
     # Security

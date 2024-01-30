@@ -42,7 +42,7 @@ in {
     home.packages = [
       pkgs.rustup
     ];
-    programs.cargo.settings.target = {
+    programs.cargo.settings.target = lib.mkIf (!pkgs.stdenv.isLinux) {
       "x86_64-unknown-linux-gnu".linker = "${pkgs.pkgsCross.gnu64.stdenv.cc}/bin/x86_64-unknown-linux-gnu-cc";
     };
     home.file.".rustup/toolchains/nixpkgs-${nixpkgs.version}".source = nixpkgs;

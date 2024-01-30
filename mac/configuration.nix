@@ -40,60 +40,26 @@
     gvfs
 
     # Development
-    pkgsCross.mingwW64.buildPackages.bintools
-    (lowPrio (pkgs.extend (self: super: {
-      threadsCross.model = "win32";
-      threadsCross.package = null;
-    })).pkgsCross.mingw32.stdenv.cc)
-    (lowPrio pkgsCross.mingwW64.stdenv.cc)
-    #already binutils
     #carthage
     #cctools
-    cdecl
     #clang
     #why cmake
     #unsupported createrepo_c
     #elftoolchain
-    fdroidserver
-    fpc
     #why gcc9
     #why gdb
-    ghc
-    gperftools
     #why imake
     julia-bin
     #ld64
     lua
     #mlir-14
     mono
-    #nodejs15
-    #nodejs17
-    #why npm6
-    #why npm7
-    nodePackages.npm
-    #nvm
-    fnm
     #broken octaveFull # build error from CFURL.h with sdk 11.0
     pipenv
     #unsupported rpm
     ruby
-    # rustup provides rustc and cargo
-    rustup
-    cargo-asm
-    cargo-binutils
-    cargo-bloat
-    cargo-edit
-    cargo-expand
-    cargo-feature
-    probe-rs
-    cargo-generate
-    cargo-hf2
-    cargo-outdated
-    cargo-ui
     sloccount
     sourceHighlight
-    upx
-    yarn
 
     # Multimedia
     #dvdrw-tools
@@ -101,33 +67,7 @@
     #mpgtx
     pulseaudio
 
-    # Radio
-    #unsupported csdr
-    dsd
-    dsdcc
-    #unsupported fldigi
-    #unsupported flrig
-    gnuradio
-    #already gpsbabel
-    gpsbabel-gui
-    #unsupported gpsd
-    unstable.gqrx-portaudio
-    #grig
-    hamlib_4
-    #already from soapysdr-with-plugins limesuite
-    multimon-ng
-    #unsupported pothos
-    rtl-sdr
-    rtl_433
-    (rx_tools.override {
-      soapysdr = soapysdr-with-plugins;
-    })
-    #unsupported sdrangel
-    soapyhackrf
-    xastir
-
     # Other devices
-    android-tools
     #blueutil
     libftdi1
     #unsupported lirc
@@ -196,13 +136,6 @@
       export HASS_TOKEN=$(${python3Packages.keyring}/bin/keyring get $HASS_SERVER "")
       exec ${home-assistant-cli}/bin/hass-cli "$@"
     '')
-
-    # Emulation
-    bochs
-    qemu
-    #unsupported winetricks
-    virt-manager
-    #unsupported virt-manager-qt
 
     # Performance monitoring
     btop
@@ -472,6 +405,7 @@
     programs.mpv.package = pkgs.nixpkgs-23_05.mpv;
 
     # .emacs
+    # .gnuradio/config.conf
     # .influxdbv2/configs
     # .ipython/profile_default/ipython_config.py
     # .irssi/config
@@ -507,23 +441,6 @@
         };
       };
     };
-
-    programs.rustup.enable = true;
-    programs.rustup.extensions = [
-      "rust-src"
-      "rust-analyzer"
-      "rust-analysis"
-    ];
-    programs.rustup.targets = [
-      pkgs.hostPlatform.config
-      "thumbv6m-none-eabi"
-      "thumbv7em-none-eabi"
-      "thumbv7em-none-eabihf"
-      "x86_64-unknown-linux-gnu"
-    ];
-    #programs.cargo.settings.paths = [
-    #  "/Users/quentin/Software/avr-device"
-    #];
 
     programs.password-store.settings = {
       PASSWORD_STORE_DIR = "${config.users.users.quentin.home}/.password-store";
