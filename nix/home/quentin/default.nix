@@ -3,6 +3,9 @@
   options = {
     isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
   };
+  imports = [
+    ./theme.nix
+  ];
   config = lib.mkIf config.isz.quentin.enable (lib.mkMerge [
     # Nix
     {

@@ -129,39 +129,8 @@
     inherit (config.home.sessionVariables) LOCALE_ARCHIVE_2_27;
   };
 
-  gtk = {
-    enable = true;
-    theme.name = "Breeze";
-    cursorTheme.name = "breeze_cursors";
-    cursorTheme.size = 24;
-    iconTheme.name = "breeze-dark";
-    font.name = "Noto Sans";
-    font.size = 11;
-    gtk2.extraConfig = ''
-      gtk-enable-animations=1
-      gtk-primary-button-warps-slider=0
-      gtk-toolbar-style=3
-      gtk-menu-images=1
-      gtk-button-images=1
-    '';
-    gtk3.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
-      gtk-button-images = true;
-      gtk-decoration-layout = "icon:minimize,maximize,close";
-      gtk-enable-animations = true;
-      gtk-menu-images = true;
-      gtk-modules = "colorreload-gtk-module:window-decorations-gtk-module";
-      gtk-primary-button-warps-slider = false;
-      gtk-toolbar-style = 3;
-    };
-    gtk4.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
-      gtk-decoration-layout = "icon:minimize,maximize,close";
-      gtk-enable-animations = true;
-      gtk-primary-button-warps-slider = false;
-    };
-  };
   programs.git.lfs.enable = true;
+  isz.quentin.theme.enable = true;
   isz.plasma.enable = true;
   programs.plasma.shortcuts = {
     "khotkeys"."{e521ea71-a8c8-4e23-9b72-4c9ca63c6874}" = "Meta+K";
