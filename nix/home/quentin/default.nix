@@ -97,7 +97,7 @@
         libraw
         opencv
         rawtherapee
-        wxSVG
+        #broken wxSVG
       ];
       home.file.".ExifTool_config".text = ''
         %Image::ExifTool::UserDefined::Options = (
