@@ -233,7 +233,7 @@ final: prev: {
   bossa = let
     inherit (final) lib stdenv;
   in prev.bossa.overrideAttrs (old: {
-    env = old.env // {
+    env = old.env // lib.optionalAttrs stdenv.isDarwin {
       NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "") + " -Wno-error=unqualified-std-cast-call";
     };
   });
