@@ -1,4 +1,4 @@
-{ config, pkgs, lib, self, home-manager, deploy-rs,... }:
+{ config, pkgs, lib, self, home-manager, ... }:
 
 {
   imports = [
@@ -9,7 +9,6 @@
   environment.shells = with pkgs; [ bashInteractive ];
 
   nixpkgs.overlays = lib.mkAfter [
-    deploy-rs.overlay
     (final: prev: {
       openssh = final.openssh_gssapi;
       gnuplot = prev.gnuplot.override {

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, deploy-rs, ... }:
 {
   options = {
     isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
@@ -7,6 +7,11 @@
     ./theme.nix
   ];
   config = lib.mkIf config.isz.quentin.enable (lib.mkMerge [
+    {
+      nixpkgs.overlays = lib.mkAfter [
+        deploy-rs.overlay
+      ];
+    }
     # Nix
     {
       home.packages = with pkgs; [
@@ -171,8 +176,7 @@
     {
       home.packages = with pkgs; [
         android-tools
-        fdroidserver
-      ];
+      ] ++ lib.optional fdroidserver.meta.available fdroidserver;
     }
     # Node.js development
     {
