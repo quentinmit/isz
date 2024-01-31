@@ -88,6 +88,9 @@ let
     # wireless-regdb
     # wirelesstools
   ] ++ lib.optionals pkgs.stdenv.isLinux [
+    # Nix
+    nix-du
+
     # Partition/MBR tools
     ms-sys
     efibootmgr

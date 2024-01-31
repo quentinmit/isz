@@ -1,4 +1,4 @@
-{ config, pkgs, lib, self, home-manager, ... }:
+{ config, pkgs, lib, self, home-manager, deploy-rs, ... }:
 
 {
   imports = [
@@ -19,6 +19,7 @@
       };
       #mesa = final.mesa23_3_0_main;
     })
+    deploy-rs.overlay
   ];
   nixpkgs.config.permittedInsecurePackages = [
     # CVE-2023-28531 only affects ssh-add with smartcards.
