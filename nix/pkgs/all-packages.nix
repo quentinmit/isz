@@ -8,10 +8,10 @@ final: prev:
   rtlamr-collect = final.callPackage ./rtlamr-collect {};
   speedtest-influxdb = final.callPackage ./speedtest-influxdb {};
   zwave-js-ui-bin = final.callPackage ./zwave-js-ui/bin.nix {};
-  avidemux = final.libsForQt5.callPackage ./avidemux {
+  avidemux = if final.stdenv.isDarwin then (final.libsForQt5.callPackage ./avidemux {
     inherit (final.darwin.apple_sdk_11_0.frameworks) VideoToolbox CoreFoundation CoreMedia CoreVideo CoreAudio CoreServices QuartzCore;
     stdenv = if final.stdenv.isDarwin then final.darwin.apple_sdk_11_0.stdenv else final.stdenv;
-  };
+  }) else prev.avidemux;
   macfuse = final.callPackage ./macfuse {
     inherit (final.darwin.apple_sdk.frameworks) DiskArbitration;
     inherit (final.darwin) signingUtils;
