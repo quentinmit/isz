@@ -62,11 +62,7 @@
                 rewrite '^/dashboard(/.*)$' $1 break;
               '';
             };
-          } // lib.mapAttrs' (name: package:
-            lib.nameValuePair "=/local/${name}.js" {
-              alias = "${package}/${name}.js";
-            }
-          ) config.services.home-assistant.extraLovelaceModules;
+          };
         };
         "esphome.isz.wtf" = lib.mkIf false {
           forceSSL = true;

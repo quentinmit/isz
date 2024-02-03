@@ -13,11 +13,6 @@ in {
   ];
   options = with lib; {
     services.home-assistant = {
-      # TODO: Switch to upstream services.home-assistant.customLovelaceModules
-      extraLovelaceModules = mkOption {
-        type = with types; attrsOf package;
-        default = {};
-      };
       dashboards = mkOption {
         type = types.attrsOf (types.submodule ({ name, config, ... }: {
           options = {
@@ -170,10 +165,6 @@ in {
           use_x_forwarded_for = true;
         };
         lovelace = {
-          resources = lib.mapAttrsToList (name: package: {
-            url = "/local/${name}.js?${package.version}";
-            type = "module";
-          }) config.services.home-assistant.extraLovelaceModules;
           dashboards = lib.mapAttrs (name: content: {
             mode = "yaml";
             title = content.sidebar_title;
