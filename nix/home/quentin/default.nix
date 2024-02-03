@@ -297,6 +297,7 @@
         ]);
       };
     }
+    # Network - SSH
     {
       programs.ssh = {
         enable = true;
@@ -318,6 +319,7 @@
         };
       };
     }
+    # Network - SNMP
     {
       home.packages = with pkgs; [
         net-snmp
@@ -326,6 +328,37 @@
         mibAllowUnderline yes
       '';
     }
+    # Network
+    {
+      home.packages = with pkgs; [
+        alpine
+        axel
+        geoip
+        iftop
+        inetutils
+        influxdb2-cli
+        iperf3
+        ipmitool
+        irssi
+        libidn2
+        libpsl
+        libupnp
+        miniupnpc
+        mosquitto
+        nbd
+        ncftp
+        ngrok
+        nmap
+        openconnect
+        openntpd
+        pssh
+        tintin
+        transmission
+        websocat
+        termshark
+      ];
+    }
+    # Kerberos
     {
       # kdo / krootssh
       programs.kdo.enable = true;

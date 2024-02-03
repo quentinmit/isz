@@ -83,49 +83,24 @@
 
     # Network
     #unsupported aircrack-ng
-    alpine
     #aget
-    axel
     #barnowl
     #bitchx
     #why chrony
     #csshX
     #already curl
-    geoip
-    iftop
-    inetutils
-    influxdb2-cli
-    iperf3
-    ipmitool
-    irssi
     krb5
     #unsupported ldapvi
     #lft
-    libidn2
-    libpsl
-    libupnp
-    miniupnpc
-    mosquitto
     mtr  # TODO: setuid wrapper
-    nbd
-    ncftp
-    ngrok
-    nmap
     #ntpsec
     #unsupported nx-libs
-    openconnect
-    openntpd
     openssh
     #already openssl
     #collision openssl_1_1
     openvpn
-    pssh
     #rlpr
-    tintin
     #unsupported traceroute
-    transmission
-    websocat
-    termshark
     # TODO: Separate linkzone into its own package and/or use subPackages to limit what is built
     (runCommandLocal "linkzone-api" {} ''
       mkdir -p $out/bin
