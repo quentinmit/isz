@@ -44,6 +44,7 @@ final: prev:
   home-assistant-custom-lovelace-modules = prev.home-assistant-custom-lovelace-modules // {
     compass-card = final.callPackage ./homeassistant/compass-card.nix {};
     layout-card = final.callPackage ./homeassistant/layout-card.nix {};
+    restriction-card = final.callPackage ./homeassistant/restriction-card.nix {};
   };
   hassCustomComponents = {
     pyscript = final.callPackage ./homeassistant/pyscript.nix {};

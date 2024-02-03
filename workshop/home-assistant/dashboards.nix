@@ -32,6 +32,7 @@ in {
           mini-graph-card
           compass-card
           layout-card
+          restriction-card
         ;
         inherit (nur-mweinelt.packages.${pkgs.system}.hassLovelaceModules)
           apexcharts-card
