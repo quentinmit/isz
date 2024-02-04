@@ -62,7 +62,7 @@ in {
               (grid {} [
                 (button "receiver_mute" {})
                 (button "receiver_vol_down" {})
-                (button "receiver_mute" {})
+                (button "receiver_vol_up" {})
               ])
               {
                 type = "entities";
