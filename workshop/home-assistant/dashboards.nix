@@ -1,20 +1,23 @@
 { lib, pkgs, config, channels, nur-mweinelt, ... }:
 let
+  cond = condition: conditions: {
+    inherit condition conditions;
+  };
   grid = options: cards: (options // {
     type = "grid";
     inherit cards;
   });
-  button = name: {
+  button = name: attrs: {
     type = "button";
     tap_action.action = "toggle";
     show_name = false;
     entity = "button.${name}";
-  };
-  switch_button = name: {
+  } // attrs;
+  switch_button = name: attrs: {
     type = "button";
     entity = "switch.${name}";
     show_state = true;
-  };
+  } // attrs;
   light = name: {
     type = "light";
     entity = "light.${name}";
@@ -51,24 +54,60 @@ in {
             icon = "mdi:home";
             cards = [
               (grid {} [
-                (switch_button "tv_power")
-                (button "tv_input")
-                (button "tv_enter")
+                (switch_button "tv_power" {})
+                (button "tv_input" { show_name = true; })
+                (button "tv_enter" { show_name = true; })
               ])
-              (grid {} (map button [
-                "receiver_mute"
-                "receiver_vol_down"
-                "receiver_mute"
-              ]))
+              (grid {} [
+                (button "receiver_mute" {})
+                (button "receiver_vol_down" {})
+                (button "receiver_mute" {})
+              ])
               {
                 type = "entities";
-                entities = [ "button.hdmi_switch_2" ];
+                entities = [
+                  "button.hdmi_switch_2"
+                  "select.receiver_source"
+                ];
               }
               {
-                type = "entities";
-                entities = [ "select.receiver_source" ];
+                type = "conditional";
+                # Show the heat if the living room AC is disconnected or if the heat is turned on.
+                conditions = [{
+                  condition = "or";
+                  conditions = [
+                    {
+                      condition = "state";
+                      entity = "climate.living_room_ac";
+                      state = "unavailable";
+                    }
+                    {
+                      condition = "state";
+                      entity = "climate.heat";
+                      state_not = "off";
+                    }
+                  ];
+                }];
+                card = {
+                  type = "custom:restriction-card";
+                  action = "hold";
+                  card = (climate "heat");
+                };
               }
-              (climate "heat")
+              {
+                type = "conditional";
+                # Show the air conditioning if the living room AC is connected.
+                conditions = [{
+                    condition = "state";
+                    entity = "climate.living_room_ac";
+                    state_not = "unavailable";
+                }];
+                card = {
+                  type = "custom:restriction-card";
+                  action = "hold";
+                  card = (climate "living_room_ac");
+                };
+              }
               {
                 type = "custom:mushroom-light-card";
                 entity = "light.living_room_floor_lamp";
@@ -78,17 +117,64 @@ in {
                 show_color_temp_control = true;
                 show_color_control = true;
                 collapsible_controls = false;
-                hold_action.action = "more-info";
+                hold_action.action = "toggle";
                 tap_action.action = "more-info";
               }
               {
-                type = "sensor";
-                entity = "sensor.living_room_ac_temperature";
-                graph = "line";
-                hours_to_show = 24;
-                detail = 2;
+                type = "custom:slider-button-card";
+                entity = "light.living_room_floor_lamp";
+                slider = {
+                  direction = "left-right";
+                  background = "gradient";
+                  use_state_color = true;
+                  use_percentage_bg_opacity = false;
+                  show_track = false;
+                  toggle_on_click = false;
+                  force_square = false;
+                };
+                show_name = true;
+                show_state = true;
+                compact = false;
+                icon = {
+                  show = true;
+                  use_state_color = true;
+                  tap_action.action = "more-info";
+                };
+                action_button = {
+                  mode = "toggle";
+                  icon = "mdi:power";
+                  show = true;
+                  show_spinner = true;
+                  tap_action.action = "toggle";
+                };
               }
-              (climate "living_room_ac")
+              {
+                type = "conditional";
+                conditions = [{
+                    condition = "state";
+                    entity = "climate.living_room_ac";
+                    state_not = "unavailable";
+                }];
+                card = {
+                  type = "sensor";
+                  entity = "sensor.living_room_ac_temperature";
+                  graph = "line";
+                  hours_to_show = 24;
+                  detail = 2;
+                };
+              }
+              {
+                type = "conditional";
+                conditions = [{
+                    condition = "state";
+                    entity = "climate.living_room_ac";
+                    state_not = "unavailable";
+                }];
+                card = {
+                  type = "entities";
+                  entities = [{ entity = "sensor.living_room_ac_power"; }];
+                };
+              }
             ];
           }
           {
@@ -113,7 +199,7 @@ in {
               (grid {
                 square = true;
                 columns = 4;
-              } ([(switch_button "tv_power")] ++ (map (n: button "tv_${n}") [
+              } ([(switch_button "tv_power" {})] ++ (map (n: button "tv_${n}" { show_name = true; }) [
                 "display"
                 "playpause"
                 "rewind"
@@ -127,7 +213,7 @@ in {
               ])))
               (grid {
                 columns = 3;
-              } (map (n: button "tv_${n}") [
+              } (map (n: button "tv_${n}" {}) [
                 "1"
                 "2"
                 "3"
@@ -137,24 +223,25 @@ in {
                 "7"
                 "8"
                 "9"
-                "dash"
-                "0"
-                "input"
+              ] ++ [
+                (button "tv_dash" { icon = "mdi:minus"; })
+                (button "tv_0" {})
+                (button "tv_input" {})
               ]))
-              (grid {} (map (n: button "tv_${n}") [
-                "picture"
-                "up"
-                "temp"
-                "left"
-                "enter"
-                "right"
-                "exit"
-                "down"
-                "return"
-                "sleep"
-                "menu"
-                "aspect"
-              ]))
+              (grid {} [
+                (button "tv_picture" { icon = "mdi:image-edit"; })
+                (button "tv_up" { icon = "mdi:arrow-up"; })
+                (button "tv_temp" {})
+                (button "tv_left" { icon = "mdi:arrow-left"; })
+                (button "tv_enter" {})
+                (button "tv_right" { icon = "mdi:arrow-right"; })
+                (button "tv_exit" {})
+                (button "tv_down" { icon = "mdi:arrow-down"; })
+                (button "tv_return" { icon = "mdi:location-exit"; })
+                (button "tv_sleep" {})
+                (button "tv_menu" {})
+                (button "tv_aspect" {})
+              ])
             ];
           }
           {
@@ -164,7 +251,7 @@ in {
             cards = [
               (grid {
                 columns = 3;
-              } (map (n: button "receiver_${n}") [
+              } (map (n: button "receiver_${n}" {}) [
                 "1"
                 "2"
                 "3"
@@ -181,7 +268,7 @@ in {
                 "tune_down"
                 "tune_up"
               ]))
-              (switch_button "receiver_power")
+              (switch_button "receiver_power" {})
             ];
           }
           {
@@ -224,8 +311,8 @@ in {
                   type = "horizontal-stack";
                   cards = map light [
                     "living_room_floor_lamp"
-                    "tree"
                     "hg02"
+                    "elgato_key_light_air"
                   ] ++ [{
                     type = "button";
                     show_name = true;
