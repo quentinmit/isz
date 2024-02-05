@@ -17,6 +17,8 @@
       # Nix on macOS has a race condition when this is turned on.
       # https://github.com/NixOS/nix/issues/7273
       auto-optimise-store = lib.mkIf (!pkgs.stdenv.isDarwin) true;
+      # Preserve source for gcroots to make rebuilding faster.
+      keep-outputs = true;
       # sops-nix uses garnix.io
       substituters = [
         "https://cache.garnix.io"
