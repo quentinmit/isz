@@ -1,5 +1,7 @@
 { config, lib, pkgs, deploy-rs, ... }:
-{
+let
+  isAarch64Darwin = (pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64);
+in {
   options = {
     isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
   };
@@ -128,7 +130,6 @@
         pkgsCross.arm-embedded.buildPackages.bintools # arm-none-eabi-{ld,objdump,strings,nm,...}
         # gcc provides info pages that overlap; prioritize one to prevent a conflict message.
         (lib.setPrio 15 pkgsCross.arm-embedded.stdenv.cc)
-        pkgsCross.arm-embedded.buildPackages.gdb
         #arm-none-linux-gnueabi-binutils
         pkgsCross.avr.buildPackages.gcc
         pkgsCross.avr.avrlibc
@@ -137,6 +138,8 @@
         dfu-util
         esptool
         openocd
+      ] ++ lib.optionals (!isAarch64Darwin) [
+        pkgsCross.arm-embedded.buildPackages.gdb
       ];
     }
     # Rust development
@@ -245,7 +248,6 @@
         gnuradio
         #already gpsbabel
         gpsbabel-gui
-        unstable.gqrx-portaudio
         #grig
         hamlib_4
         #already from soapysdr-with-plugins limesuite
@@ -264,6 +266,8 @@
         gpsd
         pothos
         sdrangel
+      ] ++ lib.optionals (!isAarch64Darwin) [
+        unstable.gqrx-portaudio
       ];
     }
     # Security
