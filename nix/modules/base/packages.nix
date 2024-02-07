@@ -37,7 +37,7 @@ let
     nmap
     openssl
     socat
-    inetutils # provides telnet
+    telnet
     wget
 
     # Compression

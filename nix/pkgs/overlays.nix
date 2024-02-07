@@ -270,4 +270,9 @@ final: prev: {
   clamav = prev.clamav.override {
     inherit (final.darwin.apple_sdk.frameworks) Foundation;
   };
+  telnet = final.runCommand "telnet" {} ''
+    mkdir -p $out/bin $out/share/man/man1
+    ln -s ${final.inetutils}/bin/telnet $out/bin/telnet
+    ln -s ${final.inetutils}/share/man/man1/telnet.1.gz $out/share/man/man1/telnet.1.gz
+  '';
 }

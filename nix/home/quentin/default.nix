@@ -339,7 +339,6 @@ in {
         axel
         geoip
         iftop
-        inetutils
         influxdb2-cli
         iperf3
         ipmitool
