@@ -28,6 +28,7 @@ final: prev: {
     configureFlags = old.configureFlags ++ [
       "--sysconfdir=/etc"
     ];
+    LIBS = final.lib.optional final.stdenv.isDarwin "-framework CoreFoundation -framework CoreServices -framework DiskArbitration -framework IOKit";
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
   tsduck = prev.tsduck.overrideAttrs (old: {
