@@ -275,4 +275,13 @@ final: prev: {
     ln -s ${final.inetutils}/bin/telnet $out/bin/telnet
     ln -s ${final.inetutils}/share/man/man1/telnet.1.gz $out/share/man/man1/telnet.1.gz
   '';
+  bash-preexec = prev.bash-preexec.overrideAttrs (old: {
+    # Declare arrays as global variables, so bash-preexec works when loaded within a function.
+    installPhase = old.installPhase + ''
+      sed -i 's/declare -a/declare -ga/' $out/share/bash/bash-preexec.sh
+    '';
+  });
+  bashdbInteractive = final.bashdb.overrideAttrs {
+    buildInputs = (prev.buildInputs or []) ++ [ final.bashInteractive ];
+  };
 }
