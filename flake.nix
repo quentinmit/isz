@@ -69,6 +69,7 @@
         self.overlays.new
         self.overlays.stable
         cargo2nix.overlays.default
+        deploy-rs.overlay
       ];
       # Overlays-module makes "pkgs.unstable" available in configuration.nix
       overlayModule = { config, pkgs, ... }: {
