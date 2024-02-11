@@ -71,8 +71,6 @@ in {
         dock-height = 266;
         height = 266;
         width = 1066;
-        x = 177;
-        y = 182;
       };
     };
   };
