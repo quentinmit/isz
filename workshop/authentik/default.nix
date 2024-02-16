@@ -25,7 +25,7 @@
         host = "auth.isz.wtf";
       };
       settings = let
-        redisUrl = "unix://{config.services.redis.servers.authentik.unixSocket}?db=0";
+        redisUrl = "unix://${config.services.redis.servers.authentik.unixSocket}?db=0";
       in {
         disable_startup_analytics = true;
         avatars = "gravatar,initials";
