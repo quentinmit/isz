@@ -17,6 +17,7 @@
       ./grafana
       ./pnio2mqtt
       #./containers.nix
+      ./authentik
       ../nix/zwave-js-ui.nix
       ../nix/speedtest.nix
       nixos-hardware.nixosModules.common-cpu-amd

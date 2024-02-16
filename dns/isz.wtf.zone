@@ -16,6 +16,7 @@ pbx              CNAME workshop-pi.mgmt
 mqtt             CNAME workshop.mgmt
 jellyfin         CNAME workshop.mgmt
 bluechips        CNAME workshop.mgmt
+auth             CNAME workshop.mgmt
 
 ; Internal hosts on VLAN 3096 (172.30.96.0/24)
 

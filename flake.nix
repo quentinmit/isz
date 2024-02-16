@@ -45,6 +45,9 @@
     nixgl.inputs.flake-utils.follows = "flake-utils";
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
+    authentik.url = "github:nix-community/authentik-nix";
+    authentik.inputs.nixpkgs.follows = "nixpkgs";
+    authentik.inputs.flake-utils.follows = "flake-utils";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, ... }@args:
     let
