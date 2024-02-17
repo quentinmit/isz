@@ -64,6 +64,7 @@
       package = pkgs.unstable.grafana;
       settings = {
         server.protocol = "socket";
+        server.root_url = "https://grafana.isz.wtf";
         security.allow_embedding = true;
         feature_toggles.enable = "timeSeriesTable";
         dataproxy.timeout = 300;
