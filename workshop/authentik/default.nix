@@ -1,7 +1,8 @@
-{ config, lib, authentik, ... }:
+{ config, lib, pkgs, authentik, ... }:
 {
   imports = [
     authentik.nixosModules.default
+    ./blueprint.nix
   ];
   config = {
     sops.secrets."authentik/environment" = {
