@@ -21,23 +21,24 @@ in {
     };
   };
   config = {
-    sops.templates."blueprint.yaml".file = blueprintFile;
+    users.groups.authentik-blueprint = {};
+    sops.templates."blueprint.yaml" = {
+      group = "authentik-blueprint";
+      mode = "0440";
+      file = blueprintFile;
+    };
 
     sops.secrets."authentik/google_oauth/consumer_key" = {};
     sops.secrets."authentik/google_oauth/consumer_secret" = {};
 
-    services.authentik.settings.blueprints_dir = pkgs.symlinkJoin {
-      name = "blueprints";
-      paths = [
-        "${config.services.authentik.authentikComponents.staticWorkdirDeps}/blueprints"
-      ];
-      postBuild = ''
-        ln -sf /run/credentials/authentik.service/blueprint.yaml $out/blueprint.yaml
-      '';
-    };
-    systemd.services.authentik.serviceConfig.LoadCredential = [
-      "blueprint.yaml:${config.sops.templates."blueprint.yaml".path}"
-    ];
+    services.authentik.settings.blueprints_dir = "/run/authentik/blueprints-rw";
+
+    systemd.services.authentik-worker.serviceConfig.SupplementaryGroups = ["authentik-blueprint"];
+    systemd.services.authentik-worker.preStart = ''
+      mkdir -p /run/authentik/blueprints-rw
+      cp -aL ${config.services.authentik.authentikComponents.staticWorkdirDeps}/blueprints/* /run/authentik/blueprints-rw/
+      cp -aL ${config.sops.templates."blueprint.yaml".path} /run/authentik/blueprints-rw/blueprint.yaml
+    '';
 
     services.authentik.blueprint = {
       version = 1;
