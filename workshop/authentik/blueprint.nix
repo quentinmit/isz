@@ -1,11 +1,18 @@
 { config, lib, pkgs, ... }:
 let
   cfg = config.services.authentik;
+  sopsPlaceholder = config.sops.placeholder;
   format = pkgs.formats.yaml {};
-  blueprintFile = pkgs.runCommandLocal "blueprint.yaml" { } ''
-    cp ${format.generate "blueprint.yaml" cfg.blueprint} $out
-    sed -i -e "s/'\!\([A-Za-z_]\+\) \(.*\)'/\!\1 \2/;s/^\!\!/\!/;" $out
-  '';
+  blueprintFile = (format.generate "blueprint.yaml" cfg.blueprint).overrideAttrs {
+    buildCommand = ''
+      json2yaml --yaml-width inf "$valuePath" | sed -e "
+        s/'\!\([A-Za-z_]\+\) \(.*\)'/\!\1 \2/
+        s/^\!\!/\!/
+        T
+        s/'''/'/g
+      " > "$out"
+    '';
+  };
   applyBlueprint = name: {
     model = "authentik_blueprints.metaapplyblueprint";
     attrs.identifiers.name = name;
@@ -13,14 +20,85 @@ let
   find = type: field: value: "!Find [${type}, [${field}, ${value}]]";
   findFlow = find "authentik_flows.flow" "slug";
   findSource = find "authentik_core.source" "slug";
-  findScope = find "authentik_providers_oauth2.scopemapping" "name";
-  findProvider = find "authentik_providers_oauth2.oauth2provider" "slug";
+  # TODO: Figure out how to match scope mappings by the `managed` key instead.
+  findScope = find "authentik_providers_oauth2.scopemapping" "scope_name";
+  findProvider = find "authentik_providers_oauth2.oauth2provider" "name";
   signing_key = find "authentik_crypto.certificatekeypair" "name" "authentik Self-signed Certificate";
 in {
   options = with lib; {
-    services.authentik.blueprint = mkOption {
-      type = types.nullOr format.type;
-      default = null;
+    services.authentik = {
+      blueprint = mkOption {
+        type = types.nullOr format.type;
+        default = null;
+      };
+      apps = mkOption {
+        default = {};
+        type = with types; attrsOf (submodule ({ name, config, ... }: {
+          options = {
+            name = mkOption {
+              type = str;
+              default = name;
+            };
+            slug = mkOption {
+              type = str;
+              default = name;
+            };
+            redirect_uris = mkOption {
+              type = lines;
+            };
+            properties = mkOption {
+              type = listOf str;
+              default = [
+                "email"
+                "openid"
+                "profile"
+              ];
+            };
+            blueprint = mkOption {
+              type = listOf attrs;
+              readOnly = true;
+              visible = false;
+              default = [
+                {
+                  model = "authentik_providers_oauth2.oauth2provider";
+                  identifiers.name = config.name;
+                  attrs = {
+                    name = config.name;
+                    redirect_uris = config.redirect_uris;
+
+                    authentication_flow = findFlow "default-authentication-flow";
+                    authorization_flow = findFlow "default-provider-authorization-implicit-consent";
+
+                    client_id = sopsPlaceholder."authentik/apps/${config.slug}/client_id";
+                    client_secret = sopsPlaceholder."authentik/apps/${config.slug}/client_secret";
+                    client_type = "confidential";
+
+                    include_claims_in_id_token = true;
+                    issuer_mode = "per_provider";
+                    property_mappings = map findScope config.properties;
+                    inherit signing_key;
+                    sub_mode = "hashed_user_id";
+
+                    access_code_validity = "minutes=1";
+                    access_token_validity = "minutes=5";
+                    refresh_token_validity = "days=30";
+                  };
+                }
+                {
+                  model = "authentik_core.application";
+                  identifiers.slug = config.slug;
+                  attrs = {
+                    name = config.name;
+                    slug = config.slug;
+                    policy_engine_mode = "any";
+                    provider = findProvider config.name;
+                  };
+                }
+              ];
+            };
+          };
+        }));
+      };
     };
   };
   config = {
@@ -34,30 +112,6 @@ in {
     sops.secrets."authentik/google_oauth/consumer_key" = {};
     sops.secrets."authentik/google_oauth/consumer_secret" = {};
 
-    sops.secrets."authentik/apps/grafana/client_id" = {
-      owner = config.systemd.services.grafana.serviceConfig.User;
-    };
-    sops.secrets."authentik/apps/grafana/client_secret" = {
-      owner = config.systemd.services.grafana.serviceConfig.User;
-    };
-    services.grafana.settings = let
-      baseUrl = "https://auth.isz.wtf/application/o/";
-    in {
-      auth.oauth_auto_login = true;
-      auth.signout_redirect_url = "${baseUrl}grafana/end-session/";
-      "auth.generic_oauth" = {
-        name = "authentik";
-        enabled = true;
-        client_id = "$__file{${config.sops.secrets."authentik/apps/grafana/client_id".path}}";
-        client_secret = "$__file{${config.sops.secrets."authentik/apps/grafana/client_secret".path}}";
-        scopes = "openid email profile";
-        auth_url = "${baseUrl}authorize/";
-        token_url = "${baseUrl}token/";
-        api_url = "${baseUrl}userinfo/";
-        role_attribute_path = "contains(groups, 'Grafana Admins') && 'Admin' || contains(groups, 'Grafana Editors') && 'Editor' || 'Viewer'";
-      };
-    };
-
     services.authentik.settings.blueprints_dir = "/run/authentik/blueprints-rw";
 
     systemd.services.authentik-worker.serviceConfig.SupplementaryGroups = ["authentik-blueprint"];
@@ -66,6 +120,7 @@ in {
       cp -aL ${config.services.authentik.authentikComponents.staticWorkdirDeps}/blueprints/* /run/authentik/blueprints-rw/
       cp -aL ${config.sops.templates."blueprint.yaml".path} /run/authentik/blueprints-rw/blueprint.yaml
     '';
+    systemd.services.authentik-worker.restartTriggers = [blueprintFile];
 
     services.authentik.blueprint = {
       version = 1;
@@ -121,46 +176,7 @@ in {
           ];
         }
         # Applications
-        {
-          model = "authentik_providers_oauth2.oauth2provider";
-          identifiers.name = "Grafana";
-          attrs = {
-            name = "Grafana";
-            redirect_uris = "https://grafana.isz.wtf/login/generic_oauth";
-
-            authentication_flow = findFlow "default-authentication-flow";
-            authorization_flow = findFlow "default-provider-authorization-implicit-consent";
-
-            client_id = config.sops.placeholder."authentik/apps/grafana/client_id";
-            client_secret = config.sops.placeholder."authentik/apps/grafana/client_secret";
-            client_type = "confidential";
-
-            include_claims_in_id_token = true;
-            issuer_mode = "per_provider";
-            property_mappings = [
-              (findScope "authentik default OAuth Mapping: OpenID 'email'")
-              (findScope "authentik default OAuth Mapping: OpenID 'openid'")
-              (findScope "authentik default OAuth Mapping: OpenID 'profile'")
-            ];
-            inherit signing_key;
-            sub_mode = "hashed_user_id";
-
-            access_code_validity = "minutes=1";
-            access_token_validity = "minutes=5";
-            refresh_token_validity = "days=30";
-          };
-        }
-        {
-          model = "authentik_core.application";
-          identifiers.slug = "grafana";
-          attrs = {
-            name = "Grafana";
-            slug = "grafana";
-            policy_engine_mode = "any";
-            provider = findProvider "grafana";
-          };
-        }
-      ];
+      ] ++ lib.concatMap (app: app.blueprint) (lib.attrValues cfg.apps);
     };
   };
 }

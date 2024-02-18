@@ -3,6 +3,7 @@
   imports = [
     authentik.nixosModules.default
     ./blueprint.nix
+    ./grafana.nix
   ];
   config = {
     sops.secrets."authentik/environment" = {
