@@ -20,7 +20,9 @@
       auth_url = "${baseUrl}authorize/";
       token_url = "${baseUrl}token/";
       api_url = "${baseUrl}userinfo/";
+      login_attribute_path = "preferred_username";
       role_attribute_path = "contains(groups, 'Grafana Admins') && 'Admin' || contains(groups, 'Grafana Editors') && 'Editor' || 'Viewer'";
+      allow_assign_grafana_admin = true;
     };
   };
   services.authentik.apps.grafana = {
