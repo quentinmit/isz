@@ -4,6 +4,7 @@
     authentik.nixosModules.default
     ./blueprint.nix
     ./grafana.nix
+    ./bluechips.nix
   ];
   config = {
     sops.secrets."authentik/environment" = {

@@ -43,6 +43,9 @@ in {
               type = str;
               default = name;
             };
+            type = mkOption {
+              type = enum ["oauth2" "proxy"];
+            };
             redirect_uris = mkOption {
               type = lines;
             };
@@ -54,48 +57,72 @@ in {
                 "profile"
               ];
             };
+            provider = mkOption {
+              type = nullOr format.type;
+              default = null;
+            };
+            app = mkOption {
+              type = format.type;
+              default = {
+                model = "authentik_core.application";
+                identifiers.slug = config.slug;
+                attrs = {
+                  name = config.name;
+                  slug = config.slug;
+                  policy_engine_mode = "any";
+                  provider = findProvider config.name;
+                };
+              };
+            };
             blueprint = mkOption {
               type = listOf attrs;
               readOnly = true;
               visible = false;
-              default = [
-                {
-                  model = "authentik_providers_oauth2.oauth2provider";
-                  identifiers.name = config.name;
-                  attrs = {
-                    name = config.name;
-                    redirect_uris = config.redirect_uris;
-
-                    authentication_flow = findFlow "default-authentication-flow";
-                    authorization_flow = findFlow "default-provider-authorization-implicit-consent";
-
-                    client_id = sopsPlaceholder."authentik/apps/${config.slug}/client_id";
-                    client_secret = sopsPlaceholder."authentik/apps/${config.slug}/client_secret";
-                    client_type = "confidential";
-
-                    include_claims_in_id_token = true;
-                    issuer_mode = "per_provider";
-                    property_mappings = map findScope config.properties;
-                    inherit signing_key;
-                    sub_mode = "hashed_user_id";
-
-                    access_code_validity = "minutes=1";
-                    access_token_validity = "minutes=5";
-                    refresh_token_validity = "days=30";
-                  };
-                }
-                {
-                  model = "authentik_core.application";
-                  identifiers.slug = config.slug;
-                  attrs = {
-                    name = config.name;
-                    slug = config.slug;
-                    policy_engine_mode = "any";
-                    provider = findProvider config.name;
-                  };
-                }
-              ];
+              default = lib.optional (config.provider != null) config.provider ++ [config.app];
             };
+          };
+          config = {
+            provider = lib.mkMerge [
+              {
+                identifiers.name = config.name;
+                attrs = {
+                  name = config.name;
+
+                  authentication_flow = findFlow "default-authentication-flow";
+                  authorization_flow = findFlow "default-provider-authorization-implicit-consent";
+
+                  refresh_token_validity = "days=30";
+                };
+              }
+              (lib.mkIf (config.type == "oauth2") {
+                model = "authentik_providers_oauth2.oauth2provider";
+                attrs = {
+                  redirect_uris = config.redirect_uris;
+
+                  client_id = sopsPlaceholder."authentik/apps/${config.slug}/client_id";
+                  client_secret = sopsPlaceholder."authentik/apps/${config.slug}/client_secret";
+                  client_type = "confidential";
+
+                  include_claims_in_id_token = true;
+                  issuer_mode = "per_provider";
+                  property_mappings = map findScope config.properties;
+                  inherit signing_key;
+                  sub_mode = "hashed_user_id";
+
+                  access_code_validity = "minutes=1";
+                  access_token_validity = "minutes=5";
+                };
+              })
+              (lib.mkIf (config.type == "proxy") {
+                model = "authentik_providers_proxy.proxyprovider";
+                attrs = {
+                  intercept_header_auth = true;
+                  mode = "forward_single";
+
+                  access_token_validity = "hours=24";
+                };
+              })
+            ];
           };
         }));
       };
@@ -176,7 +203,13 @@ in {
           ];
         }
         # Applications
-      ] ++ lib.concatMap (app: app.blueprint) (lib.attrValues cfg.apps);
+      ] ++ lib.concatMap (app: app.blueprint) (lib.attrValues cfg.apps) ++ [
+        {
+          model = "authentik_outposts.outpost";
+          identifiers.managed = "goauthentik.io/outposts/embedded";
+          attrs.providers = builtins.map (p: findProvider p.name) (builtins.filter (p: p.type == "proxy") (lib.attrValues cfg.apps));
+        }
+      ];
     };
   };
 }

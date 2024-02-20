@@ -27,6 +27,7 @@
   };
   services.authentik.apps.grafana = {
     name = "Grafana";
+    type = "oauth2";
     redirect_uris = "https://grafana.isz.wtf/login/generic_oauth";
   };
 }
