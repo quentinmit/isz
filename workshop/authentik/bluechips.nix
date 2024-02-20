@@ -33,7 +33,7 @@
       proxy_set_header X-authentik-uid $authentik_uid;
     '';
     locations."/outpost.goauthentik.io" = {
-      proxyPass = "https://auth.isz.wtf/outpost.goauthentik.io";
+      inherit (config.services.nginx.virtualHosts."${config.services.authentik.nginx.host}".locations."/") proxyPass;
       extraConfig = ''
         proxy_set_header        X-Original-URL $scheme://$http_host$request_uri;
         add_header              Set-Cookie $auth_cookie;
@@ -45,9 +45,9 @@
     locations."@goauthentik_proxy_signin".extraConfig = ''
       internal;
       add_header Set-Cookie $auth_cookie;
-      return 302 /outpost.goauthentik.io/start?rd=$request_uri;
+      #return 302 /outpost.goauthentik.io/start?rd=$request_uri;
       # For domain level, use the below error_page to redirect to your authentik server with the full redirect path
-      # return 302 https://authentik.company/outpost.goauthentik.io/start?rd=$scheme://$http_host$request_uri;
+      return 302 https://auth.isz.wtf/outpost.goauthentik.io/start?rd=$scheme://$http_host$request_uri;
     '';
   };
 }

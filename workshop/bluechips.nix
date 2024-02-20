@@ -22,6 +22,9 @@
       ROCKET_ADDRESS="unix:%t/bluechips/bluechips.sock";
       ROCKET_DB_URI="postgresql://?dbname=bluechips";
     };
+    preStart = ''
+      ${pkgs.unstable.bluechips-rs}/bin/migration up -v -u postgresql://?dbname=bluechips
+    '';
     serviceConfig = {
       User = "bluechips";
       Group = "bluechips";
