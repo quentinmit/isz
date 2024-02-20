@@ -18,6 +18,7 @@
       ./pnio2mqtt
       #./containers.nix
       ./authentik
+      ./bluechips.nix
       ../nix/zwave-js-ui.nix
       ../nix/speedtest.nix
       nixos-hardware.nixosModules.common-cpu-amd

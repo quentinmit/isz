@@ -13,7 +13,8 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
-    sops-nix.url = "github:Mic92/sops-nix";
+    #sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.url = "github:quentinmit/sops-nix/template-file";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.inputs.nixpkgs-stable.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
@@ -48,8 +49,11 @@
     authentik.url = "github:quentinmit/authentik-nix";
     authentik.inputs.nixpkgs.follows = "nixpkgs";
     authentik.inputs.flake-utils.follows = "flake-utils";
+    bluechips.url = "github:quentinmit/bluechips";
+    bluechips.inputs.nixpkgs.follows = "nixpkgs";
+    bluechips.inputs.flake-utils.follows = "flake-utils";
   };
-  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, ... }@args:
+  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -61,6 +65,7 @@
             self.overlays.unstable
             py-profinet.overlays.default
             Jovian-NixOS.overlays.default
+            bluechips.overlays.default
           ];
         };
         nixpkgs-23_05 = import nixpkgs-23_05 {
