@@ -77,11 +77,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1708468669,
-        "narHash": "sha256-x2s5yY9UEFUUUVZZNStV3dJIMOhtFQCptrTCt8LqJAA=",
+        "lastModified": 1708494992,
+        "narHash": "sha256-nTLxZmFVt1/ZL9zwhCLM4Ap3nL8tHwFPFu/xDhvsrCY=",
         "owner": "quentinmit",
         "repo": "bluechips",
-        "rev": "8403e3062f81be0c438e049fa95a1be11e8ba67c",
+        "rev": "2db8e04cd6fa55a76b67c84ad132c00e53834a0e",
         "type": "github"
       },
       "original": {
