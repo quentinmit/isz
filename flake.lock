@@ -635,16 +635,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1708463525,
-        "narHash": "sha256-jWlx6/aJV1kfDtodmkYSiYrrDMHpFFE/xYNlRZhHVxs=",
-        "owner": "quentinmit",
+        "lastModified": 1708500294,
+        "narHash": "sha256-mvJIecY3tDKZh7297mqOtOuAvP7U1rqjfLNfmfkjFpU=",
+        "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "d5099319089c76221df980ed17fedc3182b77aaa",
+        "rev": "f6b80ab6cd25e57f297fe466ad689d8a77057c11",
         "type": "github"
       },
       "original": {
-        "owner": "quentinmit",
-        "ref": "template-file",
+        "owner": "Mic92",
         "repo": "sops-nix",
         "type": "github"
       }

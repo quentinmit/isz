@@ -13,8 +13,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
-    #sops-nix.url = "github:Mic92/sops-nix";
-    sops-nix.url = "github:quentinmit/sops-nix/template-file";
+    sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.inputs.nixpkgs-stable.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
