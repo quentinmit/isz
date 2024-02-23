@@ -74,6 +74,10 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           type = types.bool;
           default = false;
         };
+        groupBy.fields = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+        };
         pivot = mkEnableOption "pivot";
         extra = mkOption {
           type = types.str;
@@ -103,7 +107,10 @@ with import ../grafana/types.nix { inherit pkgs lib; };
             '' else ''
               |> aggregateWindow(every: v.windowPeriod, fn: ${config.fn}, createEmpty: ${fluxValue config.createEmpty})
             ''
-          ) + lib.optionalString config.pivot ''
+          ) + lib.optionalString (config.groupBy.fields != null) ''
+            |> group(columns: ${fluxValue (config.groupBy.fields ++ ["_measurement" "_field" "_start" "_stop"])})
+            |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: ${fluxValue config.createEmpty})
+          '' + lib.optionalString config.pivot ''
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> drop(columns: ["_start", "_stop"])
           '' + config.extra

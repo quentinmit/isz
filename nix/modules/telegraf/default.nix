@@ -46,6 +46,7 @@ in {
           mikrotik = "30s";
           internal = "60s";
           openweathermap = "10m";
+          prometheus = "60s";
         };
       };
       mikrotik = {
@@ -86,23 +87,26 @@ in {
           };
       };
       w1 = mkEnableOption "1-Wire support";
-      prometheus.apps = let app = with types; submodule ({ name, config, ... }: {
-        options = {
-          url = mkOption { type = str; };
-          tags = mkOption { type = attrsOf str; };
-          extraConfig = mkOption { type = attrs; };
-        };
-        config = {
-          tags.app = lib.mkDefault name;
-          extraConfig = {
-            alias = name;
-            urls = [config.url];
-            metric_version = 2;
-            interval = "60s";
-            inherit (config) tags;
+      prometheus.apps = let
+        interval = config.isz.telegraf.interval.prometheus;
+        app = with types; submodule ({ name, config, ... }: {
+          options = {
+            url = mkOption { type = str; };
+            tags = mkOption { type = attrsOf str; };
+            extraConfig = mkOption { type = attrs; };
           };
-        };
-      }); in mkOption {
+          config = {
+            tags.app = lib.mkDefault name;
+            extraConfig = {
+              alias = name;
+              urls = [config.url];
+              metric_version = 2;
+              inherit interval;
+              inherit (config) tags;
+            };
+          };
+        });
+      in mkOption {
         type = with types; attrsOf app;
         default = {};
       };
