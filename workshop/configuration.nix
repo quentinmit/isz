@@ -19,6 +19,7 @@
       #./containers.nix
       ./authentik
       ./bluechips.nix
+      ./paperless.nix
       ../nix/zwave-js-ui.nix
       ../nix/speedtest.nix
       nixos-hardware.nixosModules.common-cpu-amd
