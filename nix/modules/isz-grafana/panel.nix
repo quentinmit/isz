@@ -68,15 +68,26 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           default = [];
         };
         fn = mkOption {
-          type = types.nullOr (types.enum ["derivative" "mean" "min" "max" "last1"]);
+          type = types.nullOr (types.enum ["derivative" "mean" "min" "max" "last" "last1"]);
         };
         createEmpty = mkOption {
           type = types.bool;
           default = false;
         };
-        groupBy.fields = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+        groupBy = mkOption {
+          default = [];
+          type = types.coercedTo types.attrs (x: [x]) (types.listOf (types.submodule {
+            options = {
+              fn = mkOption {
+                type = types.enum ["sum" "mean" "max" "min" "count" "last"];
+                default = "sum";
+              };
+              fields = mkOption {
+                type = types.listOf types.str;
+                default = [];
+              };
+            };
+          }));
         };
         pivot = mkEnableOption "pivot";
         extra = mkOption {
@@ -107,10 +118,10 @@ with import ../grafana/types.nix { inherit pkgs lib; };
             '' else ''
               |> aggregateWindow(every: v.windowPeriod, fn: ${config.fn}, createEmpty: ${fluxValue config.createEmpty})
             ''
-          ) + lib.optionalString (config.groupBy.fields != null) ''
-            |> group(columns: ${fluxValue (config.groupBy.fields ++ ["_measurement" "_field" "_start" "_stop"])})
-            |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: ${fluxValue config.createEmpty})
-          '' + lib.optionalString config.pivot ''
+          ) + lib.concatMapStrings (g: ''
+            |> group(columns: ${fluxValue (g.fields ++ ["_measurement" "_field" "_start" "_stop"])})
+            |> aggregateWindow(every: v.windowPeriod, fn: ${g.fn}, createEmpty: ${fluxValue config.createEmpty})
+          '') config.groupBy + lib.optionalString config.pivot ''
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> drop(columns: ["_start", "_stop"])
           '' + config.extra
