@@ -44,13 +44,14 @@
             title = "Task status";
             gridPos = { x = 17; y = 1; w = 3; h = 6; };
             type = "piechart";
+            inherit interval;
           };
           influx.filter._measurement = "prometheus";
           influx.filter._field = "authentik_system_tasks";
           influx.fn = "last1";
           influx.groupBy = [
-            { fn = "last"; fields = ["task_name"]; }
-            { fn = "count"; fields = ["status"]; }
+            { fn = "last1"; fields = ["task_name"]; }
+            { fn = "count1"; fields = ["status"]; }
           ];
           panel.options.pieType = "donut";
           panel.fieldConfig.defaults = {
@@ -74,6 +75,7 @@
             title = "Cached policies";
             gridPos = { x = 17; y = 7; w = 3; h = 6; };
             type = "piechart";
+            inherit interval;
           };
           influx = [
             {
@@ -94,6 +96,7 @@
             title = "Connected Workers";
             gridPos = { x = 20; y = 6; w = 4; h = 3; };
             type = "stat";
+            inherit interval;
           };
           influx.filter._measurement = "prometheus";
           influx.filter._field = "authentik_admin_workers";
@@ -109,6 +112,7 @@
             title = "Connected Outposts";
             gridPos = { x = 20; y = 6; w = 4; h = 3; };
             type = "stat";
+            inherit interval;
           };
           influx.filter._measurement = "prometheus";
           influx.filter._field = "authentik_outposts_connected";
@@ -124,6 +128,7 @@
             title = "System task duration";
             gridPos = { x = 0; y = 13; w = 4; h = 16; };
             type = "bargauge";
+            inherit interval;
           };
           influx.filter._measurement = "prometheus";
           influx.filter._field = "authentik_system_tasks";

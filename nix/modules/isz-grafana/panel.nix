@@ -79,7 +79,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           type = types.coercedTo types.attrs (x: [x]) (types.listOf (types.submodule {
             options = {
               fn = mkOption {
-                type = types.enum ["sum" "mean" "max" "min" "count" "last"];
+                type = types.enum ["sum" "mean" "max" "min" "count" "last" "last1" "count1"];
                 default = "sum";
               };
               fields = mkOption {
@@ -101,6 +101,18 @@ with import ../grafana/types.nix { inherit pkgs lib; };
       };
       config = {
         query = let
+          agg = fn:
+            if fn == null then ""
+            else if fn == "last1" then ''
+              |> last()
+            '' else if fn == "count1" then ''
+              |> count()
+            '' else if fn == "derivative" then ''
+              |> aggregateWindow(every: v.windowPeriod, fn: last)
+              |> derivative(unit: 1s, nonNegative: true)
+            '' else ''
+              |> aggregateWindow(every: v.windowPeriod, fn: ${fn}, createEmpty: ${fluxValue config.createEmpty})
+            '';
           filters = lib.mapAttrsToList (field: values:
             ''|> filter(fn: (r) => ${fluxFilter field values})'');
         in lib.mkDefault (
@@ -108,20 +120,9 @@ with import ../grafana/types.nix { inherit pkgs lib; };
             from (bucket: ${if config.bucket != null then (fluxValue config.bucket) else "v.defaultBucket"})
             |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
             ${lib.concatStringsSep "\n" (filters (extraInfluxFilter // config.filter))}
-          '' + (
-            if config.fn == null then ""
-            else if config.fn == "last1" then ''
-              |> last()
-            '' else if config.fn == "derivative" then ''
-              |> aggregateWindow(every: v.windowPeriod, fn: last)
-              |> derivative(unit: 1s, nonNegative: true)
-            '' else ''
-              |> aggregateWindow(every: v.windowPeriod, fn: ${config.fn}, createEmpty: ${fluxValue config.createEmpty})
-            ''
-          ) + lib.concatMapStrings (g: ''
+          '' + (agg config.fn) + lib.concatMapStrings (g: ''
             |> group(columns: ${fluxValue (g.fields ++ ["_measurement" "_field" "_start" "_stop"])})
-            |> aggregateWindow(every: v.windowPeriod, fn: ${g.fn}, createEmpty: ${fluxValue config.createEmpty})
-          '') config.groupBy + lib.optionalString config.pivot ''
+          '' + (agg g.fn)) config.groupBy + lib.optionalString config.pivot ''
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> drop(columns: ["_start", "_stop"])
           '' + config.extra
