@@ -39,20 +39,12 @@
         { ip = "172.30.97.17"; }
         { ip = "172.30.97.18"; }
       ];
+      prometheus.apps = {
+        grafana.url = "https://grafana.isz.wtf/metrics";
+        influx.url = "https://influx.isz.wtf/metrics";
+      };
     };
     services.telegraf.extraConfig = lib.mkMerge [
-      {
-        inputs.prometheus = lib.attrsets.mapAttrsToList
-          (app: url: {
-            urls = [url];
-            metric_version = 2;
-            interval = "60s";
-            tags.app = app;
-          }) {
-            grafana = "https://grafana.isz.wtf/metrics";
-            influx = "https://influx.isz.wtf/metrics";
-          };
-      }
       {
         inputs.ping = [{
           interval = "30s";

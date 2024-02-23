@@ -86,6 +86,26 @@ in {
           };
       };
       w1 = mkEnableOption "1-Wire support";
+      prometheus.apps = let app = with types; submodule ({ name, config, ... }: {
+        options = {
+          url = mkOption { type = str; };
+          tags = mkOption { type = attrsOf str; };
+          extraConfig = mkOption { type = attrs; };
+        };
+        config = {
+          tags.app = lib.mkDefault name;
+          extraConfig = {
+            alias = name;
+            urls = [config.url];
+            metric_version = 2;
+            interval = "60s";
+            inherit (config) tags;
+          };
+        };
+      }); in mkOption {
+        type = with types; attrsOf app;
+        default = {};
+      };
     };
   };
   config = let
@@ -442,6 +462,9 @@ in {
             restart_delay = "10s";
             data_format = "influx";
           }];
+        })
+        (lib.mkIf (cfg.prometheus.apps != {}) {
+          inputs.prometheus = lib.mapAttrsToList (_: value: value.extraConfig) cfg.prometheus.apps;
         })
       ];
     }

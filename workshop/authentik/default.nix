@@ -38,5 +38,9 @@
         result_backend.url = redisUrl;
       };
     };
+    isz.telegraf.prometheus.apps.authentik = {
+      url = "http://localhost:9300/metrics";
+      extraConfig.http_headers.Accept = "text/plain";
+    };
   };
 }
