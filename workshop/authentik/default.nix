@@ -36,6 +36,8 @@
         channel.url = redisUrl;
         broker.url = redisUrl;
         result_backend.url = redisUrl;
+        # Disable outpost discovery since there's no Kubernetes or Docker.
+        outposts.discover = false;
       };
     };
     isz.telegraf.prometheus.apps.authentik = {
