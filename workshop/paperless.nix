@@ -10,6 +10,10 @@
         PAPERLESS_DBENGINE = "postgresql";
         PAPERLESS_DBHOST = "/run/postgresql/";
         PAPERLESS_DBNAME = config.services.paperless.user;
+        PAPERLESS_OCR_USER_ARGS = builtins.toJSON {
+          # https://github.com/paperless-ngx/paperless-ngx/discussions/4047
+          invalidate_digital_signatures = true;
+        };
       };
     };
     services.postgresql = {
