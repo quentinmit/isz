@@ -302,6 +302,10 @@
     station.id = 115731;
     station.tokenPath = config.sops.secrets.weatherflow2mqtt_station_token.path;
   };
+
+  services.nix-serve.enable = true;
+  services.nix-serve.package = pkgs.nix-serve-ng;
+
   virtualisation.libvirtd.enable = true;
 
   isz.networking.vlans = [981];

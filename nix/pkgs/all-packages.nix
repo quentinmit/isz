@@ -63,4 +63,12 @@ final: prev:
   };
   gotenberg = final.callPackage ./gotenberg {};
   unoconverter = final.callPackage ./gotenberg/unoconverter.nix {};
+  # Can't use upstream flake, because it uses IFD.
+  nix-serve-ng = (final.haskell.packages.ghc94.callPackage ./nix-serve-ng.nix {
+    base16 = final.haskell.packages.ghc94.base16_1_0;
+  }).overrideAttrs (old: {
+    executableSystemDepends = (old.executableSystemDepends or []) ++ [
+      final.boost.dev
+    ];
+  });
 }
