@@ -61,4 +61,6 @@ final: prev:
   knock = final.knockd.override {
     withKnockd = false;
   };
+  gotenberg = final.callPackage ./gotenberg {};
+  unoconverter = final.callPackage ./gotenberg/unoconverter.nix {};
 }

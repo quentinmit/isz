@@ -1,0 +1,128 @@
+From d43c63b258a63997b899fb8ff78a304c1454a243 Mon Sep 17 00:00:00 2001
+From: Quentin Smith <quentin@mit.edu>
+Date: Sat, 24 Feb 2024 18:55:15 -0500
+Subject: [PATCH] fix(chromium): Use `os.TempDir()` instead of hardcoding
+ `/tmp`
+
+---
+ pkg/modules/chromium/browser_test.go | 21 +++++++++++++--------
+ pkg/modules/chromium/chromium.go     |  8 +++++++-
+ 2 files changed, 20 insertions(+), 9 deletions(-)
+
+diff --git a/pkg/modules/chromium/browser_test.go b/pkg/modules/chromium/browser_test.go
+index b33b5ae..a18dd5c 100644
+--- a/pkg/modules/chromium/browser_test.go
++++ b/pkg/modules/chromium/browser_test.go
+@@ -18,6 +18,11 @@ import (
+ 	"github.com/gotenberg/gotenberg/v8/pkg/gotenberg"
+ )
+ 
++var (
++	tmpMatch   = regexp2.MustCompile(fmt.Sprintf("^file://%s.*", regexp2.Escape(os.TempDir())), 0)
++	tmpNoMatch = regexp2.MustCompile(fmt.Sprintf(`^file:(?!//%s/).*`, regexp2.Escape(os.TempDir())), 0)
++)
++
+ func TestChromiumBrowser_Start(t *testing.T) {
+ 	for _, tc := range []struct {
+ 		scenario    string
+@@ -284,7 +289,7 @@ func TestChromiumBrowser_pdf(t *testing.T) {
+ 			browser: func() browser {
+ 				b := new(chromiumBrowser)
+ 				b.arguments = browserArguments{
+-					allowList: regexp2.MustCompile(`^file:(?!//\/tmp/).*`, 0),
++					allowList: tmpNoMatch,
+ 					denyList:  regexp2.MustCompile("", 0),
+ 				}
+ 				b.isStarted.Store(true)
+@@ -302,7 +307,7 @@ func TestChromiumBrowser_pdf(t *testing.T) {
+ 				b := new(chromiumBrowser)
+ 				b.arguments = browserArguments{
+ 					allowList: regexp2.MustCompile("", 0),
+-					denyList:  regexp2.MustCompile("^file:///tmp.*", 0),
++					denyList:  tmpMatch,
+ 				}
+ 				b.isStarted.Store(true)
+ 				return b
+@@ -319,7 +324,7 @@ func TestChromiumBrowser_pdf(t *testing.T) {
+ 				browserArguments{
+ 					binPath:          os.Getenv("CHROMIUM_BIN_PATH"),
+ 					wsUrlReadTimeout: 5 * time.Second,
+-					allowList:        regexp2.MustCompile("^file:///tmp.*", 0),
++					allowList:        tmpMatch,
+ 					denyList:         regexp2.MustCompile("", 0),
+ 				},
+ 			),
+@@ -352,7 +357,7 @@ func TestChromiumBrowser_pdf(t *testing.T) {
+ 					binPath:          os.Getenv("CHROMIUM_BIN_PATH"),
+ 					wsUrlReadTimeout: 5 * time.Second,
+ 					allowList:        regexp2.MustCompile("", 0),
+-					denyList:         regexp2.MustCompile(`^file:(?!//\/tmp/).*`, 0),
++					denyList:         tmpNoMatch,
+ 				},
+ 			),
+ 			fs: func() *gotenberg.FileSystem {
+@@ -1254,7 +1259,7 @@ func TestChromiumBrowser_screenshot(t *testing.T) {
+ 			browser: func() browser {
+ 				b := new(chromiumBrowser)
+ 				b.arguments = browserArguments{
+-					allowList: regexp2.MustCompile(`^file:(?!//\/tmp/).*`, 0),
++					allowList: tmpNoMatch,
+ 					denyList:  regexp2.MustCompile("", 0),
+ 				}
+ 				b.isStarted.Store(true)
+@@ -1272,7 +1277,7 @@ func TestChromiumBrowser_screenshot(t *testing.T) {
+ 				b := new(chromiumBrowser)
+ 				b.arguments = browserArguments{
+ 					allowList: regexp2.MustCompile("", 0),
+-					denyList:  regexp2.MustCompile("^file:///tmp.*", 0),
++					denyList:  tmpMatch,
+ 				}
+ 				b.isStarted.Store(true)
+ 				return b
+@@ -1289,7 +1294,7 @@ func TestChromiumBrowser_screenshot(t *testing.T) {
+ 				browserArguments{
+ 					binPath:          os.Getenv("CHROMIUM_BIN_PATH"),
+ 					wsUrlReadTimeout: 5 * time.Second,
+-					allowList:        regexp2.MustCompile("^file:///tmp.*", 0),
++					allowList:        tmpMatch,
+ 					denyList:         regexp2.MustCompile("", 0),
+ 				},
+ 			),
+@@ -1322,7 +1327,7 @@ func TestChromiumBrowser_screenshot(t *testing.T) {
+ 					binPath:          os.Getenv("CHROMIUM_BIN_PATH"),
+ 					wsUrlReadTimeout: 5 * time.Second,
+ 					allowList:        regexp2.MustCompile("", 0),
+-					denyList:         regexp2.MustCompile(`^file:(?!//\/tmp/).*`, 0),
++					denyList:         tmpNoMatch,
+ 				},
+ 			),
+ 			fs: func() *gotenberg.FileSystem {
+diff --git a/pkg/modules/chromium/chromium.go b/pkg/modules/chromium/chromium.go
+index 0ab4ad3..16fd71a 100644
+--- a/pkg/modules/chromium/chromium.go
++++ b/pkg/modules/chromium/chromium.go
+@@ -8,6 +8,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/alexliesenfeld/health"
++	"github.com/dlclark/regexp2"
+ 	flag "github.com/spf13/pflag"
+ 	"go.uber.org/zap"
+ 
+@@ -293,7 +294,12 @@ func (mod *Chromium) Descriptor() gotenberg.ModuleDescriptor {
+ 			fs.String("chromium-host-resolver-rules", "", "Set custom mappings to the host resolver")
+ 			fs.String("chromium-proxy-server", "", "Set the outbound proxy server; this switch only affects HTTP and HTTPS requests")
+ 			fs.String("chromium-allow-list", "", "Set the allowed URLs for Chromium using a regular expression")
+-			fs.String("chromium-deny-list", `^file:(?!//\/tmp/).*`, "Set the denied URLs for Chromium using a regular expression")
++			fs.String(
++				"chromium-deny-list",
++				fmt.Sprintf(
++					`^file:(?!//%s/).*`,
++					regexp2.Escape(os.TempDir()),
++				), "Set the denied URLs for Chromium using a regular expression")
+ 			fs.Bool("chromium-clear-cache", false, "Clear Chromium cache between each conversion")
+ 			fs.Bool("chromium-clear-cookies", false, "Clear Chromium cookies between each conversion")
+ 			fs.Bool("chromium-disable-javascript", false, "Disable JavaScript")
+-- 
+2.42.0
+
