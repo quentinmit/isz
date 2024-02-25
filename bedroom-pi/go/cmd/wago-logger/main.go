@@ -62,7 +62,7 @@ func (s *Status) LoadAmps() float64 {
 }
 
 func (s *Status) String() string {
-	return fmt.Sprintf("PSU: %0.2fV %0.2fA Output: %0.2fV %0.2fA Battery: %0.2fV %+0.2fA %+0.2fA Temperature: %0.2f°C Status: %04x SwitchPosition: %04x 5: %x",
+	return fmt.Sprintf("PSU: %0.2fV %0.2fA Output: %0.2fV %0.2fA Battery: %0.2fV %+0.2fA %+0.2fA Temperature: %0.2f°C Status: %04x SwitchPosition: %04x",
 		s.PSUVolts, s.PSUAmps,
 		s.OutputVolts, s.LoadAmps(),
 		s.BatteryVolts, -s.BatteryOutAmps, s.BatteryInAmps,

@@ -8,5 +8,5 @@ buildGoModule rec {
 
   src = builtins.path { path = ./.; name = "bedroom-go"; };
 
-  vendorSha256 = "sha256-KixGIlEBms7mZomzTWhYFb3iPYZ2or9pciesvIcQGIs=";
+  vendorHash = "sha256-1Kv8FJfWezjrmZDSqftb2WkxR3dqV8hMhwQ6uR4BMPw=";
 }
