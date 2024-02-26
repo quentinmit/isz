@@ -165,12 +165,23 @@ in {
         (applyBlueprint "Default - Provider authorization flow (implicit consent)")
         {
           model = "authentik_flows.flow";
-          id = "default-identification-flow";
           identifiers.slug = "default-authentication-flow";
           attrs.designation = "authentication";
           attrs.name = "Ice Station Zebra";
           attrs.title = "Ice Station Zebra";
           attrs.authentication = "none";
+        }
+        {
+          model = "authentik_stages_user_login.userloginstage";
+          identifiers.name = "default-authentication-login";
+          attrs.remember_me_offset = "days=30";
+          attrs.session_duration = "seconds=0";
+        }
+        {
+          model = "authentik_stages_user_login.userloginstage";
+          identifiers.name = "default-source-authentication-login";
+          attrs.remember_me_offset = "days=7";
+          attrs.session_duration = "seconds=0";
         }
         # OAuth2 sources
         {
@@ -195,10 +206,9 @@ in {
             user_path_template = "goauthentik.io/sources/%(slug)s";
           };
         }
-        rec {
+        {
           model = "authentik_stages_identification.identificationstage";
-          id = "default-authentication-identification";
-          identifiers.name = id;
+          identifiers.name = "default-authentication-identification";
           attrs.user_fields = [
             "email"
             "username"
