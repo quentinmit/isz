@@ -46,6 +46,11 @@
     };
     services.telegraf.extraConfig = lib.mkMerge [
       {
+        inputs.nginx_vts = [{
+          urls = ["http://localhost/status/format/json"];
+        }];
+      }
+      {
         inputs.ping = [{
           interval = "30s";
           method = "native";

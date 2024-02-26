@@ -5,12 +5,35 @@
     security.acme.defaults.email = "qsmith@gmail.com";
     services.nginx = {
       enable = true;
+      additionalModules = with pkgs.nginxModules; [
+        vts
+      ];
+      appendHttpConfig = ''
+        vhost_traffic_status_zone;
+      '';
       recommendedTlsSettings = true;
       recommendedOptimisation = true;
       recommendedGzipSettings = true;
       recommendedProxySettings = true;
       upstreams.grafana.servers."unix:/${config.services.grafana.settings.server.socket}" = {};
       virtualHosts = {
+        "workshop.isz.wtf" = {
+          serverAliases = [
+            "localhost"
+          ];
+          locations."/status" = {
+            extraConfig = ''
+              vhost_traffic_status_display;
+              vhost_traffic_status_display_format html;
+
+              access_log off;
+              allow 127.0.0.1;
+              ${lib.optionalString config.networking.enableIPv6 "allow ::1;"}
+              allow 172.30.96.0/22;
+              deny all;
+            '';
+          };
+        };
         "grafana.isz.wtf" = lib.mkIf config.services.grafana.enable {
           forceSSL = true;
           enableACME = true;
