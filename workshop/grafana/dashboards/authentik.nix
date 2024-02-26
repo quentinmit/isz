@@ -5,9 +5,10 @@
     title = "authentik";
     defaultDatasourceName = "workshop";
     variables = {
-      namespace = {
-        predicate = ''r["_measurement"] == "prometheus" and r["_field"] == "authentik_outpost_connection"'';
-        extra.label = "Namespace";
+      outpost_proxy = {
+        predicate = ''r["_measurement"] == "prometheus" and r["_field"] == "authentik_outpost_connection" and r.outpost_type == "proxy"'';
+        tag = "outpost_name";
+        extra.hide = 2;
       };
     };
     # Based on https://grafana.com/grafana/dashboards/14837-authentik/
@@ -150,6 +151,81 @@
           panel.options = {
             displayMode = "lcd";
             orientation = "horizontal";
+          };
+        }
+        {
+          panel = {
+            title = "PolicyEngine Execution time by binding type";
+            gridPos = { x = 4; y = 13; w = 20; h = 8; };
+            inherit interval;
+          };
+          influx.filter._measurement = "prometheus";
+          influx.filter._field = ["authentik_policies_execution_time_sum" "authentik_policies_execution_time_count"];
+          influx.fn = "derivative";
+          influx.groupBy.fields = ["binding_target_type"];
+          influx.pivot = true;
+          influx.extra = ''
+            |> map(fn: (r) => ({binding_target_type: r.binding_target_type, _time: r._time, _value: r.authentik_policies_execution_time_sum/r.authentik_policies_execution_time_count}))
+          '';
+          panel.fieldConfig.defaults = {
+            unit = "s";
+          };
+        }
+        {
+          panel = {
+            title = "PolicyEngine Execution time by binding target";
+            gridPos = { x = 4; y = 21; w = 20; h = 8; };
+            inherit interval;
+          };
+          influx.filter._measurement = "prometheus";
+          influx.filter._field = ["authentik_policies_execution_time_sum" "authentik_policies_execution_time_count"];
+          influx.fn = "derivative";
+          influx.groupBy.fields = ["object_type"];
+          influx.pivot = true;
+          influx.extra = ''
+            |> map(fn: (r) => ({object_type: r.object_type, _time: r._time, _value: r.authentik_policies_execution_time_sum/r.authentik_policies_execution_time_count}))
+          '';
+          panel.fieldConfig.defaults = {
+            unit = "s";
+          };
+        }
+        {
+          panel = {
+            type = "row";
+            title = "authentik Proxy Outpost $outpost_proxy";
+            repeat = "outpost_proxy";
+            gridPos = { x = 0; y = 29; w = 24; h = 1; };
+          };
+        }
+        {
+          panel = {
+            title = "Outpost requests";
+            gridPos = { x = 0; y = 30; w = 12; h = 8; };
+            inherit interval;
+          };
+          influx.filter._measurement = "prometheus";
+          influx.filter._field = "authentik_outpost_proxy_request_duration_seconds_count";
+          influx.filter.outpost_name = "$outpost_proxy";
+          influx.fn = "derivative";
+          influx.groupBy.fields = ["host"];
+          panel.fieldConfig.defaults = {
+            unit = "qps";
+          };
+        }
+        {
+          panel = {
+            title = "Outpost requests (unauthenticated, but allow-listed)";
+            gridPos = { x = 12; y = 30; w = 12; h = 8; };
+            inherit interval;
+          };
+          influx.filter._measurement = "prometheus";
+          influx.filter._field = "authentik_outpost_proxy_request_duration_seconds_count";
+          influx.filter.outpost_name = "$outpost_proxy";
+          influx.filter.user = "";
+          influx.fn = "derivative";
+          influx.groupBy.fields = ["host"];
+          panel.fieldConfig.defaults = {
+            unit = "qps";
           };
         }
       ];
