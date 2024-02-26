@@ -15,7 +15,7 @@ buildGoModule rec {
     sha256 = "X99hXpqubbOoFnRT2Qv2S/M8nNabIL5GP+VBE+hB73c=";
   };
 
-  vendorSha256 = "Avy04f9bBTMvp12RsgtkwmhaGv45RN2OwspPht0vKv8=";
+  vendorHash = "sha256-Avy04f9bBTMvp12RsgtkwmhaGv45RN2OwspPht0vKv8=";
 
   meta = with lib; {
     description = "Speedtest for InfluxDB";

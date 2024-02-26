@@ -15,7 +15,7 @@ buildGoModule rec {
     sha256 = "7efg0eMVE+qm2OFXO64KxRW5AsTSVSLIl4kw2vJb4Jo=";
   };
 
-  vendorSha256 = "aUuKZaE31PSxJSvvJ+Ag0LXNewYLAC3nuuDV9sLUpJU=";
+  vendorHash = "sha256-aUuKZaE31PSxJSvvJ+Ag0LXNewYLAC3nuuDV9sLUpJU=";
 
   meta = with lib; {
     description = "Data aggregation for rtlamr";

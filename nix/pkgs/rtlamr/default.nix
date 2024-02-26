@@ -15,7 +15,7 @@ buildGoModule rec {
     sha256 = "0LufLU/wTmCRqTnQBNJg5UnDv0u1Thec5FSWATWqZsQ=";
   };
 
-  vendorSha256 = "uT6zfsWgIot0EMNqwtwJNFXN/WaAyOGfcYJjuyOXT4g=";
+  vendorHash = "sha256-uT6zfsWgIot0EMNqwtwJNFXN/WaAyOGfcYJjuyOXT4g=";
 
   meta = with lib; {
     description = "RTL-SDR ERT receiver";
