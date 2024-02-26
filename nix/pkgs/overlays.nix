@@ -18,19 +18,16 @@ final: prev: {
   })).override {
     libax25 = null;
   };
-  net-snmp = prev.net-snmp.overrideAttrs (old: {
-    buildInputs = old.buildInputs ++ final.lib.optionals final.stdenv.isDarwin (with final.darwin.apple_sdk.frameworks; [
+  net-snmp = if final.stdenv.isDarwin then prev.net-snmp.overrideAttrs (old: {
+    buildInputs = old.buildInputs ++ (with final.darwin.apple_sdk.frameworks; [
       DiskArbitration
       IOKit
       CoreServices
       ApplicationServices
     ]);
-    configureFlags = old.configureFlags ++ [
-      "--sysconfdir=/etc"
-    ];
-    LIBS = final.lib.optional final.stdenv.isDarwin "-framework CoreFoundation -framework CoreServices -framework DiskArbitration -framework IOKit";
+    LIBS = "-framework CoreFoundation -framework CoreServices -framework DiskArbitration -framework IOKit";
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
-  });
+  }) else prev.net-snmp;
   tsduck = prev.tsduck.overrideAttrs (old: {
     meta.broken = false;
     makeFlags = old.makeFlags ++ [
