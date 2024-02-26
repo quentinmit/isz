@@ -16,6 +16,11 @@
       recommendedGzipSettings = true;
       recommendedProxySettings = true;
       upstreams.grafana.servers."unix:/${config.services.grafana.settings.server.socket}" = {};
+      upstreams.influx.servers."localhost:8086" = {};
+      upstreams.homeassistant.servers."[::1]:${toString config.services.home-assistant.config.http.server_port}" = {};
+      upstreams.zwave.servers."127.0.0.1:8091" = {};
+      upstreams.dashboard.servers."127.0.0.1:8080" = {};
+      upstreams.jellyfin.servers."172.30.96.101:8096" = {};
       virtualHosts = {
         "workshop.isz.wtf" = {
           serverAliases = [
@@ -50,7 +55,7 @@
           forceSSL = true;
           enableACME = true;
           locations."/".tryFiles = "$uri @influx";
-          locations."@influx".proxyPass = "http://localhost:8086";
+          locations."@influx".proxyPass = "http://influx";
         };
         "atuin.isz.wtf" = lib.mkIf false {
           forceSSL = true;
@@ -64,14 +69,14 @@
           locations = {
             "/".tryFiles = "$uri @hass";
             "@hass" = {
-              proxyPass = "http://[::1]:${toString config.services.home-assistant.config.http.server_port}";
+              proxyPass = "http://homeassistant";
               proxyWebsockets = true;
               extraConfig = ''
                 proxy_buffering off;
               '';
             };
             "/zwave/" = {
-              proxyPass = "http://127.0.0.1:8091";
+              proxyPass = "http://zwave";
               proxyWebsockets = true;
               extraConfig = ''
                 rewrite ^ $request_uri;
@@ -80,7 +85,7 @@
               '';
             };
             "/dashboard/" = lib.mkIf config.services.dashboard.enable {
-              proxyPass = "http://127.0.0.1:8080";
+              proxyPass = "http://dashboard";
               extraConfig = ''
                 rewrite '^/dashboard(/.*)$' $1 break;
               '';
@@ -103,7 +108,7 @@
           forceSSL = true;
           enableACME = true;
           locations."/" = {
-            proxyPass = "http://172.30.96.101:8096";
+            proxyPass = "http://jellyfin";
             proxyWebsockets = true;
             extraConfig = ''
               proxy_buffering off;
