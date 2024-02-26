@@ -12,7 +12,7 @@ import (
 
 	influxdb2 "github.com/influxdata/influxdb-client-go"
 	"github.com/influxdata/influxdb-client-go/api"
-	"github.com/quentinmit/isz/linkzone"
+	"github.com/quentinmit/isz/workshop/go/linkzone"
 )
 
 var (

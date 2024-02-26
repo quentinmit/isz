@@ -8,5 +8,5 @@ buildGoModule rec {
 
   src = builtins.path { path = ./.; name = "workshop-go"; };
 
-  vendorHash = "sha256-oN26cnX0tDvQRAymUep5MLK1yvDI/r2MWrisQgFDdwU=";
+  vendorHash = "sha256-4cBdX6IQ0gUq+zXWEJhpklkUn/2cs2Iv3HqjyQEybZ0=";
 }

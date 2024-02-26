@@ -5,7 +5,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/quentinmit/isz/linkzone"
+	"github.com/quentinmit/isz/workshop/go/linkzone"
 )
 
 var (
