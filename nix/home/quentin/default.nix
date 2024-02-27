@@ -215,6 +215,42 @@ in {
         set history save on
       '';
     }
+    {
+      programs.vscode = {
+        userSettings = {
+          "telemetry.enableTelemetry" = false;
+          "editor.autoClosingBrackets" = "beforeWhitespace";
+          "editor.foldingMaximumRegions" = 50000;
+          "editor.formatOnSave" = true;
+          "editor.renderWhitespace" = "all";
+          "go.useLanguageServer" = true;
+          "jupyter.alwaysTrustNotebooks" = true;
+          "jupyter.disableJupyterAutoStart" = true;
+          "jupyter.jupyterServerType" = "remote";
+          #"liveshare.allowGuestDebugControl" = true;
+          #"liveshare.allowGuestTaskControl" = true;
+          #"liveshare.languages.allowGuestCommandControl" = true;
+          #"liveshare.notebooks.allowGuestExecuteCells" = true;
+          "nix.formatterPath" = "";
+          #"jupyter.insidersChannel" = "weekly";
+          #"python.insidersChannel" = "weekly";
+          "python.languageServer" = "Pylance";
+          "terminal.integrated.macOptionIsMeta" = true;
+          "window.zoomLevel" = 1;
+          "workbench.editorAssociations" = {
+            "*.ipynb" = "jupyter-notebook";
+          };
+        };
+        keybindings = [
+          {
+            # M-backspace sends ^W by default (?!)
+            key = "alt+backspace";
+            command = "-workbench.action.terminal.sendSequence";
+            when = "terminalFocus";
+          }
+        ];
+      };
+    }
     # Emulation
     {
       home.packages = with pkgs; [
