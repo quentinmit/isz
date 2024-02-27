@@ -30,6 +30,7 @@
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
     cargo2nix.url = "github:cargo2nix/cargo2nix/release-0.11.0";
     cargo2nix.inputs.flake-utils.follows = "flake-utils";
+    cargo2nix.inputs.flake-compat.follows = "flake-compat";
     cargo2nix.inputs.nixpkgs.follows = "nixpkgs";
     cargo2nix.inputs.rust-overlay.follows = "rust-overlay";
     plasma-manager.url = "github:pjones/plasma-manager";
@@ -48,6 +49,8 @@
     authentik.url = "github:quentinmit/authentik-nix";
     authentik.inputs.nixpkgs.follows = "nixpkgs";
     authentik.inputs.flake-utils.follows = "flake-utils";
+    authentik.inputs.flake-compat.follows = "flake-compat";
+    authentik.inputs.nixpkgs-23-05.follows = "nixpkgs-23_05";
     bluechips.url = "github:quentinmit/bluechips";
     bluechips.inputs.nixpkgs.follows = "nixpkgs";
     bluechips.inputs.flake-utils.follows = "flake-utils";

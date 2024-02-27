@@ -24,7 +24,9 @@
     "authentik": {
       "inputs": {
         "authentik-src": "authentik-src",
-        "flake-compat": "flake-compat",
+        "flake-compat": [
+          "flake-compat"
+        ],
         "flake-parts": "flake-parts",
         "flake-utils": [
           "flake-utils"
@@ -33,7 +35,9 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "nixpkgs-23-05": "nixpkgs-23-05",
+        "nixpkgs-23-05": [
+          "nixpkgs-23_05"
+        ],
         "poetry2nix": "poetry2nix"
       },
       "locked": {
@@ -92,7 +96,9 @@
     },
     "cargo2nix": {
       "inputs": {
-        "flake-compat": "flake-compat_2",
+        "flake-compat": [
+          "flake-compat"
+        ],
         "flake-utils": [
           "flake-utils"
         ],
@@ -186,38 +192,6 @@
       }
     },
     "flake-compat": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1696426674,
-        "narHash": "sha256-kvjfFW7WAETZlt09AgDn1MrtKzP7t90Vf7vypd3OL1U=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "0f9255e01c2351cc7d116c072cb317785dd33b33",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-compat_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1696426674,
-        "narHash": "sha256-kvjfFW7WAETZlt09AgDn1MrtKzP7t90Vf7vypd3OL1U=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "0f9255e01c2351cc7d116c072cb317785dd33b33",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-compat_3": {
       "flake": false,
       "locked": {
         "lastModified": 1696426674,
@@ -433,22 +407,6 @@
         "type": "indirect"
       }
     },
-    "nixpkgs-23-05": {
-      "locked": {
-        "lastModified": 1704290814,
-        "narHash": "sha256-LWvKHp7kGxk/GEtlrGYV68qIvPHkU9iToomNFGagixU=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "70bdadeb94ffc8806c0570eb5c2695ad29f0e421",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-23.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-23_05": {
       "locked": {
         "lastModified": 1704290814,
@@ -586,7 +544,7 @@
         "darwin": "darwin",
         "deploy-rs": "deploy-rs",
         "disko": "disko",
-        "flake-compat": "flake-compat_3",
+        "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "nix-index-database": "nix-index-database",
