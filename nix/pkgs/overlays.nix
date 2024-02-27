@@ -13,11 +13,11 @@ final: prev: {
   multimon-ng = prev.multimon-ng.overrideAttrs (old: {
     buildInputs = with final; old.buildInputs ++ [ libpulseaudio xorg.libX11 ];
   });
-  xastir = (prev.xastir.overrideAttrs (old: {
+  xastir = if final.stdenv.isDarwin then ((prev.xastir.overrideAttrs (old: {
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   })).override {
     libax25 = null;
-  };
+  }) else prev.xastir;
   net-snmp = if final.stdenv.isDarwin then prev.net-snmp.overrideAttrs (old: {
     buildInputs = old.buildInputs ++ (with final.darwin.apple_sdk.frameworks; [
       DiskArbitration
@@ -160,19 +160,19 @@ final: prev: {
     CC = final.stdenv.cc;
     CFLAGS = "-Wno-implicit-int";
   });
-  fpc = let
+  fpc = if final.stdenv.isDarwin then (let
     inherit (final) lib stdenv darwin;
   in prev.fpc.overrideAttrs (old: {
     # Needs strip from cctools-port, but ld from cctools-llvm
-    prePatch = (old.prePatch or "") + lib.optionalString stdenv.isDarwin ''
+    prePatch = (old.prePatch or "") + ''
       substituteInPlace fpcsrc/compiler/Makefile{,.fpc} \
         --replace "strip -no_uuid" "${darwin.cctools-port}/bin/strip -no_uuid"
     '';
     #nativeBuildInputs = (old.nativeBuildInputs or []) ++ lib.optionals stdenv.isDarwin [
     #  darwin.cctools-port
     #];
-  });
-  motif = let
+  })) else prev.fpc;
+  motif = if final.stdenv.isDarwin then (let
     inherit (final) fetchpatch;
   in prev.motif.overrideAttrs (old: {
     patches = old.patches ++ [
@@ -184,7 +184,7 @@ final: prev: {
       })
     ];
     CFLAGS = "-Wno-incompatible-function-pointer-types -Wno-implicit-function-declaration";
-  });
+  })) else prev.motif;
   cdecl = let
     inherit (final) lib stdenv;
   in prev.cdecl.overrideAttrs (old: {

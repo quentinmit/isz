@@ -133,7 +133,7 @@ in {
         #arm-none-linux-gnueabi-binutils
         pkgsCross.avr.buildPackages.gcc
         pkgsCross.avr.avrlibc
-        avrdude
+        (avrdude.override { docSupport = false; })
         bossa
         dfu-util
         esptool

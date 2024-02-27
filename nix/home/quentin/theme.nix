@@ -16,6 +16,9 @@
       iconTheme.name = "breeze-dark";
       font.name = "Noto Sans";
       font.size = lib.mkDefault 11;
+      # Plasma will try to overwrite ~/.gtkrc-2.0
+      # KDE >= 5.27.2 won't do it if the file doesn't exist, but either way, just use a different path.
+      gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
       gtk2.extraConfig = ''
         gtk-enable-animations=1
         gtk-primary-button-warps-slider=0
