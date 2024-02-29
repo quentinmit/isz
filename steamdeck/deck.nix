@@ -172,4 +172,7 @@
       highlightingModeRegex = "^Nix$";
     };
   };
+  programs.plasma.configFile = {
+    "katerc"."lspclient"."AllowedServerCommandLines" = "${pkgs.unstable.nil}/bin/nil";
+  };
 }
