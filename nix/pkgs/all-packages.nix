@@ -71,4 +71,5 @@ final: prev:
       final.boost.dev
     ];
   });
+  mactelnet = final.callPackage ./mactelnet {};
 }

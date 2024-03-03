@@ -395,6 +395,7 @@ in {
         transmission
         websocat
         termshark
+        mactelnet
       ];
     }
     # Kerberos
