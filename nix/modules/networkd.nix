@@ -86,6 +86,8 @@ in {
           networkConfig = {
             Bridge = "br0";
             LinkLocalAddressing = "no";
+            LLDP = true;
+            EmitLLDP = true;
           };
           inherit bridgeVLANs;
         };
