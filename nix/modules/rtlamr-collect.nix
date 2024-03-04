@@ -133,6 +133,7 @@
           export RTLAMR_SERVER=${escapeShellArg cfg.rtlTcpServer}
           export COLLECT_INFLUXDB_TOKEN="$(cat ${escapeShellArg cfg.influxdb.tokenPath})"
           set -e
+          sleep 5 # Wait for rtl-tcp to become ready
           rtlamr | rtlamr-collect
         '';
         unitConfig = {
