@@ -72,4 +72,5 @@ final: prev:
     ];
   });
   mactelnet = final.callPackage ./mactelnet {};
+  retrogram-rtlsdr = final.callPackage ./retrogram-rtlsdr {};
 }
