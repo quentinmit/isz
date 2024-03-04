@@ -78,6 +78,7 @@
         overlay
         self.overlays.new
         self.overlays.stable
+        self.overlays.stable-darwin
         cargo2nix.overlays.default
         deploy-rs.overlay
       ];
@@ -115,6 +116,7 @@
         inherit overlayModule;
         overlays.new = import ./nix/pkgs/all-packages.nix;
         overlays.stable = import ./nix/pkgs/overlays.nix;
+        overlays.stable-darwin = import ./nix/pkgs/darwin-overlays.nix;
         overlays.default = nixpkgs.lib.composeManyExtensions [
           overlays.new
           overlays.stable

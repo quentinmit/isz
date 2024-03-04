@@ -1,33 +1,7 @@
 final: prev: {
-  alpine = prev.alpine.overrideAttrs (old: if final.stdenv.isDarwin then {
-    src = old.src.override {
-      rev = "3d6c5540c8c2f4d01331de13e52790e5d7b6ac49";
-      hash = "sha256-Y4+SJ+OZw4t51fgF710ijjKt59Fui/SbyQzgNIjVAXU=";
-    };
-    buildInputs = old.buildInputs ++ [
-      final.darwin.apple_sdk.frameworks.Carbon
-    ];
-    configureFlags = prev.lib.lists.remove "--with-passfile=.pine-passfile" (prev.lib.lists.remove "--with-c-client-target=slx" old.configureFlags);
-    meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
-  } else {});
   multimon-ng = prev.multimon-ng.overrideAttrs (old: {
     buildInputs = with final; old.buildInputs ++ [ libpulseaudio xorg.libX11 ];
   });
-  xastir = if final.stdenv.isDarwin then ((prev.xastir.overrideAttrs (old: {
-    meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
-  })).override {
-    libax25 = null;
-  }) else prev.xastir;
-  net-snmp = if final.stdenv.isDarwin then prev.net-snmp.overrideAttrs (old: {
-    buildInputs = old.buildInputs ++ (with final.darwin.apple_sdk.frameworks; [
-      DiskArbitration
-      IOKit
-      CoreServices
-      ApplicationServices
-    ]);
-    LIBS = "-framework CoreFoundation -framework CoreServices -framework DiskArbitration -framework IOKit";
-    meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
-  }) else prev.net-snmp;
   tsduck = prev.tsduck.overrideAttrs (old: {
     meta.broken = false;
     makeFlags = old.makeFlags ++ [
@@ -95,13 +69,6 @@ final: prev: {
       });
     })
   ];
-  mesa_glu = let
-    inherit (final) lib stdenv;
-  in prev.mesa_glu.overrideAttrs (old: {
-    mesonFlags = (old.mesonFlags or []) ++ lib.optionals stdenv.isDarwin [
-      "-Dgl_provider=gl" # glvnd is default
-    ];
-  });
   mesa23_3_0_main = let
     inherit (final) fetchFromGitLab fetchurl lib;
     version = "23.3.0-main";
@@ -160,31 +127,6 @@ final: prev: {
     CC = final.stdenv.cc;
     CFLAGS = "-Wno-implicit-int";
   });
-  fpc = if final.stdenv.isDarwin then (let
-    inherit (final) lib stdenv darwin;
-  in prev.fpc.overrideAttrs (old: {
-    # Needs strip from cctools-port, but ld from cctools-llvm
-    prePatch = (old.prePatch or "") + ''
-      substituteInPlace fpcsrc/compiler/Makefile{,.fpc} \
-        --replace "strip -no_uuid" "${darwin.cctools-port}/bin/strip -no_uuid"
-    '';
-    #nativeBuildInputs = (old.nativeBuildInputs or []) ++ lib.optionals stdenv.isDarwin [
-    #  darwin.cctools-port
-    #];
-  })) else prev.fpc;
-  motif = if final.stdenv.isDarwin then (let
-    inherit (final) fetchpatch;
-  in prev.motif.overrideAttrs (old: {
-    patches = old.patches ++ [
-      (fetchpatch rec {
-        name = "wcs-functions.patch";
-        url = "https://github.com/macports/macports-ports/raw/1a671cae6888e36dc95718b2d0b80ae239e289de/x11/openmotif/files/${name}";
-        hash = "sha256-w3zCUs/RbnRoUJ0sNCI00noEOkov/IGV/zIygakSQqc=";
-        extraPrefix = ""; # Patches are applied with -p1; this gives it a prefix to strip.
-      })
-    ];
-    CFLAGS = "-Wno-incompatible-function-pointer-types -Wno-implicit-function-declaration";
-  })) else prev.motif;
   cdecl = let
     inherit (final) lib stdenv;
   in prev.cdecl.overrideAttrs (old: {
@@ -205,46 +147,6 @@ final: prev: {
   wordnet = prev.wordnet.overrideAttrs (old: {
     configureFlags = (old.configureFlags or []) ++ [
       "CFLAGS=-Wno-implicit-int"
-    ];
-  });
-  nbd = let
-    inherit (final) lib stdenv;
-  in prev.nbd.overrideAttrs (old: {
-    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
-      "CPPFLAGS=-Dfdatasync=fsync"
-    ];
-  });
-  bochs = let
-    inherit (final) lib stdenv;
-  in prev.bochs.overrideAttrs (old: {
-    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
-      "CXXFLAGS=-fno-aligned-allocation"
-    ];
-  });
-  cdparanoia = let
-    inherit (final) lib stdenv;
-  in prev.cdparanoia.overrideAttrs (old: {
-    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
-      "CFLAGS=-Wno-implicit-function-declaration"
-    ];
-  });
-  bossa = let
-    inherit (final) lib stdenv;
-  in prev.bossa.overrideAttrs (old: {
-    env = old.env // lib.optionalAttrs stdenv.isDarwin {
-      NIX_CFLAGS_COMPILE = (old.NIX_CFLAGS_COMPILE or "") + " -Wno-error=unqualified-std-cast-call";
-    };
-  });
-  xqilla = let
-    inherit (final) lib stdenv;
-  in prev.xqilla.overrideAttrs (old: {
-    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
-      "CXXFLAGS=-Wno-register"
-    ];
-    buildInputs = (old.buildInputs or []) ++ lib.optionals stdenv.isDarwin [
-      final.darwin.apple_sdk.frameworks.CoreFoundation
-      final.darwin.apple_sdk.frameworks.CoreServices
-      final.darwin.apple_sdk.frameworks.SystemConfiguration
     ];
   });
   mdbtools = let
