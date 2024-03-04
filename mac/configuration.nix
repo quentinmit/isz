@@ -18,6 +18,11 @@
         withWxGTK = true;
       };
       #mesa = final.mesa23_3_0_main;
+      zig_0_11 = prev.zig_0_11.overrideAttrs (old: {
+        cmakeFlags = (old.cmakeFlags or []) ++ [
+          "-DZIG_HOST_TARGET_TRIPLE=x86_64-macos.10.15"
+        ];
+      });
     })
   ];
   nixpkgs.config.permittedInsecurePackages = [
