@@ -183,4 +183,7 @@ final: prev: {
   bashdbInteractive = final.bashdb.overrideAttrs {
     buildInputs = (prev.buildInputs or []) ++ [ final.bashInteractive ];
   };
+  avrdude = prev.avrdude.override {
+    docSupport = !final.stdenv.isDarwin && final.mupdf.meta.available;
+  };
 }

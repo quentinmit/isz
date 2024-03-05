@@ -133,7 +133,7 @@ in {
         #arm-none-linux-gnueabi-binutils
         pkgsCross.avr.buildPackages.gcc
         pkgsCross.avr.avrlibc
-        (avrdude.override { docSupport = mupdf.meta.available; })
+        avrdude
         bossa
         dfu-util
         esptool
