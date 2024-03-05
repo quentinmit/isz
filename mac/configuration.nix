@@ -23,6 +23,7 @@
           "-DZIG_HOST_TARGET_TRIPLE=x86_64-macos.10.15"
         ];
       });
+      ncdu = final.ncdu_1;
     })
   ];
   nixpkgs.config.permittedInsecurePackages = [
