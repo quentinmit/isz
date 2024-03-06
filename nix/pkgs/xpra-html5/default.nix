@@ -6,7 +6,7 @@
 }:
 let
   pname = "xpra-html5";
-  version = "11.2";
+  version = "8.1";
 in stdenv.mkDerivation {
   inherit pname version;
 
@@ -14,7 +14,7 @@ in stdenv.mkDerivation {
     owner = "Xpra-org";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-KwvFZXKOSBIEDZ8RDFkgRLwa3hOU7pS8a0BQgtmBL8U=";
+    hash = "sha256-HITQD3CeOcz6Gw9ZpwWOEukY6A8gwwDAp62Ytb0vt1o=";
   };
 
   nativeBuildInputs = [
