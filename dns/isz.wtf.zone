@@ -18,6 +18,7 @@ jellyfin         CNAME workshop.mgmt
 bluechips        CNAME workshop.mgmt
 auth             CNAME workshop.mgmt
 paperless        CNAME workshop.mgmt
+radio            CNAME workshop.mgmt
 
 ; Internal hosts on VLAN 3096 (172.30.96.0/24)
 

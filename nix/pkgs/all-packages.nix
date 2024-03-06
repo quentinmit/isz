@@ -74,4 +74,13 @@ final: prev:
   mactelnet = final.callPackage ./mactelnet {};
   retrogram-rtlsdr = final.callPackage ./retrogram-rtlsdr {};
   sdrtrunk = final.callPackage ./sdrtrunk {};
+  xpra-html5 = final.callPackage ./xpra-html5 {
+    inherit (final.nodePackages) uglify-js;
+  };
+  xpra-with-html5 = final.xpra.overrideAttrs {
+    preInstall = ''
+      cp -a ${final.xpra-html5} $out
+      chmod -R u+w $out
+    '';
+  };
 }
