@@ -20,6 +20,7 @@
       ./authentik
       ./bluechips.nix
       ./paperless.nix
+      ./sdrtrunk
       ../nix/zwave-js-ui.nix
       ../nix/speedtest.nix
       nixos-hardware.nixosModules.common-cpu-amd
