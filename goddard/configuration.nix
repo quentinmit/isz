@@ -46,6 +46,21 @@
     jack.enable = true;
     pulse.enable = true;
   };
+  # TODO: EQ profile
+  # https://gist.github.com/cab404/aeb2482e1af6fc463e1154017c566560/
+  # https://github.com/cab404/framework-dsp/
+
+  hardware.opengl.driSupport32Bit = true;
+  hardware.opengl.extraPackages = with pkgs; [
+    # https://nixos.org/manual/nixos/stable/#sec-gpu-accel-opencl-amd
+    rocmPackages.clr.icd
+    # https://nixos.org/manual/nixos/stable/#sec-gpu-accel-vulkan-amd
+    # Disable for now (radv driver in mesa should handle)
+    #amdvlk
+  ];
+  #hardware.opengl.extraPackages32 = with pkgs; [
+  #  driversi686Linux.amdvlk
+  #];
 
   services.xserver.enable = true;
   services.xserver.displayManager.sddm.enable = true;
@@ -54,6 +69,7 @@
 
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  # TODO: Enable KDE portal?
 
   programs.dconf.enable = true;
 
