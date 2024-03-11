@@ -296,6 +296,7 @@ in {
         })
         soapyhackrf
         xastir
+        sdrpp
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         csdr
         fldigi
