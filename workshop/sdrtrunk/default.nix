@@ -1,5 +1,9 @@
 { config, pkgs, lib, ... }:
 {
+  # TODO: Authentik
+  # TODO: Audio
+  # TODO: Debug empty Start menu
+  # TODO: https://github.com/chuot/rdio-scanner/tree/master
   config = {
     users.users.sdrtrunk = {
       isSystemUser = true;
@@ -42,6 +46,40 @@
           '';
         };
       };
+    };
+
+    home-manager.users.sdrtrunk = {
+      home.stateVersion = "23.11";
+
+      home.packages = with pkgs; [
+        xterm
+        xorg.xev
+        pavucontrol
+      ];
+
+
+      xdg.configFile."menus/applications.menu".text = ''
+        <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+        "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+
+        <Menu>
+          <Name>Applications</Name>
+
+          <!-- Search the default locations -->
+          <DefaultAppDirs/>
+          <DefaultDirectoryDirs/>
+
+          <Include>
+            <All />
+          </Include>
+
+          <!-- Define default layout -->
+          <DefaultLayout>
+            <Merge type="menus"/>
+            <Merge type="files"/>
+          </DefaultLayout>
+        </Menu>
+      '';
     };
   };
 }
