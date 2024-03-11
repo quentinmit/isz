@@ -77,10 +77,16 @@ final: prev:
   xpra-html5 = final.callPackage ./xpra-html5 {
     inherit (final.nodePackages) uglify-js;
   };
-  xpra-with-html5 = final.xpra.overrideAttrs {
+  xpraFull = (final.xpra.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace xpra/server/window/windowicon_source.py \
+        --replace ANTIALIAS LANCZOS
+    '';
     preInstall = ''
       cp -a ${final.xpra-html5} $out
       chmod -R u+w $out
     '';
+  })).override {
+    pulseaudio = final.pulseaudioFull;
   };
 }

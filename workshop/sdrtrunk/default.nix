@@ -20,7 +20,7 @@
         Group = "sdrtrunk";
         PAMName = "login";
         RuntimeDirectory = "sdrtrunk";
-        ExecStart = "${pkgs.xpra-with-html5}/bin/xpra --no-daemon --bind=%t/sdrtrunk/sdrtrunk.sock --socket-permissions=660 start --start-child=${pkgs.xterm}/bin/xterm --exit-with-children=yes";
+        ExecStart = "${pkgs.xpraFull}/bin/xpra --no-daemon --bind=%t/sdrtrunk/sdrtrunk.sock --socket-permissions=660 start --start-child=${pkgs.xterm}/bin/xterm --exit-with-children=yes --systemd-run=no";
       };
     };
 
