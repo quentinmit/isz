@@ -3,9 +3,10 @@ let
   inherit (pkgs.stdenv) isLinux;
 in {
   options = {
+    isz.base = lib.mkEnableOption "base interactive user configuration";
     isz.graphical = lib.mkEnableOption "prefer graphical software";
   };
-  config = {
+  config = lib.mkIf config.isz.base {
     programs.home-manager.enable = true;
 
     targets.genericLinux.enable = !(args ? osConfig) && pkgs.stdenv.hostPlatform.isLinux;

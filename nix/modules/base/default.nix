@@ -41,6 +41,8 @@
     home-manager.users.root = {
       home.stateVersion = "23.05";
 
+      isz.base = true;
+
       programs.nix-index = {
         enable = true;
         enableBashIntegration = true;

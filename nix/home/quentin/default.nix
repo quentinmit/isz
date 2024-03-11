@@ -13,6 +13,7 @@ in {
       nixpkgs.overlays = lib.mkAfter [
         deploy-rs.overlay
       ];
+      isz.base = true;
     }
     # Nix
     {
