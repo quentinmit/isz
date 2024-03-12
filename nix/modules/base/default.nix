@@ -16,6 +16,8 @@
 
     networking.domain = "isz.wtf";
 
+    nix.registry.isz.flake = self;
+
     services.locate.enable = true;
     services.locate.package = pkgs.mlocate;
     services.locate.localuser = null;
