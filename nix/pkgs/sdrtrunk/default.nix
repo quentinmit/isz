@@ -4,6 +4,8 @@
 , gradle
 , jdk20
 , makeWrapper
+, wrapGAppsHook
+, lib
 }:
 let
   buildGradle = callPackage ./gradle-env.nix {
@@ -17,6 +19,7 @@ in buildGradle {
 
   nativeBuildInputs = [
     makeWrapper
+    wrapGAppsHook
   ];
 
   src = fetchFromGitHub {
@@ -30,8 +33,19 @@ in buildGradle {
 
   installPhase = ''
     mv build/install/sdr-trunk "$out"
-    wrapProgram $out/bin/sdr-trunk \
-      --set JAVA_HOME ${jdk.home}
     rm $out/bin/sdr-trunk.bat
   '';
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --set JAVA_HOME ${jdk.home}
+    )
+  '';
+
+  meta = with lib; {
+    description = "A cross-platform java application for decoding, monitoring, recording and streaming trunked mobile and related radio protocols using Software Defined Radios (SDR).";
+    homepage = "https://github.com/DSheirer/sdrtrunk/";
+    license = licenses.gpl3;
+    maintainer = maintainers.quentin;
+  };
 }
