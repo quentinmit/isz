@@ -411,6 +411,7 @@ in {
         };
       };
     }
+    # Completion for `open` on Darwin
     (lib.mkIf (pkgs.stdenv.isDarwin && config.programs.bash.enableCompletion) {
       programs.bash.profileExtra = ''
         if ! type _compopt_o_filenames &> /dev/null; then
@@ -489,6 +490,12 @@ in {
 
         complete -F _open open
       '';
+    })
+    # KDE apps
+    (lib.mkIf config.isz.plasma.enable {
+      home.packages = with pkgs; [
+        kcharselect
+      ];
     })
   ]);
 }
