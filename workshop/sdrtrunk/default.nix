@@ -34,6 +34,13 @@ in {
       }
     ];
 
+    services.authentik.apps.sdrtrunk = {
+      name = "Radio";
+      type = "proxy";
+      host = "radio.isz.wtf";
+      nginx = true;
+    };
+
     systemd.services.sdrtrunk = {
       description = "SDRTrunk";
       wantedBy = [ "multi-user.target" ];
@@ -54,6 +61,7 @@ in {
         locations."/sdrtrunk/" = {
           proxyPass = "http://sdrtrunk/";
           proxyWebsockets = true;
+          inherit (config.services.nginx.virtualHosts."radio.isz.wtf".locations."/") extraConfig;
         };
         locations."=/sdrtrunk/default-settings.txt" = {
           alias = pkgs.writeText "default-settings.txt" ''
