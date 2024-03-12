@@ -16,6 +16,23 @@
     users.groups.sdrtrunk = {};
     users.users."${config.services.nginx.user}".extraGroups = [ "sdrtrunk" ];
 
+    fonts.fontDir.enable = true;
+    fonts.enableDefaultPackages = true;
+    fonts.packages = with pkgs; [
+      xorg.fontmiscmisc
+    ];
+
+    programs.dconf.enable = true;
+
+    services.udev.rules = [
+      {
+        "ATTR{idVendor}" = "1d50"; # Great Scott Gadgets
+        "ATTR{idProduct}" = "6089"; # HackRF One
+        OWNER = { op = "="; value = "sdrtrunk"; };
+        GROUP = { op = "="; value = "sdrtrunk"; };
+      }
+    ];
+
     systemd.services.sdrtrunk = {
       description = "SDRTrunk";
       wantedBy = [ "multi-user.target" ];
@@ -52,9 +69,11 @@
       home.stateVersion = "23.11";
 
       home.packages = with pkgs; [
+        sdrtrunk
         xterm
         xorg.xev
         pavucontrol
+        gnome.adwaita-icon-theme
       ];
 
 
