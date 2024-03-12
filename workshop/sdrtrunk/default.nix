@@ -1,14 +1,15 @@
 { config, pkgs, lib, ... }:
-{
+let
+  jmbe = pkgs.jmbe;
+in {
   # TODO: Authentik
-  # TODO: Audio
   # TODO: Debug empty Start menu
   # TODO: https://github.com/chuot/rdio-scanner/tree/master
   config = {
     users.users.sdrtrunk = {
       isSystemUser = true;
       group = "sdrtrunk";
-      home = "/var/lib/sdtrunk";
+      home = "/var/lib/sdrtrunk";
       homeMode = "755";
       createHome = true;
       useDefaultShell = true;
@@ -76,6 +77,23 @@
         gnome.adwaita-icon-theme
       ];
 
+      home.file."SDRTrunk/jmbe/jmbe-${jmbe.version}.jar".source = "${jmbe}/jmbe-${jmbe.version}.jar";
+
+      home.file.".asoundrc".text = ''
+        pcm_type.pulse {
+          libs.native = ${pkgs.alsa-plugins}/lib/alsa-lib/libasound_module_pcm_pulse.so ;
+        }
+        pcm.!default {
+          type pulse
+          hint.description "Default Audio Device (via PulseAudio)"
+        }
+        ctl_type.pulse {
+          libs.native = ${pkgs.alsa-plugins}/lib/alsa-lib/libasound_module_ctl_pulse.so ;
+        }
+        ctl.!default {
+          type pulse
+        }
+      '';
 
       xdg.configFile."menus/applications.menu".text = ''
         <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
