@@ -90,4 +90,5 @@ final: prev:
   })).override {
     pulseaudio = final.pulseaudioFull;
   };
+  json2prefs = final.callPackage ../../software/json2prefs {};
 }
