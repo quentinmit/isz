@@ -85,6 +85,11 @@ in {
         gnome.adwaita-icon-theme
       ];
 
+      java.userPrefs.io.github.dsheirer.preference = {
+        decoder."path.jmbe.library.1.0.0" = "${jmbe}/jmbe-${jmbe.version}.jar";
+        source."channelizer.type" = "HETERODYNE";
+      };
+
       home.file."SDRTrunk/jmbe/jmbe-${jmbe.version}.jar".source = "${jmbe}/jmbe-${jmbe.version}.jar";
 
       home.file.".asoundrc".text = ''
