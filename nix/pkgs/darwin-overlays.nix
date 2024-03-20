@@ -94,4 +94,23 @@ final: prev: if prev.stdenv.isDarwin then {
       final.darwin.apple_sdk.frameworks.SystemConfiguration
     ];
   });
+  ldapvi = let
+    inherit (final) fetchpatch;
+  in prev.ldapvi.overrideAttrs (old: {
+    patches = (old.patches or []) ++ (map (p:
+      fetchpatch ({
+        url = "https://github.com/macports/macports-ports/raw/1e5b86bebc4dd5a423afc8b4dc2d286ac78cc92f/net/ldapvi/files/${p.name}";
+        extraPrefix = "ldapvi/";
+      } // p)) [
+        {
+          name = "patch-ldapvi.patch";
+          hash = "sha256-8iO+A4MTz+4AaHkHkMW/5w8beUpnYujmRV5pRuvyFTY=";
+        }
+        {
+          name = "missing-declarations.diff";
+          hash = "sha256-zQ25ACwzHgxeNgZhWX6FH4/9EUIDtdeyCohyx7vbJQg=";
+        }
+      ]);
+    meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
+  });
 } else {}

@@ -400,6 +400,7 @@ in {
         iperf3
         ipmitool
         irssi
+        ldapvi
         libidn2
         libpsl
         libupnp

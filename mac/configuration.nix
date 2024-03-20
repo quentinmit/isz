@@ -95,7 +95,6 @@
     #csshX
     #already curl
     krb5
-    #unsupported ldapvi
     #lft
     mtr  # TODO: setuid wrapper
     #ntpsec
