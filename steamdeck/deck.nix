@@ -91,6 +91,8 @@
     unar
   ];
 
+  isz.base = true;
+
   programs.onboard.enable = true;
 
   systemd.user.services.sdgyrodsu = {
