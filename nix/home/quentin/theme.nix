@@ -8,6 +8,8 @@
     };
   };
   config = lib.mkIf config.isz.quentin.theme.enable {
+    # KDE likes to replace the symlink with a text file.
+    home.file.${config.gtk.gtk2.configLocation}.force = true;
     gtk = {
       enable = true;
       theme.name = "Breeze";
