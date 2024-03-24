@@ -13,8 +13,8 @@
     programs.plasma = {
       enable = true;
       workspace = {
-        theme = "breeze-dark";
-        #colorScheme = "BreezeDark";
+        theme = "default";
+        colorScheme = "BreezeDark";
         #lookAndFeel = "org.kde.breezedark.desktop";
       };
       shortcuts = {
@@ -259,6 +259,7 @@
         "systemsettings.desktop"."screenlocker" = [ ];
       };
       configFile = {
+        baloofilerc.General."index hidden folders" = true;
         "dolphinrc"."DetailsMode"."PreviewSize" = 16;
         "katerc"."General"."Startup Session" = "manual";
         "katerc"."General"."Stash new unsaved files" = true;

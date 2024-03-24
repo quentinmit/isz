@@ -25,6 +25,10 @@
             TapDragLock = true;
           };
           kwinrc.Xwayland.Scale = 1.25;
+          powermanagementprofilesrc = {
+            # Absence of group indicates do not suspend
+            AC.SuspendSession = null;
+          };
         };
       };
     }
