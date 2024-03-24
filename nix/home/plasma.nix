@@ -12,6 +12,11 @@
   config = lib.mkIf config.isz.plasma.enable {
     programs.plasma = {
       enable = true;
+      workspace = {
+        theme = "breeze-dark";
+        #colorScheme = "BreezeDark";
+        #lookAndFeel = "org.kde.breezedark.desktop";
+      };
       shortcuts = {
         "KDE Keyboard Layout Switcher"."Switch to Next Keyboard Layout" = "Meta+Alt+K";
         "kaccess"."Toggle Screen Reader On and Off" = "Meta+Alt+S";

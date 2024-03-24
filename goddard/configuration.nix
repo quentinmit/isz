@@ -6,6 +6,7 @@
     nixos-hardware.nixosModules.framework-13-7040-amd # TODO: Switch to 16 when it exists
     ./disko.nix
     disko.nixosModules.disko
+    ./quentin.nix
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
 
@@ -111,15 +112,5 @@
       "video"
       "wheel"
     ];
-  };
-
-  home-manager.users.quentin = {
-    home.stateVersion = "23.11";
-
-    isz.quentin.enable = true;
-    isz.graphical = true;
-    isz.plasma.enable = true;
-
-    programs.atuin.settings.sync_address = "https://atuin.isz.wtf";
   };
 }
