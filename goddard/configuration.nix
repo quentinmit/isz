@@ -68,6 +68,7 @@
   environment.systemPackages = with pkgs; [
     libinput
     evtest
+    vulkan-tools
   ];
 
   # TODO(libinput > 1.25.0): Remove

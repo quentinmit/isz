@@ -13,9 +13,11 @@
 
       home.packages = with pkgs; [
         google-chrome
-        easyeffects
         evtest-qt
+        vulkan-caps-viewer
       ];
+
+      services.easyeffects.enable = true;
 
       programs.plasma = {
         configFile = {
