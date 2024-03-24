@@ -22,6 +22,7 @@
             TapToClick = true;
             TapDragLock = true;
           };
+          kwinrc.Xwayland.Scale = 1.25;
         };
       };
     }
