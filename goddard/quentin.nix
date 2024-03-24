@@ -14,6 +14,7 @@
       home.packages = with pkgs; [
         google-chrome
         easyeffects
+        evtest-qt
       ];
 
       programs.plasma = {

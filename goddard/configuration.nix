@@ -63,6 +63,11 @@
   #  driversi686Linux.amdvlk
   #];
 
+  environment.systemPackages = with pkgs; [
+    libinput
+    evtest
+  ];
+
   # TODO(libinput > 1.25.0): Remove
   environment.etc."libinput/local-overrides.quirks".text = ''
     [Framework Laptop 16 Keyboard Module]
