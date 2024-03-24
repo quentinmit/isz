@@ -63,6 +63,15 @@
   #  driversi686Linux.amdvlk
   #];
 
+  # TODO(libinput > 1.25.0): Remove
+  environment.etc."libinput/local-overrides.quirks".text = ''
+    [Framework Laptop 16 Keyboard Module]
+    MatchName=Framework Laptop 16 Keyboard Module*
+    MatchUdevType=keyboard
+    MatchDMIModalias=dmi:*svnFramework:pnLaptop16*
+    AttrKeyboardIntegration=internal
+  '';
+
   services.xserver.enable = true;
   services.xserver.displayManager.sddm.enable = true;
   services.xserver.windowManager.twm.enable = true;
