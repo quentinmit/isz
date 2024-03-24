@@ -53,6 +53,10 @@ in {
         dvdbackup
         mikmod
         vapoursynth
+        vlc
+        libsForQt5.kdenlive
+        timidity
+        vmpk
       ];
       programs.mpv = {
         enable = true;
@@ -108,6 +112,14 @@ in {
         opencv
         rawtherapee
         #broken wxSVG
+        gimp-with-plugins
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        darktable
+        digikam
+        freecad
+        inkscape-with-extensions
+        krita
+        scribus
       ];
       home.file.".ExifTool_config".text = ''
         %Image::ExifTool::UserDefined::Options = (
@@ -405,6 +417,58 @@ in {
         websocat
         termshark
         mactelnet
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        netsurf.browser
+        qgis-ltr
+        remmina
+      ];
+    }
+    # Productivity
+    {
+      home.packages = with pkgs; [
+        antiword
+        diff-pdf
+        figlet
+        gspell
+        gv
+        pandoc
+        pdf2svg
+        pdftk
+        poppler_utils
+        pstoedit
+        unrtf
+        wordnet
+        zbar
+        rnote
+        xournalpp
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        libsForQt5.ghostwriter
+        marktext
+        onlyoffice-bin
+        retext
+      ];
+    }
+    # Productivity - eBooks
+    {
+      home.packages = with pkgs; [
+        calibre
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        foliate
+        sigil
+      ];
+    }
+    # Productivity - TeX
+    {
+      home.packages = with pkgs; [
+        rubber
+        texlive.combined.scheme-full
+        setzer
+        texstudio
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        apostrophe
+        kile
+        texmaker
+        texworks
       ];
     }
     # Kerberos

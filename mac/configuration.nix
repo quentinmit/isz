@@ -192,26 +192,11 @@
     graphviz
 
     # Productivity
-    antiword
     contacts
-    diff-pdf
-    figlet
-    gspell
-    gv
-    pandoc
     #broken haskellPackages.pandoc-citeproc
-    pdf2svg
-    pdftk
-    poppler_utils
-    pstoedit
     #unsupported qgis
-    rubber
-    texlive.combined.scheme-full
-    unrtf
     #insecure wkhtmltopdf
-    wordnet
     #insecure xpdf
-    zbar
 
     # Games
     #fizmo
@@ -222,7 +207,6 @@
     unstable.alacritty
     #Chmox
     #unsupported evince
-    gimp
     #unsupported gnome.gnome-keyring
     gnome-online-accounts
     gtk-vnc
