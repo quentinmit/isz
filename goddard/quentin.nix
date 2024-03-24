@@ -13,6 +13,7 @@
 
       home.packages = with pkgs; [
         google-chrome
+        easyeffects
       ];
 
       programs.plasma = {
