@@ -22,6 +22,8 @@
     memtest86.enable = true;
   };
 
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
   environment.etc."lvm/lvm.conf".text = ''
     devices/issue_discards=1
   '';
