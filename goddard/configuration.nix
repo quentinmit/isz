@@ -34,6 +34,8 @@
 
   hardware.bluetooth.enable = true;
 
+  hardware.keyboard.qmk.enable = true;
+
   networking.networkmanager.enable = true;
 
   services.opensnitch = {
@@ -69,6 +71,7 @@
     libinput
     evtest
     vulkan-tools
+    qmk_hid
   ];
 
   # TODO(libinput > 1.25.0): Remove

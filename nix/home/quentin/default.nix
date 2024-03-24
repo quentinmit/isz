@@ -51,10 +51,7 @@ in {
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
         dvdbackup
-        lxqt.pavucontrol-qt
         mikmod
-        pavucontrol
-        ncpamixer
         vapoursynth
       ];
       programs.mpv = {
@@ -87,6 +84,16 @@ in {
         --netrc
       '';
     }
+    # Multimedia - PipeWire
+    (lib.mkIf pkgs.stdenv.isLinux {
+      home.packages = with pkgs; [
+        lxqt.pavucontrol-qt
+        pavucontrol
+        ncpamixer
+        helvum
+        qpwgraph
+      ];
+    })
     # Imaging
     {
       home.packages = with pkgs; [
