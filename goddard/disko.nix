@@ -1,9 +1,9 @@
 {
   disko.devices = {
     disk = {
-      vdb = {
+      nvme0n1 = {
         type = "disk";
-        device = "/dev/vdb";
+        device = "/dev/nvme0n1";
         content = {
           type = "gpt";
           partitions = {
@@ -25,16 +25,17 @@
                 type = "luks";
                 name = "crypted";
                 extraOpenArgs = [ ];
+                askPassword = true;
                 settings = {
                   # if you want to use the key for interactive login be sure there is no trailing newline
                   # for example use `echo -n "password" > /tmp/secret.key`
-                  keyFile = "/tmp/secret.key";
+                  #keyFile = "/tmp/secret.key";
                   allowDiscards = true;
                 };
-                additionalKeyFiles = [ "/tmp/additionalSecret.key" ];
+                #additionalKeyFiles = [ "/tmp/additionalSecret.key" ];
                 content = {
                   type = "lvm_pv";
-                  vg = "pool";
+                  vg = "goddard";
                 };
               };
             };
@@ -43,11 +44,11 @@
       };
     };
     lvm_vg = {
-      pool = {
+      goddard = {
         type = "lvm_vg";
         lvs = {
           root = {
-            size = "100M";
+            size = "1T";
             content = {
               type = "filesystem";
               format = "ext4";
@@ -57,16 +58,12 @@
               ];
             };
           };
-          home = {
-            size = "10M";
+          swap = {
+            size = "64G";
             content = {
-              type = "filesystem";
-              format = "ext4";
-              mountpoint = "/home";
+              type = "swap";
+              resumeDevice = true;
             };
-          };
-          raw = {
-            size = "10M";
           };
         };
       };
