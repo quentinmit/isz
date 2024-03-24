@@ -46,6 +46,10 @@ steamdeck        A 172.30.96.102
                  EUI48 2C-3B-70-EF-B6-6D
 steamdeckoled    A 172.30.96.103
                  EUI48 E8-8D-A6-E3-69-E3
+goddard          A 172.30.96.104
+                 EUI48 4C-82-A9-4C-D1-AF
+goddard-ether    A 172.30.96.105
+                 EUI48 9C-BF-0D-00-50-29
 
 pap2t            CNAME pap2t.guest
 bedroom-tasmota  CNAME bedroom-tasmota.guest
