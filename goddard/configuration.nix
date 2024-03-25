@@ -117,6 +117,7 @@ in
 
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  xdg.portal.xdgOpenUsePortal = true;
   # TODO: Enable KDE portal?
 
   programs.chromium = {
