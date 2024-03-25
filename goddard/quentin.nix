@@ -15,6 +15,7 @@
         google-chrome
         evtest-qt
         vulkan-caps-viewer
+        opensnitch-ui
       ];
 
       services.easyeffects.enable = true;
