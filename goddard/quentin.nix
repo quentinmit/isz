@@ -17,6 +17,7 @@
         vulkan-caps-viewer
         opensnitch-ui
         signal-desktop
+        discord
       ];
 
       services.easyeffects.enable = true;
