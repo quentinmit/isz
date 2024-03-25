@@ -26,6 +26,7 @@ in
     enable = lib.mkForce false;
     memtest86.enable = true;
   };
+  boot.initrd.systemd.enable = true;
   boot.lanzaboote = {
     enable = true;
     pkiBundle = "/etc/secureboot";
@@ -105,6 +106,7 @@ in
     powertop
     power-profiles-daemon
     sbctl
+    tpm2-tools
   ];
 
   # TODO(libinput > 1.25.0): Remove

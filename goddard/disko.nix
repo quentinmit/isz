@@ -31,6 +31,7 @@
                   # for example use `echo -n "password" > /tmp/secret.key`
                   #keyFile = "/tmp/secret.key";
                   allowDiscards = true;
+                  crypttabExtraOpts = [ "tpm2-device=auto" ];
                 };
                 #additionalKeyFiles = [ "/tmp/additionalSecret.key" ];
                 content = {
