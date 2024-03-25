@@ -580,12 +580,13 @@ in {
         dataFile."konsole/Quentin.profile" = {
           General.Name = "Quentin";
           General.Parent = "FALLBACK/";
-          Appearance.ColorScheme = "Breeze";
+          Appearance.ColorScheme = "Quentin";
         };
         dataFile."konsole/Quentin.colorscheme" = {
           General.Description = "Quentin";
           General.Opacity = 0.8;
           Background.Color = "0,0,0";
+          BackgroundFaint.Color = "0,0,0";
           # Rest are a copy of Breeze.colorscheme
           General.Anchor = "0.5,0.5";
           General.Blur = false;
@@ -597,7 +598,6 @@ in {
           Foreground.Color = "252,252,252";
           ForegroundFaint.Color = "239,240,241";
           ForegroundIntense.Color = "255,255,255";
-          BackgroundFaint.Color = "49,54,59";
           BackgroundIntense.Color = "0,0,0";
           Color0.Color = "35,38,39";
           Color0Faint.Color = "49,54,59";
