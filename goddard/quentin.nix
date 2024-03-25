@@ -16,6 +16,7 @@
         evtest-qt
         vulkan-caps-viewer
         opensnitch-ui
+        signal-desktop
       ];
 
       services.easyeffects.enable = true;
