@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nixpkgs, disko, nixos-hardware, ... }:
+{ config, pkgs, lib, nixpkgs, disko, nixos-hardware, lanzaboote, ... }:
 let
   amdgpu-kernel-module = pkgs.callPackage ./amdgpu-kernel-module.nix {
     kernel = config.boot.kernelPackages.kernel;
@@ -11,6 +11,7 @@ in
     ./disko.nix
     disko.nixosModules.disko
     ./quentin.nix
+    lanzaboote.nixosModules.lanzaboote
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
 
@@ -22,8 +23,12 @@ in
 
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot = {
-    enable = true;
+    enable = lib.mkForce false;
     memtest86.enable = true;
+  };
+  boot.lanzaboote = {
+    enable = true;
+    pkiBundle = "/etc/secureboot";
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -99,6 +104,7 @@ in
     qmk_hid
     powertop
     power-profiles-daemon
+    sbctl
   ];
 
   # TODO(libinput > 1.25.0): Remove

@@ -54,6 +54,11 @@
     bluechips.url = "github:quentinmit/bluechips";
     bluechips.inputs.nixpkgs.follows = "nixpkgs";
     bluechips.inputs.flake-utils.follows = "flake-utils";
+    lanzaboote.url = "github:nix-community/lanzaboote/v0.3.0";
+    lanzaboote.inputs.nixpkgs.follows = "nixpkgs";
+    lanzaboote.inputs.flake-compat.follows = "flake-compat";
+    lanzaboote.inputs.flake-utils.follows = "flake-utils";
+    lanzaboote.inputs.rust-overlay.follows = "rust-overlay";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, ... }@args:
     let
