@@ -98,6 +98,7 @@ in
     vulkan-tools
     qmk_hid
     powertop
+    power-profiles-daemon
   ];
 
   # TODO(libinput > 1.25.0): Remove
