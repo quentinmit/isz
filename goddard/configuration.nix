@@ -42,7 +42,11 @@
     enable = true;
   };
 
+  isz.telegraf.enable = true;
+
   security.polkit.enable = true;
+
+  programs.gnupg.agent.enable = true;
 
   services.pipewire = {
     enable = true;

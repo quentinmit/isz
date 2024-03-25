@@ -4,6 +4,8 @@ keys:
 - &server_workshop_ssh_age age1hjrx3z0x257weyxt5u8lcntm6k040e7e4v45y7cz33gs5tmjmu2q4kzc4s
 - &server_bedroom-pi_ssh_gpg fdd69b815a8e522631a0aaa477d4571b3a07b63e
 - &server_bedroom-pi_ssh_age age1k35dmvna2fe6m47hkxmtuj82pzvxted7fwtvqdek355838vfscesjhyq4q
+- &goddard_ssh_age age1yrgt8wh6pqy49jmgc76e9an6fkztsx448jny5ze694fkvccmreesaelck7
+- &mac_ssh_age age1ssvjqdur387pduhsqvn7cgkxatnxfrjfqf3wnw2eus75zecnsglshzdlrn
 
 creation_rules:
 - path_regex: ^workshop/secrets\.yaml$
@@ -19,3 +21,16 @@ creation_rules:
     - *admin_quentin_gpg
     age:
     - *server_bedroom-pi_ssh_age
+- path_regex: ^goddard/secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *goddard_ssh_age
+- path_regex: ^nix/home/quentin/secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *goddard_ssh_age
+    - *mac_ssh_age
