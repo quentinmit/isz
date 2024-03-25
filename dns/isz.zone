@@ -3,8 +3,6 @@ $TTL 10m
 
 *.mit.edu. A 18.0.70.160 ; FWD mit
 
-quentin-ap-1     CNAME quentin-ap-1.mgmt.isz.wtf.
-quentin-client-1 CNAME quentin-client-1.mgmt.isz.wtf.
 icestationzebra  CNAME router.mgmt.isz.wtf.
 
 workshop-pi      CNAME workshop-pi.mgmt.isz.wtf.

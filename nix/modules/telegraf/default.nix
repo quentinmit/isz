@@ -119,6 +119,12 @@ in {
     (lib.mkIf cfg.enable {
       services.telegraf.enable = true;
     })
+    (if isNixOS then lib.mkIf cfg.enable {
+      systemd.services.telegraf = {
+        wants = ["suid-sgid-wrappers.service"];
+        after = ["suid-sgid-wrappers.service"];
+      };
+    } else {})
     (if isNixOS then lib.mkIf (cfg.enable && cfg.smart.enable) {
       isz.telegraf.smart.smartctl = lib.mkDefault "/run/wrappers/bin/smartctl_telegraf";
       isz.telegraf.smart.nvme = lib.mkDefault "/run/wrappers/bin/nvme_telegraf";
