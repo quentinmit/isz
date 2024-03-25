@@ -42,7 +42,11 @@
     enable = true;
   };
 
-  isz.telegraf.enable = true;
+  isz.telegraf = {
+    enable = true;
+    intelRapl = true;
+    amdgpu = true;
+  };
 
   security.polkit.enable = true;
 
