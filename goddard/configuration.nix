@@ -80,6 +80,7 @@
     evtest
     vulkan-tools
     qmk_hid
+    powertop
   ];
 
   # TODO(libinput > 1.25.0): Remove
