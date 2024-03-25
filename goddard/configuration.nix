@@ -1,5 +1,9 @@
 { config, pkgs, lib, nixpkgs, disko, nixos-hardware, ... }:
-
+let
+  amdgpu-kernel-module = pkgs.callPackage ./amdgpu-kernel-module.nix {
+    kernel = config.boot.kernelPackages.kernel;
+  };
+in
 {
   imports = [
     #./hardware-configuration.nix
@@ -23,6 +27,18 @@
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  boot.extraModulePackages = lib.optional
+    (config.boot.kernelPackages.kernelOlder "6.9")
+    (amdgpu-kernel-module.overrideAttrs (_: {
+      patches = [
+        # vrr fix
+        (pkgs.fetchurl {
+          url = "https://gitlab.freedesktop.org/agd5f/linux/-/commit/2f14c0c8cae8e9e3b603a3f91909baba66540027.diff";
+          hash = "sha256-0++twr9t4AkJXZfj0aHGMVDuOhxtLP/q2d4FGfggnww=";
+        })
+      ];
+    }));
 
   environment.etc."lvm/lvm.conf".text = ''
     devices/issue_discards=1
