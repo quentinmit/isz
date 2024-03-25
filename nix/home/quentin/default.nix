@@ -442,6 +442,7 @@ in {
         zbar
         rnote
         xournalpp
+        ghostscript
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         libsForQt5.ghostwriter
         marktext
