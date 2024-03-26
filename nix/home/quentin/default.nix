@@ -446,6 +446,18 @@ in {
         remmina
       ];
     }
+    # Science
+    {
+      home.packages = with pkgs; [
+        feedgnuplot
+        gdal
+        gnuplot
+        graphviz
+        xdot
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        kgraphviewer
+      ];
+    }
     # Productivity
     {
       home.packages = with pkgs; [
@@ -508,7 +520,6 @@ in {
           withOffensive = true;
         })
         fd
-        feedgnuplot
         file-rename
         gcab
         gnutar

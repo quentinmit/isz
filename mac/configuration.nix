@@ -134,9 +134,6 @@
 
     # Science
     #funtools
-    gdal
-    gnuplot
-    graphviz
 
     # Productivity
     contacts
