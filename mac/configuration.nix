@@ -81,11 +81,6 @@
     #unsupported usbutils
     #unsupported xsane
 
-    # Database
-    unstable.mariadb_1011.client
-    mdbtools
-    postgresql
-
     # Network
     #unsupported aircrack-ng
     #aget

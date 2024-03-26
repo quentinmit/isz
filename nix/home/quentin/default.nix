@@ -214,6 +214,14 @@ in {
         yarn
       ];
     }
+    # Database development
+    {
+      home.packages = with pkgs; [
+        unstable.mariadb_1011.client
+        mdbtools
+        postgresql
+      ];
+    }
     # Development
     {
       home.packages = with pkgs; [
@@ -305,6 +313,7 @@ in {
       home.packages = with pkgs; [
         sigrok-cli
         pulseview
+        gtkwave
       ];
     }
     # Radio
@@ -405,6 +414,7 @@ in {
       home.packages = with pkgs; [
         alpine
         axel
+        bmon
         geoip
         iftop
         influxdb2-cli
@@ -512,6 +522,7 @@ in {
         json-plot
         less
         libzip
+        lnav
         lzip
         lzma
         moreutils
@@ -533,6 +544,7 @@ in {
         xdelta
         xmlstarlet
         xqilla
+        yazi
         yj
         yq
       ] ++ lib.optionals pkgs.stdenv.isLinux [
