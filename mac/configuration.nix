@@ -406,11 +406,6 @@
           osascript -e 'the clipboard as «class HTML»' |   perl -ne 'print chr foreach unpack("C*",pack("H*",substr($_,11,-3)))'
         '';
         cyberchef = "open ${pkgs.cyberchef}/share/cyberchef/index.html";
-        # TODO: Make cross-platform
-        signal-sqlite = ''
-          (cd ~/"Library/Application Support/Signal" && ${pkgs.sqlcipher}/bin/sqlcipher -init <(cat config.json | ${pkgs.jq}/bin/jq -r '"PRAGMA key = \"x'"'"'\(.key)'"'"'\";"') sql/db.sqlite)
-        '';
-
      };
       bashrcExtra = ''
         #export PATH="/opt/local/libexec/gnubin:$PATH"

@@ -705,5 +705,15 @@ in {
         };
       };
     })
+    # Signal
+    {
+      programs.bash.shellAliases.signal-sqlite = let
+        root = if pkgs.stdenv.isDarwin
+               then "${config.home.homeDirectory}/Library/Application Support/Signal"
+               else "${config.xdg.configHome}/Signal";
+      in ''
+        (cd ${lib.escapeShellArg root} && ${pkgs.sqlcipher}/bin/sqlcipher -init <(cat config.json | ${pkgs.jq}/bin/jq -r '"PRAGMA key = \"x'"'"'\(.key)'"'"'\";"') sql/db.sqlite)
+      '';
+    }
   ]);
 }
