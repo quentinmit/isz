@@ -1,15 +1,35 @@
 { config, pkgs, lib, isz, plasma-manager, ... }:
-
-{
+let
+  arrayValue = items:
+    lib.concatMapStringsSep
+      ","
+      (builtins.replaceStrings [","] [''\\,''])
+      items;
+in {
   imports = [
     plasma-manager.homeManagerModules.plasma-manager
   ];
-  options = {
+  options = with lib; {
     isz.plasma = {
-      enable = lib.mkEnableOption "ISZ plasma configuration";
+      enable = mkEnableOption "ISZ plasma configuration";
+    };
+    services.baloo = {
+      indexHiddenFolders = mkEnableOption "Index hidden folders";
+      excludeFolders = mkOption {
+        type = with types; nullOr (listOf str);
+        default = null;
+        example = ["$HOME/.config/google-chrome/"];
+        description = "Folders to exclude from indexing. Note that $HOME is expanded, so to exclude a folder containing a literal $, escape it as $$.";
+      };
     };
   };
   config = lib.mkIf config.isz.plasma.enable {
+    services.baloo = {
+      indexHiddenFolders = true;
+      excludeFolders = [
+        "$HOME/.config/google-chrome/"
+      ];
+    };
     programs.plasma = {
       enable = true;
       workspace = {
@@ -259,7 +279,12 @@
         "systemsettings.desktop"."screenlocker" = [ ];
       };
       configFile = {
-        baloofilerc.General."index hidden folders" = true;
+        baloofilerc.General = let
+          cfg = config.services.baloo;
+        in {
+          "index hidden folders" = cfg.indexHiddenFolders;
+          "exclude folders[$e]" = lib.mkIf (cfg.excludeFolders != null) (arrayValue cfg.excludeFolders);
+        };
         "dolphinrc"."DetailsMode"."PreviewSize" = 16;
         "katerc"."General"."Startup Session" = "manual";
         "katerc"."General"."Stash new unsaved files" = true;

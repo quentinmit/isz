@@ -20,6 +20,12 @@
         discord
       ];
 
+      # Don't index Electron folders
+      services.baloo.excludeFolders = [
+        "$HOME/.config/discord/"
+        "$HOME/.config/Signal/"
+      ];
+
       services.easyeffects.enable = true;
 
       programs.plasma = {
