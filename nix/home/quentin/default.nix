@@ -1,6 +1,7 @@
 { config, lib, pkgs, deploy-rs, ... }:
 let
   isAarch64Darwin = (pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64);
+  open = if pkgs.stdenv.isDarwin then "open" else "${pkgs.xdg-utils}/bin/xdg-open";
 in {
   options = {
     isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
@@ -304,10 +305,19 @@ in {
         hexedit
         radare2
         rizin
+        (pkgs.writeShellScriptBin "cyberchef" "${open} ${pkgs.cyberchef}/share/cyberchef/index.html")
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         imhex
         okteta
       ];
+
+      xdg.desktopEntries.cyberchef = {
+        name = "CyberChef";
+        comment = "The Cyber Swiss Army Knife";
+        exec = "${pkgs.xdg-utils}/bin/xdg-open ${pkgs.cyberchef}/share/cyberchef/index.html";
+        icon = "${pkgs.cyberchef}/share/cyberchef/images/cyberchef-128x128.png";
+        categories = ["Utility"];
+      };
     }
     # Hardware
     {
