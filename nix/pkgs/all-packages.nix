@@ -91,4 +91,5 @@ final: prev:
     pulseaudio = final.pulseaudioFull;
   };
   json2prefs = final.callPackage ../../software/json2prefs {};
+  _86Box-roms = final.callPackage ./86box/roms.nix {};
 }

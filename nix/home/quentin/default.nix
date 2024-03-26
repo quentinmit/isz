@@ -280,6 +280,10 @@ in {
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         winetricks
         virt-manager-qt
+        pcem
+        _86Box
+        _86Box-roms
+        rpcemu
       ];
     }
     # Reverse engineering
@@ -294,6 +298,13 @@ in {
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         imhex
         okteta
+      ];
+    }
+    # Hardware
+    {
+      home.packages = with pkgs; [
+        sigrok-cli
+        pulseview
       ];
     }
     # Radio

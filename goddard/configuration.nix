@@ -107,6 +107,8 @@ in
     power-profiles-daemon
     sbctl
     tpm2-tools
+    fw-ectool
+    framework-tool
   ];
 
   # TODO(libinput > 1.25.0): Remove
