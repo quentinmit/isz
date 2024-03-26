@@ -186,4 +186,14 @@ final: prev: {
   avrdude = prev.avrdude.override {
     docSupport = !final.stdenv.isDarwin && final.mupdf.meta.available;
   };
+  gobang = prev.gobang.overrideAttrs (old: rec {
+    src = old.src.override {
+      rev = "refs/pull/177/head";
+      sha256 = "zoCAl7s5QKNgc5/DChQIKewnFs5P1Y4hm8bakbH//fI=";
+    };
+    cargoDeps = old.cargoDeps.overrideAttrs {
+      inherit src;
+      outputHash = "sha256-xTd/Gw9L/IcgSUT9zGaG85COfkDwS2KLFqrzpRTHyoU=";
+    };
+  });
 }

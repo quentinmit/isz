@@ -217,6 +217,7 @@ in {
     # Database development
     {
       home.packages = with pkgs; [
+        gobang
         unstable.mariadb_1011.client
         mdbtools
         postgresql
