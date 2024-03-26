@@ -109,6 +109,7 @@ in
     tpm2-tools
     fw-ectool
     framework-tool
+    efitools
   ];
 
   # TODO(libinput > 1.25.0): Remove
