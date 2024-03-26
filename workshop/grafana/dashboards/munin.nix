@@ -290,6 +290,13 @@
         unit = "volt";
         graph_args.logarithmic = true;
       };
+      sensors.sensors_power = {
+        graph_title = "Power";
+        influx.filter._measurement = "sensors";
+        influx.filter._field = ["power_average"];
+        influx.fn = "mean";
+        unit = "watt";
+      };
       # graph_category system
       system.cpu = {
         graph_title = "CPU usage";
