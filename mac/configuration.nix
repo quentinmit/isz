@@ -127,61 +127,14 @@
     metasploit
 
     # Shell utilities
-    ack
     #backdown
-    brotli
-    bsdiff
-    cabextract
     coreutils
     #cwdiff
-    dasel
-    debianutils
-    (fortune.override {
-      withOffensive = true;
-    })
-    fd
-    feedgnuplot
-    file-rename
-    gcab
-    gnutar
-    units
-    htmlq
-    jc
-    (pkgs.runCommand "jmespath-jp" {} ''
-      mkdir -p $out/bin
-      cp ${jp}/bin/jp $out/bin/jmespath
-    '')
     #already jq
-    json-plot
-    less
-    libzip
-    lzip
-    lzma
     #macutil
-    moreutils
-    most
-    ncdu
-    p7zip
-    pigz
-    pixz
-    pv
-    renameutils
-    ripgrep
-    rlwrap
     #screenresolution
-    sl
     terminal-notifier
-    tmate
     tmux
-    libuchardet
-    unrar
-    vbindiff
-    vttest
-    xdelta
-    xmlstarlet
-    xqilla
-    yj
-    yq
     #unsupported gnome.zenity
 
     # Science

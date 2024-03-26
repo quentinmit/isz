@@ -473,6 +473,61 @@ in {
         texworks
       ];
     }
+    # Utilities
+    {
+      home.packages = with pkgs; [
+        ack
+        brotli
+        bsdiff
+        cabextract
+        dasel
+        debianutils
+        (fortune.override {
+          withOffensive = true;
+        })
+        fd
+        feedgnuplot
+        file-rename
+        gcab
+        gnutar
+        units
+        htmlq
+        jc
+        jless
+        (pkgs.runCommand "jmespath-jp" {} ''
+          mkdir -p $out/bin
+          cp ${jp}/bin/jp $out/bin/jmespath
+        '')
+        json-plot
+        less
+        libzip
+        lzip
+        lzma
+        moreutils
+        most
+        ncdu
+        p7zip
+        pigz
+        pixz
+        pv
+        renameutils
+        ripgrep
+        rlwrap
+        sl
+        tmate
+        libuchardet
+        unrar
+        vbindiff
+        vttest
+        xdelta
+        xmlstarlet
+        xqilla
+        yj
+        yq
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        wl-clipboard
+      ];
+    }
     # Kerberos
     {
       # kdo / krootssh
