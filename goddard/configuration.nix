@@ -134,6 +134,8 @@ in
   };
   environment.etc."opt/chrome/native-messaging-hosts/org.kde.plasma.browser_integration.json".source = "${pkgs.plasma5Packages.plasma-browser-integration}/etc/chromium/native-messaging-hosts/org.kde.plasma.browser_integration.json";
 
+  programs.wireshark.package = pkgs.wireshark;
+
   programs.dconf.enable = true;
 
   krb5.enable = true;
@@ -173,6 +175,7 @@ in
       "networkmanager"
       "video"
       "wheel"
+      "wireshark"
     ];
   };
 }
