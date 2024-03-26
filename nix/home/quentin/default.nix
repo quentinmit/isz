@@ -570,6 +570,8 @@ in {
         yj
         yq
       ] ++ lib.optionals pkgs.stdenv.isLinux [
+        bustle
+        d-spy
         wl-clipboard
       ];
     }
