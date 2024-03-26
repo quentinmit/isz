@@ -112,7 +112,7 @@ in {
         opencv
         rawtherapee
         #broken wxSVG
-        gimp-with-plugins
+        (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         darktable
         digikam
@@ -474,8 +474,8 @@ in {
     # Productivity - eBooks
     {
       home.packages = with pkgs; [
-        calibre
       ] ++ lib.optionals pkgs.stdenv.isLinux [
+        calibre
         foliate
         sigil
       ];
@@ -485,11 +485,11 @@ in {
       home.packages = with pkgs; [
         rubber
         texlive.combined.scheme-full
-        setzer
         texstudio
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         apostrophe
         kile
+        setzer
         texmaker
         texworks
       ];
