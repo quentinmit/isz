@@ -215,7 +215,9 @@ in {
             mem = [{}];
             net = [{
               tagdrop.interface = ["veth*"];
+              ignore_protocol_stats = true;
             }];
+            nstat = [{}];
             netstat = [{}];
             processes = [{}];
             smart = lib.mkIf cfg.smart.enable [{

@@ -177,12 +177,25 @@
         graph_args.logarithmic = true;
         influx = [
           {
-            filter._measurement = "net";
-            filter._field = ["tcp_activeopens" "tcp_passiveopens" "tcp_attemptfails" "tcp_estabresets"];
-            fn = "derivative";
-            extra = ''
-            |> drop(columns: ["interface"])
-          '';
+            imports = ["regexp" "strings"];
+            filter._measurement = ["net" "nstat"];
+            filter._field = let
+              fields = ["ActiveOpens" "PassiveOpens" "AttemptFails" "EstabResets"];
+            in (map (f: "Tcp" + f) fields) ++ (map (f: "tcp_" + (lib.toLower f)) fields);
+            fn = null;
+            groupBy = [
+              { expr = ''
+                  |> map(fn: (r) => ({
+                    r with
+                      _measurement: "net",
+                      _field: regexp.replaceAllString(
+                        r: /^tcp_?/, t: "",
+                        v: strings.toLower(v: r._field),
+                      ),
+                  }))
+                ''; }
+              { fn = "derivative"; fields = ["host"]; }
+            ];
           }
           {
             filter._measurement = "netstat";
