@@ -18,6 +18,12 @@
       interface = {
         predicate = ''r["_measurement"] == "net" and r.interface != "all" and r.host =~ /''${host:regex}/'';
       };
+      battery = {
+        tag = "device";
+        predicate = ''r._measurement == "power_supply" and r.type == "Battery" and r.host =~ /''${host:regex}/'';
+        extra.hide = 2;
+        extra.skipUrlSync = true;
+      };
     };
     munin.graphs = {
       disk.diskstats_iops = {
@@ -257,6 +263,57 @@
       };
       # graph_category sensors
       # acpi
+      sensors.battery_capacity_ = {
+        graph_title = "\${battery} capacity";
+        influx.filter._measurement = "power_supply";
+        influx.filter._field = [
+          "charge_full_design"
+          "charge_full"
+          "charge_now"
+        ];
+        influx.filter.device = "\${battery}";
+        influx.fn = "mean";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: r._value / 1000000.}))
+        '';
+        unit = "amph";
+        repeat = "battery";
+        fields.charge_full_design.displayName = "Design capacity";
+        fields.charge_full.displayName = "Last full capacity";
+        fields.charge_now.displayName = "Full charge";
+      };
+      sensors.battery_voltage_ = {
+        graph_title = "\${battery} voltage";
+        influx.filter._measurement = "power_supply";
+        influx.filter._field = [
+          "voltage_min_design"
+          "voltage_now"
+        ];
+        influx.filter.device = "\${battery}";
+        influx.fn = "mean";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: r._value / 1000000.}))
+        '';
+        unit = "volt";
+        repeat = "battery";
+        fields.voltage_min_design.displayName = "Design voltage";
+        fields.voltage_now.displayName = "Present voltage";
+      };
+      sensors.battery_current_ = {
+        graph_title = "\${battery} current";
+        influx.filter._measurement = "power_supply";
+        influx.filter._field = [
+          "current_now"
+        ];
+        influx.filter.device = "\${battery}";
+        influx.fn = "mean";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: r._value / 1000000.}))
+        '';
+        unit = "amp";
+        repeat = "battery";
+        fields.current_now.displayName = "Present rate";
+      };
       sensors.hddtemp_smartctl = {
         graph_title = "HDD temperature";
         influx.filter._measurement = "smart_device";
