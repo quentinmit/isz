@@ -488,14 +488,13 @@ in {
         wordnet
         zbar
         ghostscript
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.isLinux ([
         libsForQt5.ghostwriter
         marktext
-        onlyoffice-bin
         retext
         rnote
         xournalpp
-      ];
+      ] ++ lib.optional onlyoffice-bin.meta.available onlyoffice-bin);
     }
     # Productivity - eBooks
     {
@@ -572,11 +571,10 @@ in {
         yazi
         yj
         yq
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
-        bustle
+      ] ++ lib.optionals pkgs.stdenv.isLinux ([
         d-spy
         wl-clipboard
-      ];
+      ] ++ lib.optional (!bustle.meta.broken) bustle);
     }
     # Kerberos
     {
