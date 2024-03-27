@@ -744,9 +744,9 @@ in {
         General."Startup Session" = "manual";
         General."Stash new unsaved files" = true;
         General."Stash unsaved file changes" = true;
-        project.gitStatusDoubleClick = 3;
+        project.gitStatusSingleClick = 1; # Show Diff
+        project.gitStatusDoubleClick = 3; # Stage/Unstage
         project.gitStatusNumStat = true;
-        project.gitStatusSingleClick = 1;
         project.restoreProjectsForSessions = true;
         lspclient.AllowedServerCommandLines = "${pkgs.unstable.nil}/bin/nil";
       };
