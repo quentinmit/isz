@@ -462,9 +462,9 @@ in {
     # Science
     {
       home.packages = with pkgs; [
-        feedgnuplot
+        (feedgnuplot.override { gnuplot = gnuplot_gui; })
         gdal
-        gnuplot
+        gnuplot_gui
         graphviz
         xdot
       ] ++ lib.optionals pkgs.stdenv.isLinux [

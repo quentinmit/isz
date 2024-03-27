@@ -11,12 +11,6 @@
   nixpkgs.overlays = lib.mkAfter [
     (final: prev: {
       openssh = final.openssh_gssapi;
-      gnuplot = prev.gnuplot.override {
-        aquaterm = true;
-        withCaca = true;
-        withLua = true;
-        withWxGTK = true;
-      };
       #mesa = final.mesa23_3_0_main;
       zig_0_11 = prev.zig_0_11.overrideAttrs (old: {
         cmakeFlags = (old.cmakeFlags or []) ++ [

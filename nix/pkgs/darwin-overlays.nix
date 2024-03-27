@@ -121,4 +121,10 @@ final: prev: if prev.stdenv.isDarwin then {
       ]);
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
+  gnuplot = prev.gnuplot.override {
+    aquaterm = true;
+    withCaca = true;
+    withLua = true;
+    withWxGTK = true;
+  };
 } else {}

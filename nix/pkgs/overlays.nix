@@ -196,4 +196,27 @@ final: prev: {
       outputHash = "sha256-xTd/Gw9L/IcgSUT9zGaG85COfkDwS2KLFqrzpRTHyoU=";
     };
   });
+  gimpPlugins = prev.gimpPlugins.overrideScope (plugins-final: plugins-prev: {
+    gap = if (final.lib.versionAtLeast final.binutils.version "2.41") then plugins-prev.gap.overrideAttrs {
+      # https://github.com/NixOS/nixpkgs/issues/294707
+      # https://github.com/NixOS/nixpkgs/pull/295257
+      postUnpack = ''
+        tar -xf $sourceRoot/extern_libs/ffmpeg.tar.gz -C $sourceRoot/extern_libs
+      '';
+
+      postPatch = let
+        ffmpegPatch = final.fetchpatch2 {
+          name = "fix-ffmpeg-binutil-2.41.patch";
+          url = "https://git.ffmpeg.org/gitweb/ffmpeg.git/patch/effadce6c756247ea8bae32dc13bb3e6f464f0eb";
+          hash = "sha256-vLSltvZVMcQ0CnkU0A29x6fJSywE8/aU+Mp9os8DZYY=";
+        };
+      in ''
+        patch -Np1 -i ${ffmpegPatch} -d extern_libs/ffmpeg
+        ffmpegSrc=$(realpath extern_libs/ffmpeg)
+      '';
+
+      configureFlags = ["--with-ffmpegsrcdir=${placeholder "ffmpegSrc"}"];
+    } else plugins-prev.gap;
+  });
+  gnuplot_gui = if final.stdenv.isDarwin then final.gnuplot else final.gnuplot_qt; # See darwin-overlays.nix
 }
