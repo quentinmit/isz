@@ -728,6 +728,29 @@ in {
         };
       };
     })
+    # Kate
+    (lib.mkIf pkgs.stdenv.isLinux {
+      home.packages = with pkgs; [
+        kate
+      ];
+      xdg.configFile."kate/lspclient/settings.json".text = lib.generators.toJSON {} {
+        servers.nix = {
+          command = ["${pkgs.unstable.nil}/bin/nil"];
+          url = "https://github.com/oxalica/nil";
+          highlightingModeRegex = "^Nix$";
+        };
+      };
+      programs.plasma.configFile.katerc = {
+        General."Startup Session" = "manual";
+        General."Stash new unsaved files" = true;
+        General."Stash unsaved file changes" = true;
+        project.gitStatusDoubleClick = 3;
+        project.gitStatusNumStat = true;
+        project.gitStatusSingleClick = 1;
+        project.restoreProjectsForSessions = true;
+        lspclient.AllowedServerCommandLines = "${pkgs.unstable.nil}/bin/nil";
+      };
+    })
     # Signal
     {
       programs.bash.shellAliases.signal-sqlite = let

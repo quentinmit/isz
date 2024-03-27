@@ -166,14 +166,6 @@
 #       "khotkeysrc"."Data_4_1Triggers0"."Type" = "SHORTCUT";
 #       "khotkeysrc"."Data_4_1Triggers0"."Uuid" = "{e521ea71-a8c8-4e23-9b72-4c9ca63c6874}";
   };
-
-  xdg.configFile."kate/lspclient/settings.json".text = lib.generators.toJSON {} {
-    servers.nix = {
-      command = ["${pkgs.unstable.nil}/bin/nil"];
-      url = "https://github.com/oxalica/nil";
-      highlightingModeRegex = "^Nix$";
-    };
-  };
   programs.plasma.configFile = {
     "katerc"."lspclient"."AllowedServerCommandLines" = "${pkgs.unstable.nil}/bin/nil";
   };

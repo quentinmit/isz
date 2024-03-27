@@ -286,13 +286,6 @@ in {
           "exclude folders[$e]" = lib.mkIf (cfg.excludeFolders != null) (arrayValue cfg.excludeFolders);
         };
         "dolphinrc"."DetailsMode"."PreviewSize" = 16;
-        "katerc"."General"."Startup Session" = "manual";
-        "katerc"."General"."Stash new unsaved files" = true;
-        "katerc"."General"."Stash unsaved file changes" = true;
-        "katerc"."project"."gitStatusDoubleClick" = 3;
-        "katerc"."project"."gitStatusNumStat" = true;
-        "katerc"."project"."gitStatusSingleClick" = 1;
-        "katerc"."project"."restoreProjectsForSessions" = true;
         "kdeglobals"."KDE"."SingleClick" = false;
         "kdeglobals"."General"."AllowKDEAppsToRememberWindowPositions" = true;
         "systemsettingsrc"."systemsettings_sidebar_mode"."HighlightNonDefaultSettings" = true;
