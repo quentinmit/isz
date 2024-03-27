@@ -462,14 +462,14 @@ in {
         unrtf
         wordnet
         zbar
-        rnote
-        xournalpp
         ghostscript
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         libsForQt5.ghostwriter
         marktext
         onlyoffice-bin
         retext
+        rnote
+        xournalpp
       ];
     }
     # Productivity - eBooks
