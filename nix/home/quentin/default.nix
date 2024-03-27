@@ -306,9 +306,11 @@ in {
         radare2
         rizin
         (pkgs.writeShellScriptBin "cyberchef" "${open} ${pkgs.cyberchef}/share/cyberchef/index.html")
+        ghidra-bin
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         imhex
         okteta
+        iaito
       ];
 
       xdg.desktopEntries.cyberchef = {
@@ -325,6 +327,7 @@ in {
         sigrok-cli
         pulseview
         gtkwave
+        cutecom
       ];
     }
     # Radio
