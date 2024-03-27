@@ -1,4 +1,12 @@
 final: prev: if prev.stdenv.isDarwin then {
+  pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+    (python-final: python-prev: with python-final; {
+      xdot = python-prev.xdot.overridePythonAttrs {
+        # Requires linux-only programs to test.
+        doCheck = false;
+      };
+    })
+  ];
   alpine = prev.alpine.overrideAttrs (old: {
     src = old.src.override {
       rev = "3d6c5540c8c2f4d01331de13e52790e5d7b6ac49";

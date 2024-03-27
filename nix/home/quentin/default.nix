@@ -306,14 +306,14 @@ in {
         radare2
         rizin
         (pkgs.writeShellScriptBin "cyberchef" "${open} ${pkgs.cyberchef}/share/cyberchef/index.html")
-        ghidra-bin
+        (if ghidra-bin.meta.available then ghidra-bin else ghidra)
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         imhex
         okteta
         iaito
       ];
 
-      xdg.desktopEntries.cyberchef = {
+      xdg.desktopEntries.cyberchef = lib.mkIf pkgs.stdenv.isLinux {
         name = "CyberChef";
         comment = "The Cyber Swiss Army Knife";
         exec = "${pkgs.xdg-utils}/bin/xdg-open ${pkgs.cyberchef}/share/cyberchef/index.html";
