@@ -2,15 +2,6 @@ final: prev: {
   multimon-ng = prev.multimon-ng.overrideAttrs (old: {
     buildInputs = with final; old.buildInputs ++ [ libpulseaudio xorg.libX11 ];
   });
-  tsduck = prev.tsduck.overrideAttrs (old: {
-    meta.broken = false;
-    makeFlags = old.makeFlags ++ [
-      "CXXFLAGS_WARNINGS=-Wno-error"
-    ];
-    postPatch = old.postPatch + ''
-      substituteInPlace src/utest/Makefile --replace '$(CC)' '$(CXX)'
-    '';
-  });
   wireshark-qt5 = (prev.wireshark.overrideAttrs (old: {
     pname = "wireshark-qt5";
 
@@ -38,15 +29,6 @@ final: prev: {
       inherit (final.buildPackages.darwin.apple_sdk_11_0) stdenv;
     };
   };
-  itpp = prev.itpp.overrideAttrs (old: {
-    postPatch = (old.postPatch or "") + ''
-      rm VERSION
-    '';
-    cmakeFlags = if final.stdenv.isDarwin then map (builtins.replaceStrings [".so"] [".dylib"]) old.cmakeFlags else old.cmakeFlags;
-    # TODO: Investigate failing test
-    doCheck = old.doCheck && !final.stdenv.isDarwin;
-    meta.broken = false;
-  });
   lesspipe = prev.lesspipe.overrideAttrs (old: {
     postPatch = (old.postPatch or "") + ''
       sed -i -e '/html\\\|xml)/,+1d' lesspipe.sh
@@ -155,11 +137,6 @@ final: prev: {
     configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
       "CFLAGS=-Wno-error=unused-but-set-variable"
     ];
-  });
-  dsd = let
-    inherit (final) lib stdenv;
-  in prev.dsd.overrideAttrs (old: {
-    CXXFLAGS = (old.CXXFLAGS or "") + " -Wno-error=register";
   });
   pidgin = let
     inherit (final) lib stdenv;

@@ -127,4 +127,27 @@ final: prev: if prev.stdenv.isDarwin then {
     withLua = true;
     withWxGTK = true;
   };
+  tsduck = prev.tsduck.overrideAttrs (old: {
+    meta.broken = false;
+    makeFlags = old.makeFlags ++ [
+      "CXXFLAGS_WARNINGS=-Wno-error"
+    ];
+    postPatch = old.postPatch + ''
+      substituteInPlace src/utest/Makefile --replace '$(CC)' '$(CXX)'
+    '';
+  });
+  itpp = prev.itpp.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      rm VERSION
+    '';
+    cmakeFlags = map (builtins.replaceStrings [".so"] [".dylib"]) old.cmakeFlags;
+    # TODO: Investigate failing test
+    doCheck = false;
+    meta.broken = false;
+  });
+  dsd = let
+    inherit (final) lib stdenv;
+  in prev.dsd.overrideAttrs (old: {
+    CXXFLAGS = (old.CXXFLAGS or "") + " -Wno-error=register";
+  });
 } else {}
