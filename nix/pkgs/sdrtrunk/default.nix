@@ -9,7 +9,7 @@
 }:
 let
   buildGradle = callPackage ./gradle-env.nix {
-    gradleGen = { ... }: {}: gradle;
+    gradleGen = _: _: gradle;
   };
   jdk = jdk20.override { enableJavaFX = true; };
 in buildGradle {

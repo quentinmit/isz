@@ -6,7 +6,7 @@
 , fetchFromGitLab
 }:
 let
-  perl = perlPackages.perl;
+  inherit (perlPackages) perl;
 in stdenv.mkDerivation rec {
   pname = "debhelper";
   version = "13.11.8";

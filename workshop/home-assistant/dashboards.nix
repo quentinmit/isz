@@ -92,7 +92,7 @@ in {
                 card = {
                   type = "custom:restriction-card";
                   action = "hold";
-                  card = (climate "heat");
+                  card = climate "heat";
                 };
               }
               {
@@ -106,7 +106,7 @@ in {
                 card = {
                   type = "custom:restriction-card";
                   action = "hold";
-                  card = (climate "living_room_ac");
+                  card = climate "living_room_ac";
                 };
               }
               {

@@ -71,8 +71,7 @@ final: prev: {
       p: let b = builtins.baseNameOf p; in
          b != "opencl.patch"
          && b != "disk_cache-include-dri-driver-path-in-cache-key.patch"
-    ) old.patches ++ [
-    ];
+    ) old.patches;
     mesonFlags =
       (builtins.filter (f: !(lib.hasPrefix "-Ddisk-cache-key=" f)) old.mesonFlags) ++ [
         "-Dgbm=disabled"

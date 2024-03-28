@@ -68,13 +68,13 @@ in {
               default = null;
             };
             app = mkOption {
-              type = format.type;
+              inherit (format) type;
               default = {
                 model = "authentik_core.application";
                 identifiers.slug = config.slug;
                 attrs = {
-                  name = config.name;
-                  slug = config.slug;
+                  inherit (config) name;
+                  inherit (config) slug;
                   policy_engine_mode = "any";
                   provider = findProvider config.name;
                 };
@@ -101,7 +101,7 @@ in {
               (lib.mkIf (config.type == "oauth2") {
                 model = "authentik_providers_oauth2.oauth2provider";
                 attrs = {
-                  redirect_uris = config.redirect_uris;
+                  inherit (config) redirect_uris;
 
                   client_id = sopsPlaceholder."authentik/apps/${config.slug}/client_id";
                   client_secret = sopsPlaceholder."authentik/apps/${config.slug}/client_secret";

@@ -7,7 +7,7 @@
 }:
 let
   buildGradle = callPackage ./gradle-env.nix {
-    gradleGen = { ... }: {}: gradle_7;
+    gradleGen = _: _: gradle_7;
   };
   jdk = jdk11;
   version = "1.0.9";

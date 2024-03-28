@@ -1,6 +1,6 @@
 { config, pkgs, lib, ... }:
 let
-  jmbe = pkgs.jmbe;
+  inherit (pkgs) jmbe;
 in {
   # TODO: Authentik
   # TODO: Debug empty Start menu

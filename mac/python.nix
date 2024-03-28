@@ -47,7 +47,7 @@
           #octave = octave-kernel.definition;
           pyscript = let
             secrets = builtins.fromTOML (builtins.readFile ./hass-secrets.env);
-            env = (python3.withPackages (ps: with ps; [ hass-pyscript-kernel ]));
+            env = python3.withPackages (ps: with ps; [ hass-pyscript-kernel ]);
           in {
             displayName = "hass pyscript";
             language = "python";

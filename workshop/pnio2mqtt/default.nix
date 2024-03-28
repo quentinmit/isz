@@ -6,7 +6,7 @@
 in {
   options = with lib; {
     isz.pnio2mqtt.extraSettings = lib.mkOption {
-      type = configFormat.type;
+      inherit (configFormat) type;
     };
   };
   imports = [

@@ -1,7 +1,7 @@
 { config, pkgs, lib, nixpkgs, disko, nixos-hardware, lanzaboote, ... }:
 let
   amdgpu-kernel-module = pkgs.callPackage ./amdgpu-kernel-module.nix {
-    kernel = config.boot.kernelPackages.kernel;
+    inherit (config.boot.kernelPackages) kernel;
   };
 in
 {

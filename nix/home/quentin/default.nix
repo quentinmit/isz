@@ -1,6 +1,6 @@
 { config, lib, pkgs, deploy-rs, ... }:
 let
-  isAarch64Darwin = (pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64);
+  isAarch64Darwin = pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64;
   open = if pkgs.stdenv.isDarwin then "open" else "${pkgs.xdg-utils}/bin/xdg-open";
 in {
   options = {
