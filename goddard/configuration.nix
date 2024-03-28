@@ -106,6 +106,7 @@ in
     powertop
     power-profiles-daemon
     sbctl
+    sbsigntool
     tpm2-tools
     fw-ectool
     framework-tool
