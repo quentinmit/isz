@@ -29,7 +29,9 @@ in {
     {
       home.packages = with pkgs; [
         atomicparsley
+        audacity
         cdparanoia
+        cdrkit
         codec2
         (dav1d.override {
           withTools = true;
@@ -44,7 +46,9 @@ in {
         #id3tool
         libde265
         mediainfo
+        mkvtoolnix
         rav1e
+        rtmpdump
         sox
         tsduck
         youtube-dl
@@ -109,15 +113,16 @@ in {
         #makeicns
         libicns
         libjpeg
-        libraw
+        libjpeg_turbo
+        libraw # Replaces dcraw
         opencv
         rawtherapee
         #broken wxSVG
         (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
+        libwmf
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         darktable
         digikam
-        freecad
         inkscape-with-extensions
         krita
         scribus
@@ -127,6 +132,14 @@ in {
             LargeFileSupport => 1,
         );
       '';
+    }
+    # 3D Modeling
+    {
+      home.packages = with pkgs; [
+        openscad
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        freecad
+      ];
     }
     # (D)VCS
     {
@@ -138,6 +151,7 @@ in {
         git-secret
         mercurial
         rcs
+        tig
       ];
       programs.git = {
         package = pkgs.gitFull;
@@ -235,10 +249,13 @@ in {
         (lowPrio pkgsCross.mingwW64.stdenv.cc)
         #already binutils
         cdecl
+        dtc
         fpc
         ghc
         gperftools
         upx
+        sloccount
+        loccount
       ];
       home.file.".gdbinit".text = ''
         set history filename ~/.gdb_history
@@ -285,7 +302,8 @@ in {
     {
       home.packages = with pkgs; [
         bochs
-        qemu
+        dosbox
+        (lib.lowPrio qemu)  # contains libfdt which conflicts with dtc
         virt-manager
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         winetricks
@@ -447,7 +465,11 @@ in {
         nmap
         openconnect
         openntpd
+        perlPackages.WWWMechanize
+        perlPackages.libwwwperl
         pssh
+        rclone
+        rdesktop
         tintin
         transmission
         websocat
@@ -526,6 +548,7 @@ in {
         brotli
         bsdiff
         cabextract
+        colordiff
         dasel
         debianutils
         (fortune.override {
@@ -545,6 +568,8 @@ in {
         '')
         json-plot
         less
+        libxml2
+        libxslt
         libzip
         lnav
         lzip
@@ -553,12 +578,15 @@ in {
         most
         ncdu
         p7zip
+        perlPackages.JSONXS
+        perlPackages.StringShellQuote
         pigz
         pixz
         pv
         renameutils
         ripgrep
         rlwrap
+        sharutils
         sl
         tmate
         libuchardet
