@@ -41,14 +41,6 @@ final: prev: {
           rm $out/lib/*/site-packages/README.md
         '';
       });
-      scapy = python-prev.scapy.overrideAttrs (old: {
-        patches = (old.patches or []) ++ (lib.optionals stdenv.isDarwin [
-          ./scapy/darwin-ioctl.patch
-        ]);
-      });
-      basemap = python-prev.basemap.overrideAttrs (old: {
-        CFLAGS = "-Wno-int-conversion -Wno-incompatible-function-pointer-types";
-      });
     })
   ];
   mesa23_3_0_main = let
@@ -96,56 +88,6 @@ final: prev: {
       platforms = lib.platforms.darwin;
     };
   });
-  ncftp = prev.ncftp.overrideAttrs (old: {
-    # preAutoreconf = ''
-    #   #mv configure.in configure.ac
-    #   sed -i 's@\(AC_DEFINE_UNQUOTED.PREFIX_BINDIR.*\))@\1, "Define to the full path of $prefix/bin")@' configure.in
-    #   #autoupdate
-    # '';
-    # nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ final.autoreconfHook ];
-    patches = (old.patches or []) ++ [
-      ./ncftp/patch-configure
-    ];
-    CC = final.stdenv.cc;
-    CFLAGS = "-Wno-implicit-int";
-  });
-  cdecl = let
-    inherit (final) lib stdenv;
-  in prev.cdecl.overrideAttrs (old: {
-    preBuild = old.preBuild + lib.optionalString stdenv.cc.isClang ''
-      makeFlagsArray=(CFLAGS="-DBSD -DUSE_READLINE -std=gnu89 -Wno-int-conversion -Wno-incompatible-function-pointer-types" LIBS=-lreadline);
-    '';
-  });
-  emacs-nox = let
-    inherit (final) lib stdenv;
-  in prev.emacs-nox.overrideAttrs (old: {
-    # https://github.com/NixOS/nixpkgs/pull/253892
-    configureFlags = old.configureFlags ++ lib.optionals stdenv.isDarwin [
-      "ac_cv_func_aligned_alloc=no"
-      "ac_cv_have_decl_aligned_alloc=no"
-      "ac_cv_func_posix_spawn_file_actions_addchdir_np=no"
-    ];
-  });
-  wordnet = prev.wordnet.overrideAttrs (old: {
-    configureFlags = (old.configureFlags or []) ++ [
-      "CFLAGS=-Wno-implicit-int"
-    ];
-  });
-  mdbtools = let
-    inherit (final) lib stdenv;
-  in prev.mdbtools.overrideAttrs (old: {
-    configureFlags = (old.configureFlags or []) ++ lib.optionals stdenv.isDarwin [
-      "CFLAGS=-Wno-error=unused-but-set-variable"
-    ];
-  });
-  pidgin = let
-    inherit (final) lib stdenv;
-  in prev.pidgin.overrideAttrs (old: {
-    CFLAGS = (old.CFLAGS or "") + " -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion";
-  });
-  clamav = prev.clamav.override {
-    inherit (final.darwin.apple_sdk.frameworks) Foundation;
-  };
   telnet = final.runCommand "telnet" {} ''
     mkdir -p $out/bin $out/share/man/man1
     ln -s ${final.inetutils}/bin/telnet $out/bin/telnet
@@ -159,9 +101,6 @@ final: prev: {
   });
   bashdbInteractive = final.bashdb.overrideAttrs {
     buildInputs = (prev.buildInputs or []) ++ [ final.bashInteractive ];
-  };
-  avrdude = prev.avrdude.override {
-    docSupport = !final.stdenv.isDarwin && final.mupdf.meta.available;
   };
   gobang = prev.gobang.overrideAttrs (old: rec {
     src = old.src.override {

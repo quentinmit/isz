@@ -5,6 +5,14 @@ final: prev: if prev.stdenv.isDarwin then {
         # Requires linux-only programs to test.
         doCheck = false;
       };
+      scapy = python-prev.scapy.overrideAttrs (old: {
+        patches = (old.patches or []) ++ [
+          ./scapy/darwin-ioctl.patch
+        ];
+      });
+      basemap = python-prev.basemap.overrideAttrs (old: {
+        CFLAGS = "-Wno-int-conversion -Wno-incompatible-function-pointer-types";
+      });
     })
   ];
   alpine = prev.alpine.overrideAttrs (old: {
@@ -150,4 +158,48 @@ final: prev: if prev.stdenv.isDarwin then {
   in prev.dsd.overrideAttrs (old: {
     CXXFLAGS = (old.CXXFLAGS or "") + " -Wno-error=register";
   });
+  ncftp = prev.ncftp.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      ./ncftp/patch-configure
+    ];
+    CC = final.stdenv.cc;
+    CFLAGS = "-Wno-implicit-int";
+  });
+  cdecl = let
+    inherit (final) lib stdenv;
+  in prev.cdecl.overrideAttrs (old: {
+    preBuild = old.preBuild + lib.optionalString stdenv.cc.isClang ''
+      makeFlagsArray=(CFLAGS="-DBSD -DUSE_READLINE -std=gnu89 -Wno-int-conversion -Wno-incompatible-function-pointer-types" LIBS=-lreadline);
+    '';
+  });
+  emacs-nox = let
+    inherit (final) lib stdenv;
+  in prev.emacs-nox.overrideAttrs (old: {
+    # https://github.com/NixOS/nixpkgs/pull/253892
+    configureFlags = old.configureFlags ++ [
+      "ac_cv_func_aligned_alloc=no"
+      "ac_cv_have_decl_aligned_alloc=no"
+      "ac_cv_func_posix_spawn_file_actions_addchdir_np=no"
+    ];
+  });
+  wordnet = prev.wordnet.overrideAttrs (old: {
+    configureFlags = (old.configureFlags or []) ++ [
+      "CFLAGS=-Wno-implicit-int"
+    ];
+  });
+  mdbtools = let
+    inherit (final) lib stdenv;
+  in prev.mdbtools.overrideAttrs (old: {
+    configureFlags = (old.configureFlags or []) ++ [
+      "CFLAGS=-Wno-error=unused-but-set-variable"
+    ];
+  });
+  pidgin = let
+    inherit (final) lib stdenv;
+  in prev.pidgin.overrideAttrs (old: {
+    CFLAGS = (old.CFLAGS or "") + " -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion";
+  });
+  clamav = prev.clamav.override {
+    inherit (final.darwin.apple_sdk.frameworks) Foundation;
+  };
 } else {}
