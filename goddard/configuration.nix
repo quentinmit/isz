@@ -14,6 +14,11 @@ in
     lanzaboote.nixosModules.lanzaboote
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
+  nixpkgs.overlays = lib.mkAfter [
+    (final: prev: {
+      openssh = final.openssh_gssapi;
+    })
+  ];
 
   system.stateVersion = "23.11";
 
