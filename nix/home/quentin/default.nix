@@ -298,6 +298,13 @@ in {
         ];
       };
     }
+    # Gaming
+    {
+      home.packages = with pkgs; [
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        bottles
+      ];
+    }
     # Emulation
     {
       home.packages = with pkgs; [
@@ -306,12 +313,13 @@ in {
         (lib.lowPrio qemu)  # contains libfdt which conflicts with dtc
         virt-manager
       ] ++ lib.optionals pkgs.stdenv.isLinux [
-        winetricks
         virt-manager-qt
         pcem
         _86Box
         _86Box-roms
         rpcemu
+        wineWowPackages.full
+        winetricks
       ];
     }
     # Reverse engineering
@@ -540,6 +548,21 @@ in {
         texmaker
         texworks
       ];
+    }
+    # Utilities - X11
+    {
+      home.packages = (with pkgs; [
+        xdotool
+        xterm
+      ]) ++ (with pkgs.xorg; [
+        xdpyinfo
+        xeyes
+        xhost
+        xprop
+        xrandr
+        xset
+        xwininfo
+      ]);
     }
     # Utilities
     {
