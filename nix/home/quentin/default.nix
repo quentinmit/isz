@@ -97,7 +97,6 @@ in {
     (lib.mkIf pkgs.stdenv.isLinux {
       home.packages = with pkgs; [
         lxqt.pavucontrol-qt
-        pavucontrol
         ncpamixer
         helvum
         qpwgraph
