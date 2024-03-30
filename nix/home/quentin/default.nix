@@ -735,6 +735,7 @@ in {
         dataFile."konsole/Quentin.profile" = {
           General.Name = "Quentin";
           General.Parent = "FALLBACK/";
+          General.InvertSelectionColors = true;
           Appearance.ColorScheme = "Quentin";
         };
         dataFile."konsole/Quentin.colorscheme" = {
