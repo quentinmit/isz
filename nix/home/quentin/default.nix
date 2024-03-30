@@ -236,6 +236,7 @@ in {
         unstable.mariadb_1011.client
         mdbtools
         postgresql
+        wxsqliteplus
       ];
     }
     # Development
