@@ -39,6 +39,11 @@ in
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  boot.kernelPatches = [{
+    name = "acpitz-trip_table";
+    patch = ./kernel-acptiz-trip_table.patch;
+  }];
+
   boot.extraModulePackages = lib.optional
     (config.boot.kernelPackages.kernelOlder "6.9")
     (amdgpu-kernel-module.overrideAttrs (_: {
