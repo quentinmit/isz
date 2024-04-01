@@ -11,6 +11,7 @@ in
     ./disko.nix
     disko.nixosModules.disko
     ./quentin.nix
+    ./opensnitch.nix
     lanzaboote.nixosModules.lanzaboote
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
@@ -69,10 +70,6 @@ in
   hardware.keyboard.qmk.enable = true;
 
   networking.networkmanager.enable = true;
-
-  services.opensnitch = {
-    enable = true;
-  };
 
   isz.telegraf = {
     enable = true;
