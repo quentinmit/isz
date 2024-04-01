@@ -136,6 +136,8 @@ in {
     {
       home.packages = with pkgs; [
         openscad
+        gerbv
+        kicad
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         freecad
       ];
@@ -301,8 +303,21 @@ in {
     # Gaming
     {
       home.packages = with pkgs; [
+        gnuchess
+        gnome.lightsoff
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         bottles
+        kblocks
+        kbounce
+        knights
+        stockfish
+        kmines
+        knetwalk
+        knavalbattle
+        libsForQt5.ksudoku
+        libsForQt5.kbreakout
+        libsForQt5.palapeli
+        gnome.aisleriot
       ];
     }
     # Emulation
