@@ -35,7 +35,7 @@ ruleType = lib.types.submodule ({ name, config, ... }: {
       type = types.str;
       default = "";
     };
-    type = mkOption {
+    action = mkOption {
       type = types.enum ["allow" "deny"];
       default = "allow";
     };
@@ -76,7 +76,7 @@ in {
     services.opensnitch = {
       enable = true;
       rules = lib.mapAttrs (name: value: {
-        inherit (value) name description type operator;
+        inherit (value) name description action operator;
         enabled = true;
         duration = "always";
         precedence = false;
