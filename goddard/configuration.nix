@@ -120,6 +120,10 @@ in
     efitools
   ];
 
+  services.dbus.packages = with pkgs; [
+    kio-fuse
+  ];
+
   # TODO(libinput > 1.25.0): Remove
   environment.etc."libinput/local-overrides.quirks".text = ''
     [Framework Laptop 16 Keyboard Module]
