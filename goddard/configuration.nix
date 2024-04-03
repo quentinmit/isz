@@ -128,6 +128,7 @@ in
     framework-tool
     efitools
     nftables
+    plasma5Packages.plasma-firewall
   ];
 
   services.dbus.packages = with pkgs; [

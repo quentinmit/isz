@@ -163,4 +163,10 @@ final: prev: {
     # Make NM available for gobject-introspection
     buildInputs = old.buildInputs ++ [final.networkmanager];
   });
+  libsForQt5 = prev.libsForQt5.overrideScope (qt5-final: qt5-prev: {
+    plasma5 = qt5-prev.plasma5.overrideScope (plasma-final: plasma-prev: {
+      plasma-firewall = plasma-final.callPackage ./plasma/plasma-firewall.nix {};
+    });
+    plasma-firewall = qt5-final.plasma5.plasma-firewall;
+  });
 }
