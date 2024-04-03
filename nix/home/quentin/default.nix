@@ -737,6 +737,8 @@ in {
     (lib.mkIf config.isz.plasma.enable {
       home.packages = with pkgs; [
         kcharselect
+        libsForQt5.konqueror
+        libsForQt5.kfilemetadata
       ];
     })
     # Konsole
