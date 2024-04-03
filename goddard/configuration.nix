@@ -71,6 +71,15 @@ in
 
   networking.networkmanager.enable = true;
 
+  services.firewalld = {
+    enable = true;
+    package = pkgs.firewalld-gui;
+    config = {
+      DefaultZone = "public";
+      FirewallBackend = "nftables";
+    };
+  };
+
   isz.telegraf = {
     enable = true;
     intelRapl = true;
