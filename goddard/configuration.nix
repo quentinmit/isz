@@ -127,6 +127,7 @@ in
     fw-ectool
     framework-tool
     efitools
+    nftables
   ];
 
   services.dbus.packages = with pkgs; [
