@@ -41,6 +41,18 @@ final: prev: {
           rm $out/lib/*/site-packages/README.md
         '';
       });
+      nftables = python-final.buildPythonPackage {
+        name = "nftables";
+        src = final.nftables.src;
+        setSourceRoot = "sourceRoot=$(echo */py)";
+        postPatch = ''
+          substituteInPlace src/nftables.py \
+            --replace libnftables.so.1 ${final.nftables}/lib/libnftables.so.1
+        '';
+        format = "pyproject";
+        nativeBuildInputs = [ python-final.setuptools ];
+        buildInputs = [ final.nftables ];
+      };
     })
   ];
   mesa23_3_0_main = let
@@ -134,4 +146,21 @@ final: prev: {
     } else plugins-prev.gap;
   });
   gnuplot_gui = if final.stdenv.isDarwin then final.gnuplot else final.gnuplot_qt; # See darwin-overlays.nix
+  firewalld = prev.firewalld.overrideAttrs (old: {
+    # Patch /usr/lib, and fix typo in nm-connection-editor
+    postPatch = ''
+      substituteInPlace src/firewall/config/__init__.py.in \
+        --replace "/usr/share" "$out/share" \
+        --replace "/usr/lib/" "$out/lib/"
+
+      for file in config/firewall-{applet,config}.desktop.in; do
+        substituteInPlace $file \
+          --replace "/usr/bin/" "$out/bin/"
+      done
+      substituteInPlace src/firewall-applet.in \
+        --replace "/usr/bin/nm-connection-editor" "${final.networkmanagerapplet}/bin/nm-connection-editor"
+    '';
+    # Make NM available for gobject-introspection
+    buildInputs = old.buildInputs ++ [final.networkmanager];
+  });
 }
