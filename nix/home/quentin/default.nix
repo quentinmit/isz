@@ -157,6 +157,7 @@ in {
       programs.git = {
         package = pkgs.gitFull;
         lfs.enable = true;
+        signing.key = config.programs.gpg.settings.default-key;
       };
     }
     # Embedded development
