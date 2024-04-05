@@ -92,4 +92,5 @@ final: prev:
   };
   json2prefs = final.callPackage ../../software/json2prefs {};
   _86Box-roms = final.callPackage ./86box/roms.nix {};
+  boxy-svg = final.callPackage ./boxy-svg {};
 }

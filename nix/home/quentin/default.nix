@@ -125,6 +125,7 @@ in {
         inkscape-with-extensions
         krita
         scribus
+        boxy-svg
       ];
       home.file.".ExifTool_config".text = ''
         %Image::ExifTool::UserDefined::Options = (
