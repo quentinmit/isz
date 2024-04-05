@@ -72,6 +72,11 @@ in {
       chrome.list = {
         "process.path" = "${lib.getBin pkgs.google-chrome}/share/google/chrome/chrome";
       };
+      avahi.list = lib.mkIf config.services.avahi.enable {
+        protocol = "udp";
+        "dest.port" = "5353";
+        "process.path" = "${config.services.avahi.package}/sbin/avahi-daemon";
+      };
     };
     services.opensnitch = {
       enable = true;

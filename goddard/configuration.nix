@@ -164,6 +164,12 @@ in
 
   programs.dconf.enable = true;
 
+  # TODO: Switch to systemd-resolved for mDNS
+  services.avahi = {
+    enable = true;
+    nssmdns = true;
+  };
+
   krb5.enable = true;
   krb5.libdefaults.default_realm = "ATHENA.MIT.EDU";
   krb5.realms = {
