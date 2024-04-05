@@ -119,6 +119,7 @@ in {
         #broken wxSVG
         (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
         libwmf
+        drawio
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         darktable
         digikam
@@ -351,6 +352,7 @@ in {
         (pkgs.writeShellScriptBin "cyberchef" "${open} ${pkgs.cyberchef}/share/cyberchef/index.html")
         (if ghidra-bin.meta.available then ghidra-bin else ghidra)
       ] ++ lib.optionals pkgs.stdenv.isLinux [
+        unstable.elf-dissector
         imhex
         okteta
         iaito
