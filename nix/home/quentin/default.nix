@@ -743,6 +743,8 @@ in {
         kcharselect
         libsForQt5.konqueror
         libsForQt5.kfilemetadata
+        libsForQt5.filelight
+        partition-manager
       ];
     })
     # Konsole
