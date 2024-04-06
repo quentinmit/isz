@@ -102,6 +102,8 @@ in
   # https://gist.github.com/cab404/aeb2482e1af6fc463e1154017c566560/
   # https://github.com/cab404/framework-dsp/
 
+  services.hardware.bolt.enable = true;
+
   hardware.opengl.driSupport32Bit = true;
   hardware.opengl.extraPackages = with pkgs; [
     # https://nixos.org/manual/nixos/stable/#sec-gpu-accel-opencl-amd
@@ -129,6 +131,8 @@ in
     efitools
     nftables
     plasma5Packages.plasma-firewall
+    plasma5Packages.plasma-thunderbolt
+    thunderbolt
   ];
 
   services.dbus.packages = with pkgs; [
