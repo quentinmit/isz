@@ -18,6 +18,7 @@
         opensnitch-ui
         signal-desktop
         discord
+        davinci-resolve-studio
       ];
 
       # Don't index Electron folders

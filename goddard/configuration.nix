@@ -133,6 +133,9 @@ in
     plasma5Packages.plasma-firewall
     plasma5Packages.plasma-thunderbolt
     thunderbolt
+    glxinfo
+    libva-utils
+    clinfo
   ];
 
   services.dbus.packages = with pkgs; [

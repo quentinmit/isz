@@ -169,4 +169,11 @@ final: prev: {
     });
     plasma-firewall = qt5-final.plasma5.plasma-firewall;
   });
+  davinci-resolve-studio = prev.davinci-resolve-studio.override (old: {
+    buildFHSEnv = a: (old.buildFHSEnv (a // {
+      extraBwrapArgs = a.extraBwrapArgs ++ [
+        "--bind /run/opengl-driver/etc/OpenCL /etc/OpenCL"
+      ];
+    }));
+  });
 }
