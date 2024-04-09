@@ -102,6 +102,36 @@ in {
         qpwgraph
       ];
     })
+    # Multimedia - OBS
+    (lib.mkIf pkgs.stdenv.isLinux {
+      home.packages = [(pkgs.wrapOBS {
+        plugins = with pkgs.obs-studio-plugins; [
+          droidcam-obs
+          input-overlay
+          obs-3d-effect
+          obs-backgroundremoval
+          obs-freeze-filter
+          obs-gradient-source
+          obs-gstreamer
+          obs-move-transition
+          #obs-multi-rtmp
+          #obs-ndi
+          obs-pipewire-audio-capture
+          obs-replay-source
+          obs-rgb-levels-filter
+          obs-scale-to-sound
+          obs-shaderfilter
+          obs-source-clone
+          obs-source-record
+          obs-teleport
+          obs-text-pthread
+          obs-vaapi
+          obs-vintage-filter
+          obs-vkcapture
+          waveform
+        ];
+      })];
+    })
     # Imaging
     {
       home.packages = with pkgs; [
