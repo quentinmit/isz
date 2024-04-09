@@ -772,7 +772,7 @@ in {
     (lib.mkIf config.isz.plasma.enable {
       home.packages = with pkgs; [
         kcharselect
-        libsForQt5.konqueror
+        # Causes problems: libsForQt5.konqueror
         libsForQt5.kfilemetadata
         libsForQt5.filelight
         partition-manager
