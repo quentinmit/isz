@@ -336,10 +336,10 @@ in {
     # Gaming
     {
       home.packages = with pkgs; [
-        gnuchess
         gnome.lightsoff
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         bottles
+        gnuchess # broken on macOS
         kblocks
         kbounce
         knights
@@ -601,8 +601,9 @@ in {
     # Utilities - X11
     {
       home.packages = (with pkgs; [
-        xdotool
         xterm
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        xdotool # broken on macOS
       ]) ++ (with pkgs.xorg; [
         xdpyinfo
         xeyes
