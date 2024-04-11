@@ -2,6 +2,9 @@
 let
   intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ./intel_rapl.py);
   powerSupply = pkgs.writers.writePython3 "power_supply" {} (lib.readFile ./power_supply.py);
+  drm = pkgs.writers.writePython3 "drm" {
+    libraries = [ pkgs.python3Packages.influxdb_client ];
+  } (lib.readFile ./drm.py);
   standalone = args ? standalone;
   # nix-darwin exposes "nixos" as a field on lib, but NixOS does not (??).
   isNixDarwin = !standalone && lib ? nixos;
@@ -14,6 +17,7 @@ in {
       intelRapl = mkEnableOption "intel_rapl";
       amdgpu = mkEnableOption "amdgpu";
       powerSupply = mkEnableOption "power_supply";
+      drm = mkEnableOption "drm";
       debug = mkEnableOption "debug";
       smart.enable = mkOption {
         type = types.bool;
@@ -308,6 +312,15 @@ in {
             restart_delay = "10s";
             data_format = "influx";
             command = [powerSupply];
+            signal = "STDIN";
+          }];
+        })
+        (lib.mkIf cfg.drm {
+          inputs.execd = [{
+            alias = "drm";
+            restart_delay = "10s";
+            data_format = "influx";
+            command = [drm];
             signal = "STDIN";
           }];
         })

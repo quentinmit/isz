@@ -85,6 +85,7 @@ in
     intelRapl = true;
     amdgpu = true;
     powerSupply = true;
+    drm = true;
   };
 
   security.polkit.enable = true;
