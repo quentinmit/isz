@@ -28,6 +28,8 @@
       ];
     };
 
+    nix.registry.isz.flake = self;
+
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
     home-manager.extraSpecialArgs = options._module.specialArgs.value;

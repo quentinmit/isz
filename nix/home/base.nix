@@ -11,7 +11,9 @@ in {
 
     targets.genericLinux.enable = !(args ? osConfig) && pkgs.stdenv.hostPlatform.isLinux;
 
-    nix.registry.isz.flake = self;
+    nix.registry = lib.mkIf (!(args ? osConfig)) {
+      isz.flake = self;
+    };
 
     home.packages = import ../modules/base/packages.nix { inherit pkgs; inherit (config.isz) graphical; } ++ [
       pkgs.python3Packages.pygments # for lesspipe
