@@ -138,6 +138,7 @@ in
     libva-utils
     clinfo
     nvtop-amd
+    radeontop
   ];
 
   services.dbus.packages = with pkgs; [
