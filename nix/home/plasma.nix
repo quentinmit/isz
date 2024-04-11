@@ -28,6 +28,7 @@ in {
       indexHiddenFolders = true;
       excludeFolders = [
         "$HOME/.config/google-chrome/"
+        "$HOME/.cache/google-chrome/"
       ];
     };
     programs.plasma = {
