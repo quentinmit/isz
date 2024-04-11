@@ -136,6 +136,7 @@ in
     glxinfo
     libva-utils
     clinfo
+    nvtop-amd
   ];
 
   services.dbus.packages = with pkgs; [
