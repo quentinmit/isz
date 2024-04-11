@@ -1,10 +1,5 @@
 { lib, pkgs, config, options, ... }@args:
 let
-  intelRapl = pkgs.writers.writePython3 "intel_rapl" {} (lib.readFile ./intel_rapl.py);
-  powerSupply = pkgs.writers.writePython3 "power_supply" {} (lib.readFile ./power_supply.py);
-  drm = pkgs.writers.writePython3 "drm" {
-    libraries = [ pkgs.python3Packages.influxdb_client ];
-  } (lib.readFile ./drm.py);
   standalone = args ? standalone;
   # nix-darwin exposes "nixos" as a field on lib, but NixOS does not (??).
   isNixDarwin = !standalone && lib ? nixos;
@@ -166,13 +161,13 @@ in {
     } else {})
     (if isNixOS then lib.mkIf (cfg.enable && cfg.intelRapl) {
       security.wrappers.intel_rapl_telegraf = {
-        source = intelRapl;
+        source = pkgs.iszTelegraf.intelRapl;
         owner = "root";
         group = "telegraf";
         permissions = "u+rx,g+x";
         setuid = true;
       };
-      systemd.services.telegraf.reloadTriggers = [intelRapl];
+      systemd.services.telegraf.reloadTriggers = [pkgs.iszTelegraf.intelRapl];
     } else {})
     {
       services.telegraf.extraConfig = lib.mkMerge [
@@ -290,7 +285,7 @@ in {
             alias = "intel_rapl";
             restart_delay = "10s";
             data_format = "influx";
-            command = [(if isNixOS then "/run/wrappers/bin/intel_rapl_telegraf" else intelRapl)];
+            command = [(if isNixOS then "/run/wrappers/bin/intel_rapl_telegraf" else pkgs.iszTelegraf.intelRapl)];
             signal = "STDIN";
           }];
         })
@@ -311,7 +306,7 @@ in {
             alias = "power_supply";
             restart_delay = "10s";
             data_format = "influx";
-            command = [powerSupply];
+            command = [pkgs.iszTelegraf.powerSupply];
             signal = "STDIN";
           }];
         })
@@ -320,7 +315,7 @@ in {
             alias = "drm";
             restart_delay = "10s";
             data_format = "influx";
-            command = [drm];
+            command = [pkgs.iszTelegraf.drm];
             signal = "STDIN";
           }];
         })

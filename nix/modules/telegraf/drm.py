@@ -9,18 +9,18 @@ from influxdb_client import Point
 ROOT = "/sys/class/drm"
 CARD_RE = re.compile(r'^card(\d+)$')
 FIELDS = {
-    "current_link_speed"
-    "current_link_width"
-    "max_link_speed"
-    "max_link_width"
-    "gpu_busy_percent"
-    "mem_info_gtt_total"
-    "mem_info_gtt_used"
-    "mem_info_preempt_used"
-    "mem_info_vis_vram_total"
-    "mem_info_vis_vram_used"
-    "mem_info_vram_total"
-    "mem_info_vram_used"
+    "current_link_speed",
+    "current_link_width",
+    "max_link_speed",
+    "max_link_width",
+    "gpu_busy_percent",
+    "mem_info_gtt_total",
+    "mem_info_gtt_used",
+    "mem_info_preempt_used",
+    "mem_info_vis_vram_total",
+    "mem_info_vis_vram_used",
+    "mem_info_vram_total",
+    "mem_info_vram_used",
 }
 
 for line in sys.stdin:
@@ -33,13 +33,12 @@ for line in sys.stdin:
         device = os.path.join(ROOT, card, "device")
         for line in open(os.path.join(device, "uevent")):
             name, value = line.strip().split("=", 1)
-            p.tag(name.lower(), value)
-            name = name.lower()
+            p.tag(name.lower(), value.strip())
 
         for field in FIELDS:
             try:
                 with open(os.path.join(device, field)) as f:
-                    value = f.read()
+                    value = f.read().strip()
             except OSError:
                 continue
             try:
