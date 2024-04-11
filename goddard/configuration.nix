@@ -139,9 +139,6 @@ in
     clinfo
     nvtop-amd
     radeontop
-  ];
-
-  services.dbus.packages = with pkgs; [
     kio-fuse
   ];
 
