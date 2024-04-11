@@ -836,16 +836,25 @@ in {
       };
     })
     # Kate
-    (lib.mkIf pkgs.stdenv.isLinux {
-      home.packages = with pkgs; [
-        kate
-      ];
-      xdg.configFile."kate/lspclient/settings.json".text = lib.generators.toJSON {} {
-        servers.nix = {
+    (let
+      servers = {
+        nix = {
           command = ["${pkgs.unstable.nil}/bin/nil"];
           url = "https://github.com/oxalica/nil";
           highlightingModeRegex = "^Nix$";
         };
+        yaml = {
+            command = ["${pkgs.yaml-language-server}/bin/yaml-language-server" "--stdio"];
+            url = "https://github.com/redhat-developer/yaml-language-server";
+            highlightingModeRegex = "^YAML$";
+        };
+      };
+    in lib.mkIf pkgs.stdenv.isLinux {
+      home.packages = with pkgs; [
+        kate
+      ];
+      xdg.configFile."kate/lspclient/settings.json".text = lib.generators.toJSON {} {
+        inherit servers;
       };
       programs.plasma.configFile.katerc = {
         General."Startup Session" = "manual";
@@ -855,7 +864,11 @@ in {
         project.gitStatusDoubleClick = 3; # Stage/Unstage
         project.gitStatusNumStat = true;
         project.restoreProjectsForSessions = true;
-        lspclient.AllowedServerCommandLines = "${pkgs.unstable.nil}/bin/nil";
+        lspclient.AllowedServerCommandLines = lib.concatStringsSep "," (
+          lib.mapAttrsToList
+          (name: server: lib.concatStringsSep " " server.command)
+          servers
+        );
       };
     })
     # Signal
