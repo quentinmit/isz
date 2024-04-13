@@ -80,7 +80,9 @@ in {
     panels = [
       (heatmapPanel "average_core_power" "mwatt")
       (heatmapPanel "average_cpu_power" "mwatt")
+      (heatmapPanel "average_gfx_power" "mwatt")
       (heatmapPanel "current_coreclk" "MHz")
+      (heatmapPanel "average_gfx_activity" "percent") # Header says unit is centi, but values seem much too large.
     ];
   };
 }
