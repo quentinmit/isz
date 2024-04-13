@@ -333,7 +333,7 @@ in {
         ];
       };
     }
-    # Gaming
+    # Games
     {
       home.packages = with pkgs; [
         gnome.lightsoff
@@ -351,6 +351,9 @@ in {
         libsForQt5.kbreakout
         libsForQt5.palapeli
         gnome.aisleriot
+        gnome.gnome-mines
+        gnome.gnome-sudoku
+        gnome.swell-foop
       ];
     }
     # Emulation

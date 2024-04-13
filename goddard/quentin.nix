@@ -19,6 +19,7 @@
         signal-desktop
         discord
         davinci-resolve-studio
+        zoom-us
       ];
 
       # Don't index Electron folders
