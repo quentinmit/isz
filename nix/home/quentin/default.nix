@@ -480,16 +480,36 @@ in {
         '') + ''
           PubkeyAcceptedKeyTypes +ssh-dss,ssh-rsa
         '';
-        matchBlocks."hercules.comclub.org" = {
-          user = "quentins";
-          proxyJump = "atlas.comclub.org";
+        matchBlocks = {
+          "hercules.comclub.org" = {
+            user = "quentins";
+            proxyJump = "atlas.comclub.org";
+          };
+          "sipb-isilon-*" = {
+            extraOptions.HostKeyAlgorithms = "+ssh-dss";
+          };
+          "mattermost.mit.edu" = {
+            hostname = "mattermost.mit.edu";
+          };
+          "*.isz.wtf" = {
+            match = ''originalhost *.isz.wtf'';
+            # no IPv6
+            extraOptions.AddressFamily = "inet";
+          };
+          "mac.isz.wtf" = {
+            match = ''originalhost mac.isz.wtf !localnetwork 172.30.96.0/22 exec "${pkgs.knock}/bin/knock icestationzebra.isz.wtf 1337:udp 26678:udp"'';
+            hostname = "icestationzebra.isz.wtf";
+            port = 2222;
+          };
+          "heartofgold.isz.wtf" = {
+            match = ''originalhost heartofgold.isz.wtf !localnetwork 172.30.96.0/22 exec "${pkgs.knock}/bin/knock icestationzebra.isz.wtf 1337:udp 26678:udp"'';
+            hostname = "icestationzebra.isz.wtf";
+            port = 10122;
+          };
         };
-        matchBlocks."sipb-isilon-*" = {
-          extraOptions.HostKeyAlgorithms = "+ssh-dss";
-        };
-        matchBlocks."mattermost.mit.edu" = {
-          hostname = "mattermost.mit.edu";
-        };
+      };
+      programs.bash.shellAliases = {
+        mosh-mac = ''mosh -4 --server="/Users/quentin/bin/mosh-server-upnp" mac.isz.wtf'';
       };
     }
     # Network - SNMP
