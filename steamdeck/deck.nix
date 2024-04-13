@@ -11,8 +11,11 @@
     nixgl.overlay
     (final: prev: {
       inherit (final.unstable) gamescope;
+      bottles = final.bottles-unwrapped;
     })
   ];
+
+  nixpkgs.config.allowUnfree = true;
 
   home.packages = with pkgs; [
     # Network
@@ -78,7 +81,6 @@
 
     # Utilities
     appeditor
-    bottles-unwrapped
     CuboCore.corekeyboard
     #fingerterm
     gnome.dconf-editor
@@ -133,6 +135,7 @@
 
   programs.git.lfs.enable = true;
   isz.quentin.theme.enable = true;
+  isz.quentin.enable = true;
   isz.plasma.enable = true;
   programs.plasma.shortcuts = {
     "khotkeys"."{e521ea71-a8c8-4e23-9b72-4c9ca63c6874}" = "Meta+K";
@@ -165,8 +168,5 @@
 #       "khotkeysrc"."Data_4_1Triggers0"."Key" = "Meta+K";
 #       "khotkeysrc"."Data_4_1Triggers0"."Type" = "SHORTCUT";
 #       "khotkeysrc"."Data_4_1Triggers0"."Uuid" = "{e521ea71-a8c8-4e23-9b72-4c9ca63c6874}";
-  };
-  programs.plasma.configFile = {
-    "katerc"."lspclient"."AllowedServerCommandLines" = "${pkgs.unstable.nil}/bin/nil";
   };
 }

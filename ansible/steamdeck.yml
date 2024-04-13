@@ -20,7 +20,6 @@
       # Network apps
       - com.discordapp.Discord
       - com.github.fries1234.ncsa-mosaic
-      - com.google.Chrome
       - com.github.unrud.RemoteTouchpad
       - com.github.iwalton3.jellyfin-media-player
       - de.shorsh.discord-screenaudio
@@ -31,8 +30,6 @@
       # Productivity
       - ch.theologeek.Manuskript
       - org.libreoffice.LibreOffice
-      # Graphics
-      - com.boxy_svg.BoxySVG
       # Games
       - com.github.k4zmu2a.spacecadetpinball
       - com.heroicgameslauncher.hgl
@@ -61,14 +58,10 @@
       - com.github.tchx84.Flatseal
       - com.visualstudio.code.insiders # flathub-beta
       - io.github.shiftey.Desktop
-      - org.gnu.emacs
       - com.github.treagod.spectator
       - com.google.AndroidStudio
       - org.fritzing.Fritzing
       - re.sonny.Playhouse
-      # Multimedia
-      - com.obsproject.Studio
-      #- com.obsproject.Studio.Plugin.InputOverlay
       # Radio
       - info.mumble.Mumble
       # Utilities
@@ -79,7 +72,6 @@
       - io.qt.qdbusviewer
       - io.github.arunsivaramanneo.GPUViewer
       - org.bluesabre.MenuLibre
-      - org.gnome.dspy
       method: system
   - ansible.builtin.command: pacman -Qk {{ packages | join(' ') }}
     check_mode: no
