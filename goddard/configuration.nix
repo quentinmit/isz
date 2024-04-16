@@ -173,6 +173,11 @@ in
 
   programs.dconf.enable = true;
 
+  virtualisation.libvirtd = {
+    enable = true;
+    qemu.runAsRoot = false;
+  };
+
   # TODO: Switch to systemd-resolved for mDNS
   services.avahi = {
     enable = true;
@@ -217,6 +222,7 @@ in
       "video"
       "wheel"
       "wireshark"
+      "libvirtd"
     ];
   };
 }
