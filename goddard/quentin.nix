@@ -28,7 +28,15 @@
         "$HOME/.config/Signal/"
       ];
 
-      services.easyeffects.enable = true;
+      services.easyeffects = {
+        enable = true;
+        autoload.output.fw-16 = [{
+          device = "alsa_output.pci-0000_c1_00.6.analog-stereo";
+          device-description = "Family 17h/19h HD Audio Controller Analog Stereo";
+          device-profile = "analog-output-speaker";
+        }];
+      };
+      xdg.configFile."easyeffects/output/fw-16.json".source = ./easyeffects/fw-16.json;
 
       programs.plasma = {
         configFile = {
