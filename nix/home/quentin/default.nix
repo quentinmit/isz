@@ -571,6 +571,9 @@ in {
         xdot
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         kgraphviewer
+        stellarium
+        libsForQt5.kalgebra
+        unstable.kdePackages.step
       ];
     }
     # Productivity
