@@ -151,7 +151,7 @@ final: prev: {
     postPatch = ''
       substituteInPlace src/firewall/config/__init__.py.in \
         --replace "/usr/share" "$out/share" \
-        --replace "/usr/lib/" "$out/lib/"
+        --replace "/usr/lib/" "/run/current-system/sw/lib/"
 
       for file in config/firewall-{applet,config}.desktop.in; do
         substituteInPlace $file \
