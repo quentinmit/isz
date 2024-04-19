@@ -74,7 +74,6 @@
         fetzerch-sunandmoon-datasource
         grafana-worldmap-panel
         marcusolsson-json-datasource
-        mxswat-separator-panel
         operato-windrose-panel
         grafana-mqtt-datasource
         volkovlabs-echarts-panel

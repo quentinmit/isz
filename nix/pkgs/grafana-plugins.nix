@@ -10,11 +10,6 @@
     version = "1.3.9";
     zipHash = "sha256-N/Bngnjv0lLanQ8ucqsMpTm1iqa+MEigqM2O+/TG9J4=";
   };
-  mxswat-separator-panel = grafanaPlugin {
-    pname = "mxswat-separator-panel";
-    version = "1.0.1";
-    zipHash = "sha256-rRWnaCX/P+joEU9kLcl8D2SFSTlmMlhvQ2/YJSFVxZ8=";
-  };
   operato-windrose-panel = grafanaPlugin {
     pname = "operato-windrose-panel";
     version = "1.1.1";
