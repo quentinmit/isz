@@ -7,7 +7,7 @@ in
 {
   imports = [
     #./hardware-configuration.nix
-    nixos-hardware.nixosModules.framework-13-7040-amd # TODO: Switch to 16 when it exists
+    nixos-hardware.nixosModules.framework-16-7040-amd
     ./disko.nix
     disko.nixosModules.disko
     ./quentin.nix
@@ -44,18 +44,6 @@ in
     name = "acpitz-trip_table";
     patch = ./kernel-acptiz-trip_table.patch;
   }];
-
-  boot.extraModulePackages = lib.optional
-    (config.boot.kernelPackages.kernelOlder "6.9")
-    (amdgpu-kernel-module.overrideAttrs (_: {
-      patches = [
-        # vrr fix
-        (pkgs.fetchurl {
-          url = "https://gitlab.freedesktop.org/agd5f/linux/-/commit/2f14c0c8cae8e9e3b603a3f91909baba66540027.diff";
-          hash = "sha256-0++twr9t4AkJXZfj0aHGMVDuOhxtLP/q2d4FGfggnww=";
-        })
-      ];
-    }));
 
   environment.etc."lvm/lvm.conf".text = ''
     devices/issue_discards=1
