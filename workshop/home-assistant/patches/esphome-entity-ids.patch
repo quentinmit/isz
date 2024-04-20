@@ -1,18 +1,18 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index dc5a4ff096..cb740afb1d 100644
+index 4f32f62ee6..994df00d35 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
-@@ -4,7 +4,7 @@ from __future__ import annotations
- from collections.abc import Callable
+@@ -5,7 +5,7 @@ from __future__ import annotations
+ from collections.abc import Awaitable, Callable, Coroutine
  import functools
  import math
--from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
-+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, cast
+-from typing import TYPE_CHECKING, Any, Concatenate, Generic, ParamSpec, TypeVar, cast
++from typing import TYPE_CHECKING, Any, Concatenate, Generic, Optional, ParamSpec, TypeVar, cast
  
  from aioesphomeapi import (
-     EntityCategory as EsphomeEntityCategory,
-@@ -24,11 +24,12 @@ from homeassistant.helpers.device_registry import DeviceInfo
- from homeassistant.helpers.dispatcher import async_dispatcher_connect
+     APIConnectionError,
+@@ -26,11 +26,12 @@ import homeassistant.helpers.device_registry as dr
+ from homeassistant.helpers.device_registry import DeviceInfo
  from homeassistant.helpers.entity import Entity
  from homeassistant.helpers.entity_platform import AddEntitiesCallback
 +from homeassistant.util import slugify
@@ -25,7 +25,7 @@ index dc5a4ff096..cb740afb1d 100644
  from .enum_mapper import EsphomeEnumMapper
  
  _R = TypeVar("_R")
-@@ -136,6 +137,7 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
+@@ -184,6 +185,7 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
      _static_info: _InfoT
      _state: _StateT
      _has_state: bool
@@ -33,7 +33,7 @@ index dc5a4ff096..cb740afb1d 100644
  
      def __init__(
          self,
-@@ -178,6 +180,20 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
+@@ -224,6 +226,20 @@ class EsphomeEntity(Entity, Generic[_InfoT, _StateT]):
          self._attr_has_entity_name = True
          self.entity_id = f"{domain}.{device_info.name}_{entity_info.object_id}"
  
