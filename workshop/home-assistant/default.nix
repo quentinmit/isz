@@ -449,7 +449,7 @@ in {
             wind_bearing_template = "{{ states('sensor.tempest_st_00122016_wind_bearing_avg')| int }}";
             visibility_template = "{{ states('sensor.tempest_st_00122016_visibility')| float * 1.15078 }}";
             visibility_unit = "mi";
-            forecast_template = "{{ state_attr('sensor.hub_hb_00122953_weather', 'hourly_forecast') }}";
+            forecast_hourly_template = "{{ state_attr('sensor.hub_hb_00122953_weather', 'hourly_forecast') }}";
           }
         ];
 
