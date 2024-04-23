@@ -20,6 +20,7 @@
         discord
         davinci-resolve-studio
         zoom-us
+        caprine-bin
       ];
 
       # Don't index Electron folders
