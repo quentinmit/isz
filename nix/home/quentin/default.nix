@@ -211,6 +211,10 @@ in {
         openocd
       ] ++ lib.optionals (!isAarch64Darwin) [
         pkgsCross.arm-embedded.buildPackages.gdb
+      ] ++ lib.optionals stdenv.isLinux [
+        teensyduino
+        fritzing
+        platformio
       ];
     }
     # Rust development
