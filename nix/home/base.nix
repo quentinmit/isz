@@ -16,7 +16,7 @@ in {
     };
 
     home.packages = import ../modules/base/packages.nix { inherit pkgs; inherit (config.isz) graphical; } ++ [
-      pkgs.python3Packages.pygments # for lesspipe
+      (lib.lowPrio pkgs.python3Packages.pygments) # for lesspipe
     ];
 
     programs.vim = {

@@ -1,6 +1,6 @@
 { config, pkgs, lib, ... }:
 {
-  environment.systemPackages = with pkgs; [
+  home.packages = with pkgs; lib.mkIf config.isz.quentin.enable [
     #ihaskell
     iruby
     (let
@@ -45,31 +45,31 @@
           };
           #sage = sage.kernelspec;
           #octave = octave-kernel.definition;
-          pyscript = let
-            secrets = builtins.fromTOML (builtins.readFile ./hass-secrets.env);
-            env = python3.withPackages (ps: with ps; [ hass-pyscript-kernel ]);
-          in {
-            displayName = "hass pyscript";
-            language = "python";
-            argv = [
-              env.interpreter
-              "-m"
-              "hass_pyscript_kernel"
-              "-f"
-              "{connection_file}"
-            ];
-            logo32 = "${env}/lib/${env.libPrefix}/site-packages/hass_pyscript_kernel/kernel_files/logo-32x32.png";
-            logo64 = "${env}/lib/${env.libPrefix}/site-packages/hass_pyscript_kernel/kernel_files/logo-64x64.png";
-            extraPaths = {
-              "pyscript.conf" = pkgs.writeText "pyscript.conf" ''
-                [homeassistant]
-                hass_host = homeassistant.isz.wtf
-                hass_url = https://homeassistant.isz.wtf
-                hass_token = ${secrets.HASS_TOKEN}
-                verify_ssl = True
-              '';
-            };
-          };
+#           pyscript = let
+#             secrets = builtins.fromTOML (builtins.readFile ./hass-secrets.env);
+#             env = python3.withPackages (ps: with ps; [ hass-pyscript-kernel ]);
+#           in {
+#             displayName = "hass pyscript";
+#             language = "python";
+#             argv = [
+#               env.interpreter
+#               "-m"
+#               "hass_pyscript_kernel"
+#               "-f"
+#               "{connection_file}"
+#             ];
+#             logo32 = "${env}/lib/${env.libPrefix}/site-packages/hass_pyscript_kernel/kernel_files/logo-32x32.png";
+#             logo64 = "${env}/lib/${env.libPrefix}/site-packages/hass_pyscript_kernel/kernel_files/logo-64x64.png";
+#             extraPaths = {
+#               "pyscript.conf" = pkgs.writeText "pyscript.conf" ''
+#                 [homeassistant]
+#                 hass_host = homeassistant.isz.wtf
+#                 hass_url = https://homeassistant.isz.wtf
+#                 hass_token = ${secrets.HASS_TOKEN}
+#                 verify_ssl = True
+#               '';
+#             };
+#           };
         };
         jupyterPath = jupyter-kernel.create { inherit definitions; };
         opa = oldAttrs: {

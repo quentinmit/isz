@@ -8,6 +8,7 @@ in {
   };
   imports = [
     ./theme.nix
+    ./python.nix
   ];
   config = lib.mkIf config.isz.quentin.enable (lib.mkMerge [
     {
