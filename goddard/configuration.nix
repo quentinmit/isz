@@ -87,6 +87,28 @@ in
     jack.enable = true;
     pulse.enable = true;
   };
+
+  security.pam.loginLimits = [
+    {
+      domain = "@audio";
+      item = "memlock";
+      type = "-";
+      value = "unlimited";
+    }
+    {
+      domain = "@audio";
+      item = "rtprio";
+      type = "-";
+      value = "95";
+    }
+    {
+      domain = "@audio";
+      item = "nice";
+      type = "-";
+      value = "-19";
+    }
+  ];
+
   # TODO: EQ profile
   # https://gist.github.com/cab404/aeb2482e1af6fc463e1154017c566560/
   # https://github.com/cab404/framework-dsp/
@@ -212,6 +234,7 @@ in
       "wheel"
       "wireshark"
       "libvirtd"
+      "audio"
     ];
   };
 }
