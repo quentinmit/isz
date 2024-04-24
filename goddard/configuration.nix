@@ -128,6 +128,7 @@ in
     nvtop-amd
     radeontop
     kio-fuse
+    pipewire.jack
   ];
 
   # TODO(libinput > 1.25.0): Remove
