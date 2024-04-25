@@ -212,6 +212,7 @@ in {
       ] ++ lib.optionals (!isAarch64Darwin) [
         pkgsCross.arm-embedded.buildPackages.gdb
       ] ++ lib.optionals stdenv.isLinux [
+        unstable.arduino-ide
         teensyduino
         fritzing
         platformio
