@@ -94,4 +94,5 @@ final: prev:
   _86Box-roms = final.callPackage ./86box/roms.nix {};
   boxy-svg = final.callPackage ./boxy-svg {};
   iszTelegraf = final.recurseIntoAttrs (final.callPackage ../modules/telegraf/packages.nix {});
+  fw-ectool = final.callPackage ./fw-ectool {};
 }
