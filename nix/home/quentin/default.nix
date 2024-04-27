@@ -304,7 +304,20 @@ in {
         set history save on
       '';
     }
+    # Visual Studio Code
     {
+      home.packages = with pkgs; [
+        (unstable.vscode-with-extensions.override {
+          vscodeExtensions = with unstable.vscode-extensions; [
+            bbenoist.nix
+            golang.go
+            ms-python.python
+            rust-lang.rust-analyzer
+            ms-toolsai.jupyter
+            ms-vscode.cpptools-extension-pack
+          ];
+        })
+      ];
       programs.vscode = {
         userSettings = {
           "telemetry.enableTelemetry" = false;
