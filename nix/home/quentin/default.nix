@@ -2,6 +2,7 @@
 let
   isAarch64Darwin = pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64;
   open = if pkgs.stdenv.isDarwin then "open" else "${pkgs.xdg-utils}/bin/xdg-open";
+  available = pkg: lib.optional pkg.meta.available pkg;
 in {
   options = {
     isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
@@ -211,12 +212,13 @@ in {
         openocd
       ] ++ lib.optionals (!isAarch64Darwin) [
         pkgsCross.arm-embedded.buildPackages.gdb
-      ] ++ lib.optionals stdenv.isLinux [
-        unstable.arduino-ide
-        teensyduino
-        fritzing
-        platformio
-      ];
+      ] ++ lib.optionals stdenv.isLinux (
+        [
+          teensyduino
+          fritzing
+          platformio
+        ] ++ available unstable.arduino-ide
+      );
     }
     # Rust development
     {
@@ -255,7 +257,7 @@ in {
     {
       home.packages = with pkgs; [
         android-tools
-      ] ++ lib.optional fdroidserver.meta.available fdroidserver;
+      ] ++ available fdroidserver;
     }
     # Node.js development
     {
@@ -619,7 +621,7 @@ in {
         retext
         rnote
         xournalpp
-      ] ++ lib.optional onlyoffice-bin.meta.available onlyoffice-bin);
+      ] ++ available onlyoffice-bin);
     }
     # Productivity - eBooks
     {
