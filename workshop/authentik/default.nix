@@ -28,15 +28,18 @@
       };
       settings = let
         redisUrl = "unix://${config.services.redis.servers.authentik.unixSocket}?db=0";
+        redisSocketUrl = "redis+socket://${config.services.redis.servers.authentik.unixSocket}?db=0";
       in {
         error_reporting.enabled = false;
         disable_update_check = true;
         disable_startup_analytics = true;
         avatars = "gravatar,initials";
+        # https://github.com/jazzband/django-redis#configure-as-cache-backend
         cache.url = redisUrl;
         channel.url = redisUrl;
-        broker.url = redisUrl;
-        result_backend.url = redisUrl;
+        # https://docs.celeryq.dev/en/stable/userguide/configuration.html#redis-backend-settings
+        broker.url = redisSocketUrl;
+        result_backend.url = redisSocketUrl;
         # Disable outpost discovery since there's no Kubernetes or Docker.
         outposts.discover = false;
       };
