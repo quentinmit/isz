@@ -95,4 +95,13 @@ final: prev:
   boxy-svg = final.callPackage ./boxy-svg {};
   iszTelegraf = final.recurseIntoAttrs (final.callPackage ../modules/telegraf/packages.nix {});
   fw-ectool = final.callPackage ./fw-ectool {};
+  vscode-extensions = prev.vscode-extensions // {
+    Surendrajat.apklab = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "apklab";
+      publisher = "Surendrajat";
+      version = "1.7.0";
+      hash = "sha256-9QC56sK7GLqtRuloHX9nb6N8+VAkGCqA2sNMgHK04Oo=";
+      meta.license = final.lib.licenses.agpl3Only;
+    };
+  };
 }
