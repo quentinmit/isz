@@ -29,6 +29,8 @@
       settings = let
         redisUrl = "unix://${config.services.redis.servers.authentik.unixSocket}?db=0";
       in {
+        error_reporting.enabled = false;
+        disable_update_check = true;
         disable_startup_analytics = true;
         avatars = "gravatar,initials";
         cache.url = redisUrl;
@@ -38,6 +40,13 @@
         # Disable outpost discovery since there's no Kubernetes or Docker.
         outposts.discover = false;
       };
+
+      # Fix for newer unstable NixOS
+      authentikComponents = let
+        scope = (authentik.lib.mkAuthentikScope { pkgs = pkgs.unstable; }).overrideScope (final: prev: {
+          nodejs_21 = pkgs.unstable.nodejs_22;
+        });
+        in scope.authentikComponents;
     };
     isz.telegraf.prometheus.apps.authentik = {
       url = "http://localhost:9300/metrics";

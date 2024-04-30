@@ -46,11 +46,10 @@
     nixgl.inputs.flake-utils.follows = "flake-utils";
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
-    authentik.url = "github:quentinmit/authentik-nix";
-    authentik.inputs.nixpkgs.follows = "nixpkgs";
+    authentik.url = "github:nix-community/authentik-nix";
+    authentik.inputs.nixpkgs.follows = "unstable";
     authentik.inputs.flake-utils.follows = "flake-utils";
     authentik.inputs.flake-compat.follows = "flake-compat";
-    authentik.inputs.nixpkgs-23-05.follows = "nixpkgs-23_05";
     bluechips.url = "github:quentinmit/bluechips";
     bluechips.inputs.nixpkgs.follows = "nixpkgs";
     bluechips.inputs.flake-utils.follows = "flake-utils";
