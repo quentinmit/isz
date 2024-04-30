@@ -58,8 +58,10 @@
     lanzaboote.inputs.flake-compat.follows = "flake-compat";
     lanzaboote.inputs.flake-utils.follows = "flake-utils";
     lanzaboote.inputs.rust-overlay.follows = "rust-overlay";
+    mosh-server-upnp.url = "github:arcnmx/mosh-server-upnp";
+    mosh-server-upnp.inputs.nixpkgs.follows = "nixpkgs";
   };
-  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, ... }@args:
+  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -83,6 +85,7 @@
         self.overlays.new
         self.overlays.stable
         self.overlays.stable-darwin
+        self.overlays.mosh-server-upnp
         cargo2nix.overlays.default
         deploy-rs.overlay
       ];
@@ -121,9 +124,13 @@
         overlays.new = import ./nix/pkgs/all-packages.nix;
         overlays.stable = import ./nix/pkgs/overlays.nix;
         overlays.stable-darwin = import ./nix/pkgs/darwin-overlays.nix;
+        overlays.mosh-server-upnp = final: prev: {
+          mosh-server-upnp = final.callPackage mosh-server-upnp.flakes.args.packages.mosh-server-upnp {};
+        };
         overlays.default = nixpkgs.lib.composeManyExtensions [
           overlays.new
           overlays.stable
+          overlays.mosh-server-upnp
         ];
         overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
         nixosConfigurations = nixpkgs.lib.genAttrs [

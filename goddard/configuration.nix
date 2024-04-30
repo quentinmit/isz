@@ -151,6 +151,7 @@ in
     radeontop
     kio-fuse
     pipewire.jack
+    mosh-server-upnp
   ];
 
   # TODO(libinput > 1.25.0): Remove

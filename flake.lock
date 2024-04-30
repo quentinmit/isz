@@ -221,6 +221,22 @@
         "type": "github"
       }
     },
+    "fl-config": {
+      "locked": {
+        "lastModified": 1653159448,
+        "narHash": "sha256-PvB9ha0r4w6p412MBPP71kS/ZTBnOjxL0brlmyucPBA=",
+        "owner": "flakelib",
+        "repo": "fl",
+        "rev": "fcefb9738d5995308a24cda018a083ccb6b0f460",
+        "type": "github"
+      },
+      "original": {
+        "owner": "flakelib",
+        "ref": "config",
+        "repo": "fl",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -291,6 +307,25 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flakelib": {
+      "inputs": {
+        "fl-config": "fl-config",
+        "std": "std"
+      },
+      "locked": {
+        "lastModified": 1653703940,
+        "narHash": "sha256-5YmQ/uV/LvCutffKgJDICTToL4FJFSGUJC3mtDfDOpE=",
+        "owner": "flakelib",
+        "repo": "fl",
+        "rev": "734cd53f181545ae495e24fe92c43430d8f91e3f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "flakelib",
+        "repo": "fl",
         "type": "github"
       }
     },
@@ -367,6 +402,27 @@
         "owner": "nix-community",
         "ref": "v0.3.0",
         "repo": "lanzaboote",
+        "type": "github"
+      }
+    },
+    "mosh-server-upnp": {
+      "inputs": {
+        "flakelib": "flakelib",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1659715433,
+        "narHash": "sha256-aQP9CQFpMDs7lvhuTlfSUH9Q3kS6/ziNWbqXmn8J0IE=",
+        "owner": "arcnmx",
+        "repo": "mosh-server-upnp",
+        "rev": "58ea1bfaef8a10d8394ca8c753a782f045e570e6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "arcnmx",
+        "repo": "mosh-server-upnp",
         "type": "github"
       }
     },
@@ -456,6 +512,22 @@
       "original": {
         "owner": "Mic92",
         "repo": "nix-index-database",
+        "type": "github"
+      }
+    },
+    "nix-std": {
+      "locked": {
+        "lastModified": 1652644856,
+        "narHash": "sha256-tRRx4bBFwctWrUhnCNrcRee8Wiol1M7ypQTOPrLLtkc=",
+        "owner": "flakelib",
+        "repo": "std",
+        "rev": "194230d45e99ce84cf25ea8b3ae4774601fc097c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "flakelib",
+        "ref": "master",
+        "repo": "std",
         "type": "github"
       }
     },
@@ -701,6 +773,7 @@
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "lanzaboote": "lanzaboote",
+        "mosh-server-upnp": "mosh-server-upnp",
         "nix-index-database": "nix-index-database",
         "nixgl": "nixgl",
         "nixos-hardware": "nixos-hardware",
@@ -757,6 +830,24 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
+        "type": "github"
+      }
+    },
+    "std": {
+      "inputs": {
+        "nix-std": "nix-std"
+      },
+      "locked": {
+        "lastModified": 1653157927,
+        "narHash": "sha256-wT2L4XBu58vu8eKOvLfGK/2h4gwDjhTdLTQbGos1BlU=",
+        "owner": "flakelib",
+        "repo": "std",
+        "rev": "f80d5bedb74de5722a813a9680fa8491817a05b4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "flakelib",
+        "repo": "std",
         "type": "github"
       }
     },
