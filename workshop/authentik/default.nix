@@ -36,6 +36,7 @@
         avatars = "gravatar,initials";
         # https://github.com/jazzband/django-redis#configure-as-cache-backend
         cache.url = redisUrl;
+        # https://github.com/django/channels_redis#hosts
         channel.url = redisUrl;
         # https://docs.celeryq.dev/en/stable/userguide/configuration.html#redis-backend-settings
         broker.url = redisSocketUrl;
