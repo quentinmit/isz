@@ -21,6 +21,7 @@
         davinci-resolve-studio
         zoom-us
         caprine-bin
+        jdk
       ];
 
       # Don't index Electron folders

@@ -317,7 +317,8 @@ in {
             rust-lang.rust-analyzer
             ms-toolsai.jupyter
             ms-vscode.cpptools-extension-pack
-          ];
+            LoyieKing.smalise
+          ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];
       programs.vscode = {

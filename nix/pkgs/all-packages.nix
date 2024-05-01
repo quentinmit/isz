@@ -103,5 +103,12 @@ final: prev:
       hash = "sha256-9QC56sK7GLqtRuloHX9nb6N8+VAkGCqA2sNMgHK04Oo=";
       meta.license = final.lib.licenses.agpl3Only;
     };
+    LoyieKing.smalise = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "smalise";
+      publisher = "LoyieKing";
+      version = "0.0.12";
+      hash = "sha256-GZjurKTwqGO5Hxv6HYxHr9Sy+srZMxOsialL8B+kjV8=";
+      meta.license = final.lib.licenses.mit;
+    };
   };
 }
