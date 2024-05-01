@@ -1,6 +1,12 @@
 { config, pkgs, lib, ... }:
 {
-  home.packages = with pkgs; lib.mkIf config.isz.quentin.enable [
+  options = with lib; {
+    isz.quentin.python.enable = mkOption {
+      type = types.bool;
+      default = config.isz.quentin.enable;
+    };
+  };
+  config.home.packages = with pkgs; lib.mkIf config.isz.quentin.python.enable [
     #ihaskell
     iruby
     (let

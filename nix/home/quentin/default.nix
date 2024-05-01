@@ -6,6 +6,10 @@ let
 in {
   options = {
     isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
+    isz.quentin.vscode.install = lib.mkOption {
+      type = lib.types.bool;
+      default = config.isz.quentin.enable;
+    };
   };
   imports = [
     ./theme.nix
@@ -308,7 +312,7 @@ in {
     }
     # Visual Studio Code
     {
-      home.packages = with pkgs; [
+      home.packages = with pkgs; lib.mkIf config.isz.quentin.vscode.install [
         (unstable.vscode-with-extensions.override {
           vscodeExtensions = with unstable.vscode-extensions; [
             bbenoist.nix
