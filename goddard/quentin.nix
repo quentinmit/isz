@@ -41,7 +41,7 @@
 
       programs.plasma = {
         configFile = {
-          kcminputrc.Libinput."2362"."628"."PIXA3854:00 093A:0274 Touchpad" = {
+          kcminputrc."Libinput/2362/628/PIXA3854:00 093A:0274 Touchpad" = {
             ClickMethod = 2; # Two-finger click to right click
             TapToClick = true;
             TapDragLock = true;
