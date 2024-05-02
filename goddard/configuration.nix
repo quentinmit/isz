@@ -151,6 +151,7 @@ in
     radeontop
     kio-fuse
     pipewire.jack
+    wd-fw-update
     mosh-server-upnp
   ];
 

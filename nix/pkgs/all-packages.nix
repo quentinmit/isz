@@ -111,4 +111,5 @@ final: prev:
       meta.license = final.lib.licenses.mit;
     };
   };
+  wd-fw-update = final.callPackage ./python/wd-fw-update {};
 }
