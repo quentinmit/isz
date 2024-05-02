@@ -897,17 +897,19 @@ in {
           highlightingModeRegex = "^Nix$";
         };
         yaml = {
-            command = ["${pkgs.yaml-language-server}/bin/yaml-language-server" "--stdio"];
-            url = "https://github.com/redhat-developer/yaml-language-server";
-            highlightingModeRegex = "^YAML$";
+          command = ["${pkgs.yaml-language-server}/bin/yaml-language-server" "--stdio"];
+          url = "https://github.com/redhat-developer/yaml-language-server";
+          highlightingModeRegex = "^YAML$";
         };
       };
     in lib.mkIf pkgs.stdenv.isLinux {
       home.packages = with pkgs; [
         kate
       ];
-      xdg.configFile."kate/lspclient/settings.json".text = lib.generators.toJSON {} {
-        inherit servers;
+      programs.kate = {
+        enable = true;
+        editor.indent.replaceWithSpaces = true;
+        lsp.customServers = servers;
       };
       programs.plasma.configFile.katerc = {
         General."Startup Session" = "manual";
