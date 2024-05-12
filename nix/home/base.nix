@@ -58,6 +58,7 @@ in {
         in lib.escapeShellArgs ["log" "--pretty=format:${format}"];
       };
       extraConfig = {
+        init.defaultBranch = "main";
         core.pager = "less -F";
         color.ui = "auto";
         url = {
