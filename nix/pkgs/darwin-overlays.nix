@@ -41,16 +41,10 @@ final: prev: if prev.stdenv.isDarwin then {
     LIBS = "-framework CoreFoundation -framework CoreServices -framework DiskArbitration -framework IOKit";
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
-  mesa_glu = let
-    inherit (final) lib stdenv;
-  in prev.mesa_glu.overrideAttrs (old: {
-    mesonFlags = (old.mesonFlags or []) ++ [
-      "-Dgl_provider=gl" # glvnd is default
-    ];
-  });
   fpc = let
     inherit (final) lib stdenv darwin;
-  in prev.fpc.overrideAttrs (old: {
+  in prev.fpc.overrideAttrs (old: if (lib.hasInfix "no_uuid" old.postPatch) then {} else {
+    # Fixed in https://github.com/NixOS/nixpkgs/commit/a88d4f7dc7ed2d122dcae053863cfa11380f3bfc
     # Needs strip from cctools-port, but ld from cctools-llvm
     prePatch = (old.prePatch or "") + ''
       substituteInPlace fpcsrc/compiler/Makefile{,.fpc} \
@@ -167,7 +161,7 @@ final: prev: if prev.stdenv.isDarwin then {
   });
   cdecl = let
     inherit (final) lib stdenv;
-  in prev.cdecl.overrideAttrs (old: {
+  in if (lib.versionAtLeast prev.cdecl.version "2.5-unstable-2024-05-07") then prev.cdecl else prev.cdecl.overrideAttrs (old: {
     preBuild = old.preBuild + lib.optionalString stdenv.cc.isClang ''
       makeFlagsArray=(CFLAGS="-DBSD -DUSE_READLINE -std=gnu89 -Wno-int-conversion -Wno-incompatible-function-pointer-types" LIBS=-lreadline);
     '';
