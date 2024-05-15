@@ -168,6 +168,11 @@ final: prev: {
       plasma-firewall = plasma-final.callPackage ./plasma/plasma-firewall.nix {};
     });
     plasma-firewall = qt5-final.plasma5.plasma-firewall;
+    krfb = qt5-prev.krfb.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [
+        ./krfb/krfb-scaling.patch
+      ];
+    });
   });
   davinci-resolve-studio = prev.davinci-resolve-studio.override (old: {
     buildFHSEnv = a: (old.buildFHSEnv (a // {

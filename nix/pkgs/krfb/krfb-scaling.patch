@@ -1,0 +1,46 @@
+commit 35a58c969b5df2ed67d2b3c0800a2ad62aa5b335
+Author: Aleix Pol <aleixpol@kde.org>
+Date:   Tue Mar 12 00:43:55 2024 +0100
+
+    pw: Improve fb allocation code.
+    
+    Don't set the video size using the data coming from xdp, instead use the
+    data coming from pipewire, which is what matters.
+    Also make sure setVideoSize is called before using the buffer rather
+    than after.
+
+diff --git a/framebuffers/pipewire/pw_framebuffer.cpp b/framebuffers/pipewire/pw_framebuffer.cpp
+index 1fd0dd5..aed8eb1 100644
+--- a/framebuffers/pipewire/pw_framebuffer.cpp
++++ b/framebuffers/pipewire/pw_framebuffer.cpp
+@@ -334,7 +334,6 @@ void PWFrameBuffer::Private::handleRemoteDesktopStarted(quint32 code, const QVar
+         isValid = false;
+         return;
+     }
+-    setVideoSize(qdbus_cast<QSize>(streams.first().map[QStringLiteral("size")].value<QDBusArgument>()));
+ }
+ 
+ void PWFrameBuffer::Private::handleFrame(const PipeWireFrame &frame)
+@@ -348,17 +347,19 @@ void PWFrameBuffer::Private::handleFrame(const PipeWireFrame &frame)
+     }
+ 
+     if (frame.image) {
+-        memcpy(q->fb, frame.image->constBits(), frame.image->sizeInBytes());
+         setVideoSize(frame.image->size());
++        memcpy(q->fb, frame.image->constBits(), frame.image->sizeInBytes());
+     }
+     else if (frame.dmabuf) {
+-        QImage src((uchar*) q->fb, videoSize.width(), videoSize.height(), QImage::Format_RGB32);
++        // FIXME: Assuming stride == width * 4, not sure to which extent this holds
++        const QSize size = { frame.dmabuf->width, frame.dmabuf->height };
++        setVideoSize(size);
++        QImage src(reinterpret_cast<uchar*>(q->fb), size.width(), size.height(), QImage::Format_RGB32);
+         if (!m_dmabufHandler.downloadFrame(src, frame)) {
+             stream->renegotiateModifierFailed(frame.format, frame.dmabuf->modifier);
+             qCDebug(KRFB_FB_PIPEWIRE) << "Failed to download frame.";
+             return;
+         }
+-        setVideoSize(src.size());
+     } else {
+         qCDebug(KRFB_FB_PIPEWIRE) << "Unknown kind of frame";
+     }

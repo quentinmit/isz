@@ -22,6 +22,7 @@
         zoom-us
         caprine-bin
         jdk
+        krfb
       ];
 
       # Don't index Electron folders
