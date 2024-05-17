@@ -361,6 +361,12 @@ in {
         ];
       };
     }
+    # Emacs
+    {
+      programs.emacs.extraPackages = epkgs: with epkgs; [
+        typescript-mode
+      ];
+    }
     # Games
     {
       home.packages = with pkgs; [
