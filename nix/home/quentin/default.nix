@@ -52,7 +52,6 @@ in {
         #id3tool
         libde265
         mediainfo
-        mkvtoolnix
         rav1e
         rtmpdump
         sox
@@ -65,6 +64,7 @@ in {
         dvdbackup
         guvcview
         mikmod
+        mkvtoolnix
         vapoursynth
         vlc
         libsForQt5.kdenlive
