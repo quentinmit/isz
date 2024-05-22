@@ -198,6 +198,7 @@ in
   };
 
   krb5.enable = true;
+  security.pam.krb5.enable = false;
   krb5.libdefaults.default_realm = "ATHENA.MIT.EDU";
   krb5.realms = {
     "ATHENA.MIT.EDU" = {
