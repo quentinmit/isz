@@ -55,6 +55,12 @@
           };
         };
       };
+
+      xdg.configFile = {
+        "autostart/signal-desktop.desktop".source = "${pkgs.signal-desktop}/share/applications/signal-desktop.desktop";
+        "autostart/caprine.desktop".source = "${pkgs.caprine-bin}/share/applications/caprine.desktop";
+        "autostart/discord.desktop".source = "${pkgs.discord}/share/applications/discord.desktop";
+      };
     }
     # Emacs
     {
