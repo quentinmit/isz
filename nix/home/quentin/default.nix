@@ -323,6 +323,7 @@ in {
             ms-toolsai.jupyter
             ms-vscode.cpptools-extension-pack
             LoyieKing.smalise
+            ms-playwright.playwright
           ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];

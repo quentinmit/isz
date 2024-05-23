@@ -110,6 +110,13 @@ final: prev:
       hash = "sha256-GZjurKTwqGO5Hxv6HYxHr9Sy+srZMxOsialL8B+kjV8=";
       meta.license = final.lib.licenses.mit;
     };
+    ms-playwright.playwright = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "playwright";
+      publisher = "ms-playwright";
+      version = "1.1.5";
+      hash = "sha256-DAqQSEUdMCw2sFJeAiXgZOJadZyWCYdbRJP1mUd9YCg=";
+      meta.license = final.lib.licenses.asl20;
+    };
   };
   wd-fw-update = final.callPackage ./python/wd-fw-update {};
 }
