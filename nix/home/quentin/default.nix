@@ -324,6 +324,7 @@ in {
             ms-vscode.cpptools-extension-pack
             LoyieKing.smalise
             ms-playwright.playwright
+            github.vscode-github-actions
           ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];
