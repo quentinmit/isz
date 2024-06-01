@@ -8,6 +8,7 @@
       isz.quentin.enable = true;
       isz.graphical = true;
       isz.plasma.enable = true;
+      isz.plasma.subpixelHinting = true;
 
       programs.atuin.settings.sync_address = "https://atuin.isz.wtf";
 

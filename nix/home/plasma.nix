@@ -12,6 +12,7 @@ in {
   options = with lib; {
     isz.plasma = {
       enable = mkEnableOption "ISZ plasma configuration";
+      subpixelHinting = mkEnableOption "Subpixel hinting";
     };
     services.baloo = {
       indexHiddenFolders = mkEnableOption "Index hidden folders";
@@ -31,6 +32,10 @@ in {
         "$HOME/.cache/google-chrome/"
       ];
     };
+    home.packages = with pkgs; [
+      nerdfonts
+    ];
+    fonts.fontconfig.enable = true;
     programs.plasma = {
       enable = true;
       workspace = {
@@ -279,6 +284,12 @@ in {
         "systemsettings.desktop"."powerdevilprofilesconfig" = [ ];
         "systemsettings.desktop"."screenlocker" = [ ];
       };
+      # TODO: NixOS 24.05
+#       fonts.fixedWidth = {
+#         family = "Hack Nerd Font";
+#         pointSize = 10;
+#         weight = 50;
+#       };
       configFile = {
         baloofilerc.General = let
           cfg = config.services.baloo;
@@ -289,6 +300,9 @@ in {
         "dolphinrc"."DetailsMode"."PreviewSize" = 16;
         "kdeglobals"."KDE"."SingleClick" = false;
         "kdeglobals"."General"."AllowKDEAppsToRememberWindowPositions" = true;
+        kdeglobals.General.fixed = "Hack Nerd Font,10,-1,5,50,0,0,0,0,0";
+        kdeglobals.General.XftHintStyle = "hintslight";
+        kdeglobals.General.XftSubPixel = lib.mkIf config.isz.plasma.subpixelHinting "rgb";
         "systemsettingsrc"."systemsettings_sidebar_mode"."HighlightNonDefaultSettings" = true;
       };
     };

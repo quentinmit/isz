@@ -1,9 +1,4 @@
 { config, pkgs, lib, nixpkgs, disko, nixos-hardware, lanzaboote, ... }:
-let
-  amdgpu-kernel-module = pkgs.callPackage ./amdgpu-kernel-module.nix {
-    inherit (config.boot.kernelPackages) kernel;
-  };
-in
 {
   imports = [
     #./hardware-configuration.nix
@@ -168,6 +163,8 @@ in
   services.xserver.displayManager.sddm.enable = true;
   services.xserver.windowManager.twm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
+
+  fonts.fontconfig.subpixel.rgba = "rgb";
 
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
