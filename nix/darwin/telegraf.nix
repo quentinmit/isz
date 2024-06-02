@@ -1,5 +1,6 @@
 { lib, pkgs, config, options, ... }:
 {
+  imports = [ ./../modules/telegraf ];
   config = let
     cfg = config.isz.telegraf;
   in lib.mkMerge [

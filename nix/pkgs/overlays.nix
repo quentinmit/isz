@@ -116,10 +116,12 @@ final: prev: {
   gobang = prev.gobang.overrideAttrs (old: rec {
     src = old.src.override {
       rev = "refs/pull/177/head";
-      sha256 = "zoCAl7s5QKNgc5/DChQIKewnFs5P1Y4hm8bakbH//fI=";
+      hash = "sha256-zoCAl7s5QKNgc5/DChQIKewnFs5P1Y4hm8bakbH//fI=";
     };
+    patches = [];
     cargoDeps = old.cargoDeps.overrideAttrs {
       inherit src;
+      cargoPatches = [];
       outputHash = "sha256-xTd/Gw9L/IcgSUT9zGaG85COfkDwS2KLFqrzpRTHyoU=";
     };
   });

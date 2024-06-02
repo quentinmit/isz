@@ -400,7 +400,7 @@ in {
         (lib.lowPrio qemu)  # contains libfdt which conflicts with dtc
         virt-manager
       ] ++ lib.optionals pkgs.stdenv.isLinux [
-        virt-manager-qt
+        #broken virt-manager-qt
         pcem
         _86Box
         _86Box-roms

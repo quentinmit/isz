@@ -12,7 +12,9 @@
   nixpkgs.hostPlatform = "x86_64-linux";
   nixpkgs.overlays = lib.mkAfter [
     (final: prev: {
-      openssh = final.openssh_gssapi;
+      openssh = final.openssh_gssapi.override {
+        dsaKeysSupport = true;
+      };
     })
   ];
 
@@ -34,11 +36,6 @@
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  boot.kernelPatches = [{
-    name = "acpitz-trip_table";
-    patch = ./kernel-acptiz-trip_table.patch;
-  }];
 
   environment.etc."lvm/lvm.conf".text = ''
     devices/issue_discards=1
@@ -142,7 +139,7 @@
     glxinfo
     libva-utils
     clinfo
-    nvtop-amd
+    nvtopPackages.amd
     radeontop
     kio-fuse
     pipewire.jack
@@ -160,7 +157,7 @@
   '';
 
   services.xserver.enable = true;
-  services.xserver.displayManager.sddm.enable = true;
+  services.displayManager.sddm.enable = true;
   services.xserver.windowManager.twm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
 
@@ -173,9 +170,8 @@
 
   programs.chromium = {
     enable = true;
-    # TODO(24.05): enablePlasmaBrowserIntegration = true;
+    enablePlasmaBrowserIntegration = true;
   };
-  environment.etc."opt/chrome/native-messaging-hosts/org.kde.plasma.browser_integration.json".source = "${pkgs.plasma5Packages.plasma-browser-integration}/etc/chromium/native-messaging-hosts/org.kde.plasma.browser_integration.json";
 
   programs.steam.enable = true;
 
@@ -191,37 +187,39 @@
   # TODO: Switch to systemd-resolved for mDNS
   services.avahi = {
     enable = true;
-    nssmdns = true;
+    nssmdns4 = true;
   };
 
-  krb5.enable = true;
   security.pam.krb5.enable = false;
-  krb5.libdefaults.default_realm = "ATHENA.MIT.EDU";
-  krb5.realms = {
-    "ATHENA.MIT.EDU" = {
-      admin_server = "kerberos.mit.edu";
-      default_domain = "mit.edu";
-      kdc = [
-        "kerberos.mit.edu:88"
-        "kerberos-1.mit.edu:88"
-        "kerberos-2.mit.edu:88"
-      ];
+  security.krb5 = {
+    enable = true;
+    settings.libdefaults.default_realm = "ATHENA.MIT.EDU";
+    settings.realms = {
+      "ATHENA.MIT.EDU" = {
+        admin_server = "kerberos.mit.edu";
+        default_domain = "mit.edu";
+        kdc = [
+          "kerberos.mit.edu:88"
+          "kerberos-1.mit.edu:88"
+          "kerberos-2.mit.edu:88"
+        ];
+      };
+      "ZONE.MIT.EDU" = {
+        admin_server = "casio.mit.edu";
+        kdc = [
+          "casio.mit.edu"
+          "seiko.mit.edu"
+        ];
+      };
     };
-    "ZONE.MIT.EDU" = {
-      admin_server = "casio.mit.edu";
-      kdc = [
-        "casio.mit.edu"
-        "seiko.mit.edu"
-      ];
+    settings.domain_realm = {
+      "exchange.mit.edu" = "EXCHANGE.MIT.EDU";
+      "mit.edu" = "ATHENA.MIT.EDU";
+      "win.mit.edu" = "WIN.MIT.EDU";
+      "csail.mit.edu" = "CSAIL.MIT.EDU";
+      "media.mit.edu" = "MEDIA-LAB.MIT.EDU";
+      "whoi.edu" = "ATHENA.MIT.EDU";
     };
-  };
-  krb5.domain_realm = {
-    "exchange.mit.edu" = "EXCHANGE.MIT.EDU";
-    "mit.edu" = "ATHENA.MIT.EDU";
-    "win.mit.edu" = "WIN.MIT.EDU";
-    "csail.mit.edu" = "CSAIL.MIT.EDU";
-    "media.mit.edu" = "MEDIA-LAB.MIT.EDU";
-    "whoi.edu" = "ATHENA.MIT.EDU";
   };
 
   users.users.quentin = {

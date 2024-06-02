@@ -10,10 +10,10 @@
 
     nixpkgs.config.allowUnfree = true;
 
-    nix.package = lib.mkDefault pkgs.nixVersions.nix_2_16;
+    nix.package = lib.mkDefault pkgs.nixVersions.latest;
 
     nix.settings = {
-      extra-experimental-features = [ "nix-command" "flakes" "repl-flake" ];
+      extra-experimental-features = [ "nix-command" "flakes" ];
       # Nix on macOS has a race condition when this is turned on.
       # https://github.com/NixOS/nix/issues/7273
       auto-optimise-store = lib.mkIf (!pkgs.stdenv.isDarwin) true;

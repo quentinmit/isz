@@ -5,11 +5,11 @@
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "nixpkgs/nixos-23.11";
+    nixpkgs.url = "nixpkgs/nixos-24.05";
     nixpkgs-23_05.url = "nixpkgs/nixos-23.05";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
-    home-manager.url = "github:nix-community/home-manager/release-23.11";
+    home-manager.url = "github:nix-community/home-manager/release-24.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
@@ -164,12 +164,7 @@
           extraSpecialArgs = specialArgs;
         };
         nixosModules = builtins.listToAttrs (findModules ./nix/modules);
-        darwinModules = builtins.listToAttrs (findModules ./nix/darwin) // {
-          # Modules that work on both nixos and nix-darwin
-          inherit (self.nixosModules)
-            telegraf
-          ;
-        };
+        darwinModules = builtins.listToAttrs (findModules ./nix/darwin);
         homeModules = builtins.listToAttrs (findModules ./nix/home);
         deploy.nodes.droid = {
           sshUser = "root";
