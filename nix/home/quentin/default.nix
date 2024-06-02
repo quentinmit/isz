@@ -67,7 +67,7 @@ in {
         mkvtoolnix
         vapoursynth
         vlc
-        libsForQt5.kdenlive
+        kdePackages.kdenlive
         timidity
         vmpk
       ];
@@ -383,9 +383,9 @@ in {
         kmines
         knetwalk
         knavalbattle
-        libsForQt5.ksudoku
-        libsForQt5.kbreakout
-        libsForQt5.palapeli
+        kdePackages.ksudoku
+        kdePackages.kbreakout
+        kdePackages.palapeli
         gnome.aisleriot
         gnome.gnome-mines
         gnome.gnome-sudoku
@@ -608,8 +608,8 @@ in {
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         kgraphviewer
         stellarium
-        libsForQt5.kalgebra
-        unstable.kdePackages.step
+        kdePackages.kalgebra
+        kdePackages.step
       ];
     }
     # Productivity
@@ -630,7 +630,7 @@ in {
         zbar
         ghostscript
       ] ++ lib.optionals pkgs.stdenv.isLinux ([
-        libsForQt5.ghostwriter
+        kdePackages.ghostwriter
         marktext
         retext
         rnote
@@ -833,11 +833,11 @@ in {
     # KDE apps
     (lib.mkIf config.isz.plasma.enable {
       home.packages = with pkgs; [
-        kcharselect
-        # Causes problems: libsForQt5.konqueror
-        libsForQt5.kfilemetadata
-        libsForQt5.filelight
-        partition-manager
+        kdePackages.kcharselect
+        # Causes problems: kdePackages.konqueror
+        kdePackages.kfilemetadata
+        kdePackages.filelight
+        kdePackages.partitionmanager
       ];
     })
     # Konsole
@@ -912,11 +912,9 @@ in {
         };
       };
     in lib.mkIf pkgs.stdenv.isLinux {
-      home.packages = with pkgs; [
-        kate
-      ];
       programs.kate = {
         enable = true;
+        package = pkgs.kdePackages.kate;
         editor.indent.replaceWithSpaces = true;
         lsp.customServers = servers;
       };

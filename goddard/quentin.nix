@@ -23,7 +23,7 @@
         zoom-us
         caprine-bin
         jdk
-        krfb
+        kdePackages.krfb
       ];
 
       # Don't index Electron folders

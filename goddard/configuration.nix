@@ -133,8 +133,8 @@
     framework-tool
     efitools
     nftables
-    plasma5Packages.plasma-firewall
-    plasma5Packages.plasma-thunderbolt
+    kdePackages.plasma-firewall
+    kdePackages.plasma-thunderbolt
     thunderbolt
     glxinfo
     libva-utils
@@ -159,7 +159,7 @@
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
   services.xserver.windowManager.twm.enable = true;
-  services.xserver.desktopManager.plasma5.enable = true;
+  services.desktopManager.plasma6.enable = true;
 
   fonts.fontconfig.subpixel.rgba = "rgb";
 
