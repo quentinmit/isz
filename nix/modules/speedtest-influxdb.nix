@@ -51,6 +51,7 @@
       description = "Speedtest to InfluxDB";
       path = [ pkgs.speedtest-influxdb ];
       after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       script = ''
         exec speedtest-influxdb \

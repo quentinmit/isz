@@ -49,7 +49,7 @@ in {
   config = let
     user = config.systemd.services.home-assistant.serviceConfig.User;
     group = config.systemd.services.home-assistant.serviceConfig.Group;
-    dbName = "homeassistant";
+    dbName = "hass"; # TODO: Why does `user` cause infinite recursion?
     dbUser = user;
     dbEnabled = config.services.postgresql.enable;
   in {
@@ -65,9 +65,7 @@ in {
       ensureDatabases = [dbName];
       ensureUsers = [{
         name = dbUser;
-        ensurePermissions = {
-          "DATABASE ${dbName}" = "ALL PRIVILEGES";
-        };
+        ensureDBOwnership = true;
       }];
     };
     systemd.services.home-assistant = lib.mkIf dbEnabled {

@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  services.paperless.extraConfig = {
+  services.paperless.settings = {
     PAPERLESS_ENABLE_HTTP_REMOTE_USER = true;
     PAPERLESS_HTTP_REMOTE_USER_HEADER_NAME = "HTTP_X_AUTHENTIK_USERNAME";
   };

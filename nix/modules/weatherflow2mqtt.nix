@@ -124,6 +124,7 @@ in {
     users.extraGroups.${cfg.user} = {};
     systemd.services.weatherflow2mqtt = {
       description = "WeatherFlow2MQTT daemon";
+      wants = [ "network-online.target" "mosquitto.service" ];
       after = [ "network-online.target" "mosquitto.service" ];
       wantedBy = [ "multi-user.target" ];
       script = lib.optionalString (cfg.station.tokenPath != null) ''

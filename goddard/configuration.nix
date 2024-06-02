@@ -222,6 +222,10 @@
     };
   };
 
+  nix.settings = {
+    trusted-users = [ "root" "quentin" ];
+  };
+
   users.users.quentin = {
     isNormalUser = true;
     description = "Quentin Smith";
