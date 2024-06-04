@@ -188,4 +188,5 @@ final: prev: if prev.stdenv.isDarwin then {
   clamav = prev.clamav.override {
     inherit (final.darwin.apple_sdk.frameworks) Foundation;
   };
+  ncdu = final.ncdu_1;
 } else {}
