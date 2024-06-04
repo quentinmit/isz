@@ -54,14 +54,6 @@ final: prev: if prev.stdenv.isDarwin then {
   motif = let
     inherit (final) fetchpatch;
   in prev.motif.overrideAttrs (old: {
-    patches = old.patches ++ [
-      (fetchpatch rec {
-        name = "wcs-functions.patch";
-        url = "https://github.com/macports/macports-ports/raw/1a671cae6888e36dc95718b2d0b80ae239e289de/x11/openmotif/files/${name}";
-        hash = "sha256-w3zCUs/RbnRoUJ0sNCI00noEOkov/IGV/zIygakSQqc=";
-        extraPrefix = ""; # Patches are applied with -p1; this gives it a prefix to strip.
-      })
-    ];
     CFLAGS = "-Wno-incompatible-function-pointer-types -Wno-implicit-function-declaration";
   });
   nbd = let
