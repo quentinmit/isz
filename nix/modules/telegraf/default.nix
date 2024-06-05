@@ -43,6 +43,7 @@ in {
           internal = "60s";
           openweathermap = "10m";
           prometheus = "60s";
+          hitron = "60s";
         };
       };
       mikrotik = {
@@ -81,6 +82,16 @@ in {
               type = with types; listOf trg;
             };
           };
+      };
+      hitron = let trg = with types; submodule {
+        options = {
+          ip = mkOption { type = str; };
+        };
+      }; in {
+        targets = mkOption {
+          default = [];
+          type = with types; listOf trg;
+        };
       };
       w1 = mkEnableOption "1-Wire support";
       prometheus.apps = let
@@ -482,6 +493,212 @@ in {
         })
         (lib.mkIf (cfg.prometheus.apps != {}) {
           inputs.prometheus = lib.mapAttrsToList (_: value: value.extraConfig) cfg.prometheus.apps;
+        })
+        (lib.mkIf (cfg.hitron.targets != []) {
+          inputs.http = lib.concatMap (host: [
+            {
+              alias = "hitron_${host.ip}_dsinfo";
+              interval = config.isz.telegraf.interval.hitron;
+              tags = { agent_host = "${host.ip}"; };
+              tagexclude = ["url"];
+              urls = [
+                "https://${host.ip}/data/dsinfo.asp"
+              ];
+              insecure_skip_verify = true;
+              data_format = "json_v2";
+              json_v2 = [{
+                measurement_name = "hitron-dsinfo";
+                object = [{
+                  path = "@this";
+                  tags = [
+                    "portId"
+                    "frequency"
+                    "channelId"
+                    "modulation"
+                  ];
+                  fields = {
+                    correcteds = "int";
+                    uncorrect = "int";
+                    dsoctets = "int";
+                    signalStrength = "float";
+                    snr = "float";
+                  };
+                }];
+              }];
+            }
+            {
+              alias = "hitron_${host.ip}_usinfo";
+              interval = config.isz.telegraf.interval.hitron;
+              tags = { agent_host = "${host.ip}"; };
+              tagexclude = ["url"];
+              urls = [
+                "https://${host.ip}/data/usinfo.asp"
+              ];
+              insecure_skip_verify = true;
+              data_format = "json_v2";
+              json_v2 = [{
+                measurement_name = "hitron-usinfo";
+                object = [{
+                  path = "@this";
+                  tags = [
+                    "portId"
+                    "frequency"
+                    "channelId"
+                    "modtype"
+                    "scdmaMode"
+                  ];
+                  fields = {
+                    bandwidth = "int";
+                    signalStrength = "float";
+                  };
+                }];
+              }];
+            }
+            {
+              alias = "hitron_${host.ip}_dsofdminfo";
+              interval = config.isz.telegraf.interval.hitron;
+              tags = { agent_host = "${host.ip}"; };
+              tagexclude = ["url"];
+              urls = [
+                "https://${host.ip}/data/dsofdminfo.asp"
+              ];
+              insecure_skip_verify = true;
+              data_format = "json_v2";
+              json_v2 = [{
+                measurement_name = "hitron-dsofdminfo";
+                object = [{
+                  path = "@this";
+                  tags = [
+                    "receive"
+                    "Subcarr0freqFreq"
+                    "ffttype"
+                  ];
+                  fields = {
+                    SNR = "float";
+                    plcpower = "float";
+                    correcteds = "int";
+                    uncorrect = "int";
+                    dsoctets = "int";
+                  };
+                }];
+              }];
+            }
+            # TODO: usofdminfo
+            # {"uschindex":"0","state":"  DISABLED","frequency":"0","digAtten":"    0.0000","digAttenBo":"    0.0000","channelBw":"    0.0000","repPower":"    0.0000","repPower1_6":"    0.0000","fftVal":"2K"}
+            {
+              alias = "hitron_${host.ip}_getCmDocsisWan";
+              interval = config.isz.telegraf.interval.hitron;
+              tags = { agent_host = "${host.ip}"; };
+              tagexclude = ["url"];
+              urls = [
+                "https://${host.ip}/data/getCmDocsisWan.asp"
+              ];
+              insecure_skip_verify = true;
+              data_format = "json_v2";
+              json_v2 = [{
+                measurement_name = "hitron-docsis";
+                object = [{
+                  path = "@this";
+                  excluded_keys = [
+                    # Always `D: -- H: -- M: -- S: --`
+                    "CmIpLeaseDuration"
+                  ];
+                }];
+              }];
+            }
+            {
+              alias = "hitron_${host.ip}_getSysInfo";
+              interval = config.isz.telegraf.interval.hitron;
+              tags = { agent_host = "${host.ip}"; };
+              tagexclude = ["url"];
+              urls = [
+                "https://${host.ip}/data/getSysInfo.asp"
+              ];
+              insecure_skip_verify = true;
+              data_format = "json_v2";
+              json_v2 = [{
+                measurement_name = "hitron-sysinfo";
+                object = [{
+                  path = "@this";
+                  tags = [
+                    "hwVersion"
+                    "rfMac"
+                    "serialNumber"
+                  ];
+                  excluded_keys = [
+                    # These just contain `TODO`
+                    "LRecPkt"
+                    "LSendPkt"
+                    "WRecPkt"
+                    "WSendPkt"
+                    "lanIp"
+                    "wanIp"
+                    # This just contains `--`
+                    "timezone"
+                  ];
+                }];
+              }];
+            }
+          ]) cfg.hitron.targets;
+          processors.strings = [
+            {
+              namepass = ["hitron-dsofdminfo"];
+              trim = [{
+                tag = "Subcarr0freqFreq";
+              }];
+            }
+          ];
+          processors.enum = [
+            {
+              namepass = ["hitron-dsinfo"];
+              mapping = [{
+                tag = "modulation";
+                value_mappings = {
+                  "0" = "16QAM";
+                  "1" = "64QAM";
+                  "2" = "256QAM";
+                  "3" = "1024QAM";
+                  "4" = "32QAM";
+                  "5" = "128QAM";
+                  "6" = "QPSK";
+                };
+              }];
+            }
+            {
+              namepass = ["hitron-dsofdminfo"];
+              mapping = map (field: {
+                inherit field;
+                value_mappings = {
+                  "YES" = true;
+                  "NO" = false;
+                };
+              }) ["mdc1lock" "ncplock" "plclock"];
+            }
+          ];
+          processors.starlark = [{
+            namepass = ["hitron-sysinfo"];
+            source = ''
+              def fixUptime(metric):
+                if "systemUptime" in metric.fields:
+                  parts = metric.fields["systemUptime"].split(":")
+                  out = 0.0
+                  for part in parts:
+                    value = int(part[:-1])
+                    if part[-1] == "s":
+                      out += value
+                    elif part[-1] == "m":
+                      out += value * 60
+                    elif part[-1] == "h":
+                      out += value * 3600
+                    else:
+                      print("Unknown unit", part)
+                      return
+                  metric.fields["systemUptime"] = out
+              def apply(metric):
+                fixUptime(metric)
+                return [metric]
+            '';
+          }];
         })
       ];
     }

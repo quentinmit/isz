@@ -40,6 +40,9 @@
         grafana.url = "https://grafana.isz.wtf/metrics";
         influx.url = "https://influx.isz.wtf/metrics";
       };
+      hitron.targets = [
+        { ip = "192.168.100.1"; }
+      ];
     };
     services.telegraf.extraConfig = lib.mkMerge [
       {
