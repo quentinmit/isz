@@ -325,6 +325,7 @@ in {
             LoyieKing.smalise
             ms-playwright.playwright
             github.vscode-github-actions
+            savonet.vscode-liquidsoap
           ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];

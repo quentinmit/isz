@@ -115,6 +115,13 @@ final: prev:
       hash = "sha256-DAqQSEUdMCw2sFJeAiXgZOJadZyWCYdbRJP1mUd9YCg=";
       meta.license = final.lib.licenses.asl20;
     };
+    savonet.vscode-liquidsoap = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "vscode-liquidsoap";
+      publisher = "savonet";
+      version = "0.1.1";
+      hash = "sha256-mLiXHIkKZ32fKWF9Rao/QZwySskV5L4XGcgp+AWBIMI=";
+      meta.license = final.lib.licenses.mit;
+    };
   };
   wd-fw-update = final.callPackage ./python/wd-fw-update {};
 }
