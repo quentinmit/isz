@@ -145,7 +145,10 @@
     pipewire.jack
     wd-fw-update
     mosh-server-upnp
+    vde2
   ];
+
+  services.nixseparatedebuginfod.enable = true;
 
   # TODO(libinput > 1.25.0): Remove
   environment.etc."libinput/local-overrides.quirks".text = ''

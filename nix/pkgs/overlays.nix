@@ -185,4 +185,36 @@ final: prev: {
       ];
     }));
   });
+  _86Box = prev._86Box.overrideAttrs (old: {
+    prePatch = ''
+      substituteInPlace src/network/net_pcap.c \
+        --replace-fail libpcap.so ${final.libpcap}/lib/libpcap.so
+      substituteInPlace src/network/net_vde.c \
+        --replace-fail libvdeplug.so ${final.vde2}/lib/libvdeplug.so
+      substituteInPlace src/qt/qt_platform.cpp \
+        --replace-fail "if (removeSuffixes.contains(fi.suffix())) {" "if (name[0] != '/' && removeSuffixes.contains(fi.suffix())) {"
+    '';
+#     cmakeFlags = old.cmakeFlags ++ ["-DCMAKE_BUILD_TYPE=RelWithDebInfo"];
+#     dontStrip = true;
+    buildInputs = old.buildInputs ++ (with final; [
+      # Fix mouse capture on Wayland
+      extra-cmake-modules
+      wayland
+      wayland-protocols
+
+      xorg.libXdmcp
+
+      # To make fluidsynth happy
+      libevdev
+      flac
+      libogg
+      libvorbis
+      libopus
+      libmpg123
+      libpulseaudio
+      libsndfile
+
+      vde2
+    ]);
+  });
 }
