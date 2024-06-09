@@ -22,7 +22,7 @@
           "Ethernet switch"
           "workshop.isz.wtf"
           "workshop.isz.wtf USB hubs"
-          null
+          "Cable modem"
           "Front panel DC"
           "Front panel USB-C"
           null
@@ -61,7 +61,7 @@
             "Channel 1 nominal current" = "6 A";
             "Channel 2 nominal current" = "10 A";
             "Channel 3 nominal current" = "2 A";
-            "Channel 4 nominal current" = "1 A";
+            "Channel 4 nominal current" = "3 A";
           };
         };
         "2" = {
