@@ -17,7 +17,9 @@ for line in sys.stdin:
         result = {}
         for line in open(os.path.join(ROOT, device, "uevent")):
             name, value = line.strip().split("=", 1)
-            name = name.split("_", 2)[2].lower()
+            name = name.lower().removeprefix("power_supply_")
+            if name == "devtype":
+                continue
             if name in TAGS:
                 device += ",%s=%s" % (name, value)
                 continue
