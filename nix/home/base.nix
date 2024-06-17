@@ -69,6 +69,7 @@ in {
           "git@github.mit.edu:".insteadOf = "https://github.mit.edu/";
           "git@gitlab.com:".pushInsteadOf = "https://gitlab.com/";
         };
+        rebase.updateRefs = true;
       };
     };
 
