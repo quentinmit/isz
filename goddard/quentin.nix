@@ -24,6 +24,7 @@
         caprine-bin
         jdk
         kdePackages.krfb
+        google-cloud-sdk
       ];
 
       # Don't index Electron folders
