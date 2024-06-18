@@ -121,6 +121,7 @@ final: prev: {
     patches = [];
     cargoDeps = old.cargoDeps.overrideAttrs {
       inherit src;
+      patches = [];
       cargoPatches = [];
       outputHash = "sha256-xTd/Gw9L/IcgSUT9zGaG85COfkDwS2KLFqrzpRTHyoU=";
     };
