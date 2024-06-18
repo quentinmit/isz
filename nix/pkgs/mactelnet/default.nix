@@ -6,15 +6,17 @@
 , pkg-config
 , fetchFromGitHub
 }:
-stdenv.mkDerivation {
+let
+  version = "0.5.1";
+in stdenv.mkDerivation {
   pname = "mactelnet";
-  version = "0.4.4-pre";
+  inherit version;
 
   src = fetchFromGitHub {
     owner = "haakonnessjoen";
     repo = "MAC-Telnet";
-    rev = "c3dc4515b1aff09372cdb04aef393437dc2d8f60";
-    hash = "sha256-EKs0x5YsmmVD/2Qrqzi3/OXHQc5VSPs+aJa7cLHtAD8=";
+    rev = "v${version}";
+    hash = "sha256-/qcO2g84zNHRGUaIlcnBZiO3RtUqF9wyGjXROX4STqo=";
   };
 
   nativeBuildInputs = [
