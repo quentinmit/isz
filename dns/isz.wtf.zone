@@ -62,6 +62,7 @@ router           A 172.30.97.3
 bedroom-sw       A 172.30.97.16
 livingroom-sw    A 172.30.97.17
 workshop-sw      A 172.30.97.18
+livingroom-10g-sw A 172.30.97.19
 
 workshop-pi      A 172.30.97.32
 bedroom-pi       A 172.30.97.33
