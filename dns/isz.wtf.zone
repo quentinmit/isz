@@ -129,6 +129,7 @@ jess-pixel-4a EUI48 F8-1A-2B-E1-FA-96 ; jess Pixel 4a
 jess-macbookair EUI48 00-88-65-3B-FE-24 ; jess MacBook Air
 jess-switch EUI48 5C-0C-E6-59-87-00 ; jess Nintendo Switch
 jess-macbookair-opal EUI48 74-A6-CD-9E-3F-08 ; jess jess-macbookair-opal
+jess-pixel-8a EUI48 F6-D0-72-38-5A-A0 ; jess Pixel 8a
 
 ; IOT devices
 kitchen-google-home-hub EUI48 3C-8D-20-67-B2-45 ; kitchen Google Home Hub
@@ -146,6 +147,7 @@ livingroom-nexus-player EUI48 AC-9E-17-E5-0A-9A ; livingroom Nexus Player
 livingroom-traintrackr EUI48 40-F5-20-0D-F4-BA ; livingroom traintrackr
 bathroom-scale EUI48 70-F1-1C-83-50-27 ; bathroom scale
 weatherflow-hub EUI48 C0-EE-40-72-78-3B ; WeatherFlow hub
+n64digital EUI48 44-17-93-64-D7-40
 
 ; Experimental/deprecated devices
 
