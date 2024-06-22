@@ -215,6 +215,7 @@
         #pybonjour
         pycryptodome
         pydot
+        pyelftools
         pygit2
         #unsupported pyglet
         pygments

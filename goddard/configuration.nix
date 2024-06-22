@@ -148,6 +148,10 @@
     vde2
   ];
 
+  services.udev.packages = with pkgs; [
+    platformio-core.udev
+  ];
+
   services.nixseparatedebuginfod.enable = true;
 
   # TODO(libinput > 1.25.0): Remove

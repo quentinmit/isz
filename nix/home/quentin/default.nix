@@ -326,6 +326,8 @@ in {
             ms-playwright.playwright
             github.vscode-github-actions
             savonet.vscode-liquidsoap
+            ms-vscode.cmake-tools
+            ms-vscode.makefile-tools
           ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];
