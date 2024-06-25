@@ -433,6 +433,7 @@ in {
         okteta
         iaito
         pahole
+        dwex
       ];
 
       xdg.desktopEntries.cyberchef = lib.mkIf pkgs.stdenv.isLinux {
