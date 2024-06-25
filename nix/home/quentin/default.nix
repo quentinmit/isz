@@ -58,6 +58,7 @@ in {
         tsduck
         youtube-dl
         yt-dlp
+        jellycli
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
         ardour
@@ -70,6 +71,9 @@ in {
         kdePackages.kdenlive
         timidity
         vmpk
+        jellyfin-media-player
+        jftui
+        delfin
       ];
       programs.mpv = {
         enable = true;
@@ -428,6 +432,7 @@ in {
         imhex
         okteta
         iaito
+        pahole
       ];
 
       xdg.desktopEntries.cyberchef = lib.mkIf pkgs.stdenv.isLinux {
