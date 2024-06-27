@@ -491,6 +491,7 @@ in {
         oath-toolkit
         pass-git-helper
         sops
+        qtpass
       ];
       programs.gpg = {
         enable = true;
@@ -513,6 +514,11 @@ in {
           pass-genphrase
           pass-checkup
         ]);
+      };
+      programs.plasma.configFile."IJHack/QtPass.conf".General = {
+        useGit = true;
+        useOtp = true;
+        useTemplate = true;
       };
     }
     # Network - SSH
