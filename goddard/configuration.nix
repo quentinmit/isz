@@ -36,6 +36,7 @@
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelParams = [''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''];
 
   environment.etc."lvm/lvm.conf".text = ''
     devices/issue_discards=1
