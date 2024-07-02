@@ -26,7 +26,6 @@
     deploy-rs.inputs.flake-compat.follows = "flake-compat";
     deploy-rs.inputs.utils.follows = "flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    rust-overlay.inputs.flake-utils.follows = "flake-utils";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
     cargo2nix.url = "github:cargo2nix/cargo2nix/release-0.11.0";
     cargo2nix.inputs.flake-utils.follows = "flake-utils";
