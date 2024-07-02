@@ -19,14 +19,16 @@
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       environment = {
+        HOME = "%t/${stateDir}";
         STORE_DIR = "%S/${stateDir}";
         BACKUPS_DIR = "%S/${stateDir}/backups";
         ZWAVE_JS_EXTERNAL_CONFIG = "%S/${stateDir}/.config-db";
       };
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/zwave-js-ui";
-        StateDirectory = "zwave-js-ui";
+        StateDirectory = stateDir;
         WorkingDirectory = "%S/${stateDir}";
+        RuntimeDirectory = stateDir;
         User = "zwave-js-ui";
         Group = "zwave-js-ui";
         Restart = "on-failure";

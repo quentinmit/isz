@@ -1,12 +1,12 @@
 { stdenv, lib, fetchzip, glibc, gcc-unwrapped, autoPatchelfHook, bbe }:
 stdenv.mkDerivation rec {
   pname = "zwave-js-ui-bin";
-  version = "9.12.0";
+  version = "9.14.4";
 
   src = fetchzip {
     url = "https://github.com/zwave-js/zwave-js-ui/releases/download/v${version}/zwave-js-ui-v${version}-linux.zip";
     stripRoot = false;
-    hash = "sha256-9YxQuxFV5Y1/WGUk1lmLfPBXj8SXMFaT9F94j03zUQM=";
+    hash = "sha256-P34D6bcJGcglbCzGHjLbHNL3AwmQfdOrTnJsZFKrXMo=";
   };
 
   # Required for compilation

@@ -21,7 +21,6 @@
       ./bluechips.nix
       ./paperless.nix
       ./sdrtrunk
-      ../nix/zwave-js-ui.nix
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];
