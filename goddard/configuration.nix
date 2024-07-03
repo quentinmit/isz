@@ -169,6 +169,7 @@
   services.xserver.windowManager.twm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
+  fonts.fontDir.enable = true;
   fonts.fontconfig.subpixel.rgba = "rgb";
 
   xdg.portal.enable = true;
