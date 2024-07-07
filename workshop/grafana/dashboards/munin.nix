@@ -643,6 +643,98 @@
         };
         unit = "bytes";
       };
+      # postgres_autovacuum
+      db.postgres_bgwriter = {
+        graph_title = "PostgreSQL bgwriter";
+        graph_vlabel = "buffers per second";
+        graph_args.lower-limit = 0;
+        influx.filter._measurement = "postgresql";
+        influx.filter._field = [
+          "buffers_checkpoint"
+          "buffers_clean"
+          "buffers_backend"
+          "buffers_alloc"
+        ];
+        influx.fn = "derivative";
+        fields.buffers_checkpoint.displayName = "Buffers at checkpoint";
+        fields.buffers_clean.displayName = "Buffers cleaned";
+        fields.buffers_backend.displayName = "Buffers by backend";
+        fields.buffers_alloc.displayName = "Buffers allocated";
+      };
+      db.postgres_cache_ = {
+        graph_title = "PostgreSQL buffer cache";
+        graph_vlabel = "buffers per second";
+        graph_args.lower-limit = 0;
+        influx.filter._measurement = "postgresql";
+        influx.filter._field = [
+          "blks_read"
+          "blks_hit"
+        ];
+        influx.fn = "derivative";
+        unit = "rps";
+      };
+      db.postgres_checkpoints = {
+        graph_title = "PostgreSQL checkpoints";
+        graph_vlabel = "checkpoints per second";
+        graph_args.lower-limit = 0;
+        influx.filter._measurement = "postgresql";
+        influx.filter._field = [
+          "checkpoints_timed"
+          "checkpoints_req"
+        ];
+        influx.fn = "derivative";
+        fields.checkpoints_timed.displayName = "Timed checkpoints";
+        fields.checkpoints_req.displayName = "Requested checkpoints";
+        unit = "reqps";
+      };
+      # postgres_checksums
+      # postgres_connections_
+      db.postgres_connections_db = {
+        graph_title = "PostgreSQL connections per database";
+        graph_vlabel = "connections";
+        graph_args.lower-limit = 0;
+        influx.filter._measurement = "postgresql";
+        influx.filter._field = "session_time";
+        influx.fn = "derivative";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: r._value / 1000.}))
+        '';
+      };
+      # postgres_locks_
+      # postgres_oldest_prepared_xact_
+      # postgres_prepared_xacts_
+      # postgres_querylength_
+      # postgres_scans_
+      # postgres_size_
+      # postgres_streaming_
+      db.postgres_transactions_ = {
+        graph_title = "PostgreSQL transactions";
+        graph_vlabel = "transactions per second";
+        graph_args.lower-limit = 0;
+        influx.filter._measurement = "postgresql";
+        influx.filter._field = [
+          "xact_commit"
+          "xact_rollback"
+        ];
+        influx.fn = "derivative";
+        unit = "ops";
+      };
+      db.postgres_tuples_ = {
+        graph_title = "PostgreSQL tuple access";
+        graph_args.lower-limit = 0;
+        influx.filter._measurement = "postgresql";
+        influx.filter._field = [
+          "tup_deleted"
+          "tup_fetched"
+          "tup_inserted"
+          "tup_returned"
+          "tup_updated"
+        ];
+        influx.fn = "derivative";
+        unit = "rowsps";
+      };
+      # postgres_users
+      # postgres_xlog
     };
   };
 }
