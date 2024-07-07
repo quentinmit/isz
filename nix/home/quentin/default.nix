@@ -473,6 +473,7 @@ in {
         soapyhackrf
         xastir
         sdrpp
+        nanovna-saver
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         csdr
         fldigi
