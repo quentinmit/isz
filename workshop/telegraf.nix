@@ -43,6 +43,7 @@
       hitron.targets = [
         { ip = "192.168.100.1"; }
       ];
+      postgresql = true;
     };
     services.telegraf.extraConfig = lib.mkMerge [
       {

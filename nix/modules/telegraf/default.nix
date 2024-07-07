@@ -117,6 +117,7 @@ in {
         type = with types; attrsOf app;
         default = {};
       };
+      postgresql = mkEnableOption "PostgreSQL support";
     };
   };
   config = let
@@ -176,6 +177,15 @@ in {
         setuid = true;
       };
       systemd.services.telegraf.reloadTriggers = [pkgs.iszTelegraf.intelRapl];
+    } else {})
+    (if isNixOS then lib.mkIf (cfg.enable && cfg.postgresql) {
+      services.postgresql = {
+        ensureUsers = [{
+          name = "telegraf";
+          ensureDBOwnership = true;
+        }];
+        ensureDatabases = [ "telegraf" ];
+      };
     } else {})
     {
       services.telegraf.extraConfig = lib.mkMerge [
@@ -698,6 +708,11 @@ in {
                 fixUptime(metric)
                 return [metric]
             '';
+          }];
+        })
+        (lib.mkIf cfg.postgresql {
+          inputs.postgresql = [{
+            address = "postgresql://";
           }];
         })
       ];
