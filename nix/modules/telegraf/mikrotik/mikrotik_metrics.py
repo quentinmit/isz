@@ -166,6 +166,15 @@ def to_current_tx_powers(base: str, value: str) -> list:
         ))
     return ret
 
+def to_expires_after(base: str, value: str) -> list:
+    if base not in {"prefix", "address"}:
+        raise ValueError("wrong field")
+    parts = value.split(", ")
+    ret = {base: parts[0]}
+    if len(parts) > 1:
+        ret.update(to_duration(f"{base}-expires-after", parts[1]))
+    return ret
+
 STRING_FIELDS = {
     "tx-rate-set",
     "active-address",
@@ -184,6 +193,14 @@ STRING_FIELDS = {
     "sa-src-address",
     "sa-dst-address",
     "encoding",
+    "address",
+    "network",
+    "gateway",
+    "dhcp-server",
+    "primary-dns",
+    "secondary-dns",
+    "duid",
+    "dhcp-server-v6",
 }
 
 def to_str(base: str, value: str) -> dict:
@@ -202,6 +219,7 @@ PARSERS = [
     to_channel,
     to_strength_at_rates,
     to_current_tx_powers,
+    to_expires_after,
     to_str,
 ]
 
@@ -318,6 +336,60 @@ TAGS = {
         },
     },
     "/ip/ipsec/statistics": {},
+    "/ip/address": {
+        "tag_props": {
+            "comment",
+            "actual-interface",
+            "interface",
+            "dynamic",
+            "disabled",
+        },
+    },
+    "/ipv6/address": {
+        "tag_props": {
+            "comment",
+            "actual-interface",
+            "interface",
+            "dynamic",
+            "disabled",
+            "from-pool",
+            "advertise",
+            "eui-64",
+            "no-dad",
+            "link-local",
+        },
+    },
+    "/ip/dhcp-client": {
+        "tag_props": {
+            "comment",
+            "interface",
+            "request",
+            "dynamic",
+            "disabled",
+            "add-default-route",
+            "default-route-distance",
+            "dhcp-options",
+            "use-peer-dns",
+            "use-peer-ntp",
+        },
+        "skip_props": {
+            "script",
+        },
+    },
+    "/ipv6/dhcp-client": {
+        "tag_props": {
+            "comment",
+            "interface",
+            "disabled",
+            "request",
+            "dhcp-options",
+            "pool-name",
+            "prefix-hint",
+            "add-default-route",
+            "rapid-commit",
+            "pool-prefix-length",
+        },
+    },
 }
 
 async def main():
