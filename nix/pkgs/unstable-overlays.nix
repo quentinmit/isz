@@ -25,4 +25,12 @@ final: prev: {
       });
     };
   });
+  grafana = prev.grafana.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      (final.fetchpatch2 {
+        url = "https://github.com/grafana/grafana/commit/d19a851353adff92b206787226ca262f898901bf.patch";
+        hash = "sha256-r0EJTVz5CBBbRQzJ9pihi5MZmF+mPxJcucZ6AjYefSU=";
+      })
+    ];
+  });
 }

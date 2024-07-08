@@ -69,6 +69,7 @@
         feature_toggles.enable = "timeSeriesTable";
         dataproxy.timeout = 300;
         plugins.allow_loading_unsigned_plugins = "operato-windrose-panel";
+        news.news_feed_enabled = false;
       };
       declarativePlugins = with pkgs.grafanaPlugins; [
         fetzerch-sunandmoon-datasource
