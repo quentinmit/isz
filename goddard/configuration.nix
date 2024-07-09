@@ -147,6 +147,7 @@
     wd-fw-update
     mosh-server-upnp
     vde2
+    openrgb-with-all-plugins
   ];
 
   services.udev.packages = with pkgs; [
