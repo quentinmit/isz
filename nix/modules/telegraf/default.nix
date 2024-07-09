@@ -527,9 +527,6 @@ in {
                     "modulation"
                   ];
                   fields = {
-                    correcteds = "int";
-                    uncorrect = "int";
-                    dsoctets = "int";
                     signalStrength = "float";
                     snr = "float";
                   };
@@ -586,9 +583,6 @@ in {
                   fields = {
                     SNR = "float";
                     plcpower = "float";
-                    correcteds = "int";
-                    uncorrect = "int";
-                    dsoctets = "int";
                   };
                 }];
               }];
@@ -685,30 +679,49 @@ in {
               }) ["mdc1lock" "ncplock" "plclock"];
             }
           ];
-          processors.starlark = [{
-            namepass = ["hitron-sysinfo"];
-            source = ''
-              def fixUptime(metric):
-                if "systemUptime" in metric.fields:
-                  parts = metric.fields["systemUptime"].split(":")
-                  out = 0.0
-                  for part in parts:
-                    value = int(part[:-1])
-                    if part[-1] == "s":
-                      out += value
-                    elif part[-1] == "m":
-                      out += value * 60
-                    elif part[-1] == "h":
-                      out += value * 3600
-                    else:
-                      print("Unknown unit", part)
-                      return
-                  metric.fields["systemUptime"] = out
-              def apply(metric):
-                fixUptime(metric)
-                return [metric]
-            '';
-          }];
+          processors.starlark = [
+            {
+              namepass = ["hitron-dsinfo" "hitron-dsofdminfo"];
+              source = ''
+                def fixOctets(metric):
+                  for field in ["correcteds", "uncorrect", "dsoctets"]:
+                    if field in metric.fields:
+                      value = metric.fields[field]
+                      parts = value.split(" * 2e32 + ")
+                      out = int(parts[-1])
+                      if len(parts) > 1:
+                        out += int(parts[0]) << 32
+                      metric.fields[field] = out
+                def apply(metric):
+                  fixOctets(metric)
+                  return [metric]
+              '';
+            }
+            {
+              namepass = ["hitron-sysinfo"];
+              source = ''
+                def fixUptime(metric):
+                  if "systemUptime" in metric.fields:
+                    parts = metric.fields["systemUptime"].split(":")
+                    out = 0.0
+                    for part in parts:
+                      value = int(part[:-1])
+                      if part[-1] == "s":
+                        out += value
+                      elif part[-1] == "m":
+                        out += value * 60
+                      elif part[-1] == "h":
+                        out += value * 3600
+                      else:
+                        print("Unknown unit", part)
+                        return
+                    metric.fields["systemUptime"] = out
+                def apply(metric):
+                  fixUptime(metric)
+                  return [metric]
+              '';
+            }
+          ];
         })
         (lib.mkIf cfg.postgresql {
           inputs.postgresql = [{
