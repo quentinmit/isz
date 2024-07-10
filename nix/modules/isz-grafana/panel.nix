@@ -13,22 +13,32 @@ with import ../grafana/types.nix { inherit pkgs lib; };
         (field: options: {
           matcher.id = if lib.hasPrefix "/" field then "byRegexp" else "byName";
           matcher.options = field;
-          properties = lib.mapAttrsToList (id: value: {
-            inherit id value;
-          }) (toProperties options);
+          properties = toProperties options;
         })
         g.fields;
     }
-    (lib.mkIf (g.influx != []) {
+    (lib.mkIf (g.influx != []) (let
+      queries = lib.imap0 (i: influx:
+        let
+          refId = lib.elemAt [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ] i;
+        in {
+          target = {
+            inherit datasource refId;
+            inherit (influx) query;
+          };
+          override = if influx.options != null then {
+            matcher.id = "byFrameRefID";
+            matcher.options = refId;
+            properties = toProperties influx.options;
+          } else null;
+        }) (lib.toList g.influx);
+    in {
       type = lib.mkDefault "timeseries";
       interval = lib.mkDefault "10s";
       inherit datasource;
-      targets = lib.imap0 (i: influx: {
-        inherit datasource;
-        inherit (influx) query;
-        refId = lib.elemAt [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ] i;
-      }) (lib.toList g.influx);
-    })
+      targets = map (q: q.target) queries;
+      fieldConfig.overrides = builtins.filter (o: o != null) (map (q: q.override) queries);
+    }))
     (lib.mkIf (g.fieldOrder != null) {
       transformations = [{
         id = "organize";
@@ -121,6 +131,11 @@ with import ../grafana/types.nix { inherit pkgs lib; };
         };
         query = mkOption {
           type = types.str;
+        };
+        options = mkOption {
+          type = types.nullOr dashboardFormat.type;
+          default = null;
+          description = "Option overrides for the results of this query";
         };
       };
       config = {

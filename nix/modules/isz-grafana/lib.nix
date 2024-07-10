@@ -14,7 +14,10 @@ rec {
       (value: ''r[${fluxValue field}] ${v.op} ${if v.op == "=~" || v.op == "!~" then "/${value}/" else fluxValue value}'')
       v.values
   ;
-  toProperties = with builtins; with lib; attrs:
+  toPropertiesAttrs = with builtins; with lib; attrs:
     (removeAttrs attrs ["custom"]) //
     (mapAttrs' (k: nameValuePair "custom.${k}") (attrs.custom or {}));
+  toProperties = options: lib.mapAttrsToList (id: value: {
+    inherit id value;
+  }) (toPropertiesAttrs options);
 }
