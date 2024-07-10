@@ -56,7 +56,9 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           '' else if fn == "count1" then ''
             |> count()
           '' else if fn == "derivative" then ''
-            |> aggregateWindow(every: v.windowPeriod, fn: last)
+            |> window(every: v.windowPeriod)
+            |> last()
+            |> window(every: inf)
             |> derivative(unit: 1s, nonNegative: true)
           '' else ''
             |> aggregateWindow(every: v.windowPeriod, fn: ${fn}, createEmpty: ${fluxValue config.createEmpty})
