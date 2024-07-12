@@ -186,6 +186,7 @@ in {
           ];
         };
         recorder = {
+          auto_purge = false;
           exclude.entities = [
             # Don't show frequently-changing text.
             "sensor.tempest_st_00122016_wind_direction"
@@ -286,6 +287,7 @@ in {
                 range_start = "-6h";
                 query = ''
                   filter(fn: (r) => r["_measurement"] == "speedtest")
+                  |> filter(fn: (r) => r.host == "comcast")
                   |> filter(fn: (r) => r["_field"] == "${cleanName name}_mbs")
                 '';
                 group_function = "last";
