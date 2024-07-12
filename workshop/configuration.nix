@@ -21,6 +21,7 @@
       ./bluechips.nix
       ./paperless.nix
       ./sdrtrunk
+      ./speedtest.nix
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];
@@ -108,6 +109,7 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   networking.firewall.enable = false;
+  networking.nftables.enable = true;
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
@@ -258,21 +260,6 @@
   };
   users.extraGroups.linkzone-logger = {};
 
-  # Configure speedtest
-  sops.secrets."speedtest_influx_password" = {
-    owner = "speedtest-influxdb";
-  };
-  services.speedtest-influxdb = {
-    enable = true;
-    influxdb = {
-      url = "http://influx.isz.wtf:8086/";
-      username = "speedtest";
-      passwordPath = config.sops.secrets.speedtest_influx_password.path;
-      db = "speedtest";
-    };
-    interval = 3600;
-    showExternalIp = true;
-  };
   # Configure dashboard
   sops.secrets."dashboard_influx_token" = {
     owner = config.services.dashboard.user;
