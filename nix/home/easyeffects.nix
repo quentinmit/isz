@@ -4,7 +4,7 @@ let
   submoduleParentWith = attrs: let
     prev = lib.types.submoduleWith attrs;
   in prev // {
-    merge = loc: defs: prev.merge loc ([{ file = ""; value = ({...}: { _module.args.name = lib.mkForce (builtins.elemAt loc (builtins.length loc - 2)); }); }] ++ defs);
+    merge = loc: defs: prev.merge loc ([{ file = ""; value = _: { _module.args.name = lib.mkForce (builtins.elemAt loc (builtins.length loc - 2)); }; }] ++ defs);
     substSubModules = m: submoduleParentWith (attrs // {
       modules = m;
     });

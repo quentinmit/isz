@@ -658,8 +658,8 @@ in {
     }
     # Productivity - eBooks
     {
-      home.packages = with pkgs; [
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      home.packages = with pkgs;
+        lib.optionals pkgs.stdenv.isLinux [
         calibre
         foliate
         sigil

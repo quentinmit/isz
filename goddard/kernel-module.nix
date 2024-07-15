@@ -30,6 +30,6 @@ pkgs.stdenv.mkDerivation {
 
   meta = {
     description = "${modulePath} kernel module";
-    license = kernel.meta.license;
+    inherit (kernel.meta) license;
   };
 }

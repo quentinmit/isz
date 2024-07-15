@@ -36,7 +36,7 @@ in
     };
   };
 
-  config = lib.mkIf (cfg.enable) {
+  config = lib.mkIf cfg.enable {
     networking.firewall.enable = false;
     security.polkit.enable = lib.mkDefault true;
 

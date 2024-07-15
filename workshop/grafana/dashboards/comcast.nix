@@ -156,7 +156,7 @@
         panel.gridPos = { x = 12; y = 15; w = 12; h = 8; };
         panel.title = "DOCSIS DS SNR";
         panel.options.cellValues.unit = "dB";
-        panel.options.filterValues.le = 1.e-9;
+        panel.options.filterValues.le = 1.0e-9;
         influx.filter._measurement = ["hitron-dsinfo" "hitron-dsofdminfo"];
         influx.filter._field = ["snr" "SNR"];
       })
@@ -173,7 +173,7 @@
         panel.gridPos = { x = 0; y = 23; w = 12; h = 8; };
         panel.title = "DOCSIS US Power";
         panel.options.cellValues.unit = "dBmV";
-        panel.options.filterValues.le = 1.e-9;
+        panel.options.filterValues.le = 1.0e-9;
         influx.filter._measurement = "hitron-usinfo";
         influx.filter._field = "signalStrength";
       })

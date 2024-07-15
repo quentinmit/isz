@@ -43,7 +43,7 @@ final: prev: {
       });
       nftables = python-final.buildPythonPackage {
         name = "nftables";
-        src = final.nftables.src;
+        inherit (final.nftables) src;
         setSourceRoot = "sourceRoot=$(echo */py)";
         postPatch = ''
           substituteInPlace src/nftables.py \
