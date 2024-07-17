@@ -56,10 +56,10 @@ in {
         rtmpdump
         sox
         tsduck
-        youtube-dl
         yt-dlp
         jellycli
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ available youtube-dl
+        ++ lib.optionals pkgs.stdenv.isLinux [
         avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
         ardour
         dvdbackup
