@@ -30,10 +30,6 @@ final: prev:
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
-  isz-mikrotik = final.callPackage ../modules/telegraf/mikrotik {};
-  isz-w1 = final.callPackage ../modules/telegraf/w1 {
-    inherit (final.unstable) python3;
-  };
   amdgpu = final.callPackage ../../amdgpu {};
   rx_tools = final.callPackage ./rx_tools {};
   ialauncher = final.callPackage ./python/ialauncher {};
@@ -91,7 +87,12 @@ final: prev:
   json2prefs = final.callPackage ../../software/json2prefs {};
   _86Box-roms = final.callPackage ./86box/roms.nix {};
   boxy-svg = final.callPackage ./boxy-svg {};
-  iszTelegraf = final.recurseIntoAttrs (final.callPackage ../modules/telegraf/packages.nix {});
+  iszTelegraf = let
+    inherit (final) lib;
+    dir = builtins.readDir ../modules/telegraf;
+    paths = lib.mapAttrs (name: _: ../modules/telegraf/${name}/default.nix) dir;
+    files = lib.filterAttrs (_: path: lib.pathExists path) paths;
+  in lib.makeScope final.newScope (self: lib.mapAttrs (_: file: self.callPackage file {}) files);
   fw-ectool = final.callPackage ./fw-ectool {};
   vscode-extensions = prev.vscode-extensions // {
     Surendrajat.apklab = final.vscode-utils.extensionFromVscodeMarketplace {
