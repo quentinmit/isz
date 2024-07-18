@@ -44,6 +44,7 @@ in {
           name = "snmp-interfaces";
           inherit_tags = ["hostname"];
           field = [
+            { name = "if-index"; oid = ".1.3.6.1.2.1.2.2.1.1"; is_tag = true; }
             { name = "if-name"; oid = ".1.3.6.1.2.1.2.2.1.2"; is_tag = true; }
             { name = "mac-address"; oid = ".1.3.6.1.2.1.2.2.1.6"; is_tag = true; conversion = "hwaddr"; }
             
