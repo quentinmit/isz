@@ -2,7 +2,8 @@
 rec {
   dashboardFormat = pkgs.formats.json {};
   fluxValue = with builtins; v:
-    if isList v then ''[${lib.concatMapStringsSep ", " fluxValue v}]''
+    if v._type or "" == "literalExpression" then v.text
+    else if isList v then ''[${lib.concatMapStringsSep ", " fluxValue v}]''
     else if isInt v || isFloat v then toString v
     else if isString v then ''"${lib.escape [''"''] v}"''
     else if true == v then "true"
