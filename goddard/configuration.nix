@@ -1,13 +1,11 @@
-{ config, pkgs, lib, nixpkgs, disko, nixos-hardware, lanzaboote, ... }:
+{ config, pkgs, lib, nixpkgs, disko, nixos-hardware, ... }:
 {
   imports = [
-    #./hardware-configuration.nix
     nixos-hardware.nixosModules.framework-16-7040-amd
     ./disko.nix
     disko.nixosModules.disko
     ./quentin.nix
     ./opensnitch.nix
-    lanzaboote.nixosModules.lanzaboote
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
   nixpkgs.overlays = lib.mkAfter [
@@ -27,16 +25,7 @@
 
   networking.hostName = "goddard";
 
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot = {
-    enable = lib.mkForce false;
-    memtest86.enable = true;
-  };
-  boot.initrd.systemd.enable = true;
-  boot.lanzaboote = {
-    enable = true;
-    pkiBundle = "/etc/secureboot";
-  };
+  isz.secureBoot.enable = true;
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''];
@@ -76,34 +65,7 @@
 
   programs.gnupg.agent.enable = true;
 
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    jack.enable = true;
-    pulse.enable = true;
-  };
-
-  security.pam.loginLimits = [
-    {
-      domain = "@audio";
-      item = "memlock";
-      type = "-";
-      value = "unlimited";
-    }
-    {
-      domain = "@audio";
-      item = "rtprio";
-      type = "-";
-      value = "95";
-    }
-    {
-      domain = "@audio";
-      item = "nice";
-      type = "-";
-      value = "-19";
-    }
-  ];
+  isz.pipewire.enable = true;
 
   # TODO: EQ profile
   # https://gist.github.com/cab404/aeb2482e1af6fc463e1154017c566560/
@@ -111,46 +73,30 @@
 
   services.hardware.bolt.enable = true;
 
-  hardware.opengl.driSupport32Bit = true;
-  hardware.opengl.extraPackages = with pkgs; [
-    # https://nixos.org/manual/nixos/stable/#sec-gpu-accel-opencl-amd
-    rocmPackages.clr.icd
-    # https://nixos.org/manual/nixos/stable/#sec-gpu-accel-vulkan-amd
-    # Disable for now (radv driver in mesa should handle)
-    #amdvlk
-  ];
-  #hardware.opengl.extraPackages32 = with pkgs; [
-  #  driversi686Linux.amdvlk
-  #];
+  isz.gpu.enable = true;
+  isz.gpu.amd = true;
 
   environment.systemPackages = with pkgs; [
-    libinput
-    evtest
-    vulkan-tools
-    qmk_hid
-    powertop
-    power-profiles-daemon
-    sbctl
-    sbsigntool
-    tpm2-tools
-    fw-ectool
-    framework-tool
-    efitools
-    nftables
+    # Virtualisation
+    vde2
+
+    # KDE
     kdePackages.plasma-firewall
     kdePackages.plasma-thunderbolt
-    thunderbolt
-    glxinfo
-    libva-utils
-    clinfo
-    nvtopPackages.amd
-    radeontop
     kio-fuse
-    pipewire.jack
-    wd-fw-update
-    mosh-server-upnp
-    vde2
+
+    # Thunderbolt
+    thunderbolt
+
+    # Framework
+    framework-tool
+    fw-ectool
+    qmk_hid
     openrgb-with-all-plugins
+    wd-fw-update
+
+    # Laptop
+    powertop
   ];
 
   services.udev.packages = with pkgs; [
@@ -190,8 +136,6 @@
 
   programs.wireshark.package = pkgs.wireshark;
 
-  programs.dconf.enable = true;
-
   virtualisation.libvirtd = {
     enable = true;
     qemu.runAsRoot = false;
@@ -203,37 +147,7 @@
     nssmdns4 = true;
   };
 
-  security.pam.krb5.enable = false;
-  security.krb5 = {
-    enable = true;
-    settings.libdefaults.default_realm = "ATHENA.MIT.EDU";
-    settings.realms = {
-      "ATHENA.MIT.EDU" = {
-        admin_server = "kerberos.mit.edu";
-        default_domain = "mit.edu";
-        kdc = [
-          "kerberos.mit.edu:88"
-          "kerberos-1.mit.edu:88"
-          "kerberos-2.mit.edu:88"
-        ];
-      };
-      "ZONE.MIT.EDU" = {
-        admin_server = "casio.mit.edu";
-        kdc = [
-          "casio.mit.edu"
-          "seiko.mit.edu"
-        ];
-      };
-    };
-    settings.domain_realm = {
-      "exchange.mit.edu" = "EXCHANGE.MIT.EDU";
-      "mit.edu" = "ATHENA.MIT.EDU";
-      "win.mit.edu" = "WIN.MIT.EDU";
-      "csail.mit.edu" = "CSAIL.MIT.EDU";
-      "media.mit.edu" = "MEDIA-LAB.MIT.EDU";
-      "whoi.edu" = "ATHENA.MIT.EDU";
-    };
-  };
+  isz.krb5.enable = true;
 
   nix.settings = {
     trusted-users = [ "root" "quentin" ];

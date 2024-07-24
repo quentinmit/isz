@@ -32,6 +32,7 @@ let
     dig
     fping
     mosh
+    mosh-server-upnp
     # mtr # programs.mtr.enable
     net-snmp
     nmap
@@ -116,6 +117,8 @@ let
     v4l-utils
     lm_sensors
     i2c-tools
+    libinput
+    evtest
 
     # Performance tools
     iotop
@@ -128,6 +131,7 @@ let
     # Networking
     bridge-utils
     iptables
+    nftables
     vlan
     netcat-openbsd
 
