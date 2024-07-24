@@ -46,6 +46,7 @@ in {
           "next_hop"
           "src_tos"
           "dst_tos"
+          "flow_label"
         ];
       }];
       processors.ifname = map (prefix: {
@@ -66,7 +67,8 @@ in {
 #         }) ["src" "dst" "xlat_src" "xlat_dst"];
 #       }];
       processors.regex = [{
-        namepass = ["netflow_mac"];
+        namepass = ["netflow_*"];
+        namedrop = ["netflow_raw"];
         field_rename = [{
           pattern = "^(.+)_sum$";
           replacement = "\${1}";
@@ -78,30 +80,103 @@ in {
         tags.influxdb_bucket = "netflow";
       }];
 
-      aggregators.basicstats = [{
-        namepass = ["netflow_raw"];
-        name_override = "netflow_mac";
-        inherit period;
-        drop_original = false;
-        taginclude = [
-          "host"
-          "influxdb_bucket"
-          "source"
+      # Outgoing traffic:
+      # next_hop != "0.0.0.0" indicates a packet destined for a remote network
+      # src is the real source IP (local)
+      # dst is the real destination IP
+      # xlat_src is the NAT'd source IP
+      # xlat_dst is the real destination IP
+      # in_src_mac is the real device MAC
+      # in_dst_mac is the router MAC
+      # out_src_mac is the router MAC
+      # out_dst_mac is the router MAC
 
-          "in_snmp"
-          "out_snmp"
-          "in_interface"
-          "out_interface"
-          "in_src_mac"
-          "in_dst_mac"
-          "out_src_mac"
-          "out_dst_mac"
-          "ip_version"
-          "protocol"
-        ];
-        fieldinclude = ["in_packets" "in_bytes"];
-        stats = ["sum"];
-      }];
+      # Incoming traffic:
+      # next_hop == "0.0.0.0" indicates a packet destined for a local host
+      # src is the real source IP
+      # dst is the NAT'd destination IP
+      # xlat_src is the real source IP
+      # xlat_dst is the real destination IP (local)
+      # in_src_mac is the ISP MAC
+      # in_dst_mac is the router MAC
+      # out_src_mac is the router MAC
+      # out_dst_mac is the router MAC
+
+      aggregators.basicstats = [
+        {
+          namepass = ["netflow_raw"];
+          name_override = "netflow_mac";
+          inherit period;
+          drop_original = false;
+          taginclude = [
+            "host"
+            "influxdb_bucket"
+            "source"
+
+            "in_snmp"
+            "out_snmp"
+            "in_interface"
+            "out_interface"
+            "ip_version"
+            "protocol"
+
+            "in_src_mac"
+            "in_dst_mac"
+            "out_src_mac"
+            "out_dst_mac"
+          ];
+          fieldinclude = ["in_packets" "in_bytes"];
+          stats = ["sum"];
+        }
+        {
+          namepass = ["netflow_raw"];
+          name_override = "netflow_ip_incoming";
+          inherit period;
+          drop_original = false;
+          taginclude = [
+            "host"
+            "influxdb_bucket"
+            "source"
+
+            "in_snmp"
+            "out_snmp"
+            "in_interface"
+            "out_interface"
+            "ip_version"
+            "protocol"
+
+            "xlat_dst"
+          ];
+          tagpass.next_hop = ["0.0.0.0"];
+          fieldinclude = ["in_packets" "in_bytes"];
+          stats = ["sum"];
+        }
+        {
+          namepass = ["netflow_raw"];
+          name_override = "netflow_ip_outgoing";
+          inherit period;
+          drop_original = false;
+          taginclude = [
+            "host"
+            "influxdb_bucket"
+            "source"
+
+            "in_snmp"
+            "out_snmp"
+            "in_interface"
+            "out_interface"
+            "ip_version"
+            "protocol"
+
+            "src"
+            "in_src_mac"
+          ];
+          tagpass.ip_version = ["IPv4"];
+          tagdrop.next_hop = ["0.0.0.0"];
+          fieldinclude = ["in_packets" "in_bytes"];
+          stats = ["sum"];
+        }
+      ];
     };
   };
 }
