@@ -137,6 +137,7 @@
           "bedroom-pi"
           "droid"
           "goddard"
+          "heartofgold"
         ] (name: nixpkgs.lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [

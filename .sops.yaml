@@ -5,6 +5,7 @@ keys:
 - &server_bedroom-pi_ssh_gpg fdd69b815a8e522631a0aaa477d4571b3a07b63e
 - &server_bedroom-pi_ssh_age age1k35dmvna2fe6m47hkxmtuj82pzvxted7fwtvqdek355838vfscesjhyq4q
 - &goddard_ssh_age age1yrgt8wh6pqy49jmgc76e9an6fkztsx448jny5ze694fkvccmreesaelck7
+- &heartofgold_ssh_age age1w56w4qlw7hcg68zztjfp9c44nfh4vsaj8xkmqwkxust9gnufjfvq7zhwhu
 - &mac_ssh_age age1ssvjqdur387pduhsqvn7cgkxatnxfrjfqf3wnw2eus75zecnsglshzdlrn
 
 creation_rules:
@@ -27,6 +28,12 @@ creation_rules:
     - *admin_quentin_gpg
     age:
     - *goddard_ssh_age
+- path_regex: ^heartofgold/secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *heartofgold_ssh_age
 - path_regex: ^nix/home/quentin/secrets\.yaml$
   key_groups:
   - pgp:
