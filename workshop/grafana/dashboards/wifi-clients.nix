@@ -496,7 +496,7 @@
           interval = nfInterval;
         };
         panel.fieldConfig.defaults = {
-          unit = "bps";
+          unit = "Bps";
         };
         influx = {
           bucket = "netflow";
