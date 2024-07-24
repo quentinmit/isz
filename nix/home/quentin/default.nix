@@ -702,6 +702,8 @@ in {
         brotli
         bsdiff
         cabextract
+        csview
+        csvlens
         colordiff
         dasel
         debianutils
@@ -750,6 +752,7 @@ in {
         xdelta
         xmlstarlet
         xqilla
+        xsv
         yazi
         yj
         yq
