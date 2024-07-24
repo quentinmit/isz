@@ -356,6 +356,7 @@
     ];
     panels = let
       interval = config.isz.telegraf.interval.mikrotik;
+      nfInterval = config.isz.telegraf.interval.netflow;
     in [
       {
         panel = {
@@ -487,6 +488,28 @@
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "mean";
         influx.createEmpty = true;
+      }
+      {
+        panel = {
+          gridPos = { x = 0; y = 19; w = 10; h = 8; };
+          title = "Outgoing traffic";
+          interval = nfInterval;
+        };
+        panel.fieldConfig.defaults = {
+          unit = "bps";
+        };
+        influx = {
+          bucket = "netflow";
+          imports = ["strings"];
+          filter._measurement = "netflow_ip_outgoing";
+          filter._field = "in_bytes";
+          filter.in_src_mac.values = [(lib.literalExpression "strings.toLower(v: \${macaddress:doublequote})")];
+          fn = "sum";
+          extra = ''
+            |> map(fn: (r) => ({r with _value: r._value / float(v: int(v: v.windowPeriod) / int(v: 1s))}))
+          '';
+          createEmpty = true;
+        };
       }
       {
         panel = {

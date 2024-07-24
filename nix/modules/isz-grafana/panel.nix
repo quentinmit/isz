@@ -103,7 +103,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           default = [];
         };
         fn = mkOption {
-          type = types.nullOr (types.enum ["derivative" "mean" "min" "max" "last" "last1"]);
+          type = types.nullOr (types.enum ["derivative" "mean" "min" "max" "sum" "last" "last1"]);
         };
         createEmpty = mkOption {
           type = types.bool;
