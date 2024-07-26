@@ -65,7 +65,9 @@ final: prev:
       final.boost.dev
     ];
   });
-  mactelnet = final.callPackage ./mactelnet {};
+  mactelnet = final.callPackage ./mactelnet {
+    inherit (final.darwin.apple_sdk.frameworks) SystemConfiguration;
+  };
   retrogram-rtlsdr = final.callPackage ./retrogram-rtlsdr {};
   sdrtrunk = final.callPackage ./sdrtrunk {};
   jmbe = final.callPackage ./sdrtrunk/jmbe {};

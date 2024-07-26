@@ -189,4 +189,24 @@ final: prev: if prev.stdenv.isDarwin then {
     inherit (final.darwin.apple_sdk.frameworks) Foundation;
   };
   ncdu = final.ncdu_1;
+  jellycli = (prev.jellycli.override {
+    alsa-lib = null;
+  }).overrideAttrs (old: {
+    patches = [];
+    postPatch = ''
+      cat >>util/browser_darwin.go <<EOF
+      package util
+
+      var browserOpenUrl = "open"
+      EOF
+    '';
+    checkFlags = [
+      "-skip"
+      "TestInitEmptyConfig|TestAudio_SetVolume"
+    ];
+    buildInputs = with final; old.buildInputs or [] ++ [
+      darwin.apple_sdk.frameworks.AudioToolbox
+      darwin.apple_sdk.frameworks.OpenAL
+    ];
+  });
 } else {}

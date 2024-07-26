@@ -181,12 +181,12 @@ in {
       home.packages = with pkgs; [
         openscad
         gerbv
-        kicad
       ] ++ lib.optionals pkgs.stdenv.isLinux ([
         freecad
       ]
-        ++ (available bambu-studio)
-        ++ (available orca-slicer)
+      ++ (available kicad)
+      ++ (available bambu-studio)
+      ++ (available orca-slicer)
       );
     }
     # (D)VCS

@@ -4,7 +4,9 @@
 , autoconf
 , openssl
 , pkg-config
+, SystemConfiguration
 , fetchFromGitHub
+, lib
 }:
 let
   version = "0.5.1";
@@ -28,6 +30,8 @@ in stdenv.mkDerivation {
 
   buildInputs = [
     openssl
+  ] ++ lib.optionals stdenv.isDarwin [
+    SystemConfiguration
   ];
 
   prePatch = ''
