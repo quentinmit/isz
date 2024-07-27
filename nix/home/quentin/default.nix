@@ -411,6 +411,7 @@ in {
         virt-manager
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         #broken virt-manager-qt
+        libguestfs
         pcem
         _86Box
         _86Box-roms
@@ -648,7 +649,9 @@ in {
         wordnet
         zbar
         ghostscript
+        wv
       ] ++ lib.optionals pkgs.stdenv.isLinux ([
+        abiword
         kdePackages.ghostwriter
         marktext
         retext
