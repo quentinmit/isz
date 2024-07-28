@@ -7,7 +7,7 @@
   disko.devices = {
     disk = {
       nvme0n1 = {
-        # TODO: nvme format --lbaf=1 /dev/nvme0n1
+        # nvme format --lbaf=1 /dev/nvme0n1
         type = "disk";
         device = "/dev/nvme0n1";
         content = {
@@ -39,7 +39,14 @@
         };
       };
     } // (lib.genAttrs [
-      "/dev/sda"
+      # DOA disk: 4BHH758H
+      "/dev/disk/by-id/ata-ST18000NT001-3NF101_ZVTDQ6XT"
+      "/dev/disk/by-id/ata-WDC_WD181KFGX-68AFPN0_3MGZ074U"
+      "/dev/disk/by-id/ata-ST18000NT001-3NF101_ZVTE1225"
+      "/dev/disk/by-id/ata-ST18000NT001-3NF101_ZVTE1FN5"
+      "/dev/disk/by-id/ata-WDC_WD181KFGX-68AFPN0_4BHDGUYH"
+      "/dev/disk/by-id/ata-WDC_WD181KFGX-68AFPN0_4BHGZA8H"
+      "/dev/disk/by-id/ata-WDC_WD181KFGX-68AFPN0_4BHDRURH"
     ] (device: {
       type = "disk";
       inherit device;

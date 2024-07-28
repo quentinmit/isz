@@ -16,19 +16,23 @@
   sops.defaultSopsFile = ./secrets.yaml;
 
   networking.hostName = "heartofgold";
+  networking.hostId = "8daa50bc";
 
-  isz.secureBoot.enable = true;
+  # FIXME isz.secureBoot.enable = true;
+  boot.loader.grub.enable = false;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.memtest86.enable = true;
 
   isz.openssh = {
     hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
     useSops = true;
   };
 
-#   isz.networking = {
-#     lastOctet = 101;
-#     macAddress = "";
-#     vlan88 = true;
-#   };
+  isz.networking = {
+    lastOctet = 106; # FIXME 101
+    macAddress = "E8:9C:25:6B:1E:B9";
+    vlan88 = true;
+  };
 
   networking.firewall.enable = false;
 

@@ -8,6 +8,8 @@
       pipewire.jack
     ];
 
+    hardware.pulseaudio.enable = false; # Override GNOME etc.
+
     services.pipewire = {
       enable = true;
       alsa.enable = true;
