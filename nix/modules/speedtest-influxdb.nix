@@ -46,11 +46,14 @@
       showExternalIp = mkEnableOption "show external IP";
     };
   };
-  config = let cfg = config.services.speedtest-influxdb; in with lib.strings; {
+  config = let
+    cfg = config.services.speedtest-influxdb;
+    inherit (lib.strings) escapeShellArg;
+  in lib.mkIf cfg.enable {
     systemd.services = (lib.genAttrs (map (n: "speedtest-influxdb@${n}") cfg.hosts) (_: {
       wantedBy = [ "multi-user.target" ];
     })) // {
-      "speedtest-influxdb@" = lib.mkIf cfg.enable {
+      "speedtest-influxdb@" = {
         description = "Speedtest to InfluxDB";
         after = [ "network-online.target" ];
         wants = [ "network-online.target" ];
