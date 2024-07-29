@@ -84,12 +84,20 @@
         acltype = "posixacl";
         dnodesize = "auto";
         relatime = "on";
-        # mountpoint = "none";
+        canmount = "off";
+        mountpoint = "/";
         encryption = "on";
         keyformat = "passphrase";
       };
       mountpoint = "/";
       datasets = {
+        root = {
+          type = "zfs_fs";
+          mountpoint = "/";
+          options = {
+            "com.sun:auto-snapshot" = "true";
+          };
+        };
         nix = {
           type = "zfs_fs";
           options = {
