@@ -100,6 +100,8 @@
         };
         nix = {
           type = "zfs_fs";
+          # /nix needs a mountpoint so that it will be mounted by the initrd
+          mountpoint = "/nix";
           options = {
             atime = "off";
             "com.sun:auto-snapshot" = "false";

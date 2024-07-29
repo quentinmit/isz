@@ -21,11 +21,6 @@
   boot.initrd.systemd = {
     enable = true;
     emergencyAccess = true;
-    services.zfs-mount = {
-      wants = ["sysroot.mount"];
-      wantedBy = ["zfs.target"];
-      after = ["sysroot.mount"];
-    };
   };
   # FIXME isz.secureBoot.enable = true;
   boot.loader.grub.enable = false;
