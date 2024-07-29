@@ -18,7 +18,15 @@
   networking.hostName = "heartofgold";
   networking.hostId = "8daa50bc";
 
-  boot.initrd.systemd.enable = true;
+  boot.initrd.systemd = {
+    enable = true;
+    emergencyAccess = true;
+    services.zfs-mount = {
+      wants = ["sysroot.mount"];
+      wantedBy = ["zfs.target"];
+      after = ["sysroot.mount"];
+    };
+  };
   # FIXME isz.secureBoot.enable = true;
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
