@@ -411,7 +411,7 @@ in {
         virt-manager
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         #broken virt-manager-qt
-        libguestfs
+        libguestfs-with-appliance
         pcem
         _86Box
         _86Box-roms
