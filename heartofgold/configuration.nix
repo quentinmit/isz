@@ -20,6 +20,9 @@
   networking.hostId = "8daa50bc";
 
   boot.initrd.systemd.enable = true;
+  boot.kernelModules = [
+    "nct6775" # For sensors
+  ];
   # FIXME isz.secureBoot.enable = true;
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
@@ -50,6 +53,7 @@
     amdgpu = true;
     powerSupply = true;
     drm = true;
+    zfs = true;
   };
 
   security.polkit.enable = true;
