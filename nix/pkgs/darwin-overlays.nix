@@ -1,4 +1,6 @@
-final: prev: if prev.stdenv.isDarwin then {
+final: prev: let
+  inherit (final) lib;
+in if prev.stdenv.isDarwin then {
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (python-final: python-prev: with python-final; {
       xdot = python-prev.xdot.overridePythonAttrs {
@@ -209,4 +211,8 @@ final: prev: if prev.stdenv.isDarwin then {
       darwin.apple_sdk.frameworks.OpenAL
     ];
   });
+  volk =
+    if lib.versionAtLeast prev.volk.version "3.0"
+    then prev.volk
+    else final.callPackage "${prev.path}/pkgs/development/libraries/volk" {};
 } else {}
