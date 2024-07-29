@@ -735,6 +735,73 @@
       };
       # postgres_users
       # postgres_xlog
+      fs.zfs_arcstats_size = {
+        graph_title = "ZFS ARC - Size";
+        graph_args.lower-limit = 0;
+        influx.filter._measurement = "zfs";
+        influx.filter._field = [
+          # Stacked area
+          "arcstats_data_size"
+          "arcstats_metadata_size"
+          "arcstats_hdr_size"
+          "arcstats_dbuf_size"
+          "arcstats_dnode_size"
+          "arcstats_bonus_size"
+          # Lines
+          "arcstats_mru_size"
+          "arcstats_mfu_size"
+          "arcstats_size"
+          "arcstats_c"
+          "arcstats_p"
+        ];
+        influx.fn = "mean";
+        influx.imports = ["strings"];
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _field: strings.trimPrefix(prefix: "arcstats_", v: r._field)}))
+        '';
+        stacking = true;
+        panel.fieldConfig.defaults = {
+          custom.fillOpacity = 50;
+        };
+        unit = "bytes";
+        fields = lib.recursiveUpdate (lib.genAttrs [
+          "mru_size"
+          "mfu_size"
+          "size"
+          "c"
+          "p"
+        ] (_: {
+          custom.lineWidth = 2;
+          custom.fillOpacity = 0;
+          custom.stacking.mode = "none";
+        })) {
+          c.displayName = "Target size";
+          p.displayName = "Target MRU size";
+        };
+      };
+      fs.zfs_arcstats_activity = {
+        graph_title = "ZFS ARC - Activites";
+        graph_vlabel = "misses (-) / hits (+)";
+        influx.filter._measurement = "zfs";
+        influx.filter._field = [
+          "arcstats_hits"
+          "arcstats_misses"
+          "arcstats_l2_hits"
+          "arcstats_l2_misses"
+        ];
+        influx.fn = "derivative";
+        unit = "iops";
+        fields.arcstats_hits.displayName = "ARC hits";
+        fields.arcstats_misses = {
+          displayName = "ARC misses";
+          custom.transform = "negative-Y";
+        };
+        fields.arcstats_l2_hits.displayName = "L2ARC hits";
+        fields.arcstats_l2_misses = {
+          displayName = "L2ARC misses";
+          custom.transform = "negative-Y";
+        };
+      };
     };
   };
 }
