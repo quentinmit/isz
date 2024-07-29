@@ -182,6 +182,11 @@
           hostname = "bedroom-pi.mgmt.isz.wtf";
           profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
         };
+        deploy.nodes.heartofgold = {
+          sshUser = "root";
+          hostname = "heartofgold.isz.wtf";
+          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.workshop.pkgs.system}.activate.nixos self.nixosConfigurations.heartofgold;
+        };
         steamdeckSys = import ./steamdeck/sys.nix { inherit self nixpkgs specialArgs; };
         steamdeckSysext = import ./nix/sysext.nix {
           inherit self nixpkgs specialArgs;

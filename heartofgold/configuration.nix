@@ -18,10 +18,7 @@
   networking.hostName = "heartofgold";
   networking.hostId = "8daa50bc";
 
-  boot.initrd.systemd = {
-    enable = true;
-    emergencyAccess = true;
-  };
+  boot.initrd.systemd.enable = true;
   # FIXME isz.secureBoot.enable = true;
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
@@ -66,7 +63,10 @@
   ];
 
   services.xserver.enable = true;
-  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.displayManager.gdm = {
+    enable = true;
+    autoSuspend = false;
+  };
   services.xserver.desktopManager.gnome.enable = true;
   services.xserver.windowManager.twm.enable = true;
 

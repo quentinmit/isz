@@ -109,6 +109,7 @@
         };
         var = {
           type = "zfs_fs";
+          mountpoint = "/var";
           options."com.sun:auto-snapshot" = "true";
         };
         home = {
