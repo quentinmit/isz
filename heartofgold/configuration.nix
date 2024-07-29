@@ -7,6 +7,7 @@
     nixos-hardware.nixosModules.common-cpu-amd-raphael-igpu
     nixos-hardware.nixosModules.common-gpu-amd
     ./disko.nix
+    ./quentin.nix
     disko.nixosModules.disko
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
@@ -104,5 +105,6 @@
       "libvirtd"
       "audio"
     ];
+    openssh.authorizedKeys.keys = config.users.users.root.openssh.authorizedKeys.keys;
   };
 }
