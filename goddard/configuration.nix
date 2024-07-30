@@ -39,6 +39,7 @@
   services.fwupd.enable = true;
 
   hardware.bluetooth.enable = true;
+  hardware.bluetooth.package = if (lib.versionOlder pkgs.bluez.version "5.76") then pkgs.unstable.bluez else pkgs.bluez;
 
   hardware.keyboard.qmk.enable = true;
 
