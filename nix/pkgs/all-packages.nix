@@ -42,8 +42,8 @@ final: prev:
     layout-card = final.callPackage ./homeassistant/layout-card.nix {};
     restriction-card = final.callPackage ./homeassistant/restriction-card.nix {};
   };
-  hassCustomComponents = {
-    pyscript = final.callPackage ./homeassistant/pyscript.nix {};
+  home-assistant-custom-components = prev.home-assistant-custom-components // {
+    pyscript = final.home-assistant.python.pkgs.callPackage ./homeassistant/pyscript.nix {};
   };
   cisco-mibs = final.fetchFromGitHub {
     owner = "cisco";

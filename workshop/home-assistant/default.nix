@@ -95,7 +95,7 @@ in {
           ./patches/esphome-entity-ids.patch
         ];
       });
-      customComponents = with pkgs.hassCustomComponents; [
+      customComponents = with pkgs.unstable.home-assistant-custom-components; [
         pyscript
       ];
       extraPackages = lib.mkMerge [
