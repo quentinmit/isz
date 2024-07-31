@@ -47,7 +47,16 @@
 
       # Fix for newer unstable NixOS
       authentikComponents = let
-        scope = (authentik.lib.mkAuthentikScope { pkgs = pkgs.unstable; }).overrideScope (final: prev: {
+        scope = (authentik.lib.mkAuthentikScope {
+          pkgs = pkgs.unstable;
+          defaultPoetryOverrides = (import authentik.inputs.poetry2nix { pkgs = pkgs.unstable; }).defaultPoetryOverrides.extend (final: prev: {
+            lxml = prev.lxml.overridePythonAttrs (old: {
+              buildInputs = old.buildInputs ++ [
+                pkgs.unstable.zlib
+              ];
+            });
+          });
+        }).overrideScope (final: prev: {
           nodejs_21 = pkgs.unstable.nodejs_22;
         });
         in scope.authentikComponents;
