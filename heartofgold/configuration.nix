@@ -24,10 +24,14 @@
   boot.kernelModules = [
     "nct6775" # For sensors
   ];
-  isz.secureBoot.enable = true;
+  boot.loader.systemd-boot.memtest86.enable = true;
 #   boot.loader.grub.enable = false;
 #   boot.loader.systemd-boot.enable = true;
-  boot.loader.systemd-boot.memtest86.enable = true;
+  isz.secureBoot.enable = true;
+  boot.initrd.clevis = {
+    enable = true;
+    devices.zpool.secretFile = ./zpool.jwe;
+  };
 
   isz.openssh = {
     hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
@@ -41,6 +45,7 @@
   };
 
   networking.firewall.enable = false;
+  networking.networkmanager.enable = false;
 
   services.smartd.enable = true;
 
