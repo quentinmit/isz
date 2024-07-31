@@ -24,9 +24,9 @@
   boot.kernelModules = [
     "nct6775" # For sensors
   ];
-  # FIXME isz.secureBoot.enable = true;
-  boot.loader.grub.enable = false;
-  boot.loader.systemd-boot.enable = true;
+  isz.secureBoot.enable = true;
+#   boot.loader.grub.enable = false;
+#   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.memtest86.enable = true;
 
   isz.openssh = {
