@@ -20,6 +20,7 @@
   networking.hostId = "8daa50bc";
 
   boot.initrd.systemd.enable = true;
+  boot.zfs.requestEncryptionCredentials = ["zpool"];
   boot.kernelModules = [
     "nct6775" # For sensors
   ];
