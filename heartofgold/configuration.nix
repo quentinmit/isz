@@ -63,6 +63,25 @@
   };
 
   security.polkit.enable = true;
+  environment.etc."polkit-1/rules.d/20-logind.rules".text = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.login1.power-off" ||
+          action.id == "org.freedesktop.login1.power-off-multiple-sessions" ||
+          action.id == "org.freedesktop.login1.reboot" ||
+          action.id == "org.freedesktop.login1.reboot-multiple-sessions" ||
+          action.id == "org.freedesktop.login1.suspend" ||
+          action.id == "org.freedesktop.login1.suspend-multiple-sessions" ||
+          action.id == "org.freedesktop.login1.hibernate" ||
+          action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
+          action.id == "org.freedesktop.login1.set-reboot-parameter" ||
+          action.id == "org.freedesktop.login1.set-reboot-to-firmware-setup" ||
+          action.id == "org.freedesktop.login1.set-reboot-to-boot-loader-menu" ||
+          action.id == "org.freedesktop.login1.set-reboot-to-boot-loader-entry")
+      {
+          return polkit.Result.AUTH_ADMIN;
+      }
+    });
+  '';
 
   isz.pipewire.enable = true;
 
