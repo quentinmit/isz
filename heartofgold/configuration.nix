@@ -63,7 +63,7 @@
   };
 
   security.polkit.enable = true;
-  environment.etc."polkit-1/rules.d/20-logind.rules".text = ''
+  environment.etc."polkit-1/rules.d/15-logind.rules".text = ''
     polkit.addRule(function(action, subject) {
       if (action.id == "org.freedesktop.login1.power-off" ||
           action.id == "org.freedesktop.login1.power-off-multiple-sessions" ||
