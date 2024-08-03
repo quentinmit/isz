@@ -23,6 +23,8 @@
 
   sops.defaultSopsFile = ./secrets.yaml;
 
+  time.timeZone = lib.mkForce null;
+
   networking.hostName = "goddard";
 
   isz.secureBoot.enable = true;
