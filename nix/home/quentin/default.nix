@@ -335,6 +335,7 @@ in {
             savonet.vscode-liquidsoap
             ms-vscode.cmake-tools
             ms-vscode.makefile-tools
+            ms-vsliveshare.vsliveshare
           ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];
