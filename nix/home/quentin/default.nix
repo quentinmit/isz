@@ -530,11 +530,14 @@ in {
     {
       programs.ssh = {
         enable = true;
-        extraConfig = (lib.optionalString (pkgs.openssh.pname == "openssh-with-gssapi") ''
+        extraOptionOverrides = {
+          IgnoreUnknown = "GSSAPI*";
+        };
+        extraConfig = ''
           GSSAPIAuthentication yes
           GSSAPIKeyExchange yes
-        '') + ''
-          PubkeyAcceptedKeyTypes +ssh-dss,ssh-rsa
+          # Use a wildcard so this works on non-DSA ssh as well
+          PubkeyAcceptedKeyTypes +ssh-?s?
         '';
         matchBlocks = {
           "hercules.comclub.org" = {
@@ -542,7 +545,7 @@ in {
             proxyJump = "atlas.comclub.org";
           };
           "sipb-isilon-*" = {
-            extraOptions.HostKeyAlgorithms = "+ssh-dss";
+            extraOptions.HostKeyAlgorithms = "+ssh-?s?";
           };
           "mattermost.mit.edu" = {
             hostname = "mattermost.mit.edu";
