@@ -8,18 +8,18 @@
 # Based on https://github.com/flathub/com.boxy_svg.BoxySVG/blob/master/com.boxy_svg.BoxySVG.yaml
 
 let
-  version = "4.29.0";
+  version = "4.37.0";
 in buildNpmPackage {
   pname = "boxy-svg";
   inherit version;
 
   src = fetchzip {
-    url = "https://storage.boxy-svg.com/linux/app-${version}.zip";
-    hash = "sha256-16HZtUYtq0WymWBEsyrBvNdaHzE6H/EaHCrsHllH60M=";
+    url = "https://storage.boxy-svg.com/flathub/app-${version}.zip";
+    hash = "sha256-tv/Js96zewsxtwzr15T2xgFXbEPQVdPdd/ULN+U+8P8=";
   };
   sourceRoot = "source/electron";
 
-  npmDepsHash = "sha256-mL8kPbIA1pzg5GWRGUMghkmwBLAkizEUOI7jYwe34sM=";
+  npmDepsHash = "sha256-JDRsCiEIqV0bd7wecnkqNialaBWRP0Ypduu/4/bNSzA=";
 
   dontNpmBuild = true;
 
