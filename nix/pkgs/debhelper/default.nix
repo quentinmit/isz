@@ -9,14 +9,14 @@ let
   inherit (perlPackages) perl;
 in stdenv.mkDerivation rec {
   pname = "debhelper";
-  version = "13.11.8";
+  version = "13.19";
 
   src = fetchFromGitLab {
     domain = "salsa.debian.org";
     owner = "debian";
     repo = "debhelper";
     rev = "debian/${version}";
-    hash = "sha256-RUF0ZXzYxOSNE3kXftK/hZWpYEhDEeMGSR5lzEkw2ug=";
+    hash = "sha256-H+A+Z25dU8HLw+jCgpOtJ6Mu9zG6X7SX8yv6iLpktj4=";
   };
 
   patchPhase = ''
