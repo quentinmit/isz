@@ -5,14 +5,14 @@
 
 let
   pname = "layout-card";
-  version = "2.4.4";
+  version = "2.4.5";
 in
 stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchurl {
-    url = "https://github.com/thomasloven/lovelace-layout-card/raw/${version}/${pname}.js";
-    hash = "sha256-j3YmbecHhl62zJGsnEvE+4rc9L3WYFfvef7wvEkX0bY=";
+    url = "https://github.com/thomasloven/lovelace-layout-card/raw/v${version}/${pname}.js";
+    hash = "sha256-tV2jWyafyEwHqFiIrcUK4W+0mVz5Cq72rASpobVE054=";
   };
 
   dontUnpack = true;
