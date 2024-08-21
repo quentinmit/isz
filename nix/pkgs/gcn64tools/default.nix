@@ -10,13 +10,13 @@
 
 stdenv.mkDerivation rec {
   pname = "gcn64tools";
-  version = "2.1.27";
+  version = "2.1.29";
 
   src = fetchFromGitHub {
     owner = "raphnet";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-3VrLZDW5qzj/EL7+KxgjVw/W3fLoeQ1stVjLeEZm0sA=";
+    hash = "sha256-2zsNetdhAURJwCNd/1RdMTxnVThkHTY8acqRCZ1SP5o=";
   };
 
   sourceRoot = "${src.name}/src";
