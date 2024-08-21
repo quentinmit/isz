@@ -247,7 +247,7 @@
           getOption = ''
             const { getValueFormat, formattedValueToString } = System.get(System.resolve("@grafana/data"));
 
-            const memoryCurrent = data.series.map((s) => s.fields.find(f => f.name == "MemoryCurrent"));
+            const memoryCurrent = context.panel.data.series.map((s) => s.fields.find(f => f.name == "MemoryCurrent"));
 
             const seriesData = memoryCurrent.map(
               (f) => ({
