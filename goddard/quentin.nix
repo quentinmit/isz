@@ -44,6 +44,7 @@
       xdg.configFile."easyeffects/output/fw-16.json".source = ./easyeffects/fw-16.json;
 
       programs.plasma = {
+        powerdevil.AC.autoSuspend.action = "nothing";
         configFile = {
           kcminputrc."Libinput/2362/628/PIXA3854:00 093A:0274 Touchpad" = {
             ClickMethod = 2; # Two-finger click to right click
@@ -51,7 +52,7 @@
             TapDragLock = true;
           };
           kwinrc.Xwayland.Scale = 1.25;
-          powermanagementprofilesrc = {
+          powermanagementprofilesrc = { # KDE 5
             # Absence of group indicates do not suspend
             AC.SuspendSession = null;
           };
