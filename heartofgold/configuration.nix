@@ -8,6 +8,7 @@
     nixos-hardware.nixosModules.common-gpu-amd
     ./disko.nix
     ./quentin.nix
+    ./openvpn
     disko.nixosModules.disko
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
