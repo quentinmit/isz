@@ -7,6 +7,7 @@
 
       isz.base = true;
       isz.graphical = true;
+      isz.quentin.multimedia = true;
     }
     # rtorrent
     {
