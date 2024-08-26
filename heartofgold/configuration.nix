@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nixpkgs, disko, nixos-hardware, lanzaboote, ... }:
+{ config, pkgs, lib, disko, nixos-hardware, ... }:
 {
   imports = [
     nixos-hardware.nixosModules.common-cpu-amd
@@ -9,6 +9,7 @@
     ./disko.nix
     ./quentin.nix
     ./openvpn
+    ./jellyfin.nix
     disko.nixosModules.disko
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
