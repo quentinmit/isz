@@ -2,10 +2,10 @@
 
 {
   config = {
+    isz.pnio2mqtt.enable = true;
     isz.pnio2mqtt.extraSettings = {
       ifname = "vlan981";
 
-      gsdml = ./GSDML-V2.35-Phoenix_Contact-CAPAROC_PM_PN-20230203.xml;
       name_of_station = "workshop-caparoc";
 
       mqtt.server = "mqtt.isz.wtf";

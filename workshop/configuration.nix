@@ -15,7 +15,7 @@
       ./telegraf.nix
       ./dashboard.nix
       ./grafana
-      ./pnio2mqtt
+      ./pnio2mqtt.nix
       #./containers.nix
       ./authentik
       ./bluechips.nix

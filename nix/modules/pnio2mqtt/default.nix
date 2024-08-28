@@ -2,20 +2,18 @@
   cfg = config.isz.pnio2mqtt;
   configFormat = pkgs.formats.yaml {};
   configYaml = configFormat.generate "pnio2mqtt.yaml" cfg.extraSettings;
-  pkg = pkgs.unstable.py-profinet;
+  pkg = (pkgs.unstable.extend py-profinet.overlays.default).py-profinet;
 in {
   options = with lib; {
-    isz.pnio2mqtt.extraSettings = lib.mkOption {
-      inherit (configFormat) type;
+    isz.pnio2mqtt = {
+      enable = mkEnableOption "ProfinetIO to MQTT";
+      extraSettings = lib.mkOption {
+        inherit (configFormat) type;
+      };
     };
   };
-  imports = [
-    ./config.nix
-  ];
-  config = {
-    nixpkgs.overlays = [
-      py-profinet.overlays.default
-    ];
+  config = lib.mkIf cfg.enable {
+    isz.pnio2mqtt.extraSettings.gsdml = lib.mkDefault ./GSDML-V2.35-Phoenix_Contact-CAPAROC_PM_PN-20230203.xml;
 
     sops.secrets.profinet_influx_token = {
       owner = "pnio2mqtt";
