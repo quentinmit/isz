@@ -78,6 +78,9 @@ $ORIGIN profinet.isz.wtf.
 router           A 172.30.98.1
 workshop-caparoc A 172.30.98.2
                  EUI48 A8-74-1D-10-25-EB
+bedroom-caparoc  A 172.30.98.3
+                 EUI48 A8-74-1D-10-21-E2
+bedroom-pi       A 172.30.98.33
 workshop         A 172.30.98.34
 
 ; Guest hosts on vlan 88 (192.168.88.0/24)
