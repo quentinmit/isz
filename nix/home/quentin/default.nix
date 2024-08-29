@@ -487,6 +487,7 @@ in {
         libupnp
         miniupnpc
         mosquitto
+        mqttui
         nbd
         ncftp
         ngrok

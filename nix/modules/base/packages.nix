@@ -63,6 +63,7 @@ let
     # bash-completion # programs.bash.enableCompletion
     dyff
     file
+    file-rename
     gawk # already present
     gnused
     jq
