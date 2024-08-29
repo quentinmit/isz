@@ -16,7 +16,7 @@ creation_rules:
     - *server_workshop_ssh_gpg
     age:
     - *server_workshop_ssh_age
-- path_regex: ^bedroom/secrets\.yaml$
+- path_regex: ^bedroom-pi/secrets\.yaml$
   key_groups:
   - pgp:
     - *admin_quentin_gpg

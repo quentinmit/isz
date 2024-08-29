@@ -3,6 +3,7 @@
 {
   imports = [
     ../nix/raspi.nix
+    ./pnio2mqtt.nix
   ];
 
   sops.defaultSopsFile = ./secrets.yaml;
@@ -69,6 +70,7 @@
     lastOctet = 33;
     macAddress = "dc:a6:32:98:38:a8";
     linkzone = true;
+    profinet = true;
   };
   networking.firewall.enable = false;
 
