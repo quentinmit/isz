@@ -328,4 +328,201 @@ in {
       })
     ];
   };
+  config.isz.grafana.dashboards."Bedroom Power" = let
+    name_of_station = "bedroom-caparoc";
+  in {
+    uid = "bedroom-power";
+    title = "Bedroom Power";
+    defaultDatasourceName = "workshop";
+    graphTooltip = 2;
+    variables = {
+      caparoc_channel = channelsVar name_of_station;
+    };
+    panels = [
+      # Battery
+      {
+        panel.gridPos = { x = 0; y = 0; w = 2; h = 8; };
+        panel.type = "gauge";
+        influx = [
+          {
+            bucket = "profinet";
+            filter._measurement = "caparoc";
+            filter._field = "average_voltage_volts";
+            filter.channel = "total";
+            filter.name_of_station = name_of_station;
+            fn = "last1";
+          }
+          {
+            filter._measurement = "wago.status";
+            filter._field = ["BatteryVolts" "PSUVolts"];
+            fn = "last1";
+          }
+        ];
+        panel.fieldConfig.defaults = {
+          unit = "volt";
+          decimals = 1;
+          min = 10;
+          max = 16;
+        };
+        fields."BatteryVolts".displayName = "Battery Voltage";
+        fields."PSUVolts".displayName = "PSU Voltage";
+        fields."average_voltage_volts" = {
+          displayName = "System Voltage";
+          decimals = 2;
+        };
+      }
+      (channelGraph {
+        field = "voltage_volts";
+        integralField = "voltage_time_volt_seconds";
+        filter.channel = "total";
+        filter.name_of_station = name_of_station;
+        influx = [{
+          filter._measurement = "wago.status";
+          filter._field = ["BatteryVolts" "PSUVolts"];
+          fn = "mean";
+        }];
+      } {
+        panel.gridPos = { x = 2; y = 0; w = 10; h = 8; };
+        panel.title = "Bedroom System Voltage";
+        panel.fieldConfig.defaults = {
+          unit = "volt";
+          decimals = 3;
+        };
+        fields."BatteryVolts".displayName = "Battery Voltage";
+        fields."PSUVolts".displayName = "PSU Voltage";
+      })
+      {
+        panel.gridPos = { x = 12; y = 0; w = 10; h = 8; };
+        panel.title = "Battery Temperature";
+        influx.filter._measurement = "wago.status";
+        influx.filter._field = "TemperatureDegreesCelsius";
+        influx.fn = "mean";
+        panel.fieldConfig.defaults = {
+          unit = "celsius";
+          decimals = 2;
+        };
+        panel.options.tooltip.mode = "multi";
+      }
+      # Total Current/Power
+      {
+        panel.gridPos = { x = 0; y = 8; w = 2; h = 8; };
+        panel.type = "gauge";
+        influx.bucket = "profinet";
+        influx.filter._measurement = "caparoc";
+        influx.filter._field = ["average_current_amps" "average_power_watts"];
+        influx.filter.channel = "total";
+        influx.filter.name_of_station = name_of_station;
+        influx.fn = "last1";
+        panel.fieldConfig.defaults = {
+          color.mode = "thresholds";
+        };
+        panel.options.showThresholdMarkers = false;
+        fields.average_current_amps = {
+          displayName = "Average Current";
+          unit = "amp";
+          min = 0;
+          max = 5.5;
+          thresholds.steps = [
+            { value = null; color = "green"; }
+            { value = 5; color = "red"; }
+          ];
+        };
+        fields.average_power_watts = {
+          displayName = "Average Power";
+          unit = "watt";
+          min = 0;
+          max = 132;
+          thresholds.steps = [
+            { value = null; color = "green"; }
+            { value = 120; color = "red"; }
+          ];
+        };
+      }
+      (channelGraph {
+        field = "current_amps";
+        integralField = "charge_coulombs";
+        filter.channel = "total";
+        filter.name_of_station = name_of_station;
+        influx = [{
+          filter._measurement = "wago.status";
+          filter._field = ["BatteryInAmps" "BatteryOutAmps" "PSUAmps"];
+          fn = "mean";
+        }];
+      } {
+        panel.gridPos = { x = 2; y = 8; w = 10; h = 8; };
+        panel.title = "Bedroom Total Current";
+        panel.fieldConfig.defaults = {
+          unit = "amp";
+          decimals = 2;
+        };
+        fields."BatteryInAmps".displayName = "Battery In";
+        fields."BatteryOutAmps".displayName = "Battery Out";
+        fields."PSUAmps".displayName = "PSU";
+      })
+      (channelGraph {
+        field = "power_watts";
+        integralField = "energy_joules";
+        filter.channel = "total";
+        filter.name_of_station = name_of_station;
+      } {
+        panel.gridPos = { x = 12; y = 8; w = 10; h = 8; };
+        panel.title = "Bedroom Total Power";
+        panel.fieldConfig.defaults = {
+          unit = "watt";
+        };
+      })
+      # Stacked current/power
+      (stackedGraph {
+        field = "current_amps";
+        integralField = "charge_coulombs";
+        inherit name_of_station;
+      } {
+        panel.gridPos = { x = 2; y = 16; w = 10; h = 8; };
+        panel.title = "Current";
+        panel.fieldConfig.defaults = {
+          unit = "amp";
+        };
+      })
+      (stackedGraph {
+        field = "power_watts";
+        integralField = "energy_joules";
+        inherit name_of_station;
+      } {
+        panel.gridPos = { x = 12; y = 16; w = 10; h = 8; };
+        panel.title = "Power";
+        panel.fieldConfig.defaults = {
+          unit = "watt";
+        };
+      })
+      # Per-channel current and power
+      (channelGraph {
+        field = "current_amps";
+        integralField = "charge_coulombs";
+        filter.channel = "\${caparoc_channel}";
+        filter.name_of_station = name_of_station;
+      } {
+        panel.gridPos = { x = 2; y = 24; w = 10; h = 8; };
+        panel.title = "\${caparoc_channel} Current";
+        panel.fieldConfig.defaults = {
+          unit = "amp";
+        };
+        panel.repeat = "caparoc_channel";
+        panel.repeatDirection = "v";
+      })
+      (channelGraph {
+        field = "power_watts";
+        integralField = "energy_joules";
+        filter.channel = "\${caparoc_channel}";
+        filter.name_of_station = name_of_station;
+      } {
+        panel.gridPos = { x = 12; y = 24; w = 10; h = 8; };
+        panel.title = "\${caparoc_channel} Power";
+        panel.fieldConfig.defaults = {
+          unit = "watt";
+        };
+        panel.repeat = "caparoc_channel";
+        panel.repeatDirection = "v";
+      })
+    ];
+  };
 }
