@@ -1,98 +1,150 @@
 { config, pkgs, lib, ... }:
+with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; };
+let
+  channelGraph = { field, integralField, filter, influx ? [] }: args: lib.recursiveUpdate {
+    influx = influx ++ [
+      {
+        bucket = "profinet";
+        filter = {
+          _measurement = "caparoc";
+          _field = ["total_${integralField}" "total_time_seconds"];
+        } // filter;
+        fn = null;
+        extra = ''
+          |> window(every: v.windowPeriod)
+          |> last()
+          |> window(every: inf)
+          |> difference(nonNegative: true)
+          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+          |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
+          |> drop(columns: ["total_${integralField}", "total_time_seconds"])
+          |> yield(name: "mean")
+        '';
+      }
+      {
+        bucket = "profinet";
+        filter = {
+          _measurement = "caparoc";
+          _field = "min_${field}";
+        } // filter;
+        fn = "min";
+      }
+      {
+        bucket = "profinet";
+        filter = {
+          _measurement = "caparoc";
+          _field = "max_${field}";
+        } // filter;
+        fn = "max";
+      }
+    ];
+    panel.fieldConfig.defaults = {
+      custom.fillOpacity = 0;
+    };
+    panel.options.tooltip.mode = "multi";
+    fields."average_${field}" = {
+      displayName = "Average";
+      color = { mode = "fixed"; fixedColor = "green"; };
+      custom.lineWidth = 1;
+    };
+    fields."max_${field}" = {
+      displayName = "Max";
+      custom.lineWidth = 0;
+      custom.fillOpacity = 25;
+      custom.fillBelowTo = "min_${field}";
+      color.mode = "fixed";
+      custom.hideFrom.legend = true;
+    };
+    fields."min_${field}" = {
+      displayName = "Min";
+      custom.lineWidth = 0;
+      color.mode = "fixed";
+      custom.hideFrom.legend = true;
+    };
+    panel.interval = "1s";
+  } args;
+  stackedGraph = { field, integralField, name_of_station, influx ? [] }: args: lib.recursiveUpdate {
+    influx = influx ++ [{
+      query = ''
+        import "join"
 
-{
+        names = from(bucket: "profinet")
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_measurement"] == "caparoc")
+          |> filter(fn: (r) => r["_field"] == "status")
+          |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
+          |> last()
+          |> group(columns: ["name_of_station", "channel"])
+          |> sort(columns: ["_time"])
+          |> last()
+          |> keep(columns: ["name_of_station", "channel", "channel_name"])
+          |> map(fn: (r) => ({name_of_station: r.name_of_station, channel: r.channel, channel_name: if exists r.channel_name then r.channel_name else "Channel "+r.channel}))
+
+        data = from(bucket: "profinet")
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_field"] == "total_${integralField}" or r["_field"] == "total_time_seconds")
+          |> filter(fn: (r) => r["channel"] != "total")
+          |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
+          |> window(every: v.windowPeriod)
+          |> last()
+          |> window(every: inf)
+          |> difference(nonNegative: true)
+          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+          |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
+          |> drop(columns: ["channel_name", "total_${integralField}", "total_time_seconds"])
+
+        join.left(
+            left: data |> group(columns: ["name_of_station", "channel"]),
+            right: names,
+            on: (l, r) => l.name_of_station == r.name_of_station and l.channel == r.channel,
+            as: (l, r) => ({l with channel_name: r.channel_name}),
+        )
+          |> group(columns: ["_measurement", "_field", "_start", "_stop", "name_of_station", "channel", "channel_name"])
+          |> yield(name: "mean")
+      '';
+    }];
+    panel.fieldConfig.defaults = {
+      displayName = "\${__field.labels.channel_name}";
+      custom.stacking.mode = "normal";
+      custom.fillOpacity = 10;
+    };
+    panel.options.tooltip.mode = "multi";
+    panel.interval = "1s";
+  } args;
+  channelsVar = name_of_station: {
+    query = ''
+      from(bucket: "profinet")
+        |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+        |> filter(fn: (r) => r["_measurement"] == "caparoc")
+        |> filter(fn: (r) => r["_field"] == "status")
+        |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
+        |> last()
+        |> group(columns: ["channel"])
+        |> sort(columns: ["_time"])
+        |> last()
+        |> keep(columns: ["channel", "channel_name"])
+        |> group()
+        |> map(fn: (r) => ({
+          _value: r.channel + " " + (
+            if exists r.channel_name then r.channel_name else "Channel " + r.channel
+          )
+        }))
+        |> yield(name: "last")
+    '';
+    extra.hide = 2; # show nothing
+    extra.includeAll = true;
+    extra.regex = ''/(?<value>\S+)\s+(?<text>.+)/'';
+  };
+in {
   config.isz.grafana.dashboards."Workshop Power" = let
-    channelGraph = { field, integralField, filter, influx ? [] }: args: lib.recursiveUpdate {
-        influx = influx ++ [
-          {
-            bucket = "profinet";
-            filter = {
-              _measurement = "caparoc";
-              _field = ["total_${integralField}" "total_time_seconds"];
-            } // filter;
-            fn = null;
-            extra = ''
-              |> window(every: v.windowPeriod)
-              |> last()
-              |> window(every: inf)
-              |> difference(nonNegative: true)
-              |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-              |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
-              |> drop(columns: ["total_${integralField}", "total_time_seconds"])
-              |> yield(name: "mean")
-            '';
-          }
-          {
-            bucket = "profinet";
-            filter = {
-              _measurement = "caparoc";
-              _field = "min_${field}";
-            } // filter;
-            fn = "min";
-          }
-          {
-            bucket = "profinet";
-            filter = {
-              _measurement = "caparoc";
-              _field = "max_${field}";
-            } // filter;
-            fn = "max";
-          }
-        ];
-        panel.fieldConfig.defaults = {
-          custom.fillOpacity = 0;
-        };
-        panel.options.tooltip.mode = "multi";
-        fields."average_${field}" = {
-          displayName = "Average";
-          color = { mode = "fixed"; fixedColor = "green"; };
-          custom.lineWidth = 1;
-        };
-        fields."max_${field}" = {
-          displayName = "Max";
-          custom.lineWidth = 0;
-          custom.fillOpacity = 25;
-          custom.fillBelowTo = "min_${field}";
-          color.mode = "fixed";
-          custom.hideFrom.legend = true;
-        };
-        fields."min_${field}" = {
-          displayName = "Min";
-          custom.lineWidth = 0;
-          color.mode = "fixed";
-          custom.hideFrom.legend = true;
-        };
-        panel.interval = "1s";
-    } args;
+    name_of_station = "workshop-caparoc";
   in {
     uid = "f96fd7e1-33eb-47c1-89ec-e8fe2741e043";
     title = "Workshop Power";
     defaultDatasourceName = "workshop";
     graphTooltip = 2;
     variables = {
-      caparoc_channel = {
-        query = ''
-          from(bucket: "profinet")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "caparoc")
-            |> filter(fn: (r) => r["_field"] == "status")
-            |> last()
-            |> group(columns: ["channel"])
-            |> sort(columns: ["_time"])
-            |> last()
-            |> keep(columns: ["channel", "channel_name"])
-            |> group()
-            |> map(fn: (r) => ({
-              _value: r.channel + " " + (
-                if exists r.channel_name then r.channel_name else "Channel " + r.channel
-              )
-            }))
-            |> yield(name: "last")
-        '';
-        extra.hide = 2; # show nothing
-        extra.includeAll = true;
-        extra.regex = ''/(?<value>\S+)\s+(?<text>.+)/'';
-      };
+      caparoc_channel = channelsVar name_of_station;
     };
     panels = [
       # Battery
@@ -105,6 +157,7 @@
             filter._measurement = "caparoc";
             filter._field = "average_voltage_volts";
             filter.channel = "total";
+            filter.name_of_station = name_of_station;
             fn = "last1";
           }
           {
@@ -130,6 +183,7 @@
         field = "voltage_volts";
         integralField = "voltage_time_volt_seconds";
         filter.channel = "total";
+        filter.name_of_station = name_of_station;
         influx = [{
           filter._measurement = "epicpwrgate.status";
           filter._field = ["Bat.V" "PS.V"];
@@ -168,6 +222,7 @@
         influx.filter._measurement = "caparoc";
         influx.filter._field = ["average_current_amps" "average_power_watts"];
         influx.filter.channel = "total";
+        influx.filter.name_of_station = name_of_station;
         influx.fn = "last1";
         panel.fieldConfig.defaults = {
           color.mode = "thresholds";
@@ -198,6 +253,7 @@
         field = "current_amps";
         integralField = "charge_coulombs";
         filter.channel = "total";
+        filter.name_of_station = name_of_station;
       } {
         panel.gridPos = { x = 2; y = 8; w = 10; h = 8; };
         panel.title = "Workshop Total Current";
@@ -210,6 +266,7 @@
         field = "power_watts";
         integralField = "energy_joules";
         filter.channel = "total";
+        filter.name_of_station = name_of_station;
       } {
         panel.gridPos = { x = 12; y = 8; w = 10; h = 8; };
         panel.title = "Workshop Total Power";
@@ -218,105 +275,34 @@
         };
       })
       # Stacked current/power
-      {
+      (stackedGraph {
+        field = "current_amps";
+        integralField = "charge_coulombs";
+        inherit name_of_station;
+      } {
         panel.gridPos = { x = 2; y = 16; w = 10; h = 8; };
         panel.title = "Current";
-        influx.query = ''
-          import "join"
-
-          names = from(bucket: "profinet")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "caparoc")
-            |> filter(fn: (r) => r["_field"] == "status")
-            |> last()
-            |> group(columns: ["channel"])
-            |> sort(columns: ["_time"])
-            |> last()
-            |> keep(columns: ["channel", "channel_name"])
-            |> map(fn: (r) => ({channel: r.channel, channel_name: if exists r.channel_name then r.channel_name else "Channel "+r.channel}))
-
-          data = from(bucket: "profinet")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_field"] == "total_charge_coulombs" or r["_field"] == "total_time_seconds")
-            |> filter(fn: (r) => r["channel"] != "total")
-            |> window(every: v.windowPeriod)
-            |> last()
-            |> window(every: inf)
-            |> difference(nonNegative: true)
-            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> map(fn: (r) => ({r with average_current_amps: r.total_charge_coulombs/r.total_time_seconds}))
-            |> drop(columns: ["channel_name", "total_charge_coulombs", "total_time_seconds"])
-
-          join.left(
-              left: data |> group(columns: ["channel"]),
-              right: names,
-              on: (l, r) => l.channel == r.channel,
-              as: (l, r) => ({l with channel_name: r.channel_name}),
-          )
-            |> group(columns: ["_measurement", "_field", "_start", "_stop", "name_of_station", "channel", "channel_name"])
-            |> yield(name: "mean")
-        '';
         panel.fieldConfig.defaults = {
           unit = "amp";
-          displayName = "\${__field.labels.channel_name}";
-          custom.stacking.mode = "normal";
-          custom.fillOpacity = 10;
         };
-        panel.options.tooltip.mode = "multi";
-        panel.interval = "1s";
-      }
-      {
+      })
+      (stackedGraph {
+        field = "power_watts";
+        integralField = "energy_joules";
+        inherit name_of_station;
+      } {
         panel.gridPos = { x = 12; y = 16; w = 10; h = 8; };
         panel.title = "Power";
-        influx.query = ''
-          import "join"
-
-          names = from(bucket: "profinet")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "caparoc")
-            |> filter(fn: (r) => r["_field"] == "status")
-            |> last()
-            |> group(columns: ["channel"])
-            |> sort(columns: ["_time"])
-            |> last()
-            |> keep(columns: ["channel", "channel_name"])
-            |> map(fn: (r) => ({channel: r.channel, channel_name: if exists r.channel_name then r.channel_name else "Channel "+r.channel}))
-
-          data = from(bucket: "profinet")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_field"] == "total_energy_joules" or r["_field"] == "total_time_seconds")
-            |> filter(fn: (r) => r["channel"] != "total")
-            |> window(every: v.windowPeriod)
-            |> last()
-            |> window(every: inf)
-            |> difference(nonNegative: true)
-            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> map(fn: (r) => ({r with average_power_watts: r.total_energy_joules/r.total_time_seconds}))
-            |> drop(columns: ["channel_name", "total_energy_joules", "total_time_seconds"])
-
-          join.left(
-              left: data |> group(columns: ["channel"]),
-              right: names,
-              on: (l, r) => l.channel == r.channel,
-              as: (l, r) => ({l with channel_name: r.channel_name}),
-          )
-            |> group(columns: ["_measurement", "_field", "_start", "_stop", "name_of_station", "channel", "channel_name"])
-            |> yield(name: "mean")
-        '';
         panel.fieldConfig.defaults = {
           unit = "watt";
-          displayName = "\${__field.labels.channel_name}";
-          custom.stacking.mode = "normal";
-          custom.fillOpacity = 10;
         };
-        panel.options.tooltip.mode = "multi";
-        panel.interval = "1s";
-      }
+      })
       # Per-channel current and power
       (channelGraph {
         field = "current_amps";
         integralField = "charge_coulombs";
         filter.channel = "\${caparoc_channel}";
+        filter.name_of_station = name_of_station;
       } {
         panel.gridPos = { x = 2; y = 24; w = 10; h = 8; };
         panel.title = "\${caparoc_channel} Current";
@@ -330,6 +316,7 @@
         field = "power_watts";
         integralField = "energy_joules";
         filter.channel = "\${caparoc_channel}";
+        filter.name_of_station = name_of_station;
       } {
         panel.gridPos = { x = 12; y = 24; w = 10; h = 8; };
         panel.title = "\${caparoc_channel} Power";

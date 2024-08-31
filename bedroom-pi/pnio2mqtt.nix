@@ -16,6 +16,9 @@
       send_clock_factor = 32;
       reduction_ratio = 64;
 
+      # This Caparoc has IOPS "BAD" despite reporting good data.
+      ignore_iops = true;
+
       caparoc = {
         publish_interval = 1;
         channels = [
