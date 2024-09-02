@@ -520,11 +520,16 @@ in {
         gdal
         gnuplot_gui
         graphviz
+        labplot
         xdot
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         kgraphviewer
+        (if kdePackages.kig.meta.available then kdePackages.kig else kig)
+        kstars
+        marble
         stellarium
         kdePackages.kalgebra
+        kdePackages.kalzium
         kdePackages.step
       ];
     }
@@ -548,7 +553,10 @@ in {
         wv
       ] ++ lib.optionals pkgs.stdenv.isLinux ([
         abiword
+        #broken calligra
         kdePackages.ghostwriter
+        kdePackages.skanlite
+        kdePackages.skanpage
         marktext
         retext
         rnote
@@ -760,6 +768,7 @@ in {
         kdePackages.kalarm
         kdePackages.kcalc
         kdePackages.kcharselect
+        kdePackages.kdeconnect-kde
         kdePackages.kfilemetadata
         kdePackages.kfind
         kdePackages.kruler

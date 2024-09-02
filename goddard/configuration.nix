@@ -123,6 +123,7 @@
   services.displayManager.sddm.enable = true;
   services.xserver.windowManager.twm.enable = true;
   services.desktopManager.plasma6.enable = true;
+  programs.kdeconnect.enable = true;
 
   fonts.fontDir.enable = true;
   fonts.fontconfig.subpixel.rgba = "rgb";
