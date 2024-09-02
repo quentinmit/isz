@@ -100,6 +100,8 @@
 
     # Laptop
     powertop
+
+    scowl
   ];
 
   services.udev.packages = with pkgs; [
@@ -154,6 +156,10 @@
 
   nix.settings = {
     trusted-users = [ "root" "quentin" ];
+  };
+
+  environment.wordlist = {
+    enable = true;
   };
 
   users.users.quentin = {

@@ -200,6 +200,9 @@ in {
         upx
         sloccount
         loccount
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        heaptrack
+        kcachegrind
       ];
       home.file.".gdbinit".text = ''
         set history filename ~/.gdb_history
@@ -751,11 +754,18 @@ in {
     # KDE apps
     (lib.mkIf config.isz.plasma.enable {
       home.packages = with pkgs; [
-        kdePackages.kcharselect
         # Causes problems: kdePackages.konqueror
-        kdePackages.kfilemetadata
         kdePackages.filelight
+        kdePackages.itinerary
+        kdePackages.kalarm
+        kdePackages.kcalc
+        kdePackages.kcharselect
+        kdePackages.kfilemetadata
+        kdePackages.kfind
+        kdePackages.kruler
         kdePackages.partitionmanager
+        speedcrunch # scientific calculator
+        qalculate-qt
       ];
     })
     # Konsole
