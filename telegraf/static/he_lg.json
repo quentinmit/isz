@@ -11,7 +11,19 @@
       ]
     },
     {
-      "host": "core1.ash1.he.net",
+      "host": "core2.ash1.he.net",
+      "country": "US",
+      "city": "Ashburn",
+      "datacenter": "Equinix Ashburn (DC2)",
+      "state": "VA",
+      "exchanges": [
+        "Equinix Ashburn",
+        "MegaIX Ashburn",
+        "DACS-IX East"
+      ]
+    },
+    {
+      "host": "core3.ash1.he.net",
       "country": "US",
       "city": "Ashburn",
       "datacenter": "Equinix Ashburn (DC2)",
@@ -29,7 +41,18 @@
       "datacenter": "Digital Realty / Telx Atlanta (ATL1), 56 Marietta",
       "state": "GA",
       "exchanges": [
-        "Digital Realty Atlanta IX (Telx-TIE)"
+        "Digital Realty Atlanta IX (Telx-TIE)",
+        "MegaIX Atlanta"
+      ]
+    },
+    {
+      "host": "core1.atl2.he.net",
+      "country": "US",
+      "city": "Atlanta",
+      "datacenter": "CoreSite AT1",
+      "state": "GA",
+      "exchanges": [
+        "CIX-ATL"
       ]
     },
     {
@@ -37,20 +60,30 @@
       "country": "US",
       "city": "Austin",
       "datacenter": "Switch Data Foundry 01",
-      "state": "TX"
+      "state": "TX",
+      "exchanges": [
+        "FD-IX Texas"
+      ]
     },
     {
-      "host": "core1.blp1.he.net",
+      "host": "core2.blp1.he.net",
       "country": "US",
       "city": "Belle Plaine",
       "datacenter": "Zayo NP MSP1",
       "state": "MN"
     },
     {
+      "host": "core1.bil1.he.net",
+      "country": "US",
+      "city": "Billings",
+      "datacenter": "Vision Net / iConnect Billings",
+      "state": "MT"
+    },
+    {
       "host": "core1.boi1.he.net",
       "country": "US",
       "city": "Boise",
-      "datacenter": "Involta",
+      "datacenter": "ark data centers",
       "state": "ID"
     },
     {
@@ -70,7 +103,7 @@
       "datacenter": "CoreSite BO1",
       "state": "MA",
       "exchanges": [
-        "Mass-IX"
+        "MASS-IX"
       ]
     },
     {
@@ -107,11 +140,11 @@
       "host": "core2.cys1.he.net",
       "country": "US",
       "city": "Cheyenne",
-      "datacenter": "ACT Cheyenne",
+      "datacenter": "Range Cheyenne",
       "state": "WY"
     },
     {
-      "host": "core1.chi1.he.net",
+      "host": "core2.chi1.he.net",
       "country": "US",
       "city": "Chicago",
       "datacenter": "Equinix Chicago (CH1/CH2)",
@@ -135,10 +168,30 @@
       ]
     },
     {
+      "host": "core1.chi2.he.net",
+      "country": "US",
+      "city": "Chicago",
+      "datacenter": "Digital Realty / Telx Chicago",
+      "state": "IL",
+      "exchanges": [
+        "DRT Chicago"
+      ]
+    },
+    {
+      "host": "core1.chi3.he.net",
+      "country": "US",
+      "city": "Chicago",
+      "datacenter": "CoreSite Chicago",
+      "state": "IL",
+      "exchanges": [
+        "Any2 Chicago"
+      ]
+    },
+    {
       "host": "core1.cvg1.he.net",
       "country": "US",
       "city": "Cincinnati",
-      "datacenter": "CyrusOne",
+      "datacenter": "CyrusOne CIN2",
       "state": "OH"
     },
     {
@@ -152,7 +205,7 @@
       ]
     },
     {
-      "host": "core2.cmh1.he.net",
+      "host": "core1.cmh1.he.net",
       "country": "US",
       "city": "Columbus",
       "datacenter": "Cologix Columbus",
@@ -169,8 +222,9 @@
       "state": "TX",
       "exchanges": [
         "Equinix Dallas",
-        "CyrusOne",
-        "MegaIX Dallas"
+        "CyrusOne Dallas",
+        "MegaIX Dallas",
+        "DE-CIX Dallas"
       ]
     },
     {
@@ -181,8 +235,9 @@
       "state": "TX",
       "exchanges": [
         "Equinix Dallas",
-        "CyrusOne",
-        "MegaIX Dallas"
+        "CyrusOne Dallas",
+        "MegaIX Dallas",
+        "DE-CIX Dallas"
       ]
     },
     {
@@ -210,7 +265,8 @@
       "state": "CO",
       "exchanges": [
         "Any2 Denver",
-        "IX-Denver"
+        "IX-Denver",
+        "MegaIX Denver"
       ]
     },
     {
@@ -248,7 +304,7 @@
       "state": "NJ"
     },
     {
-      "host": "core2.yeg1.he.net",
+      "host": "core1.yeg1.he.net",
       "country": "CA",
       "city": "Edmonton, AB",
       "datacenter": "Wolfpaw",
@@ -274,7 +330,7 @@
       "state": "CA"
     },
     {
-      "host": "core3.fmt2.he.net",
+      "host": "core1.fmt2.he.net",
       "country": "US",
       "city": "Fremont",
       "datacenter": "Hurricane Electric Fremont 2",
@@ -285,6 +341,26 @@
         "AMS-IX Bay Area",
         "Lambda-IX"
       ]
+    },
+    {
+      "host": "core6.fmt2.he.net",
+      "country": "US",
+      "city": "Fremont",
+      "datacenter": "Hurricane Electric Fremont 2",
+      "state": "CA",
+      "exchanges": [
+        "FCIX",
+        "SFMIX",
+        "AMS-IX Bay Area",
+        "Lambda-IX"
+      ]
+    },
+    {
+      "host": "core1.grr1.he.net",
+      "country": "US",
+      "city": "Byron Center",
+      "datacenter": "123NET Grand Rapids",
+      "state": "MI"
     },
     {
       "host": "core1.yhz1.he.net",
@@ -303,7 +379,7 @@
       "state": "OR"
     },
     {
-      "host": "core1.hnl1.he.net",
+      "host": "core2.hnl1.he.net",
       "country": "US",
       "city": "Honolulu",
       "datacenter": "DRFortress Honolulu",
@@ -343,7 +419,7 @@
       "host": "core2.jax1.he.net",
       "country": "US",
       "city": "Jacksonville",
-      "datacenter": "GoRack 421",
+      "datacenter": "SBA Edge",
       "state": "FL",
       "exchanges": [
         "JXIX"
@@ -357,7 +433,7 @@
       "state": "FL"
     },
     {
-      "host": "core2.mci1.he.net",
+      "host": "core1.mci1.he.net",
       "country": "US",
       "city": "Kansas City",
       "datacenter": "Lumen / Level3",
@@ -461,8 +537,23 @@
       "state": "FL",
       "exchanges": [
         "FL-IX",
-        "Equinix Miami"
+        "Equinix Miami",
+        "MegaIX Miami"
       ]
+    },
+    {
+      "host": "core1.mia2.he.net",
+      "country": "US",
+      "city": "Miami",
+      "datacenter": "Hivelocity Miami 2 / ColoHouse",
+      "state": "FL"
+    },
+    {
+      "host": "core1.mia4.he.net",
+      "country": "US",
+      "city": "Miami,",
+      "datacenter": "Digital Realty MIA1 (36 NE 2nd St)",
+      "state": "FL"
     },
     {
       "host": "core2.msp1.he.net",
@@ -488,7 +579,7 @@
       "datacenter": "Fibre Centre Moncton"
     },
     {
-      "host": "core1.mgm1.he.net",
+      "host": "core2.mgm1.he.net",
       "country": "US",
       "city": "Montgomery",
       "datacenter": "RSA Dexter Montgomery",
@@ -498,7 +589,7 @@
       ]
     },
     {
-      "host": "core2.ymq1.he.net",
+      "host": "core1.ymq1.he.net",
       "country": "CA",
       "city": "Montreal, QC",
       "datacenter": "Cologix Montreal / CANIX 3",
@@ -537,7 +628,8 @@
       "datacenter": "Equinix New York (NY9)",
       "state": "NY",
       "exchanges": [
-        "Equinix New York"
+        "Equinix New York",
+        "MegaIX New York"
       ]
     },
     {
@@ -547,7 +639,8 @@
       "datacenter": "Equinix New York (NY9)",
       "state": "NY",
       "exchanges": [
-        "Equinix New York"
+        "Equinix New York",
+        "MegaIX New York"
       ]
     },
     {
@@ -572,7 +665,7 @@
       ]
     },
     {
-      "host": "core1.nyc7.he.net",
+      "host": "core2.nyc7.he.net",
       "country": "US",
       "city": "New York",
       "datacenter": "Digital Realty / Telx 111 8th New York",
@@ -646,6 +739,16 @@
       ]
     },
     {
+      "host": "core1.pah1.he.net",
+      "country": "US",
+      "city": "Paducah",
+      "datacenter": "Quad State Internet",
+      "state": "KY",
+      "exchanges": [
+        "PaducahIX"
+      ]
+    },
+    {
       "host": "core2.pao1.he.net",
       "country": "US",
       "city": "Palo Alto",
@@ -664,6 +767,17 @@
       "state": "PA"
     },
     {
+      "host": "core1.phl2.he.net",
+      "country": "US",
+      "city": "Philadelphia",
+      "datacenter": "Netrality 401 N Broad",
+      "state": "PA",
+      "exchanges": [
+        "NYIIX Philadelphia",
+        "PhillyIX"
+      ]
+    },
+    {
       "host": "core2.phx1.he.net",
       "country": "US",
       "city": "Phoenix",
@@ -674,7 +788,7 @@
       ]
     },
     {
-      "host": "core2.phx2.he.net",
+      "host": "core1.phx2.he.net",
       "country": "US",
       "city": "Phoenix",
       "datacenter": "PhoenixNAP",
@@ -719,7 +833,7 @@
       "state": "OR"
     },
     {
-      "host": "core1.pwm1.he.net",
+      "host": "core2.pwm1.he.net",
       "country": "US",
       "city": "Portland",
       "datacenter": "Firstlight Fiber Regen Hut",
@@ -752,6 +866,17 @@
       ]
     },
     {
+      "host": "core2.xrs1.he.net",
+      "country": "US",
+      "city": "Reston",
+      "datacenter": "CoreSite Reston",
+      "state": "VA",
+      "exchanges": [
+        "Any2 East",
+        "LINX NoVA"
+      ]
+    },
+    {
       "host": "core1.ric1.he.net",
       "country": "US",
       "city": "Ashland",
@@ -762,7 +887,7 @@
       ]
     },
     {
-      "host": "core1.rst1.he.net",
+      "host": "core2.rst1.he.net",
       "country": "US",
       "city": "Rochester",
       "datacenter": "Zayo NP",
@@ -792,6 +917,13 @@
         "MWestIX",
         "SLIX"
       ]
+    },
+    {
+      "host": "core1.slc3.he.net",
+      "country": "US",
+      "city": "Salt Lake City",
+      "datacenter": "Flexential SLC04 Downtown",
+      "state": "UT"
     },
     {
       "host": "core1.sat1.he.net",
@@ -844,6 +976,13 @@
       ]
     },
     {
+      "host": "core1.snt1.he.net",
+      "country": "US",
+      "city": "Santa Clara",
+      "datacenter": "Cologix SV1",
+      "state": "CA"
+    },
+    {
       "host": "core2.yxe1.he.net",
       "country": "CA",
       "city": "Saskatoon, SK",
@@ -868,7 +1007,7 @@
       "host": "core1.sea2.he.net",
       "country": "US",
       "city": "Seattle",
-      "datacenter": "Westin Building MMR",
+      "datacenter": "Westin Building",
       "state": "WA"
     },
     {
@@ -896,7 +1035,7 @@
       ]
     },
     {
-      "host": "core2.stl1.he.net",
+      "host": "core1.stl1.he.net",
       "country": "US",
       "city": "St. Louis",
       "datacenter": "Netrality 210 N Tucker St. Louis",
@@ -993,7 +1132,8 @@
         "Frys-IX",
         "LSIX",
         "SPEED-IX",
-        "ERA-IX"
+        "ERA-IX",
+        "DATAIX EU"
       ]
     },
     {
@@ -1022,7 +1162,10 @@
       "host": "core1.ams5.he.net",
       "country": "NL",
       "city": "Amsterdam",
-      "datacenter": "Interxion AMS9"
+      "datacenter": "Interxion AMS9",
+      "exchanges": [
+        "BBIX Amsterdam"
+      ]
     },
     {
       "host": "core1.ams7.he.net",
@@ -1040,14 +1183,14 @@
       "host": "core1.ath1.he.net",
       "country": "GR",
       "city": "Koropi",
-      "datacenter": "Lamda Hellix",
+      "datacenter": "Interxion / Digital Realty ATH1",
       "exchanges": [
         "GR-IX Athens",
         "SEECIX"
       ]
     },
     {
-      "host": "core2.bcn1.he.net",
+      "host": "core1.bcn1.he.net",
       "country": "ES",
       "city": "Barcelona",
       "datacenter": "Equinix BA1",
@@ -1055,6 +1198,15 @@
         "CATNIX",
         "DE-CIX Barcelona",
         "Equinix Barcelona"
+      ]
+    },
+    {
+      "host": "core1.bri1.he.net",
+      "country": "IT",
+      "city": "Bari",
+      "datacenter": "Namex",
+      "exchanges": [
+        "Namex Bari"
       ]
     },
     {
@@ -1113,7 +1265,7 @@
       ]
     },
     {
-      "host": "core2.buh1.he.net",
+      "host": "core1.buh1.he.net",
       "country": "RO",
       "city": "Bucharest",
       "datacenter": "NXDATA-1",
@@ -1139,7 +1291,7 @@
       "datacenter": "Dataplex"
     },
     {
-      "host": "core2.cph1.he.net",
+      "host": "core3.cph1.he.net",
       "country": "DK",
       "city": "Copenhagen",
       "datacenter": "Interxion Copenhagen",
@@ -1147,6 +1299,17 @@
         "DIX",
         "Netnod Copenhagen",
         "STHIX Copenhagen"
+      ]
+    },
+    {
+      "host": "core2.dub1.he.net",
+      "country": "IE",
+      "city": "Dublin",
+      "datacenter": "Equinix Dublin (DB2)",
+      "exchanges": [
+        "INEX LAN1",
+        "INEX LAN2",
+        "Equinix Dublin"
       ]
     },
     {
@@ -1160,20 +1323,10 @@
       ]
     },
     {
-      "host": "core2.dub1.he.net",
-      "country": "IE",
-      "city": "Dublin",
-      "datacenter": "Equinix Dublin (DB2)",
-      "exchanges": [
-        "INEX LAN1",
-        "INEX LAN2"
-      ]
-    },
-    {
       "host": "core2.edi1.he.net",
       "country": "UK",
       "city": "Edinburgh",
-      "datacenter": "Pulsant Edinburgh South Gyle",
+      "datacenter": "Pulsant SC-1 (South Gyle)",
       "exchanges": [
         "LINX Scotland"
       ]
@@ -1262,7 +1415,8 @@
       "datacenter": "Equinix LS1",
       "exchanges": [
         "GigaPix",
-        "Equinix Lisbon"
+        "Equinix Lisbon",
+        "DE-CIX Lisbon"
       ]
     },
     {
@@ -1310,7 +1464,7 @@
       "host": "core1.lon7.he.net",
       "country": "UK",
       "city": "London",
-      "datacenter": "Global Switch"
+      "datacenter": "Global Switch London East"
     },
     {
       "host": "core1.lon9.he.net",
@@ -1328,7 +1482,16 @@
       ]
     },
     {
-      "host": "core1.mad1.he.net",
+      "host": "core1.lyn1.he.net",
+      "country": "FR",
+      "city": "V\u00e9nissieux",
+      "datacenter": "SFR Netcenter Lyon-Venissieux",
+      "exchanges": [
+        "France-IX AURA"
+      ]
+    },
+    {
+      "host": "core3.mad1.he.net",
       "country": "ES",
       "city": "Madrid",
       "datacenter": "Interxion Madrid",
@@ -1360,16 +1523,6 @@
       ]
     },
     {
-      "host": "core2.muc1.he.net",
-      "country": "DE",
-      "city": "M\u00fcnchen",
-      "datacenter": "Equinix Munich (MU1)",
-      "exchanges": [
-        "DE-CIX Munich",
-        "ECIX Munich"
-      ]
-    },
-    {
       "host": "core2.mil1.he.net",
       "country": "IT",
       "city": "Milan",
@@ -1388,7 +1541,17 @@
       ]
     },
     {
-      "host": "core1.osl1.he.net",
+      "host": "core2.muc1.he.net",
+      "country": "DE",
+      "city": "M\u00fcnchen",
+      "datacenter": "Equinix Munich (MU1)",
+      "exchanges": [
+        "DE-CIX Munich",
+        "ECIX Munich"
+      ]
+    },
+    {
+      "host": "core2.osl1.he.net",
       "country": "NO",
       "city": "Oslo",
       "datacenter": "STACK Infrastructure / Digiplex Norway",
@@ -1398,13 +1561,20 @@
       ]
     },
     {
+      "host": "core2.par1.he.net",
+      "country": "FR",
+      "city": "Paris",
+      "datacenter": "Interxion Paris 2"
+    },
+    {
       "host": "core2.par2.he.net",
       "country": "FR",
       "city": "Paris",
       "datacenter": "Telehouse Paris Voltaire",
       "exchanges": [
         "France-IX Paris",
-        "LU-CIX"
+        "LU-CIX",
+        "FNC-IX"
       ]
     },
     {
@@ -1437,7 +1607,7 @@
       ]
     },
     {
-      "host": "core1.rom1.he.net",
+      "host": "core2.rom1.he.net",
       "country": "IT",
       "city": "Roma",
       "datacenter": "NaMeX Rome",
@@ -1446,7 +1616,16 @@
       ]
     },
     {
-      "host": "core1.lon5.he.net",
+      "host": "core1.skp1.he.net",
+      "country": "MK",
+      "city": "Skopje",
+      "datacenter": "Telesmart DC Skopje",
+      "exchanges": [
+        "IXP.mk"
+      ]
+    },
+    {
+      "host": "core2.lon5.he.net",
       "country": "UK",
       "city": "Slough",
       "datacenter": "Equinix LD5"
@@ -1492,6 +1671,24 @@
       ]
     },
     {
+      "host": "core1.skg1.he.net",
+      "country": "GR",
+      "city": "Thessaloniki",
+      "datacenter": "Balkan Gate",
+      "exchanges": [
+        "NetIX Greece"
+      ]
+    },
+    {
+      "host": "core1.skg2.he.net",
+      "country": "GR",
+      "city": "Thessaloniki",
+      "datacenter": "Synapsecom SNC-1",
+      "exchanges": [
+        "GR-IX Thessaloniki"
+      ]
+    },
+    {
       "host": "core1.tia1.he.net",
       "country": "AL",
       "city": "Tirana",
@@ -1510,20 +1707,19 @@
       ]
     },
     {
-      "host": "core1.vno1.he.net",
+      "host": "core2.vno1.he.net",
       "country": "LT",
       "city": "Vilnius",
       "datacenter": "Data Logistics Center",
       "exchanges": [
-        "BALT-IX",
-        "LIXP Vilnius"
+        "BALT-IX"
       ]
     },
     {
       "host": "core2.waw1.he.net",
       "country": "PL",
       "city": "Warsaw",
-      "datacenter": "Equinix WA1 Warsaw",
+      "datacenter": "Equinix WA1 Warsaw, 1-IX EU",
       "exchanges": [
         "Equinix Warsaw (PLIX)",
         "POZIX",
@@ -1560,11 +1756,17 @@
       "host": "core2.zrh3.he.net",
       "country": "CH",
       "city": "Zurich",
-      "datacenter": "Equinix Z\u00fcrich (ZH4)",
+      "datacenter": "Equinix Z\u00c3\u00bcrich (ZH4)",
       "exchanges": [
         "Equinix Zurich",
         "SwissIX"
       ]
+    },
+    {
+      "host": "core1.zrh4.he.net",
+      "country": "CH",
+      "city": "R\u00fcmlang",
+      "datacenter": "NTT ZRH1"
     },
     {
       "host": "core1.akl1.he.net",
@@ -1574,7 +1776,8 @@
       "exchanges": [
         "AKL-IX",
         "APE",
-        "MegaIX Auckland"
+        "MegaIX Auckland",
+        "EdgeIX Auckland"
       ]
     },
     {
@@ -1657,11 +1860,13 @@
       "city": "Bangkok",
       "datacenter": "TCC Technology Bangna",
       "exchanges": [
-        "BKNIX"
+        "AMS-IX Bangkok",
+        "BKNIX",
+        "BBIX Thailand"
       ]
     },
     {
-      "host": "core1.hkg1.he.net",
+      "host": "core2.hkg1.he.net",
       "country": "HK",
       "city": "Hong Kong",
       "datacenter": "MEGA-iAdvantage Hong Kong",
@@ -1694,6 +1899,17 @@
       ]
     },
     {
+      "host": "core1.mnl2.he.net",
+      "country": "PH",
+      "city": "Makati",
+      "datacenter": "PLDT VITRO Makati 1",
+      "exchanges": [
+        "GetaFIX Manila",
+        "BBIX Manila",
+        "MHK-IX"
+      ]
+    },
+    {
       "host": "core2.osa1.he.net",
       "country": "JP",
       "city": "Osaka",
@@ -1701,7 +1917,8 @@
       "exchanges": [
         "BBIX Osaka",
         "JPNAP Osaka",
-        "JPIX Osaka"
+        "JPIX Osaka",
+        "Equinix Osaka"
       ]
     },
     {
@@ -1717,7 +1934,7 @@
       "host": "core2.sel1.he.net",
       "country": "KR",
       "city": "Seoul",
-      "datacenter": "KINX Seoul",
+      "datacenter": "KINX Dogok",
       "exchanges": [
         "KINX"
       ]
@@ -1732,6 +1949,12 @@
       ]
     },
     {
+      "host": "core1.sel3.he.net",
+      "country": "KR",
+      "city": "Seoul",
+      "datacenter": "Digital Edge SEL1"
+    },
+    {
       "host": "core2.sin1.he.net",
       "country": "SG",
       "city": "Singapore",
@@ -1739,6 +1962,7 @@
       "exchanges": [
         "AMS-IX Singapore",
         "BBIX Singapore",
+        "EdgeIX Singapore",
         "Equinix Singapore",
         "MegaIX Singapore",
         "DE-CIX ASEAN/JBIX",
@@ -1746,17 +1970,12 @@
       ]
     },
     {
-      "host": "core3.sin1.he.net",
+      "host": "core1.sin2.he.net",
       "country": "SG",
       "city": "Singapore",
-      "datacenter": "Equinix Singapore (SG1)",
+      "datacenter": "Global Switch Tai Seng",
       "exchanges": [
-        "AMS-IX Singapore",
-        "BBIX Singapore",
-        "Equinix Singapore",
-        "MegaIX Singapore",
-        "DE-CIX ASEAN/JBIX",
-        "SGIX"
+        "SOX Singapore"
       ]
     },
     {
@@ -1770,7 +1989,7 @@
       ]
     },
     {
-      "host": "core1.tyo1.he.net",
+      "host": "core2.tyo1.he.net",
       "country": "JP",
       "city": "Tokyo",
       "datacenter": "Equinix Tokyo (TY2)",
@@ -1778,20 +1997,56 @@
         "BBIX Tokyo",
         "Equinix Tokyo",
         "JPNAP Tokyo",
-        "JPIX Tokyo"
+        "JPIX Tokyo",
+        "INIXP Asia"
       ]
     },
     {
-      "host": "core1.bog1.he.net",
+      "host": "core3.tyo1.he.net",
+      "country": "JP",
+      "city": "Tokyo",
+      "datacenter": "Equinix Tokyo (TY2)",
+      "exchanges": [
+        "BBIX Tokyo",
+        "Equinix Tokyo",
+        "JPNAP Tokyo",
+        "JPIX Tokyo",
+        "INIXP Asia"
+      ]
+    },
+    {
+      "host": "core1.tyo2.he.net",
+      "country": "JP",
+      "city": "Tokyo",
+      "datacenter": "AT TOKYO CC1"
+    },
+    {
+      "host": "core2.bog1.he.net",
       "country": "CO",
       "city": "Bogota",
-      "datacenter": "Equinix BG1"
+      "datacenter": "Equinix BG1",
+      "exchanges": [
+        "Equinix Bogota",
+        "PIT Colombia Bogota"
+      ]
+    },
+    {
+      "host": "core1.bue1.he.net",
+      "country": "AR",
+      "city": "Buenos Aires",
+      "datacenter": "SYT Buenos Aires",
+      "exchanges": [
+        "AR-IX Cabase"
+      ]
     },
     {
       "host": "core1.for1.he.net",
       "country": "BR",
       "city": "Fortaleza",
-      "datacenter": "GlobeNet"
+      "datacenter": "GlobeNet",
+      "exchanges": [
+        "IX.br (PTT.br) Fortaleza"
+      ]
     },
     {
       "host": "core1.rio1.he.net",
@@ -1806,12 +2061,18 @@
     {
       "host": "core3.sao1.he.net",
       "country": "BR",
-      "city": "S\u00e3o Paulo",
+      "city": "Sao Paulo",
       "datacenter": "Equinix Sao Paulo (SP2)",
       "exchanges": [
         "IX.br (PTT.br) Sao Paulo",
         "Equinix Sao Paulo"
       ]
+    },
+    {
+      "host": "core1.sao3.he.net",
+      "country": "BR",
+      "city": "Sao Paulo",
+      "datacenter": "Spin18"
     },
     {
       "host": "core1.cpt1.he.net",
@@ -1824,7 +2085,7 @@
       ]
     },
     {
-      "host": "core1.jib1.he.net",
+      "host": "core2.jib1.he.net",
       "country": "DJ",
       "city": "Djibouti City",
       "datacenter": "Djibouti Data Center",
@@ -1866,7 +2127,10 @@
       "host": "core1.mba1.he.net",
       "country": "KE",
       "city": "Mombasa",
-      "datacenter": "icolo.io Mombasa One"
+      "datacenter": "icolo.io Mombasa One",
+      "exchanges": [
+        "KIXP Mombasa"
+      ]
     },
     {
       "host": "core1.nbo1.he.net",
@@ -1874,11 +2138,11 @@
       "city": "Nairobi",
       "datacenter": "Africa Data Centres NBO1",
       "exchanges": [
-        "KIXP"
+        "KIXP Nairobi"
       ]
     },
     {
-      "host": "core1.dxb1.he.net",
+      "host": "core2.dxb1.he.net",
       "country": "AE",
       "city": "Dubai",
       "datacenter": "Equinix Dubai (DX1)",
@@ -1895,12 +2159,6 @@
         "DE-CIX Istanbul",
         "GIBIRIX"
       ]
-    },
-    {
-      "host": "core1.skp1.he.net",
-      "country": "MK",
-      "city": "Skopje",
-      "datacenter": "Telesmart DC Skopje"
     }
   ]
 }

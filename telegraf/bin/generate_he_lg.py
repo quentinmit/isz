@@ -14,19 +14,18 @@ def main():
     )
 
     out = []
-    for e in tree.xpath('//li[./input[@name="routers[]"]]'):
+    for e in tree.xpath('//select[@name="routers[]"]//option[@value]'):
         x = {
-            'host': e.find('input').get('value'),
-            'country': e.find('./label/span/img').get('alt'),
-            'city': e.find('./label/span').text[:-5],
-            'datacenter': e.find('./label').text.strip(),
+            'host': e.get('value'),
+            'country': e.get('data-iso3166').upper(),
+            'city': e.get('data-location')[:-4],
+            'datacenter': e.text.strip(),
         }
         if x['country'] == 'US':
             x['state'] = x['city'][-2:]
             x['city'] = x['city'][:-4]
-        t = e.find('./label').get('title')
-        if ' - ' in t:
-            x['exchanges'] = t.split(' - ', 1)[1].split(', ')
+        if exchanges := e.get('data-exchanges'):
+            x['exchanges'] = exchanges.split(', ')
         out.append(x)
     json.dump(
         {
