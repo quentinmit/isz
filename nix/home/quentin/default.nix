@@ -472,6 +472,15 @@ in {
         mibAllowUnderline yes
       '';
     }
+    # Network - browsh
+    {
+      programs.browsh = {
+        enable = true;
+        settings = {
+          browsh_supporter = "I have shown my support for Browsh";
+        };
+      };
+    }
     # Network
     {
       home.packages = with pkgs; [
