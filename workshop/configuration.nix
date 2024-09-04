@@ -67,6 +67,8 @@
 
   hardware.bluetooth.enable = true;
 
+  services.fwupd.enable = true;
+
   # Select internationalisation properties.
   # console = {
   #   font = "Lat2-Terminus16";
