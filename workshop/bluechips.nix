@@ -20,6 +20,7 @@
     after = [ "network-online.target" "postgresql.service" ];
     environment = {
       ROCKET_ADDRESS="unix:%t/bluechips/bluechips.sock";
+      ROCKET_REUSE="true";
       ROCKET_DB_URI="postgresql://?dbname=bluechips";
     };
     preStart = ''
