@@ -112,7 +112,7 @@
         };
       in [
         {
-          service = "notify.mobile_app_jess_pixel_4a";
+          service = "notify.mobile_app_pixel_8a";
           data = {
             message = "{{trigger.to_state.name}} has left {{trigger.from_state.state}} at {{trigger.to_state.last_changed}}";
             title = "Quentin Arrival";
