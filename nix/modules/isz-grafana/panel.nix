@@ -1,10 +1,15 @@
 { config, pkgs, lib
-, datasource
+, datasources
+, defaultDatasourceName
 , extraInfluxFilter ? {}
 , ... }:
 with import ./lib.nix { inherit config pkgs lib; };
 with import ../grafana/types.nix { inherit pkgs lib; };
-{
+let
+  datasource = {
+    inherit (datasources.${config.datasourceName}) uid type;
+  };
+in {
   config.panel = let
     g = config;
   in lib.mkMerge [
@@ -23,7 +28,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           refId = lib.elemAt [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ] i;
         in {
           target = {
-            inherit datasource refId;
+            inherit refId;
             inherit (influx) query;
           };
           override = if influx.options != null then {
@@ -174,8 +179,26 @@ with import ../grafana/types.nix { inherit pkgs lib; };
       type = with types; nullOr (listOf str);
       default = null;
     };
+    datasourceName = mkOption {
+      type = types.str;
+      default = defaultDatasourceName;
+    };
     panel = mkOption {
-      inherit (dashboardFormat) type;
+      type = types.submodule ({ config, ... }: {
+        freeformType = dashboardFormat.type;
+        options = {
+          targets = mkOption {
+            default = [];
+            type = types.listOf (types.submodule {
+              freeformType = dashboardFormat.type;
+              config = {
+                datasource = lib.mkDefault datasource;
+              };
+            });
+          };
+        };
+        # panel.datasource defaults to panel.targets[0].datasource in default.nix
+      });
     };
   };
 }

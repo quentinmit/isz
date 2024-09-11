@@ -96,9 +96,8 @@ in {
               })
             ];
             specialArgs = {
-              datasource = {
-                inherit (datasources.${dashboard.defaultDatasourceName}) uid type;
-              };
+              inherit datasources;
+              inherit (dashboard) defaultDatasourceName;
               inherit pkgs;
               extraInfluxFilter.host = {
                 op = "=~";

@@ -581,6 +581,25 @@
         # For use with the "dateTimeFromNow" unit
         # |> map(fn: (r) => ({r with _value: if (r._field == "last-activity-ns" or r._field == "uptime-ns") then float(v: uint(v: date.sub(from: r._time, d: duration(v: int(v: r._value)))))/1000000. else r._value}))
       }
+      {
+        datasourceName = "loki";
+        panel = {
+          gridPos = { x = 0; y = 27; w = 20; h = 8; };
+          title = "Recent Logs";
+          type = "logs";
+          targets = [{
+            # datasource
+            # refId = "A"
+            # editorMode = "builder"
+            refId = "A";
+            expr = ''
+              {source_type="mikrotik"} |~ `(?i)''${macaddress}` | json | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}`
+            '';
+            queryType = "range";
+          }];
+          options.showTime = true;
+        };
+      }
     ];
   };
 }

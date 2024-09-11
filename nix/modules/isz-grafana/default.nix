@@ -90,11 +90,8 @@ in {
               modules = [ ./panel.nix ];
               shorthandOnlyDefinesConfig = true;
               specialArgs = {
-                datasource = {
-                  #uid = "uid";
-                  #type = "influxdb";
-                  inherit (cfg.datasources.${config.defaultDatasourceName}) uid type;
-                };
+                inherit (cfg) datasources;
+                inherit (config) defaultDatasourceName;
                 inherit pkgs;
                 extraInfluxFilter = {};
               };
@@ -114,7 +111,7 @@ in {
       };
       in {
         inherit (dashboard) uid title tags links graphTooltip;
-        panels = map (p: p.panel) dashboard.panels;
+        panels = map (p: (if p.panel.targets != [] then {inherit (lib.elemAt p.panel.targets 0) datasource; } else {}) // p.panel) dashboard.panels;
         templating.list = lib.mapAttrsToList (name: args: lib.recursiveUpdate rec {
           inherit (args) tag query;
           definition = query;
