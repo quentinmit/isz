@@ -23,6 +23,7 @@
       ./sdrtrunk
       ./speedtest.nix
       ./loki.nix
+      ./vector.nix
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];
