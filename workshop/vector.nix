@@ -3,6 +3,7 @@
   services.vector = {
     enable = true;
     settings = {
+      api.enabled = true;
       sources.syslog_udp = {
         type = "syslog";
         mode = "udp";
@@ -20,6 +21,15 @@
           .source_type = "mikrotik"
         '';
       };
+      transforms.mikrotik_reduce = {
+        type = "reduce";
+        inputs = ["mikrotik"];
+        starts_when = ''
+          !match(string!(.message), r'^\s')
+        '';
+        # Can't use group_by because it produces out-of-order logs.
+        merge_strategies.message = "concat_newline";
+      };
       sinks.console = {
         type = "console";
         inputs = ["syslog_udp"];
@@ -28,7 +38,7 @@
       };
       sinks.loki = {
         type = "loki";
-        inputs = ["mikrotik"];
+        inputs = ["mikrotik_reduce"];
         endpoint = "https://loki.isz.wtf";
         encoding.codec = "json";
         labels = {
