@@ -9,6 +9,7 @@ in {
   services.loki = {
     enable = true;
     configuration = {
+      auth_enabled = false; # Disable multi-tenancy
       server.http_listen_network = "unix";
       server.http_listen_address = "/run/loki/loki.sock";
       server.http_listen_port = 80; # Will be appended to the Unix socket path (https://github.com/grafana/dskit/issues/475)
@@ -16,6 +17,7 @@ in {
       #server.grpc_listen_network = "unix";
       #server.grpc_listen_address = "/run/loki/loki,sock";
       server.grpc_listen_address = "127.0.0.1";
+      frontend_worker.frontend_address = "127.0.0.1:9095";
       common.replication_factor = 1;
       common.path_prefix = dataDir;
       common.ring = {
@@ -23,6 +25,7 @@ in {
         instance_interface_names = ["lo"];
         instance_addr = "127.0.0.1";
       };
+      query_scheduler.scheduler_ring.instance_addr = "127.0.0.1";
       schema_config.configs = [{
         from = "2024-01-01";
         store = "tsdb";

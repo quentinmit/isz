@@ -58,6 +58,12 @@
           uri = "tcp://mqtt.isz.wtf:1883";
         };
       };
+      loki = {
+        uid = "bdxjgkarhgs8wd";
+        type = "loki";
+        url = "https://loki.isz.wtf";
+        jsonData.oauthPassThru = true;
+      };
     };
     services.grafana = {
       enable = true;
