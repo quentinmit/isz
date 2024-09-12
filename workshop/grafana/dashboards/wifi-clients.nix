@@ -311,7 +311,7 @@
           type = "logs";
           targets = [{
             expr = ''
-              {source_type="mikrotik", topic="wireless"} | json | regexp `(?P<macaddress>(?:[0-9A-F]{2}:){5}[0-9A-F]{2})` | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}`
+              {source_type="mikrotik", topic="wireless"} | json message="message" | regexp `(?P<macaddress>(?:[0-9A-F]{2}:){5}[0-9A-F]{2})` | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}` | drop message,detected_level,service_name,subtopic="<null>",timestamp_end
             '';
             queryType = "range";
           }];
@@ -615,7 +615,7 @@
           type = "logs";
           targets = [{
             expr = ''
-              {source_type="mikrotik"} |~ `(?i)''${macaddress}` | json | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}`
+              {source_type="mikrotik"} |~ `(?i)''${macaddress}` | json message="message" | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}` | drop message,detected_level,service_name,subtopic="<null>"
             '';
             queryType = "range";
           }];
