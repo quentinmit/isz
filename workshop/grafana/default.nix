@@ -63,6 +63,15 @@
         type = "loki";
         url = "https://loki.isz.wtf";
         jsonData.oauthPassThru = true;
+        jsonData.derivedFields = [
+          {
+            matcherRegex = "macaddress";
+            matcherType = "label";
+            name = "MAC address";
+            url = ''/d/eXssGz84k/wifi-client?orgId=1&var-macaddress=$''${__value.raw}'';
+            urlDisplayLabel = "View";
+          }
+        ];
       };
     };
     services.grafana = {

@@ -85,6 +85,10 @@ in {
             type = types.listOf dashboardFormat.type;
             default = [];
           };
+          annotations = mkOption {
+            type = (options.services.grafana.dashboards.type.getSubOptions []).annotations.list.type;
+            default = [];
+          };
           panels = mkOption {
             type = types.listOf (types.submoduleWith {
               modules = [ ./panel.nix ];
@@ -120,6 +124,7 @@ in {
           inherit name;
           type = "query";
         } args.extra) dashboard.variables;
+        annotations.list = (options.services.grafana.dashboards.type.getSubOptions []).annotations.list.default ++ dashboard.annotations;
       }) cfg.dashboards;
   };
 }

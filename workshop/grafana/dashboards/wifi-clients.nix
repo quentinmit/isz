@@ -303,6 +303,21 @@
           |> yield()
         '';
       }
+      {
+        datasourceName = "loki";
+        panel = {
+          gridPos = { x = 0; y = 31; w = 24; h = 8; };
+          title = "Recent Logs";
+          type = "logs";
+          targets = [{
+            expr = ''
+              {source_type="mikrotik", topic="wireless"} | json | regexp `(?P<macaddress>(?:[0-9A-F]{2}:){5}[0-9A-F]{2})` | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}`
+            '';
+            queryType = "range";
+          }];
+          options.showTime = true;
+        };
+      }
     ];
   };
   config.isz.grafana.dashboards.wifi-client = {
@@ -348,6 +363,17 @@
         extra.includeAll = false;
       };
     };
+    annotations = [{
+      datasource = {
+        inherit (config.isz.grafana.datasources.loki) type uid;
+      };
+      name = "Wireless logs";
+      expr = ''
+        {source_type="mikrotik",topic="wireless",level!="debug"} |~ `(?i)''${macaddress}` | json | line_format `{{.message}}`
+      '';
+      enable = true;
+      tagKeys = "host,level";
+    }];
     links = [
       {
         tags = ["wifi"];
@@ -588,10 +614,6 @@
           title = "Recent Logs";
           type = "logs";
           targets = [{
-            # datasource
-            # refId = "A"
-            # editorMode = "builder"
-            refId = "A";
             expr = ''
               {source_type="mikrotik"} |~ `(?i)''${macaddress}` | json | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}`
             '';
