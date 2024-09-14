@@ -516,6 +516,7 @@ in {
         websocat
         termshark
         mactelnet
+        bruno
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         netsurf.browser
         qgis-ltr
