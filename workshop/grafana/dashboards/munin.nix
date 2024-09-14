@@ -802,6 +802,16 @@
           custom.transform = "negative-Y";
         };
       };
+      fs.zpool_iostat = {
+        graph_title = "zpool iostat";
+        graph_vlabel = "read (-) / written (+)";
+        graph_info = "This graph shows zpool iostat";
+        influx.filter._measurement = "zpool_stats";
+        influx.filter._field = ["read_bytes" "write_bytes"];
+        influx.fn = "derivative";
+        fields.read_bytes.custom.transform = "negative-Y";
+        unit = "Bps";
+      };
     };
   };
 }
