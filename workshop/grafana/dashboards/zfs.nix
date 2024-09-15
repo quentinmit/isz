@@ -167,9 +167,7 @@ in {
         influx.filter._field = ["alloc" "free" "size"];
         influx.filter.vdev = "root";
         influx.fn = "last1";
-        influx.extra = ''
-          |> drop(columns: ["host", "vdev", "state"])
-        '';
+        influx.groupBy.fn = "sum";
         panel.type = "stat";
         panel.options.graphMode = "none";
         panel.options.colorMode = "background";
