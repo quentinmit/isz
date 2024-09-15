@@ -66,6 +66,12 @@ in {
         extra.label = "Host";
         extra.includeAll = false;
       };
+      latencyparam = {
+        predicate = ''r["_measurement"] == "zpool_latency" and r["_field"] !~ /^total_/'';
+        tag = "_field";
+        extra.label = "Latency Parameters";
+        extra.multi = true;
+      };
     };
     panels = [
       (chart {
@@ -134,6 +140,7 @@ in {
         };
       })
       (base {
+        panel.title = "";
         panel.gridPos = { x = 9; y = 2; w = 5; h = 5; };
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = ["read_errors" "write_errors" "fragmentation" "checksum_errors"];
@@ -154,6 +161,7 @@ in {
         fields.fragmentation.unit = "percent";
       })
       (base {
+        panel.title = "";
         panel.gridPos = { x = 9; y = 7; w = 5; h = 7; };
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = ["alloc" "free" "size"];
@@ -224,6 +232,12 @@ in {
         panel.title = "Total Writes";
         panel.gridPos = { x = 12; y = 15; w = 12; h = 8; };
         panel.options.color.scheme = "Oranges";
+      })
+      (heatmapPanel "$latencyparam" {
+        panel.title = "Latency for $latencyparam queue";
+        panel.gridPos = { x = 0; y = 23; w = 6; h = 8; };
+        panel.repeat = "latencyparam";
+        panel.repeatDirection = "h";
       })
     ];
   };
