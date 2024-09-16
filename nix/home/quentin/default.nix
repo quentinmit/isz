@@ -347,6 +347,7 @@ in {
         pulseview
         gtkwave
         cutecom
+        lxi-tools-gui
       ];
     }
     # Radio
