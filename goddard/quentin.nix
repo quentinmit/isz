@@ -25,6 +25,7 @@
         jdk
         kdePackages.krfb
         google-cloud-sdk
+        baudline
       ];
 
       # Don't index Electron folders
