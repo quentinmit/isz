@@ -13,6 +13,9 @@
       openssh = final.openssh_gssapi.override {
         dsaKeysSupport = true;
       };
+      xwayland = prev.xwayland.override (oldArgs: {
+        inherit (config.programs.xwayland) defaultFontPath;
+      });
     })
   ];
   nixpkgs.config.permittedInsecurePackages = [
