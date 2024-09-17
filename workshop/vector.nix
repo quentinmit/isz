@@ -1,9 +1,37 @@
 { config, lib, pkgs, ... }:
 {
+  sops.secrets."vector/loki/oauth_token" = {};
+  systemd.services.vector.serviceConfig.LoadCredential = "loki_oauth_token:${config.sops.secrets."vector/loki/oauth_token".path}";
   services.vector = {
     enable = true;
     settings = {
       api.enabled = true;
+      secret.systemd.type = "exec";
+      secret.systemd.command = [
+        (pkgs.writers.writePython3 "vector-secrets" {} ''
+          import os
+          import os.path
+          import json
+          import sys
+
+          req = json.load(sys.stdin)
+          assert req.get("version") == "1.0"
+
+          out = {}
+          for name in req["secrets"]:
+              try:
+                  data = open(
+                      os.path.join(
+                          os.environ["CREDENTIALS_DIRECTORY"],
+                          name,
+                      )
+                  ).read()
+                  out[name] = {"value": data, "error": None}
+              except OSError as e:
+                  out[name] = {"value": None, "error": str(e)}
+          print(json.dumps(out))
+        '')
+      ];
       sources.syslog_udp = {
         type = "syslog";
         mode = "udp";
@@ -48,6 +76,8 @@
           subtopic = "{{ subtopic }}";
           level = "{{ severity }}";
         };
+        auth.strategy = "bearer";
+        auth.token = "SECRET[systemd.loki_oauth_token]";
       };
     };
   };
