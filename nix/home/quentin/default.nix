@@ -489,6 +489,7 @@ in {
         axel
         bmon
         geoip
+        httpie
         iftop
         influxdb2-cli
         iperf3
@@ -522,6 +523,7 @@ in {
         netsurf.browser
         qgis-ltr
         remmina
+        sockdump
       ];
     }
     # Science
