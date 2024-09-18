@@ -129,4 +129,5 @@ final: prev:
   wd-fw-update = final.callPackage ./python/wd-fw-update {};
   dwex = final.callPackage ./python/dwex {};
   einstein = final.callPackage ./einstein {};
+  input-utils = final.callPackage ./input-utils {};
 }
