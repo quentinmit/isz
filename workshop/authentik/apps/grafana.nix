@@ -14,9 +14,10 @@
     "auth.generic_oauth" = {
       name = "authentik";
       enabled = true;
+      use_refresh_token = true;
       client_id = "$__file{${config.sops.secrets."authentik/apps/grafana/client_id".path}}";
       client_secret = "$__file{${config.sops.secrets."authentik/apps/grafana/client_secret".path}}";
-      scopes = "openid email profile";
+      scopes = "openid email profile offline_access";
       auth_url = "${baseUrl}authorize/";
       token_url = "${baseUrl}token/";
       api_url = "${baseUrl}userinfo/";
@@ -29,5 +30,11 @@
     name = "Grafana";
     type = "oauth2";
     redirect_uris = "https://grafana.isz.wtf/login/generic_oauth";
+    properties = [
+      "email"
+      "openid"
+      "profile"
+      "offline_access"
+    ];
   };
 }

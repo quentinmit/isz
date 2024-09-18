@@ -4,7 +4,7 @@
     name = "Loki";
     type = "proxy";
     host = "loki.isz.wtf";
-    # TODO: nginx = true;
+    nginx = true;
     properties = [
       "email"
       "openid"
