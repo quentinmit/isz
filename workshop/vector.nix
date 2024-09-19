@@ -45,7 +45,7 @@
         decoding.codec = "vrl";
         # Packet format is topic,level[,subtopic] message
         decoding.vrl.source = ''
-          . |= parse_regex!(.message, r'^(?P<topic>[^, ]+),(?P<severity>[^, ]+)(?:,(?P<subtopic>[^, ]+))? (?P<message>.*)$')
+          . |= parse_regex(.message, r'^(?P<topic>[^, ]+),(?P<severity>[^, ]+)(?:,(?P<subtopic>[^, ]+))? (?P<message>.*)$') ?? {}
           .source_type = "mikrotik"
         '';
       };
@@ -70,7 +70,7 @@
         endpoint = "https://loki.isz.wtf";
         encoding.codec = "json";
         labels = {
-          source_type = "mikrotik";
+          source_type = "{{ source_type }}";
           host = "{{ host }}";
           topic = "{{ topic }}";
           subtopic = "{{ subtopic }}";
