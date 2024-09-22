@@ -55,7 +55,7 @@ let
     };
   } args);
 in {
-  config.isz.grafana.dashboards."Experimental/ZFS" = {
+  config.isz.grafana.dashboards."ZFS" = {
     uid = "avHi3RIg";
     title = "ZFS";
     defaultDatasourceName = "workshop";

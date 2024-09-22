@@ -388,6 +388,20 @@
           "steal"
         ];
       };
+      system.cpuspeed = {
+        graph_title = "CPU frequency scaling";
+        unit = "MHz";
+        influx.filter._measurement = "amdgpu";
+        influx.filter._field = ["current_coreclk_sum" "current_coreclk_count"];
+        influx.fn = "derivative";
+        influx.pivot = true;
+        influx.extra = ''
+          |> drop(columns: ["class", "p", "r", "slot", "subsystem_name", "subsystem_vendor_name", "device_name", "vendor_name"])
+          |> map(fn: (r) => ({r with _value: r.current_coreclk_sum/r.current_coreclk_count}))
+          |> drop(columns: ["current_coreclk_sum", "current_coreclk_count"])
+          |> filter(fn: (r) => (r._value < 65000.)) // sometimes 65535 is reported instead of a real value
+        '';
+      };
       # cpuspeed
       system.entropy = {
         graph_title = "Available entropy";
