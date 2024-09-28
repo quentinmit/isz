@@ -20,7 +20,9 @@
   ];
   nixpkgs.config.permittedInsecurePackages = [
     "python3.11-youtube-dl-2021.12.17"
+    "segger-jlink-qt4-794l"
   ];
+  nixpkgs.config.segger-jlink.acceptLicense = true;
 
   system.stateVersion = "23.11";
 
@@ -105,6 +107,10 @@
     powertop
 
     scowl
+
+    # Development
+    segger-jlink
+    segger-ozone
   ];
 
   services.udev.packages = with pkgs; [
