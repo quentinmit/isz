@@ -47,6 +47,7 @@ in {
         ".#*"
         ".ipynb_checkpoints"
         "__pycache__"
+        "*.kate-swp"
       ];
       userName = "Quentin Smith";
       userEmail = lib.mkDefault "quentin@mit.edu";
