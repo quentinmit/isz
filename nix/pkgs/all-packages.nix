@@ -131,4 +131,6 @@ final: prev:
   einstein = final.callPackage ./einstein {};
   input-utils = final.callPackage ./input-utils {};
   sheepshaver = final.callPackage ./sheepshaver {};
+  fairlight-sound-library = final.callPackage ./blackmagic/fairlight-sound-library.nix {};
+  qt-installer-framework-extractor  = final.callPackage ./qt-installer-framework-extractor {};
 }
