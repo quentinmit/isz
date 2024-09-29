@@ -65,6 +65,8 @@
         "autostart/caprine.desktop".source = "${pkgs.caprine-bin}/share/applications/caprine.desktop";
         "autostart/discord.desktop".source = "${pkgs.discord}/share/applications/discord.desktop";
       };
+
+      xdg.dataFile."DaVinciResolve/configs/.soundlibrary".text = "${pkgs.fairlight-sound-library}";
     }
     # Emacs
     {
