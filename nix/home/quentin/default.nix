@@ -323,6 +323,7 @@ in {
         rizin
         (pkgs.writeShellScriptBin "cyberchef" "${open} ${pkgs.cyberchef}/share/cyberchef/index.html")
         (if ghidra-bin.meta.available then ghidra-bin else ghidra)
+        kaitai-struct-compiler
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         unstable.elf-dissector
         imhex

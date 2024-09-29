@@ -180,6 +180,7 @@
         ihaskell
         iruby
         gophernotes
+        kaitaistruct
         keyring
         ldap3
         #unsupported leveldb
