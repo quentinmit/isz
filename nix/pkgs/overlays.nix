@@ -218,4 +218,13 @@ final: prev: {
       vde2
     ]);
   });
+  libmp3splt = prev.libmp3splt.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      (final.fetchpatch2 {
+        url = "https://github.com/mp3splt/mp3splt/pull/368.patch";
+        hash = "sha256-EB21Sls5yJVxxQrxKKxl21pyiiQLrdyyYK0JvPWgmFU=";
+        stripLen = 1;
+      })
+    ];
+  });
 }
