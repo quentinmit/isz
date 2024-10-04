@@ -31,10 +31,10 @@
     type = "oauth2";
     redirect_uris = "https://grafana.isz.wtf/login/generic_oauth";
     properties = [
-      "email"
-      "openid"
-      "profile"
-      "offline_access"
+      "goauthentik.io/providers/oauth2/scope-email"
+      "goauthentik.io/providers/oauth2/scope-openid"
+      "goauthentik.io/providers/oauth2/scope-profile"
+      "goauthentik.io/providers/oauth2/scope-offline_access"
     ];
   };
 }

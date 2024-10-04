@@ -5,11 +5,5 @@
     type = "proxy";
     host = "loki.isz.wtf";
     nginx = true;
-    properties = [
-      "email"
-      "openid"
-      "profile"
-      "ak_proxy"
-    ];
   };
 }

@@ -10,11 +10,5 @@
     type = "proxy";
     host = "paperless.isz.wtf";
     nginx = true;
-    properties = [
-      "email"
-      "openid"
-      "profile"
-      "ak_proxy"
-    ];
   };
 }
