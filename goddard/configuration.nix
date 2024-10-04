@@ -156,6 +156,13 @@
     qemu.runAsRoot = false;
   };
 
+  virtualisation.podman = {
+    enable = true;
+  };
+  virtualisation.containers.containersConf.settings = {
+    network.firewall_driver = "none"; # firewalld
+  };
+
   # TODO: Switch to systemd-resolved for mDNS
   services.avahi = {
     enable = true;
@@ -182,6 +189,7 @@
       "wheel"
       "wireshark"
       "libvirtd"
+      "podman"
       "audio"
     ];
   };
