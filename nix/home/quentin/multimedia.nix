@@ -186,6 +186,8 @@ in {
         jaaa
         japa
         scope-tui
+        losslesscut-bin
+        rsgain
 
         # Plugins
         qsynth

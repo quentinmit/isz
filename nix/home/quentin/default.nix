@@ -50,6 +50,8 @@ in {
         (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
         libwmf
         drawio
+        libresprite
+        yeetgif
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         darktable
         digikam
