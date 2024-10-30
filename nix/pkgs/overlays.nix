@@ -227,4 +227,10 @@ final: prev: {
       })
     ];
   });
+  yeetgif = prev.yeetgif.overrideAttrs (old: {
+    meta = old.meta // {
+      # https://github.com/sgreben/yeetgif/tree/1.23.5?tab=readme-ov-file#licensing
+      license = with final.lib.licenses; [ mit asl20 cc-by-40 ];
+    };
+  });
 }

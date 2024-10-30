@@ -215,4 +215,11 @@ in if prev.stdenv.isDarwin then {
     if lib.versionAtLeast prev.volk.version "3.0"
     then prev.volk
     else final.callPackage "${prev.path}/pkgs/development/libraries/volk" {};
+  rawtherapee = prev.rawtherapee.override {
+    libselinux = null;
+    libsepol = null;
+  };
+  labplot = prev.labplot.override {
+    cantor = null;
+  };
 } else {}

@@ -50,7 +50,6 @@ in {
         (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
         libwmf
         drawio
-        libresprite
         yeetgif
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         darktable
@@ -59,7 +58,7 @@ in {
         krita
         scribus
         boxy-svg
-      ];
+      ] ++ (available libresprite);
       home.file.".ExifTool_config".text = ''
         %Image::ExifTool::UserDefined::Options = (
             LargeFileSupport => 1,
@@ -477,14 +476,14 @@ in {
       '';
     }
     # Network - browsh
-    {
+    (lib.mkIf pkgs.stdenv.isLinux {
       programs.browsh = {
         enable = true;
         settings = {
           browsh_supporter = "I have shown my support for Browsh";
         };
       };
-    }
+    })
     # Network
     {
       home.packages = with pkgs; [
