@@ -156,6 +156,8 @@
     qemu.runAsRoot = false;
   };
 
+  virtualisation.spiceUSBRedirection.enable = true;
+
   virtualisation.podman = {
     enable = true;
   };
