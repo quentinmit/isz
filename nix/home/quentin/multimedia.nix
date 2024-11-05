@@ -83,6 +83,11 @@ in {
       '';
     }
     # Multimedia - PipeWire
+    {
+      home.packages = with pkgs; [
+        pulsemixer
+      ];
+    }
     (lib.mkIf pkgs.stdenv.isLinux {
       home.packages = with pkgs; [
         lxqt.pavucontrol-qt
