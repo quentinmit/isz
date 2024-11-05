@@ -21,6 +21,7 @@
   nixpkgs.config.permittedInsecurePackages = [
     "python3.11-youtube-dl-2021.12.17"
     "segger-jlink-qt4-794l"
+    "olm-3.2.16"
   ];
   nixpkgs.config.segger-jlink.acceptLicense = true;
 
