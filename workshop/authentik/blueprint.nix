@@ -10,7 +10,9 @@ let
   findFlow = find "authentik_flows.flow" "slug";
   findSource = find "authentik_core.source" "slug";
   findScope = find "authentik_providers_oauth2.scopemapping" "managed";
+  findApp = find "authentik_core.application" "slug";
   findProvider = find "authentik_core.provider" "name";
+  findGroup = find "authentik_core.group" "name";
   findPrompt = find "authentik_stages_prompt.prompt" "name";
   findSAMLPropertyMapping = find "authentik_providers_saml.samlpropertymapping" "managed";
 in {
@@ -19,7 +21,7 @@ in {
     sops.secrets."authentik/google_oauth/consumer_secret" = {};
 
     lib.authentik = {
-      inherit find findFlow findSource findScope findProvider findPrompt findSAMLPropertyMapping;
+      inherit find findFlow findSource findScope findApp findProvider findGroup findPrompt findSAMLPropertyMapping;
     };
 
     services.authentik.blueprint = {

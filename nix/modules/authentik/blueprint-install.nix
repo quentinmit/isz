@@ -13,7 +13,7 @@ let
       " > "$out"
     '';
   };
-  inherit (config.lib.authentik) find findProvider findFlow findScope findSAMLPropertyMapping;
+  inherit (config.lib.authentik) find findApp findProvider findGroup findFlow findScope findSAMLPropertyMapping;
   signing_key = find "authentik_crypto.certificatekeypair" "name" "authentik Self-signed Certificate";
 in {
   options = with lib; {
@@ -51,6 +51,10 @@ in {
             properties = mkOption {
               type = listOf str;
             };
+            groups = mkOption {
+              type = listOf str;
+              default = [];
+            };
             provider = mkOption {
               type = nullOr format.type;
               default = null;
@@ -72,7 +76,12 @@ in {
               type = listOf attrs;
               readOnly = true;
               visible = false;
-              default = lib.optional (config.provider != null) config.provider ++ [config.app];
+              default = lib.optional (config.provider != null) config.provider ++ [config.app] ++ (lib.imap0 (i: name: {
+                model = "authentik_policies.policybinding";
+                identifiers.target = findApp config.slug;
+                identifiers.order = i;
+                attrs.group = findGroup name;
+              }) config.groups);
             };
           };
           config = {
