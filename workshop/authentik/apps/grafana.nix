@@ -17,7 +17,7 @@
       use_refresh_token = true;
       client_id = "$__file{${config.sops.secrets."authentik/apps/grafana/client_id".path}}";
       client_secret = "$__file{${config.sops.secrets."authentik/apps/grafana/client_secret".path}}";
-      scopes = "openid email profile offline_access";
+      scopes = "openid email profile offline_access goauthentik.io/application/loki";
       auth_url = "${baseUrl}authorize/";
       token_url = "${baseUrl}token/";
       api_url = "${baseUrl}userinfo/";
@@ -35,6 +35,7 @@
       "goauthentik.io/providers/oauth2/scope-openid"
       "goauthentik.io/providers/oauth2/scope-profile"
       "goauthentik.io/providers/oauth2/scope-offline_access"
+      "goauthentik.io/application/loki"
     ];
   };
 }

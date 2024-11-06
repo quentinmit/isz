@@ -1,0 +1,42 @@
+commit 878cfdee3cac0e8a5b20fbd0fc89dad3a144430a
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Tue Nov 5 11:39:30 2024 -0500
+
+    Allow proxy providers to optionally accept other providers' tokens
+
+diff --git a/authentik/providers/oauth2/views/introspection.py b/authentik/providers/oauth2/views/introspection.py
+index 51b18f6e9..893fad55a 100644
+--- a/authentik/providers/oauth2/views/introspection.py
++++ b/authentik/providers/oauth2/views/introspection.py
+@@ -8,6 +8,7 @@ from django.views import View
+ from django.views.decorators.csrf import csrf_exempt
+ from structlog.stdlib import get_logger
+ 
++from authentik.core.models import Provider
+ from authentik.providers.oauth2.errors import TokenIntrospectionError
+ from authentik.providers.oauth2.models import AccessToken, IDToken, OAuth2Provider, RefreshToken
+ from authentik.providers.oauth2.utils import TokenResponse, authenticate_provider
+@@ -46,12 +47,17 @@ class TokenIntrospectionParams:
+         if not provider:
+             raise TokenIntrospectionError
+ 
+-        access_token = AccessToken.objects.filter(token=raw_token, provider=provider).first()
+-        if access_token:
+-            return TokenIntrospectionParams(access_token, provider)
+-        refresh_token = RefreshToken.objects.filter(token=raw_token, provider=provider).first()
+-        if refresh_token:
+-            return TokenIntrospectionParams(refresh_token, provider)
++        token = AccessToken.objects.filter(token=raw_token).first()
++        if not token:
++            token = RefreshToken.objects.filter(token=raw_token).first()
++        if token:
++            if token.provider == provider:
++                return TokenIntrospectionParams(token, provider)
++            try:
++                if f"goauthentik.io/application/{provider.application.slug}" in token.scope:
++                    return TokenIntrospectionParams(token, provider)
++            except Provider.application.RelatedObjectDoesNotExist:
++                pass
+         LOGGER.debug("Token does not exist", token=raw_token)
+         raise TokenIntrospectionError()
+ 

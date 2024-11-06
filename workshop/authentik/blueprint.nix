@@ -232,6 +232,14 @@ in {
         identifiers.managed = managed;
         inherit attrs;
       }) cfg.samlPropertyMappings
+      ++ lib.mapAttrsToList (_: app: {
+        model = "authentik_providers_oauth2.scopemapping";
+        identifiers.managed = "goauthentik.io/application/${app.slug}";
+        attrs.name = "Proxy provider access: ${app.name}";
+        attrs.scope_name = "goauthentik.io/application/${app.slug}";
+        attrs.description = "Proxy provider access - ${app.name}";
+        attrs.expression = "return {}";
+      }) cfg.apps
       ++ lib.concatMap (app: app.blueprint) (lib.attrValues cfg.apps)
       ++ [
         {

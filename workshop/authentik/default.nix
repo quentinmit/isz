@@ -48,16 +48,19 @@
       # Fix for newer unstable NixOS
       authentikComponents = let
         scope = (authentik.lib.mkAuthentikScope {
-          pkgs = pkgs.unstable;
-          defaultPoetryOverrides = (import authentik.inputs.poetry2nix { pkgs = pkgs.unstable; }).defaultPoetryOverrides.extend (final: prev: {
-            lxml = prev.lxml.overridePythonAttrs (old: {
-              buildInputs = old.buildInputs ++ [
-                pkgs.unstable.zlib
-              ];
-            });
-          });
+          inherit pkgs;
         }).overrideScope (final: prev: {
-          nodejs_21 = pkgs.unstable.nodejs_22;
+          authentikComponents = prev.authentikComponents // {
+            staticWorkdirDeps = prev.authentikComponents.staticWorkdirDeps.override (old: {
+              authentik-src = pkgs.applyPatches {
+                src = old.authentik-src;
+                name = "isz-patched-authentik-source";
+                patches = [
+                  ./proxy-scopes.patch
+                ];
+              };
+            });
+          };
         });
         in scope.authentikComponents;
     };
