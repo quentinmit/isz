@@ -21,6 +21,9 @@ in {
     users.extraUsers.pnio2mqtt = {
       isSystemUser = true;
       group = "pnio2mqtt";
+      # scapy requires $HOME to be writable
+      createHome = true;
+      home = "/var/lib/pnio2mqtt";
     };
     users.extraGroups.pnio2mqtt = {};
     systemd.services.pnio2mqtt = {
