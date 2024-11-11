@@ -104,6 +104,9 @@
     openrgb-with-all-plugins
     wd-fw-update
 
+    # Networking
+    iw
+
     # Laptop
     powertop
 
