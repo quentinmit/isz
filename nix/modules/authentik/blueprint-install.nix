@@ -111,6 +111,7 @@ in {
                 attrs = {
                   authentication_flow = findFlow "default-authentication-flow";
                   authorization_flow = findFlow "default-provider-authorization-implicit-consent";
+                  invalidation_flow = findFlow "default-provider-invalidation-flow";
                 };
               };
               oauth2 = {
