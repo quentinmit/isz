@@ -58,6 +58,7 @@ in {
         krita
         scribus
         boxy-svg
+        kdePackages.kolourpaint
       ] ++ (available libresprite);
       home.file.".ExifTool_config".text = ''
         %Image::ExifTool::UserDefined::Options = (
@@ -289,6 +290,7 @@ in {
         kdePackages.ksudoku
         kdePackages.kbreakout
         kdePackages.palapeli
+        kdePackages.kolf
         gnome.aisleriot
         gnome.gnome-mines
         gnome.gnome-sudoku
