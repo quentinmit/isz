@@ -132,5 +132,6 @@ final: prev:
   input-utils = final.callPackage ./input-utils {};
   sheepshaver = final.callPackage ./sheepshaver {};
   fairlight-sound-library = final.callPackage ./blackmagic/fairlight-sound-library.nix {};
-  qt-installer-framework-extractor  = final.callPackage ./qt-installer-framework-extractor {};
+  qt-installer-framework-extractor = final.callPackage ./qt-installer-framework-extractor {};
+  segger-systemview = final.callPackage ./segger-systemview {};
 }

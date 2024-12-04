@@ -21,6 +21,7 @@
   nixpkgs.config.permittedInsecurePackages = [
     "python3.11-youtube-dl-2021.12.17"
     "segger-jlink-qt4-794l"
+    "segger-systemview-qt4-352a"
     "olm-3.2.16"
   ];
   nixpkgs.config.segger-jlink.acceptLicense = true;
@@ -115,6 +116,7 @@
     # Development
     segger-jlink
     segger-ozone
+    segger-systemview
   ];
 
   services.udev.packages = with pkgs; [
