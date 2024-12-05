@@ -30,6 +30,7 @@
           "sensor.pixel_4a_5g_next_alarm"
           "sensor.pixel_7_pro_next_alarm"
           "sensor.pixel_8_next_alarm"
+          "sensor.pixel_9_pro_xl_next_alarm"
         ];
         from = "unavailable";
       }];
@@ -52,8 +53,8 @@
           }])
           {
             condition = "state";
-            entity_id = "binary_sensor.jess_pixel_4a_is_charging";
-            state = "on";
+            entity_id = "sensor.pixel_8a_charger_type";
+            state = "ac";
           }
         ])
       ];
