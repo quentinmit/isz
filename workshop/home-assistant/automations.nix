@@ -41,6 +41,12 @@
           state = "home";
         }
         {
+          condition = "state";
+          entity_id = "sensor.pixel_9_pro_xl_charger_type";
+          state = "ac";
+        }
+        # TODO: Check if there is bedroom charging current
+        {
           condition = "time";
           after = "22:00:00";
           before = "06:00:00";
