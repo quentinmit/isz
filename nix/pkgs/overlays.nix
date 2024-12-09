@@ -233,4 +233,38 @@ final: prev: {
       license = with final.lib.licenses; [ mit asl20 cc-by-40 ];
     };
   });
+  mplayer-unfree = let
+    codecs = let
+      version = "20071007";
+      inherit (final) stdenv lib fetchurl;
+    in stdenv.mkDerivation {
+      pname = "MPlayer-codecs-essential";
+      inherit version;
+
+      src = let
+        dir = "http://www.mplayerhq.hu/MPlayer/releases/codecs/";
+      in
+      if stdenv.hostPlatform.system == "i686-linux" then fetchurl {
+        url = "${dir}/essential-${version}.tar.bz2";
+        sha256 = "18vls12n12rjw0mzw4pkp9vpcfmd1c21rzha19d7zil4hn7fs2ic";
+      } else if stdenv.hostPlatform.system == "x86_64-linux" then fetchurl {
+        url = "${dir}/essential-amd64-${version}.tar.bz2";
+        sha256 = "13xf5b92w1ra5hw00ck151lypbmnylrnznq9hhb0sj36z5wz290x";
+      } else if stdenv.hostPlatform.system == "powerpc-linux" then fetchurl {
+        url = "${dir}/essential-ppc-${version}.tar.bz2";
+        sha256 = "18mlj8dp4wnz42xbhdk1jlz2ygra6fbln9wyrcyvynxh96g1871z";
+      } else null;
+
+      installPhase = ''
+        mkdir $out
+        cp -prv * $out
+      '';
+
+      meta.license = lib.licenses.unfree;
+    };
+  in prev.mplayer.overrideAttrs (old: {
+    configureFlags = old.configureFlags ++ [
+      "--codecsdir=${codecs}"
+    ];
+  });
 }

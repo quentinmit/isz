@@ -26,6 +26,7 @@
         kdePackages.krfb
         google-cloud-sdk
         baudline
+        mplayer-unfree
       ];
 
       # Don't index Electron folders
