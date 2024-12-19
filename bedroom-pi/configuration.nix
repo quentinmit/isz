@@ -93,7 +93,6 @@
 
   users.users.root = {
     hashedPassword = "";
-    initialHashedPassword = "";
   };
 
   services.udev.rules = [

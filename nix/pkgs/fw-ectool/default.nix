@@ -4,7 +4,7 @@
 , pkg-config
 , hostname
 , libftdi1
-, libusb
+, libusb1
 , cmake
 }:
 
@@ -28,7 +28,7 @@ stdenv.mkDerivation {
 
   buildInputs = [
     libftdi1
-    libusb
+    libusb1
   ];
 
   installPhase = ''

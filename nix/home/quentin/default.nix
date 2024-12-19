@@ -76,7 +76,7 @@ in {
       ]
       ++ (available kicad)
       ++ (available bambu-studio)
-      ++ (available orca-slicer)
+      ++ (available unstable.orca-slicer)
       );
     }
     # (D)VCS
@@ -119,7 +119,7 @@ in {
           teensyduino
           fritzing
           platformio
-        ] ++ available unstable.arduino-ide
+        ] ++ available arduino-ide
       );
     }
     # Rust development
@@ -131,7 +131,7 @@ in {
         cargo-bloat
         cargo-edit
         cargo-expand
-        cargo-feature
+        unstable.cargo-feature
         cargo-generate
         cargo-hf2
         cargo-outdated
@@ -178,7 +178,7 @@ in {
     {
       home.packages = with pkgs; [
         gobang
-        unstable.mariadb_1011.client
+        mariadb_114.client
         mdbtools
         postgresql
         wxsqliteplus
@@ -276,7 +276,7 @@ in {
     # Games
     {
       home.packages = with pkgs; [
-        gnome.lightsoff
+        lightsoff
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         bottles
         gnuchess # broken on macOS
@@ -291,10 +291,10 @@ in {
         kdePackages.kbreakout
         kdePackages.palapeli
         kdePackages.kolf
-        gnome.aisleriot
-        gnome.gnome-mines
-        gnome.gnome-sudoku
-        gnome.swell-foop
+        aisleriot
+        gnome-mines
+        gnome-sudoku
+        swell-foop
       ];
     }
     # Emulation
@@ -328,7 +328,7 @@ in {
         (if ghidra-bin.meta.available then ghidra-bin else ghidra)
         kaitai-struct-compiler
       ] ++ lib.optionals pkgs.stdenv.isLinux [
-        unstable.elf-dissector
+        elf-dissector
         imhex
         okteta
         iaito
@@ -481,6 +481,7 @@ in {
     (lib.mkIf pkgs.stdenv.isLinux {
       programs.browsh = {
         enable = true;
+        firefoxPackage = pkgs.unstable.firefox;
         settings = {
           browsh_supporter = "I have shown my support for Browsh";
         };
@@ -653,7 +654,7 @@ in {
         libzip
         lnav
         lzip
-        lzma
+        xz
         moreutils
         most
         ncdu
@@ -855,7 +856,7 @@ in {
     (let
       servers = {
         nix = {
-          command = ["${pkgs.unstable.nil}/bin/nil"];
+          command = ["${pkgs.nil}/bin/nil"];
           url = "https://github.com/oxalica/nil";
           highlightingModeRegex = "^Nix$";
         };

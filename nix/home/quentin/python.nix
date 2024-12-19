@@ -104,7 +104,6 @@
         #argparse-manpage
         #astroplan
         astropy
-        astropy-helpers
         atomicwrites
         awscli
         babel

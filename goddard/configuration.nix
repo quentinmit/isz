@@ -13,14 +13,11 @@
       openssh = final.openssh_gssapi.override {
         dsaKeysSupport = true;
       };
-      xwayland = prev.xwayland.override (oldArgs: {
-        inherit (config.programs.xwayland) defaultFontPath;
-      });
     })
   ];
   nixpkgs.config.permittedInsecurePackages = [
     "python3.11-youtube-dl-2021.12.17"
-    "segger-jlink-qt4-794l"
+    "segger-jlink-qt4-796s"
     "segger-systemview-qt4-352a"
     "olm-3.2.16"
   ];

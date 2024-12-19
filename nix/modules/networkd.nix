@@ -62,11 +62,11 @@ in {
       };
       systemd.network.networks = let
         bridgeVLANs = builtins.map (id:
-          { bridgeVLANConfig =
-              if id == cfg.pvid
-              then { PVID = id; EgressUntagged = id; }
-              else { VLAN = id; };
-          }
+          (
+            if id == cfg.pvid
+            then { PVID = id; EgressUntagged = id; }
+            else { VLAN = id; }
+          )
         ) cfg.vlans;
       in {
         br0 = {
@@ -122,7 +122,7 @@ in {
             Bridge = "br0";
           };
           bridgeVLANs = [
-            { bridgeVLANConfig = { PVID = 500; EgressUntagged = 500; }; }
+            { PVID = 500; EgressUntagged = 500; }
           ];
         };
       };

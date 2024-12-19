@@ -45,10 +45,10 @@
         outposts.discover = false;
       };
 
-      # Fix for newer unstable NixOS
       authentikComponents = let
         scope = (authentik.lib.mkAuthentikScope {
           inherit pkgs;
+          # TODO: update past https://github.com/NixOS/nixpkgs/pull/361930
         }).overrideScope (final: prev: {
           authentikComponents = prev.authentikComponents // {
             staticWorkdirDeps = prev.authentikComponents.staticWorkdirDeps.override (old: {

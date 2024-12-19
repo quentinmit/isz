@@ -307,7 +307,7 @@
       Bridge = "br0";
       LinkLocalAddressing = "no";
     };
-    bridgeVLANs = [{ bridgeVLANConfig = { PVID = 88; EgressUntagged = 88; }; }];
+    bridgeVLANs = [{ PVID = 88; EgressUntagged = 88; }];
   };
   systemd.network.networks.vm-plc-profinet = {
     matchConfig = {
@@ -317,6 +317,6 @@
       Bridge = "br0";
       LinkLocalAddressing = "no";
     };
-    bridgeVLANs = [{ bridgeVLANConfig = { PVID = 981; EgressUntagged = 981; }; }];
+    bridgeVLANs = [{ PVID = 981; EgressUntagged = 981; }];
   };
 }

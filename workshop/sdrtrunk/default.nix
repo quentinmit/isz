@@ -82,7 +82,7 @@ in {
         xterm
         xorg.xev
         pavucontrol
-        gnome.adwaita-icon-theme
+        adwaita-icon-theme
       ];
 
       java.userPrefs.io.github.dsheirer.preference = {

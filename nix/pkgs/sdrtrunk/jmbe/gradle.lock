@@ -1,0 +1,148 @@
+{
+  "com.github.wendykierp:JTransforms:3.1": {
+    "JTransforms-3.1.jar": {
+      "url": "https://repo.maven.apache.org/maven2/com/github/wendykierp/JTransforms/3.1/JTransforms-3.1.jar",
+      "hash": "sha256-2d/6Pid5MEDcy5ewVNlSZ99G5mnDlr8cpPOwhQabwtU="
+    },
+    "JTransforms-3.1.pom": {
+      "url": "https://repo.maven.apache.org/maven2/com/github/wendykierp/JTransforms/3.1/JTransforms-3.1.pom",
+      "hash": "sha256-lrWRq517j7FFnPq0Mo/XSwI/G+7ecE1Wuk7PlF70Wrc="
+    }
+  },
+  "org.apache:apache:13": {
+    "apache-13.pom": {
+      "url": "https://repo.maven.apache.org/maven2/org/apache/apache/13/apache-13.pom",
+      "hash": "sha256-/1E9sDYf1BI3vvR4SWi8FarkeNTsCpSW+BEHLMrzhB0="
+    }
+  },
+  "org.apache.commons:commons-math3:3.5": {
+    "commons-math3-3.5.jar": {
+      "url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-math3/3.5/commons-math3-3.5.jar",
+      "hash": "sha256-3Pl2hya4Lo17ipKER7CLynz+J3PVEgpjpB7CJCB8Gik="
+    },
+    "commons-math3-3.5.pom": {
+      "url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-math3/3.5/commons-math3-3.5.pom",
+      "hash": "sha256-ghnQbxGnsDWw9mWsbeiNCi966qNbneRQW2kA7hAoxqU="
+    }
+  },
+  "org.apache.commons:commons-parent:34": {
+    "commons-parent-34.pom": {
+      "url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/34/commons-parent-34.pom",
+      "hash": "sha256-Oi5p0G1kHR87KTEm3J4uTqZWO/jDbIfgq2+kKS0Et5w="
+    }
+  },
+  "org.beryx:badass-runtime-plugin:1.12.7": {
+    "badass-runtime-plugin-1.12.7.jar": {
+      "url": "https://plugins.gradle.org/m2/org/beryx/badass-runtime-plugin/1.12.7/badass-runtime-plugin-1.12.7.jar",
+      "hash": "sha256-N3Mx2VyxIFb6U6Qt9/RfF4svqG1sWF9w74TRIz0RB0U="
+    },
+    "badass-runtime-plugin-1.12.7.pom": {
+      "url": "https://plugins.gradle.org/m2/org/beryx/badass-runtime-plugin/1.12.7/badass-runtime-plugin-1.12.7.pom",
+      "hash": "sha256-9vIy9OpH3sXV5y4jWaQG+pMd8/M2fiVdMmkkCAPBtkk="
+    }
+  },
+  "org.beryx.runtime:org.beryx.runtime.gradle.plugin:1.12.7": {
+    "org.beryx.runtime.gradle.plugin-1.12.7.pom": {
+      "url": "https://plugins.gradle.org/m2/org/beryx/runtime/org.beryx.runtime.gradle.plugin/1.12.7/org.beryx.runtime.gradle.plugin-1.12.7.pom",
+      "hash": "sha256-95lWpL5pLmiBvaBnA0zUDOOqFX8ti9VWS5wAKWxrK3M="
+    }
+  },
+  "org.ow2:ow2:1.5": {
+    "ow2-1.5.pom": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/ow2/1.5/ow2-1.5.pom",
+      "hash": "sha256-D4obEW52C4/mOJxRuE5LB6cPwRCC1Pk25FO1g91QtDs="
+    }
+  },
+  "org.ow2.asm:asm:9.1": {
+    "asm-9.1.jar": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm/9.1/asm-9.1.jar",
+      "hash": "sha256-zaTeRV+rSP8Ly3xItGOUR9TehZp6/DCglKmG8JNr66I="
+    },
+    "asm-9.1.pom": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm/9.1/asm-9.1.pom",
+      "hash": "sha256-xoOpDdaPKxeIy9/EZH6pQF71kls3HBmfj9OdRNPO3o0="
+    }
+  },
+  "org.ow2.asm:asm-analysis:9.1": {
+    "asm-analysis-9.1.jar": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm-analysis/9.1/asm-analysis-9.1.jar",
+      "hash": "sha256-gaiAQbG4vtpaiplkYJgEbEhwlTgnDEne9oq/8lrDvjQ="
+    },
+    "asm-analysis-9.1.pom": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm-analysis/9.1/asm-analysis-9.1.pom",
+      "hash": "sha256-rFRUwRsDQxypUd9x+06GyMTIDfaXn5W3V8rtOrD0cVY="
+    }
+  },
+  "org.ow2.asm:asm-commons:9.1": {
+    "asm-commons-9.1.jar": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm-commons/9.1/asm-commons-9.1.jar",
+      "hash": "sha256-r8sm3B/BLAxKma2mcJCN2C4Y38SIyvXuklRplrRwwAw="
+    },
+    "asm-commons-9.1.pom": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm-commons/9.1/asm-commons-9.1.pom",
+      "hash": "sha256-oPZRsnuK/pwOYS16Ambqy197HHh7xLWsgkXz16EYG38="
+    }
+  },
+  "org.ow2.asm:asm-tree:9.1": {
+    "asm-tree-9.1.jar": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm-tree/9.1/asm-tree-9.1.jar",
+      "hash": "sha256-/QCvpJ6VlddkYgWwnOy0p3ao/wugby1ZuPe/nHBLSnM="
+    },
+    "asm-tree-9.1.pom": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm-tree/9.1/asm-tree-9.1.pom",
+      "hash": "sha256-tqANkgfANUYPgcfXDtQSU/DSFmUr7UX6GjBS/81QuUw="
+    }
+  },
+  "org.ow2.asm:asm-util:9.1": {
+    "asm-util-9.1.jar": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm-util/9.1/asm-util-9.1.jar",
+      "hash": "sha256-OA4uzRb3zA8adrqboEkXm1dgpXsoKoekxlPK7/LNW9Y="
+    },
+    "asm-util-9.1.pom": {
+      "url": "https://plugins.gradle.org/m2/org/ow2/asm/asm-util/9.1/asm-util-9.1.pom",
+      "hash": "sha256-jd108aHiuTxwnZdtAgXnT7850AVwPJYmpe1cxXTK+88="
+    }
+  },
+  "org.slf4j:slf4j-api:1.7.25": {
+    "slf4j-api-1.7.25.jar": {
+      "url": "https://plugins.gradle.org/m2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar",
+      "hash": "sha256-GMSgCV1cHaa4F1kudnuyPSndL1YK1033X/OWHb3iW3k="
+    },
+    "slf4j-api-1.7.25.pom": {
+      "url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.pom",
+      "hash": "sha256-fNnXoLXZPf1GGhSIkbQ1Cc9AOpx/n7SQYNNVTfHIHh4="
+    }
+  },
+  "org.slf4j:slf4j-parent:1.7.25": {
+    "slf4j-parent-1.7.25.pom": {
+      "url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-parent/1.7.25/slf4j-parent-1.7.25.pom",
+      "hash": "sha256-GPXFISDbA26I1hNviDnIMtB0vdqVx1bG9CkknS21SsY="
+    }
+  },
+  "org.slf4j:slf4j-simple:1.7.25": {
+    "slf4j-simple-1.7.25.jar": {
+      "url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-simple/1.7.25/slf4j-simple-1.7.25.jar",
+      "hash": "sha256-CWbob/+lvlLT2ee4ndZ02YoD7tCkVPuvfBvZSTvZ2HQ="
+    },
+    "slf4j-simple-1.7.25.pom": {
+      "url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-simple/1.7.25/slf4j-simple-1.7.25.pom",
+      "hash": "sha256-pTyky/yMwRnWkG7aKwMR5yYX+cKBVxMqViqVRkuVsfg="
+    }
+  },
+  "org.sonatype.oss:oss-parent:9": {
+    "oss-parent-9.pom": {
+      "url": "https://repo.maven.apache.org/maven2/org/sonatype/oss/oss-parent/9/oss-parent-9.pom",
+      "hash": "sha256-+0AmX5glSCEv+C42LllzKyGH7G8NgBgohcFO8fmCgno="
+    }
+  },
+  "pl.edu.icm:JLargeArrays:1.6": {
+    "JLargeArrays-1.6.jar": {
+      "url": "https://repo.maven.apache.org/maven2/pl/edu/icm/JLargeArrays/1.6/JLargeArrays-1.6.jar",
+      "hash": "sha256-JdOKwI/tSo7BQFnPYhkfwK8BHJoSAPLmGsovyn6DOI4="
+    },
+    "JLargeArrays-1.6.pom": {
+      "url": "https://repo.maven.apache.org/maven2/pl/edu/icm/JLargeArrays/1.6/JLargeArrays-1.6.pom",
+      "hash": "sha256-TR6ey3uCNUICWlTTFs5KuSzEbDXLEUG0u5t80nO6jE8="
+    }
+  }
+}

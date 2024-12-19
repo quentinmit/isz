@@ -5,17 +5,16 @@
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "nixpkgs/nixos-24.05";
+    nixpkgs.url = "nixpkgs/nixos-24.11";
     nixpkgs-23_05.url = "nixpkgs/nixos-23.05";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
-    home-manager.url = "github:nix-community/home-manager/release-24.05";
+    home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-    sops-nix.inputs.nixpkgs-stable.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     darwin.url = "github:LnL7/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
@@ -60,8 +59,11 @@
     lanzaboote.inputs.rust-overlay.follows = "rust-overlay";
     mosh-server-upnp.url = "github:arcnmx/mosh-server-upnp";
     mosh-server-upnp.inputs.nixpkgs.follows = "nixpkgs";
+    gradle2nix.url = "github:tadfisher/gradle2nix/v2";
+    gradle2nix.inputs.nixpkgs.follows = "nixpkgs";
+    gradle2nix.inputs.flake-utils.follows = "flake-utils";
   };
-  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, ... }@args:
+  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -79,6 +81,7 @@
         nixpkgs-23_05 = import nixpkgs-23_05 {
           inherit (final) system config;
         };
+        inherit (gradle2nix.packages.${final.system}) gradle2nix;
       };
       overlays = [
         overlay

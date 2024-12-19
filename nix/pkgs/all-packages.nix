@@ -59,12 +59,6 @@ final: prev:
   };
   gotenberg = final.callPackage ./gotenberg {};
   unoconverter = final.callPackage ./gotenberg/unoconverter.nix {};
-  # Can't use upstream flake, because it uses IFD.
-  nix-serve-ng = (final.haskell.packages.ghc94.callPackage ./nix-serve-ng.nix {}).overrideAttrs (old: {
-    executableSystemDepends = (old.executableSystemDepends or []) ++ [
-      final.boost.dev
-    ];
-  });
   mactelnet = final.callPackage ./mactelnet {
     inherit (final.darwin.apple_sdk.frameworks) SystemConfiguration;
   };
@@ -75,10 +69,6 @@ final: prev:
     inherit (final.nodePackages) uglify-js;
   };
   xpraFull = (final.xpra.overrideAttrs (old: {
-    postPatch = (old.postPatch or "") + ''
-      substituteInPlace xpra/server/window/windowicon_source.py \
-        --replace ANTIALIAS LANCZOS
-    '';
     preInstall = ''
       cp -a ${final.xpra-html5} $out
       chmod -R u+w $out

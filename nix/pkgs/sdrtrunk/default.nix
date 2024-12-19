@@ -1,20 +1,18 @@
-{ callPackage
+{ gradle2nix
+, jdk23
 , fetchFromGitHub
-, gradleGen
-, gradle
-, jdk20
 , makeWrapper
 , wrapGAppsHook
 , lib
 }:
 let
-  buildGradle = callPackage ./gradle-env.nix {
-    gradleGen = _: _: gradle;
-  };
-  jdk = jdk20.override { enableJavaFX = true; };
-in buildGradle {
-  envSpec = ./gradle-env.json;
-
+  jdk = jdk23.override { enableJavaFX = true; };
+  pname = "sdrtrunk";
+  version = "0.6.1";
+in gradle2nix.buildGradlePackage {
+  inherit pname version;
+  lockFile = ./gradle.lock;
+  gradleInstallFlags = [ "installDist" ];
   buildJdk = jdk;
 
   nativeBuildInputs = [
@@ -24,14 +22,12 @@ in buildGradle {
 
   src = fetchFromGitHub {
     owner = "DSheirer";
-    repo = "sdrtrunk";
-    rev = "v0.6.1-beta-1";
-    hash = "sha256-s3nrOZWmbgyIvtkI6AFRdESTBIOTpo+zLSTBFgDxpmY=";
+    repo = pname;
+    rev = "v${version}";
+    hash = "sha256-5cklAqO7KyDdkQM0fCZTT8DHsZx/Tf0c8B9TiLMLrkA=";
   };
 
-  gradleFlags = [ "installDist" ];
-
-  installPhase = ''
+  postInstall = ''
     mv build/install/sdr-trunk "$out"
     rm $out/bin/sdr-trunk.bat
   '';

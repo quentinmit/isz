@@ -1,21 +1,14 @@
-{ callPackage
+{ gradle2nix
 , fetchFromGitHub
-, gradleGen
-, gradle_7
-, jdk11
+, jdk
 , lib
 }:
 let
-  buildGradle = callPackage ./gradle-env.nix {
-    gradleGen = _: _: gradle_7;
-  };
-  jdk = jdk11;
+  pname = "jmbe";
   version = "1.0.9";
-in buildGradle {
-  envSpec = ./gradle-env.json;
-
-  inherit version;
-
+in gradle2nix.buildGradlePackage {
+  inherit pname version;
+  lockFile = ./gradle.lock;
   buildJdk = jdk;
 
   src = fetchFromGitHub {
@@ -25,7 +18,7 @@ in buildGradle {
     hash = "sha256-70tjjMLyO7ooxVPaGV3m5BF0yY9nOLa0xjcBLB5JE7Y=";
   };
 
-  gradleFlags = [ ":codec:build" ];
+  gradleBuildFlags = [ ":codec:build" ];
 
   installPhase = ''
     mkdir $out
