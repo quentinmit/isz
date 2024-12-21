@@ -44,6 +44,10 @@ in {
       gyre-fonts
       libertinus
       #google-fonts
+      apple-fonts.SF-Pro
+      apple-fonts.SF-Mono
+      apple-fonts.SF-Compact
+      apple-fonts.NY
     ];
     fonts.fontconfig.enable = true;
     xdg.configFile."fontconfig/conf.d/10-hack.conf".text = ''

@@ -124,4 +124,5 @@ final: prev:
   fairlight-sound-library = final.callPackage ./blackmagic/fairlight-sound-library.nix {};
   qt-installer-framework-extractor = final.callPackage ./qt-installer-framework-extractor {};
   segger-systemview = final.callPackage ./segger-systemview {};
+  apple-fonts = final.callPackages ./apple-fonts {};
 }
