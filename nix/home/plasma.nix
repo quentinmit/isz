@@ -34,8 +34,30 @@ in {
     };
     home.packages = with pkgs; [
       nerdfonts
+      monaco-nerd-fonts
+      corefonts
+      aileron
+      fragment-mono
+      helvetica-neue-lt-std
+      bakoma_ttf
+      vistafonts
+      gyre-fonts
+      libertinus
+      #google-fonts
     ];
     fonts.fontconfig.enable = true;
+    xdg.configFile."fontconfig/conf.d/10-hack.conf".text = ''
+      <?xml version='1.0'?>
+      <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
+      <fontconfig>
+        <alias>
+          <family>Hack Nerd Font</family>
+          <accept>
+            <family>Terminess Nerd Font</family>
+          </accept>
+        </alias>
+      </fontconfig>
+    '';
     programs.plasma = {
       enable = true;
       workspace = {
