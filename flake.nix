@@ -7,6 +7,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-24.11";
     nixpkgs-23_05.url = "nixpkgs/nixos-23.05";
+    nixpkgs-authentik.url = "nixpkgs/8ca17d5b31690fae0f295a79cde620248aabf4dc";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
@@ -45,7 +46,7 @@
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
     authentik.url = "github:nix-community/authentik-nix";
-    authentik.inputs.nixpkgs.follows = "unstable";
+    authentik.inputs.nixpkgs.follows = "nixpkgs";
     authentik.inputs.flake-utils.follows = "flake-utils";
     authentik.inputs.flake-compat.follows = "flake-compat";
     bluechips.url = "github:quentinmit/bluechips";

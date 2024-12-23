@@ -1,4 +1,4 @@
-{ config, lib, pkgs, authentik, ... }:
+{ config, lib, pkgs, authentik, nixpkgs-authentik, ... }:
 {
   imports = [
     authentik.nixosModules.default
@@ -47,8 +47,8 @@
 
       authentikComponents = let
         scope = (authentik.lib.mkAuthentikScope {
-          inherit pkgs;
           # TODO: update past https://github.com/NixOS/nixpkgs/pull/361930
+          pkgs = nixpkgs-authentik.legacyPackages.${pkgs.stdenv.system};
         }).overrideScope (final: prev: {
           authentikComponents = prev.authentikComponents // {
             staticWorkdirDeps = prev.authentikComponents.staticWorkdirDeps.override (old: {
