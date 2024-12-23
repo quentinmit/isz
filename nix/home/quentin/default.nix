@@ -626,6 +626,7 @@ in {
         ack
         brotli
         bsdiff
+        btop
         cabextract
         csview
         csvlens
