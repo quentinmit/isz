@@ -29,7 +29,7 @@ _log = logging.getLogger(__name__)
 
 FLIPY = Affine2D().scale(1, -1)
 
-@dataclass
+@dataclass(frozen=True)
 class BitmapFontEntry(FontEntry):
     xfontdesc: str = ''
     charset_registry: str = ''
@@ -121,7 +121,7 @@ CHARSET_ENCODING""".split()
                 charset_registry=desc["CHARSET_REGISTRY"],
                 charset_encoding=desc["CHARSET_ENCODING"],
             )
-            props.style = (props.style, props)
+            props = BitmapFontEntry(**(props.__dict__ | {"style": (props.style, props)}))
             _log.info("Found font %s", props)
             self.ttflist.append(props)
             self.fonts_by_path[props.fname] = props
