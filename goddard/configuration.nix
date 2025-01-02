@@ -108,6 +108,9 @@
     # Laptop
     powertop
 
+    # Radio
+    limesuiteWithGui
+
     scowl
 
     # Development
@@ -118,6 +121,7 @@
 
   services.udev.packages = with pkgs; [
     platformio-core.udev
+    limesuiteWithGui
   ];
 
   services.nixseparatedebuginfod.enable = true;
