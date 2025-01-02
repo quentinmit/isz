@@ -82,5 +82,12 @@
         ];
       };
     }
+    {
+      programs.git.extraConfig.url = {
+        "git@github.com:mitmh2025".insteadOf = [
+          "https://github.com/mitmh2025"
+        ];
+      };
+    }
   ];
 }
