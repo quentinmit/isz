@@ -136,6 +136,7 @@ in {
         dialect = "us";
         search_mode = "fulltext";
         filter_mode_shell_up_key_binding = "session";
+        inline_height = 0;
       };
     };
 

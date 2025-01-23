@@ -76,7 +76,7 @@ in {
       ]
       ++ (available kicad)
       ++ (available bambu-studio)
-      ++ (available unstable.orca-slicer)
+      ++ (available orca-slicer)
       );
     }
     # (D)VCS

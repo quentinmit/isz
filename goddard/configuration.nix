@@ -44,6 +44,8 @@
 
   services.fwupd.enable = true;
 
+  hardware.framework.enableKmod = false;
+
   hardware.bluetooth.enable = true;
   hardware.bluetooth.package = if (lib.versionOlder pkgs.bluez.version "5.76") then pkgs.unstable.bluez else pkgs.bluez;
 
