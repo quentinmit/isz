@@ -1,6 +1,3 @@
-#![feature(maybe_uninit_as_bytes)]
-#![feature(maybe_uninit_write_slice)]
-
 use std::thread;
 use std::collections::HashSet;
 use std::time::{Duration, Instant};

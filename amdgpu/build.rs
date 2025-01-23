@@ -16,12 +16,15 @@ impl bindgen::callbacks::ParseCallbacks for Callbacks {
     }
 
     fn add_derives(&self, name: &str) -> Vec<String> {
-        match name.split("_").collect_tuple() {
-            Some(("gpu", "metrics", _, _)) => {
-                self.types.borrow_mut().push(String::from(name));
-                vec!["Metrics".into()]
-            },
-            _ => vec![]
+        match name {
+            "metrics_table_header" => vec!["FromBytes".into()],
+            _ => match name.split("_").collect_tuple() {
+                Some(("gpu", "metrics", _, _)) => {
+                    self.types.borrow_mut().push(String::from(name));
+                    vec!["FromBytes".into(), "Metrics".into()]
+                },
+                _ => vec![]
+            }
         }
     }
 }

@@ -1,37 +1,16 @@
 #![allow(non_camel_case_types)]
-use std::{mem, fs::File, os::unix::fs::FileExt};
-use std::io::{Read, Write, Seek, SeekFrom, BufWriter};
+use std::{fs::File, os::unix::fs::FileExt};
+use std::io::{Write, Seek, SeekFrom, BufWriter};
 use std::collections::HashMap;
 use macros::Metrics;
 use paste::paste;
-use uninit::read::ReadIntoUninit;
-use uninit::extension_traits::AsOut;
 use log::{info,trace,warn, error};
 use influxdb2::models::data_point::{DataPoint,DataPointBuilder,WriteDataPoint};
 use thiserror::Error;
 use itertools::Itertools;
+use zerocopy::FromBytes;
 
 include!(concat!(env!("OUT_DIR"), "/kgd_pp_interface.rs"));
-
-macro_rules! struct_try_from {
-    ($type:ty) => {
-        impl TryFrom<&[u8]> for $type {
-            type Error = Error;
-            fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                let size = mem::size_of::<Self>();
-                let buf = value.get(0..size).ok_or(Error::BadLength)?;
-                let mut out = mem::MaybeUninit::<Self>::uninit();
-                unsafe {
-                    // TODO: Too bad there's no try_write_slice
-                    mem::MaybeUninit::write_slice(out.as_bytes_mut(), buf);
-                    Ok(out.assume_init())
-                }
-            }
-        }
-    };
-}
-
-struct_try_from!(metrics_table_header);
 
 pub trait Metrics: std::fmt::Debug {
     fn format_revision() -> usize where Self: Sized;
@@ -60,7 +39,7 @@ pub enum Error {
 }
 
 pub fn parse_metrics(buf: &[u8]) -> Result<Box<dyn Metrics>, Error> {
-    let header: metrics_table_header = buf.try_into().map_err(|_| Error::BadHeader)?;
+    let (header, _) = metrics_table_header::read_from_prefix(buf).map_err(|_| Error::BadHeader)?;
     if header.structure_size as usize != buf.len() {
         return Err(Error::BadLength);
     }
@@ -92,7 +71,7 @@ fn test_report() {
     r.last_system_clock_counter = Some(metrics.system_clock_counter - 10);
     r.record(&metrics);
     let mut buf = BufWriter::new(Vec::new());
-    r.report(&mut buf, || influxdb2::models::data_point::DataPoint::builder("amdgpu").tag("tag", "value")).unwrap();
+    r.report(&mut buf, || DataPoint::builder("amdgpu").tag("tag", "value")).unwrap();
     info!("recorder after report: {:#?}", r);
     let bytes = buf.into_inner().unwrap();
     let string = String::from_utf8(bytes).unwrap();
@@ -145,10 +124,11 @@ macro_rules! metrics_reader {
 
             impl RecorderType {
                 fn new(f: &mut File) -> Result<Self, Error> {
-                    f.seek(SeekFrom::Start(0))?;
-                    let mut buf = [0u8; mem::size_of::<metrics_table_header>()];
-                    f.read_exact(&mut buf)?;
-                    let header: metrics_table_header = buf.as_ref().try_into().map_err(|_| Error::BadHeader)?;
+                    let header = metrics_table_header::read_from_io(f)?;
+                    // f.seek(SeekFrom::Start(0))?;
+                    // let mut buf = [0u8; mem::size_of::<metrics_table_header>()];
+                    // f.read_exact(&mut buf)?;
+                    // let header: metrics_table_header = buf.as_ref().try_into().map_err(|_| Error::BadHeader)?;
                     match (header.format_revision, header.content_revision) {
                         $(
                             ($format_revision, $content_revision) => Ok(Self::[<gpu_metrics_v $format_revision _ $content_revision>](Default::default())),
@@ -197,7 +177,7 @@ pub struct MetricsReader {
 impl MetricsReader {
     pub fn new<P: AsRef<std::path::Path>>(p: P) -> Result<Self, Error> {
         let mut f = File::open(p.as_ref())?;
-        let mut r = RecorderType::new(&mut f)?;
+        let r = RecorderType::new(&mut f)?;
         let slot = p.as_ref().parent().and_then(|p| p.file_name());
         let tags = slot
             .map(|slot| crate::lspci::lspci_info(slot))
@@ -219,10 +199,10 @@ impl MetricsReader {
         }
         Ok(())
     }
-    pub fn report<W: Write>(&self, mut w: W) -> std::io::Result<()> {
+    pub fn report<W: Write>(&self, w: W) -> std::io::Result<()> {
         let tags = &self.tags;
         let builder = || {
-            let builder = influxdb2::models::data_point::DataPoint::builder("amdgpu");
+            let builder = DataPoint::builder("amdgpu");
             match tags {
                 None => builder,
                 Some(tags) => tags.iter().fold(builder, |builder, (key, value)| builder.tag(key, value)),

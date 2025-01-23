@@ -111,33 +111,17 @@ derive_macro_builder(input: TokenStream) -> TokenStream {
                     }
                     fn try_from_file(f: &mut File) -> Result<Self, Error> {
                         f.seek(SeekFrom::Start(0))?;
-                        let size = mem::size_of::<Self>();
-                        let mut out = mem::MaybeUninit::<Self>::uninit();
-                        unsafe {
-                            let buf = std::slice::from_raw_parts_mut(out.as_mut_ptr() as *mut u8, size);
-                            f.read_exact(buf)?;
-                            // TODO: Switch when read_into_uninit_exact is implemented for &File
-                            //f.read_into_uninit_exact(out.as_out())?;
-                            Ok(out.assume_init())
-                        }.and_then(|s|
-                                   match (s.common_header.format_revision as usize, s.common_header.content_revision as usize) {
-                                       (#format_revision, #content_revision) => Ok(s),
-                                       _ => Err(Error::BadVersion),
-                                   }
-                        )
+                        let s = Self::read_from_io(f)?;
+                        match (s.common_header.format_revision as usize, s.common_header.content_revision as usize) {
+                            (#format_revision, #content_revision) => Ok(s),
+                            _ => Err(Error::BadVersion),
+                        }
                     }
                 }
                 impl TryFrom<&[u8]> for #struct_name_ident {
                     type Error = Error;
                     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                        let size = mem::size_of::<Self>();
-                        let buf = value.get(0..size).ok_or(Error::BadLength)?;
-                        let mut out = mem::MaybeUninit::<Self>::uninit();
-                        unsafe {
-                            // TODO: Too bad there's no try_write_slice
-                            mem::MaybeUninit::write_slice(out.as_bytes_mut(), buf);
-                            Ok(out.assume_init())
-                        }.and_then(|s|
+                        Self::read_from_prefix(value).map(|(s, _)| s).map_err(|_| Error::BadLength).and_then(|s|
                             match (s.common_header.format_revision as usize, s.common_header.content_revision as usize) {
                                 (#format_revision, #content_revision) => Ok(s),
                                 _ => Err(Error::BadVersion),
