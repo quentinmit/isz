@@ -152,7 +152,7 @@ in {
           latitude = 42.36878992741952;
           longitude = -71.09414972830565;
           elevation = 3;
-          unit_system = "imperial";
+          unit_system = "us_customary";
           currency = "USD";
           country = "US";
           time_zone = "America/New_York";

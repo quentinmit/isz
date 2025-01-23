@@ -5,14 +5,14 @@
 
 let
   pname = "restriction-card";
-  version = "1.2.9";
+  version = "1.2.13";
 in
 stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchurl {
     url = "https://github.com/iantrich/${pname}/releases/download/${version}/${pname}.js";
-    hash = "sha256-rg2vBaYo8h+E4egMdIy5brPkvpvqSEpRkiAo5lso/Ts=";
+    hash = "sha256-0Wem3UGvSiIFU10jhoXkXr3rhu5RSARro06ht6qKwPg=";
   };
 
   dontUnpack = true;

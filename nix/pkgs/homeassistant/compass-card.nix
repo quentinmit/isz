@@ -5,14 +5,14 @@
 
 let
   pname = "compass-card";
-  version = "2.0.0";
+  version = "2.0.2";
 in
 stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchurl {
     url = "https://github.com/tomvanswam/${pname}/releases/download/v${version}/${pname}.js";
-    hash = "sha256-80uh3mVOTLLJaO8+2NCf7fJTVOl9NIyEciXSaCqFAKU=";
+    hash = "sha256-WFTqLye24PU0tO4ENonMT7qe4BKOhZprLPIgTWp9Qgw=";
   };
 
   dontUnpack = true;
