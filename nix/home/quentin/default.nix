@@ -308,8 +308,7 @@ in {
         #broken virt-manager-qt
         libguestfs-with-appliance
         pcem
-        _86Box
-        _86Box-roms
+        _86Box-with-roms
         rpcemu
         wineWowPackages.full
         winetricks

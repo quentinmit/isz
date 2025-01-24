@@ -187,6 +187,11 @@ final: prev: {
     }));
   });
   _86Box = prev._86Box.overrideAttrs (old: {
+    version = "4.2.1-git";
+    src = old.src.override {
+      rev = "714eadfc3a0b3325060cef21f14faa9b90929ec4";
+      hash = "sha256-7SbgXxAED5nyrxFBw+EPBb6HjfslWTYsp5TeTQKoenY=";
+    };
     prePatch = ''
       substituteInPlace src/network/net_pcap.c \
         --replace-fail libpcap.so ${final.libpcap}/lib/libpcap.so
