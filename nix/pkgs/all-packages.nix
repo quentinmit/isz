@@ -124,4 +124,5 @@ final: prev:
   qt-installer-framework-extractor = final.callPackage ./qt-installer-framework-extractor {};
   segger-systemview = final.callPackage ./segger-systemview {};
   apple-fonts = final.callPackages ./apple-fonts {};
+  piscsi = final.callPackage ./piscsi {};
 }
