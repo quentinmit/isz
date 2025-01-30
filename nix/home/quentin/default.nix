@@ -637,6 +637,7 @@ in {
         })
         fd
         file-rename
+        fq
         gcab
         gnutar
         units
@@ -655,6 +656,7 @@ in {
         lnav
         lzip
         xz
+        miller
         moreutils
         most
         ncdu
