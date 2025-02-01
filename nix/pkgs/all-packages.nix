@@ -27,6 +27,9 @@ final: prev:
       pyweatherflowudp = callPackage ./python/pyweatherflowudp {};
       psychrolib = callPackage ./python/psychrolib {};
       hass-pyscript-kernel = callPackage ./python/hass-pyscript-kernel {};
+      simplepam = callPackage ./python/simplepam {};
+      vcgencmd = callPackage ./python/vcgencmd {};
+      piscsi-common = callPackage ./piscsi/common.nix {};
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};

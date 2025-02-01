@@ -4,6 +4,7 @@
 , libpcap
 , protobuf
 , fetchFromGitHub
+, callPackage
 }: let
   pname = "piscsi";
   version = "24.04.01";
@@ -53,4 +54,8 @@ in stdenv.mkDerivation {
   '';
 
   enableParallelBuilding = true;
+
+  passthru = {
+    web = callPackage ./web.nix {};
+  };
 }
