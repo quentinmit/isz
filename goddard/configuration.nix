@@ -85,6 +85,8 @@
   isz.gpu.enable = true;
   isz.gpu.amd = true;
 
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
   environment.systemPackages = with pkgs; [
     # Virtualisation
     vde2
