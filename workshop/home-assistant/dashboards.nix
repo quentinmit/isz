@@ -26,6 +26,26 @@ let
     type = "thermostat";
     entity = "climate.${name}";
   };
+  power_switch = name: [
+    {
+      type = "conditional";
+      conditions = [{
+        condition = "state";
+        entity = "switch.${name}";
+        state_not = "unavailable";
+      }];
+      card = switch_button name {};
+    }
+    {
+      type = "conditional";
+      conditions = [{
+        condition = "state";
+        entity = "switch.${name}";
+        state = "unavailable";
+      }];
+      card = button name { show_name = true; };
+    }
+  ];
 in {
   config = {
     services.home-assistant = {
@@ -54,11 +74,10 @@ in {
             title = "Home";
             icon = "mdi:home";
             cards = [
-              (grid {} [
-                (switch_button "tv_power" {})
+              (grid {} ((power_switch "tv_power") ++ [
                 (button "tv_input" { show_name = true; })
                 (button "tv_enter" { show_name = true; })
-              ])
+              ]))
               (grid {} [
                 (button "receiver_mute" {})
                 (button "receiver_vol_down" {})
@@ -200,7 +219,7 @@ in {
               (grid {
                 square = true;
                 columns = 4;
-              } ([(switch_button "tv_power" {})] ++ (map (n: button "tv_${n}" { show_name = true; }) [
+              } ((power_switch "tv_power") ++ (map (n: button "tv_${n}" { show_name = true; }) [
                 "display"
                 "playpause"
                 "rewind"
@@ -269,8 +288,7 @@ in {
                 "tune_down"
                 "tune_up"
               ]))
-              (switch_button "receiver_power" {})
-            ];
+            ] ++ (power_switch "receiver_power");
           }
           {
             title = "Inkplate";
