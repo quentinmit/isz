@@ -128,4 +128,6 @@ final: prev:
   segger-systemview = final.callPackage ./segger-systemview {};
   apple-fonts = final.callPackages ./apple-fonts {};
   piscsi = final.callPackage ./piscsi {};
+  hfsutils = final.callPackage ./hfsutils {};
+  hfdisk = final.callPackage ./hfdisk {};
 }

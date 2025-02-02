@@ -34,7 +34,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/jvinet/knock";
     changelog = "https://github.com/jvinet/knock/blob/${src.rev}/ChangeLog";
     license = licenses.gpl2Only;
-    maintainers = with maintainers; [ "quentin" ];
+    maintainers = with maintainers; [ quentin ];
     mainProgram = "knock";
     platforms = platforms.all;
   };
