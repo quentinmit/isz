@@ -27,6 +27,7 @@
         google-cloud-sdk
         baudline
         pkgsi686Linux.mplayer-unfree
+        element-desktop
       ];
 
       # Don't index Electron folders
