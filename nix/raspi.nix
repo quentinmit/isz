@@ -110,6 +110,11 @@ in
         description = "config.txt options";
       };
     };
+    rpi.serialConsole = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable serial console on ttyAMA0";
+    };
   };
 
   config = let
@@ -182,14 +187,30 @@ in
       kernelPackages = pkgs.linuxPackages_rpi4;
       initrd.availableKernelModules = [ "usbhid" "usb_storage" ];
       # ttyAMA0 is the serial console broken out to the GPIO
-      kernelParams = [
-        "8250.nr_uarts=1"
-        "console=ttyAMA0,115200"
-        "console=tty1"
-        "cgroup_enable=memory"
+      kernelParams = lib.mkMerge [
+        [
+          "cgroup_enable=memory"
+        ]
+        (lib.mkIf config.rpi.serialConsole [
+          "8250.nr_uarts=1"
+          "console=ttyAMA0,115200"
+          "console=tty1"
+        ])
       ];
 
       loader.grub.enable = false;
+    };
+
+    virtualisation.vmVariant = {
+      boot.initrd.kernelModules = [
+        "pci-host-generic"
+      ];
+      rpi.serialConsole = false;
+      boot.kernelParams = [
+        "console=ttyAMA0"
+        "boot.shell_on_fail"
+        "sysrq_always_enabled"
+      ];
     };
 
     system.build.installBootLoader = pkgs.writeShellScript "isz-boot-builder" ''
