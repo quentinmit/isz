@@ -18,4 +18,9 @@
     version = "6.5.0";
     zipHash = "sha256-yhdZHeT/22cTeoHcXqHT/JbSEdIpJZkAh7YHUALqY3c=";
   };
+  grafana-lokiexplore-app = grafanaPlugin {
+    pname = "grafana-lokiexplore-app";
+    version = "1.0.6";
+    zipHash = "sha256-8XQV3wOSYgZwvnjZh4DwsiSBrkCVounGSxg3EVTN5mE=";
+  };
 }

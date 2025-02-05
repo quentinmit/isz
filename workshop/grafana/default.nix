@@ -93,6 +93,7 @@
         operato-windrose-panel
         grafana-mqtt-datasource
         volkovlabs-echarts-panel
+        grafana-lokiexplore-app
       ];
     };
   };

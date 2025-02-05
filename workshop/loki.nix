@@ -45,6 +45,9 @@ in {
       limits_config = {
         retention_period = "744d";
       };
+      pattern_ingester = {
+        enabled = true;
+      };
     };
   };
   users.users."${config.services.nginx.user}".extraGroups = [ config.services.loki.user ];
