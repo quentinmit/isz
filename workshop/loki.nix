@@ -9,6 +9,7 @@ in {
   services.loki = {
     enable = true;
     configuration = {
+      analytics.reporting_enabled = false;
       auth_enabled = false; # Disable multi-tenancy
       server.http_listen_network = "unix";
       server.http_listen_address = "/run/loki/loki.sock";
