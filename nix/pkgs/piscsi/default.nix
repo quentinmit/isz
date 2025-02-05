@@ -24,6 +24,8 @@ in stdenv.mkDerivation {
       --replace-fail "-lprotobuf" '$(shell $(PKG_CONFIG) --libs protobuf)'
     substituteInPlace ../os_integration/piscsi.service \
       --replace-fail /usr/local $out
+    substituteInPlace Makefile \
+      --replace-fail "-iquote ." "-iquote $PWD"
   '';
 
   nativeBuildInputs = [

@@ -143,6 +143,7 @@
           "droid"
           "goddard"
           "heartofgold"
+          "rascsi"
         ] (name: nixpkgs.lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [

@@ -10,8 +10,6 @@
 
   boot = {
     tmp.useTmpfs = true;
-
-    loader.grub.enable = false;
   };
 
   hardware.deviceTree.overlays = [{
