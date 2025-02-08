@@ -64,6 +64,10 @@
     zfs = true;
   };
 
+  isz.vector = {
+    enable = true;
+  };
+
   security.polkit.enable = true;
   environment.etc."polkit-1/rules.d/15-logind.rules".text = ''
     polkit.addRule(function(action, subject) {
