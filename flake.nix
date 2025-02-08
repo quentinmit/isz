@@ -213,7 +213,6 @@
             path = deploy-rs.lib.${self.homeConfigurations.deck.pkgs.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
           };
         };
-        deploy.remoteBuild = true;
         checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
     };
 }
