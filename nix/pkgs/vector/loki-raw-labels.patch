@@ -1,0 +1,292 @@
+commit 64eb7c3ffe2779d0f83b4d944cc68fbc140df07e
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Thu Feb 6 04:14:00 2025 -0500
+
+    feat(loki sinks): support uppercase labels and structured metadata (#19038)
+
+diff --git a/src/common/expansion.rs b/src/common/expansion.rs
+index 11d694018..f826d2a43 100644
+--- a/src/common/expansion.rs
++++ b/src/common/expansion.rs
+@@ -16,6 +16,7 @@ pub(crate) fn pair_expansion(
+     value_s: &str,
+     static_pairs: &mut HashMap<String, String>,
+     dynamic_pairs: &mut HashMap<String, String>,
++    slugify_dynamic_fields: bool,
+ ) -> Result<HashMap<String, String>, serde_json::Error> {
+     let mut expanded_pairs = HashMap::new();
+     if let Some(opening_prefix) = key_s.strip_suffix('*') {
+@@ -25,7 +26,11 @@ pub(crate) fn pair_expansion(
+         // key_* -> key_one, key_two, key_three
+         // * -> one, two, three
+         for (k, v) in output {
+-            let key = slugify_text(&format!("{}{}", opening_prefix, k));
++            let key = if slugify_dynamic_fields {
++                slugify_text(&format!("{}{}", opening_prefix, k))
++            } else {
++                format!("{}{}", opening_prefix, k)
++            };
+             let val = Value::from(v).to_string_lossy().into_owned();
+             if val == "<null>" {
+                 warn!("Encountered \"null\" value for dynamic pair. key: {}", key);
+diff --git a/src/sinks/loki/config.rs b/src/sinks/loki/config.rs
+index 06f827b35..6dae078db 100644
+--- a/src/sinks/loki/config.rs
++++ b/src/sinks/loki/config.rs
+@@ -83,6 +83,13 @@ pub struct LokiConfig {
+     #[serde(default = "crate::serde::default_false")]
+     pub remove_structured_metadata_fields: bool,
+ 
++    /// Whether or not to slugify labels and structured metadata.
++    ///
++    /// For backwards compatibility, by default all labels and structured metadata containing a `*` are
++    /// converted to lowercase and have non-alphanumeric characters removed.
++    #[serde(default = "crate::serde::default_true")]
++    pub slugify_dynamic_fields: bool,
++
+     /// Whether or not to remove the timestamp from the event payload.
+     ///
+     /// The timestamp is still sent as event metadata for Loki to use for indexing.
+diff --git a/src/sinks/loki/sink.rs b/src/sinks/loki/sink.rs
+index 37be3a9ee..5b7f2e71b 100644
+--- a/src/sinks/loki/sink.rs
++++ b/src/sinks/loki/sink.rs
+@@ -136,6 +136,7 @@ pub(super) struct EventEncoder {
+     structured_metadata: HashMap<Template, Template>,
+     remove_structured_metadata_fields: bool,
+     remove_timestamp: bool,
++    slugify_dynamic_fields: bool,
+ }
+ 
+ impl EventEncoder {
+@@ -179,7 +180,7 @@ impl EventEncoder {
+ 
+             let key_s = key.unwrap();
+             let value_s = value.unwrap();
+-            let result = pair_expansion(&key_s, &value_s, &mut static_labels, &mut dynamic_labels);
++            let result = pair_expansion(&key_s, &value_s, &mut static_labels, &mut dynamic_labels, self.slugify_dynamic_fields);
+             // we just need to check the error since the result have been inserted in the static_pairs or dynamic_pairs
+             if let Err(err) = result {
+                 warn!(
+@@ -261,6 +262,7 @@ impl EventEncoder {
+                 &value_s,
+                 &mut static_structured_metadata,
+                 &mut dynamic_structured_metadata,
++                self.slugify_dynamic_fields,
+             );
+             // we just need to check the error since the result have been inserted in the static_pairs or dynamic_pairs
+             if let Err(err) = result {
+@@ -492,6 +494,7 @@ impl LokiSink {
+                 remove_label_fields: config.remove_label_fields,
+                 remove_structured_metadata_fields: config.remove_structured_metadata_fields,
+                 remove_timestamp: config.remove_timestamp,
++                slugify_dynamic_fields: config.slugify_dynamic_fields,
+             },
+             batch_settings: config.batch.into_batcher_settings()?,
+             out_of_order_action: config.out_of_order_action,
+@@ -591,6 +594,7 @@ mod tests {
+             remove_label_fields: false,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: false,
++            slugify_dynamic_fields: true,
+         };
+         let mut event = Event::Log(LogEvent::from("hello world"));
+         let log = event.as_mut_log();
+@@ -636,6 +640,7 @@ mod tests {
+             remove_label_fields: false,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: false,
++            slugify_dynamic_fields: true,
+         };
+         let mut event = Event::Log(LogEvent::from("hello world"));
+         let log = event.as_mut_log();
+@@ -688,6 +693,7 @@ mod tests {
+             remove_label_fields: false,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: false,
++            slugify_dynamic_fields: true,
+         };
+ 
+         let message = r#"
+@@ -701,7 +707,67 @@ mod tests {
+         	"metadata": {
+         		"cluster_name": "operations",
+         		"cluster_environment": "development",
+-        		"cluster_version": "1.2.3"
++        		"cluster_version": "1.2.3",
++        		"_UPPERCASE": "please"
++        	}
++        }
++        "#;
++        let msg: ObjectMap = serde_json::from_str(message)?;
++        let event = Event::Log(LogEvent::from(msg));
++        let record = encoder.encode_event(event).unwrap();
++
++        assert_eq!(record.labels.len(), 6);
++        let labels: HashMap<String, String> = record.labels.into_iter().collect();
++        assert_eq!(labels["pod_labels_app"], "web-server".to_string());
++        assert_eq!(labels["pod_labels_name"], "unicorn".to_string());
++        assert_eq!(labels["cluster_name"], "static_cluster_name".to_string());
++        assert_eq!(labels["cluster_environment"], "development".to_string());
++        assert_eq!(labels["cluster_version"], "1.2.3".to_string());
++        assert_eq!(labels["_uppercase"], "please".to_string());
++        Ok(())
++    }
++
++    #[test]
++    fn encoder_with_uppercase_dynamic_labels() -> Result<(), serde_json::Error> {
++        let mut labels = HashMap::default();
++        labels.insert(
++            Template::try_from("pod_labels_*").unwrap(),
++            Template::try_from("{{ kubernetes.pod_labels }}").unwrap(),
++        );
++        labels.insert(
++            Template::try_from("*").unwrap(),
++            Template::try_from("{{ metadata }}").unwrap(),
++        );
++        labels.insert(
++            Template::try_from("cluster_name").unwrap(),
++            Template::try_from("static_cluster_name").unwrap(),
++        );
++
++        let mut encoder = EventEncoder {
++            key_partitioner: KeyPartitioner::new(None),
++            transformer: Default::default(),
++            encoder: Encoder::<()>::new(JsonSerializerConfig::default().build().into()),
++            labels,
++            structured_metadata: HashMap::default(),
++            remove_label_fields: false,
++            remove_structured_metadata_fields: false,
++            remove_timestamp: false,
++            slugify_dynamic_fields: false,
++        };
++
++        let message = r#"
++        {
++        	"kubernetes": {
++        		"pod_labels": {
++        			"app": "web-server",
++        			"name": "unicorn"
++        		}
++        	},
++        	"metadata": {
++        		"cluster_name": "operations",
++        		"cluster_environment": "development",
++        		"cluster_version": "1.2.3",
++        		"_UPPERCASE": "please"
+         	}
+         }
+         "#;
+@@ -709,13 +775,14 @@ mod tests {
+         let event = Event::Log(LogEvent::from(msg));
+         let record = encoder.encode_event(event).unwrap();
+ 
+-        assert_eq!(record.labels.len(), 5);
++        assert_eq!(record.labels.len(), 6);
+         let labels: HashMap<String, String> = record.labels.into_iter().collect();
+         assert_eq!(labels["pod_labels_app"], "web-server".to_string());
+         assert_eq!(labels["pod_labels_name"], "unicorn".to_string());
+         assert_eq!(labels["cluster_name"], "static_cluster_name".to_string());
+         assert_eq!(labels["cluster_environment"], "development".to_string());
+         assert_eq!(labels["cluster_version"], "1.2.3".to_string());
++        assert_eq!(labels["_UPPERCASE"], "please".to_string());
+         Ok(())
+     }
+ 
+@@ -740,6 +807,7 @@ mod tests {
+             remove_label_fields: false,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: false,
++            slugify_dynamic_fields: true,
+         };
+ 
+         let message = r#"
+@@ -780,6 +848,7 @@ mod tests {
+             remove_label_fields: false,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: false,
++            slugify_dynamic_fields: true,
+         };
+ 
+         let msg: ObjectMap = serde_json::from_str("{}")?;
+@@ -803,6 +872,7 @@ mod tests {
+             remove_label_fields: false,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: true,
++            slugify_dynamic_fields: true,
+         };
+         let mut event = Event::Log(LogEvent::from("hello world"));
+         let log = event.as_mut_log();
+@@ -835,6 +905,7 @@ mod tests {
+             remove_label_fields: true,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: false,
++            slugify_dynamic_fields: true,
+         };
+         let mut event = Event::Log(LogEvent::from("hello world"));
+         let log = event.as_mut_log();
+@@ -873,6 +944,7 @@ mod tests {
+             remove_label_fields: false,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: false,
++            slugify_dynamic_fields: true,
+         };
+ 
+         let message = r#"
+@@ -928,6 +1000,7 @@ mod tests {
+             remove_label_fields: false,
+             remove_structured_metadata_fields: false,
+             remove_timestamp: false,
++            slugify_dynamic_fields: true,
+         };
+         let base = chrono::Utc::now();
+         let events = random_lines(100)
+diff --git a/src/sinks/loki/tests.rs b/src/sinks/loki/tests.rs
+index 3a6817002..29cf63397 100644
+--- a/src/sinks/loki/tests.rs
++++ b/src/sinks/loki/tests.rs
+@@ -202,3 +202,31 @@ async fn structured_metadata_as_json() {
+ 
+     assert_eq!(body[2], expected_metadata);
+ }
++
++#[tokio::test]
++async fn uppercase_structured_metadata_as_json() {
++    let (config, cx) = load_sink::<LokiConfig>(
++        r#"
++        endpoint = "http://localhost:3100"
++        labels = {test = "structured_metadata"}
++        structured_metadata."*" = "{{ foo }}"
++        encoding.codec = "json"
++        encoding.except_fields = ["foo"]
++        slugify_dynamic_fields = false
++        "#,
++    )
++    .unwrap();
++    let client = config.build_client(cx).unwrap();
++    let mut sink = LokiSink::new(config, client).unwrap();
++
++    let mut e1 = Event::Log(LogEvent::from("hello world"));
++    e1.as_mut_log().insert("foo", btreemap! {
++        "_UPPERCASE" => "yes",
++    });
++
++    let event = sink.encoder.encode_event(e1).unwrap();
++    let body = serde_json::json!(event.event);
++    let expected_metadata = serde_json::json!({"_UPPERCASE": "yes"});
++
++    assert_eq!(body[2], expected_metadata);
++}
+diff --git a/src/transforms/log_to_metric.rs b/src/transforms/log_to_metric.rs
+index 48cfbecfe..dd88b3aed 100644
+--- a/src/transforms/log_to_metric.rs
++++ b/src/transforms/log_to_metric.rs
+@@ -351,7 +351,7 @@ fn render_tag_into(
+         }
+         Some(template) => match render_template(template, event) {
+             Ok(value_s) => {
+-                let expanded_pairs = pair_expansion(&key_s, &value_s, static_tags, dynamic_tags)
++                let expanded_pairs = pair_expansion(&key_s, &value_s, static_tags, dynamic_tags, true)
+                     .map_err(|_| TransformError::PairExpansionError)?;
+                 result.extend(expanded_pairs);
+             }

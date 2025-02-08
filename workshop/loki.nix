@@ -45,6 +45,10 @@ in {
       storage_config.filesystem.directory = "${dataDir}/chunks";
       limits_config = {
         retention_period = "744d";
+        ingestion_rate_strategy = "local";
+        ingestion_rate_mb = 10;
+        ingestion_burst_size_mb = 20;
+        max_global_streams_per_user = 0;
       };
       pattern_ingester = {
         enabled = true;

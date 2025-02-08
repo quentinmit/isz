@@ -4,6 +4,8 @@
   systemd.services.vector.serviceConfig.LoadCredential = "loki_oauth_token:${config.sops.secrets."vector/loki/oauth_token".path}";
   services.vector = {
     enable = true;
+    package = pkgs.unstable.vector;
+    journaldAccess = true;
     settings = {
       api.enabled = true;
       secret.systemd.type = "exec";
@@ -93,7 +95,7 @@
         encoding.codec = "json";
         encoding.json.pretty = true;
       };
-      sinks.loki = {
+      sinks.loki_mikrotik = {
         type = "loki";
         inputs = ["mikrotik_reduce"];
         endpoint = "https://loki.isz.wtf";
@@ -105,6 +107,99 @@
           subtopic = "{{ subtopic }}";
           level = "{{ severity }}";
         };
+        auth.strategy = "bearer";
+        auth.token = "SECRET[systemd.loki_oauth_token]";
+      };
+      sources.journald = {
+        type = "journald";
+        current_boot_only = false;
+      };
+      transforms.journald_remap = {
+        type = "remap";
+        inputs = ["journald"];
+        # Valid levels at: https://github.com/grafana/loki/blob/main/pkg/util/constants/levels.go#L15
+        # critical
+        # fatal
+        # error
+        # warn
+        # info
+        # debug
+        # trace
+        # unknown
+        source = ''
+          LEVELS = {
+            "0": "fatal", # emerg
+            "1": "error", # alert
+            "2": "error", # crit
+            "3": "error", # err
+            "4": "warn", # warning
+            "5": "info", # notice
+            "6": "info", # info
+            "7": "debug", # debug
+          }
+          .labels = {}
+          priority, err = to_syslog_level(to_int(.PRIORITY) ?? -1)
+          if err == null {
+            .priority = priority
+          }
+          if exists(.PRIORITY) {
+            level = get!(LEVELS, [.PRIORITY])
+            if level != null {
+              .level = level
+            }
+          }
+          facility, err = to_syslog_facility(to_int(.SYSLOG_FACILITY) ?? -1)
+          if err == null {
+            .facility = facility
+          }
+          ${lib.concatMapStringsSep "\n" (key: ''
+            if exists(.${key}) {
+              .labels.${key} = .${key}
+              del(.${key})
+            }
+          '') [
+            "host"
+            "source_type"
+          ]}
+          ${pkgs.unstable.lib.concatMapAttrsStringSep "\n" (out: src: ''
+            if exists(.${src}) {
+              .labels.${out} = .${src}
+            }
+          '') {
+            service_namespace = "_SYSTEMD_SLICE";
+            service_name = "_SYSTEMD_UNIT";
+          }}
+          del(.source_type)
+          del(.host)
+          structured_metadata = filter(.) -> |key, _value| {
+            !includes(["labels", "message", "timestamp"], key)
+          }
+          # Work around https://github.com/grafana/loki/issues/16148
+          structured_metadata = map_keys(structured_metadata) -> |key| {
+            if starts_with(key, "_") {
+              "trusted" + key
+            } else {
+              key
+            }
+          }
+          . = {
+            "labels": .labels,
+            "message": .message,
+            "timestamp": .timestamp,
+            "structured_metadata": structured_metadata,
+          }
+        '';
+      };
+      sinks.loki_journald = {
+        type = "loki";
+        inputs = ["journald_remap"];
+        endpoint = "https://loki.isz.wtf";
+        encoding.codec = "raw_message";
+        remove_label_fields = true;
+        labels."*" = "{{ labels }}";
+        remove_structured_metadata_fields = true;
+        structured_metadata."*" = "{{ structured_metadata }}";
+        slugify_dynamic_fields = false;
         auth.strategy = "bearer";
         auth.token = "SECRET[systemd.loki_oauth_token]";
       };

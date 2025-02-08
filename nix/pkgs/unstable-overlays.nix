@@ -25,4 +25,9 @@ final: prev: {
       });
     };
   });
+  vector = prev.vector.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      ./vector/loki-raw-labels.patch
+    ];
+  });
 }
