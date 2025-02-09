@@ -81,6 +81,7 @@
     enable = true;
     smart.enable = false;
     w1 = true;
+    interval.sensors = "30s";
   };
 
   isz.vector = {

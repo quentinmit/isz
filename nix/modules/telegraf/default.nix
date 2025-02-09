@@ -84,6 +84,7 @@ in {
         internal = "60s";
         openweathermap = "10m";
         prometheus = "60s";
+        sensors = "10s";
       };
     }
     (lib.mkIf cfg.enable {
@@ -197,6 +198,7 @@ in {
             swap = [{}];
             system = [{}];
             temp = [{
+              interval = cfg.interval.sensors;
               tagdrop.sensor = ["w1_slave_temp_input"];
             }];
             internal = [{
@@ -223,7 +225,10 @@ in {
             }];
             linux_sysctl_fs = [{}];
             sensors = [{
+              interval = cfg.interval.sensors;
               tagdrop.chip = ["w1_slave_temp-*"];
+              # Can take >5s to read when there are w1 sensors.
+              timeout = "30s";
             }];
             interrupts = [{}];
           };
