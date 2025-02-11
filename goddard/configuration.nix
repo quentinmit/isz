@@ -180,6 +180,8 @@
     network.firewall_driver = "none"; # firewalld
   };
 
+  virtualisation.waydroid.enable = true;
+
   # TODO: Switch to systemd-resolved for mDNS
   services.avahi = {
     enable = true;
