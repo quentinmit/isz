@@ -112,7 +112,7 @@
             }
           ];
 
-          fielddrop = [
+          fieldexclude = [
             "wind_direction"
             "pressure_trend"
           ];
@@ -129,7 +129,7 @@
           }
           {
             namepass = ["weatherflow_config"];
-            fieldpass = [
+            fieldinclude = [
               "unit_of_measurement"
             ];
             order = 15;
