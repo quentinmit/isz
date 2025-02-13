@@ -306,6 +306,7 @@ async def main():
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.NOTSET if args.verbose else logging.INFO)
+    logging.getLogger('httpx').setLevel(logging.NOTSET if args.verbose else logging.WARNING)
 
     auth = httpx.DigestAuth(args.user, args.password)
     async with httpx.AsyncClient() as client:
