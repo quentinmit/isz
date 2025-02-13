@@ -18,6 +18,7 @@
       }; in {
         targets = map (t: defaults // t) [
           { ip = "172.30.97.3"; }
+          { ip = "172.30.97.20"; }
         ];
       };
       mikrotik.swos = let defaults = {
@@ -35,6 +36,7 @@
         { ip = "172.30.97.16"; }
         { ip = "172.30.97.17"; }
         { ip = "172.30.97.18"; }
+        { ip = "172.30.97.20"; }
       ];
       prometheus.apps = {
         grafana.url = "https://grafana.isz.wtf/metrics";

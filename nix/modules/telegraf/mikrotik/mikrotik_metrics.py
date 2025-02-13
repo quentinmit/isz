@@ -452,10 +452,16 @@ async def main():
                     logging.debug("failed to find parser for %s='%s'", k, v)
             return single_props
         ids = set()
-        for entry in r.get():
-            if 'id' in entry:
-                ids.add(entry['id'])
-            field_props |= parse_entry(entry)
+        try:
+            for entry in r.get():
+                if 'id' in entry:
+                    ids.add(entry['id'])
+                field_props |= parse_entry(entry)
+        except routeros_api.exceptions.RouterOsApiCommunicationError as e:
+            if e.original_message == b'no such command prefix':
+                # This resource doesn't exist.
+                continue
+            raise
         proplist = tag_props | field_props
         if 'id' in proplist:
             # ".id" in .proplist but "id" in result :(

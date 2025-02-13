@@ -25,7 +25,7 @@
           "Cable modem"
           "Front panel DC"
           "Front panel USB-C"
-          null
+          "workshop-10g-sw.isz.wtf"
           null
           "Top shelf chargers"
           "Middle shelf USB chargers"
@@ -69,7 +69,7 @@
           parameters = {
             "Channel 1 nominal current" = "5 A";
             "Channel 2 nominal current" = "7 A";
-            "Channel 3 nominal current" = "1 A";
+            "Channel 3 nominal current" = "3 A";
             "Channel 4 nominal current" = "1 A";
           };
         };
