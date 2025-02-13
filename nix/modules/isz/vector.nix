@@ -138,9 +138,46 @@ in {
             }
           '';
         };
+        transforms.journald_route = {
+          inputs = ["journald_remap"];
+          type = "exclusive_route";
+          routes = [
+            { name = "homeassistant"; condition = ''.structured_metadata.trusted_SYSTEMD_UNIT == "home-assistant.service"''; }
+          ];
+        };
+        transforms.journald_homeassistant_reduce = {
+          type = "reduce";
+          inputs = ["journald_route.homeassistant"];
+          expire_after_ms = 1000;
+          starts_when = ''
+            match(string!(.message), r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
+          '';
+          merge_strategies.message = "concat_newline";
+        };
+        transforms.journald_homeassistant_remap = {
+          type = "remap";
+          inputs = ["journald_homeassistant_reduce"];
+          source = ''
+            LEVELS = {
+              "CRITICAL": "critical",
+              "ERROR": "error",
+              "WARNING": "warn",
+              "INFO": "info",
+              "DEBUG": "debug",
+            }
+            parts, err = parse_regex(.message, r'(?s)(?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+(?P<level>\S+)\s+(?P<message>.+)')
+            if err == null {
+              .structured_metadata.level = get!(LEVELS, [parts.level])
+              .message = parts.message
+            }
+          '';
+        };
         sinks.loki_journald = {
           type = "loki";
-          inputs = ["journald_remap"];
+          inputs = [
+            "journald_route._unmatched"
+            "journald_homeassistant_remap"
+          ];
           endpoint = "https://loki.isz.wtf";
           encoding.codec = "raw_message";
           remove_label_fields = true;
