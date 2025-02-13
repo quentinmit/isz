@@ -120,6 +120,22 @@ in {
               "timestamp": .timestamp,
               "structured_metadata": structured_metadata,
             }
+            TELEGRAF_LEVELS = {
+              "E": "error",
+              "W": "warn",
+              "I": "info",
+              "D": "debug",
+            }
+            if structured_metadata.trusted_COMM == "telegraf" {
+              parts, err = parse_regex(.message, r'(?P<time>\S+)\s+(?P<level>.)!\s+(?P<message>(\[(?P<plugin>[^]]+)\]\s+)?.+)')
+              if err == null {
+                .structured_metadata.level = get!(TELEGRAF_LEVELS, [parts.level])
+                if parts.plugin != null {
+                  .structured_metadata.plugin = parts.plugin
+                }
+                .message = parts.message
+              }
+            }
           '';
         };
         sinks.loki_journald = {
