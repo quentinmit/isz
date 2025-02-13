@@ -38,7 +38,7 @@
       "host": "core2.atl1.he.net",
       "country": "US",
       "city": "Atlanta",
-      "datacenter": "Digital Realty / Telx Atlanta (ATL1), 56 Marietta",
+      "datacenter": "Digital Realty ATL13 (56 Marietta)",
       "state": "GA",
       "exchanges": [
         "Digital Realty Atlanta IX (Telx-TIE)",
@@ -152,7 +152,8 @@
       "exchanges": [
         "Equinix Chicago",
         "AMS-IX Chicago",
-        "ChIX"
+        "ChIX",
+        "MegaIX Chicago"
       ]
     },
     {
@@ -164,14 +165,15 @@
       "exchanges": [
         "Equinix Chicago",
         "AMS-IX Chicago",
-        "ChIX"
+        "ChIX",
+        "MegaIX Chicago"
       ]
     },
     {
       "host": "core1.chi2.he.net",
       "country": "US",
       "city": "Chicago",
-      "datacenter": "Digital Realty / Telx Chicago",
+      "datacenter": "Digital Realty ORD10 (350 East Cermak)",
       "state": "IL",
       "exchanges": [
         "DRT Chicago"
@@ -280,7 +282,7 @@
       "host": "core1.dsm1.he.net",
       "country": "US",
       "city": "Des Moines",
-      "datacenter": "Connect",
+      "datacenter": "Cologix DSM1 / Connect Des Moines",
       "state": "IA",
       "exchanges": [
         "DesMoinesIX"
@@ -339,7 +341,8 @@
         "FCIX",
         "SFMIX",
         "AMS-IX Bay Area",
-        "Lambda-IX"
+        "Lambda-IX",
+        "MegaIX Bay Area"
       ]
     },
     {
@@ -352,7 +355,8 @@
         "FCIX",
         "SFMIX",
         "AMS-IX Bay Area",
-        "Lambda-IX"
+        "Lambda-IX",
+        "MegaIX Bay Area"
       ]
     },
     {
@@ -360,7 +364,10 @@
       "country": "US",
       "city": "Byron Center",
       "datacenter": "123NET Grand Rapids",
-      "state": "MI"
+      "state": "MI",
+      "exchanges": [
+        "GRR-IX"
+      ]
     },
     {
       "host": "core1.yhz1.he.net",
@@ -551,8 +558,8 @@
     {
       "host": "core1.mia4.he.net",
       "country": "US",
-      "city": "Miami,",
-      "datacenter": "Digital Realty MIA1 (36 NE 2nd St)",
+      "city": "Miami",
+      "datacenter": "Digital Realty MIA10 (36 NE 2nd St)",
       "state": "FL"
     },
     {
@@ -618,7 +625,7 @@
       "host": "core1.nyc3.he.net",
       "country": "US",
       "city": "New York",
-      "datacenter": "Digital Realty NYC3 (32 AofA)",
+      "datacenter": "Digital Realty JFK13 (32 Avenue of the Americas)",
       "state": "NY"
     },
     {
@@ -647,7 +654,7 @@
       "host": "core2.nyc5.he.net",
       "country": "US",
       "city": "New York",
-      "datacenter": "Digital Realty / Telx New York (NYC1), 60 Hudson",
+      "datacenter": "Digital Realty JFK12 (60 Hudson)",
       "state": "NY",
       "exchanges": [
         "Digital Realy New York IX (Telx-TIE)"
@@ -668,7 +675,7 @@
       "host": "core2.nyc7.he.net",
       "country": "US",
       "city": "New York",
-      "datacenter": "Digital Realty / Telx 111 8th New York",
+      "datacenter": "Digital Realty JFK10 (111 8th)",
       "state": "NY"
     },
     {
@@ -742,7 +749,7 @@
       "host": "core1.pah1.he.net",
       "country": "US",
       "city": "Paducah",
-      "datacenter": "Quad State Internet",
+      "datacenter": "Quad State Internet PAH1",
       "state": "KY",
       "exchanges": [
         "PaducahIX"
@@ -781,7 +788,7 @@
       "host": "core2.phx1.he.net",
       "country": "US",
       "city": "Phoenix",
-      "datacenter": "Digital Realty / Telx Phoenix (PHX1), 120 E Van Buren",
+      "datacenter": "Digital Realty PHX10 (120 East Van Buren)",
       "state": "AZ",
       "exchanges": [
         "Digital Realty Phoenix Internet Exchange."
@@ -819,7 +826,7 @@
       "host": "core2.pdx1.he.net",
       "country": "US",
       "city": "Portland",
-      "datacenter": "Pittock Building Portland",
+      "datacenter": "Pittock Bloock",
       "state": "OR",
       "exchanges": [
         "NWAX"
@@ -846,7 +853,7 @@
       "host": "core1.pwm2.he.net",
       "country": "US",
       "city": "Portland",
-      "datacenter": "Deep Edge PWM",
+      "datacenter": "CENTRA / Deep Edge PWM",
       "state": "ME"
     },
     {
@@ -939,7 +946,7 @@
       "host": "core2.sfo1.he.net",
       "country": "US",
       "city": "San Francisco",
-      "datacenter": "Digital Realty / Telx (SFR1) San Francisco",
+      "datacenter": "Digital Realty SFO10 (200 Paul)",
       "state": "CA",
       "exchanges": [
         "SFMIX"
@@ -1046,6 +1053,13 @@
       ]
     },
     {
+      "host": "core1.stl2.he.net",
+      "country": "US",
+      "city": "St. Louis",
+      "datacenter": "Netrality 900 Walnut St. Louis",
+      "state": "MO"
+    },
+    {
       "host": "core2.tpa1.he.net",
       "country": "US",
       "city": "Tampa",
@@ -1098,7 +1112,7 @@
       "state": "VA"
     },
     {
-      "host": "core1.orf2.he.net",
+      "host": "core2.orf2.he.net",
       "country": "US",
       "city": "Virginia Beach",
       "datacenter": "Telxius",
@@ -1150,7 +1164,7 @@
       "host": "core1.ams3.he.net",
       "country": "NL",
       "city": "Rozenburg",
-      "datacenter": "Interxion AMS8"
+      "datacenter": "Digital Realty AMS8"
     },
     {
       "host": "core1.ams4.he.net",
@@ -1162,7 +1176,7 @@
       "host": "core1.ams5.he.net",
       "country": "NL",
       "city": "Amsterdam",
-      "datacenter": "Interxion AMS9",
+      "datacenter": "Digital Realty AMS9",
       "exchanges": [
         "BBIX Amsterdam"
       ]
@@ -1177,13 +1191,13 @@
       "host": "core1.ams8.he.net",
       "country": "NL",
       "city": "Amsterdam",
-      "datacenter": "Digital Realty AMS17 (Science Park)"
+      "datacenter": "Digital Realty AMS17 (Science Park 120)"
     },
     {
       "host": "core1.ath1.he.net",
       "country": "GR",
       "city": "Koropi",
-      "datacenter": "Interxion / Digital Realty ATH1",
+      "datacenter": "Digital Realty ATH1",
       "exchanges": [
         "GR-IX Athens",
         "SEECIX"
@@ -1258,7 +1272,7 @@
       "host": "core2.bru1.he.net",
       "country": "BE",
       "city": "Zaventem",
-      "datacenter": "Interxion Brussels",
+      "datacenter": "Digital Realty BRU1",
       "exchanges": [
         "BelgiumIX",
         "BNIX"
@@ -1294,7 +1308,7 @@
       "host": "core3.cph1.he.net",
       "country": "DK",
       "city": "Copenhagen",
-      "datacenter": "Interxion Copenhagen",
+      "datacenter": "Digital Realty CPH1",
       "exchanges": [
         "DIX",
         "Netnod Copenhagen",
@@ -1316,7 +1330,7 @@
       "host": "core2.dus1.he.net",
       "country": "DE",
       "city": "D\u00fcsseldorf",
-      "datacenter": "Interxion Dusseldorf",
+      "datacenter": "Digital Realty DUS1",
       "exchanges": [
         "ECIX Dusseldorf",
         "DE-CIX Dusseldorf"
@@ -1335,7 +1349,7 @@
       "host": "core3.fra1.he.net",
       "country": "DE",
       "city": "Frankfurt",
-      "datacenter": "Interxion Frankfurt",
+      "datacenter": "Digital Realty FRA1",
       "exchanges": [
         "DE-CIX Frankfurt",
         "KleyRex",
@@ -1350,7 +1364,8 @@
       "datacenter": "Equinix Frankfurt (FR1)",
       "exchanges": [
         "Equinix Frankfurt",
-        "ECIX Frankfurt"
+        "ECIX Frankfurt",
+        "ERA-IX Frankfurt"
       ]
     },
     {
@@ -1423,10 +1438,7 @@
       "host": "core3.lon1.he.net",
       "country": "UK",
       "city": "London",
-      "datacenter": "Telehouse Docklands East",
-      "exchanges": [
-        "LoNAP"
-      ]
+      "datacenter": "Telehouse Docklands East"
     },
     {
       "host": "core2.lon2.he.net",
@@ -1449,16 +1461,19 @@
       ]
     },
     {
-      "host": "core2.lon3.he.net",
+      "host": "core1.lon3.he.net",
       "country": "UK",
       "city": "London",
-      "datacenter": "Telehouse Docklands North"
+      "datacenter": "Telehouse Docklands North",
+      "exchanges": [
+        "LONAP"
+      ]
     },
     {
       "host": "core1.lon6.he.net",
       "country": "UK",
       "city": "London",
-      "datacenter": "Interxion LON1"
+      "datacenter": "Digital Realty LON1"
     },
     {
       "host": "core1.lon7.he.net",
@@ -1494,7 +1509,7 @@
       "host": "core3.mad1.he.net",
       "country": "ES",
       "city": "Madrid",
-      "datacenter": "Interxion Madrid",
+      "datacenter": "Digital Realty MAD1",
       "exchanges": [
         "ESPANIX Lower",
         "ESPANIX Upper",
@@ -1516,7 +1531,7 @@
       "host": "core4.mrs1.he.net",
       "country": "FR",
       "city": "Marseille",
-      "datacenter": "Interxion Marseille",
+      "datacenter": "Digital Realty MRS1",
       "exchanges": [
         "France-IX Marseille",
         "DE-CIX Marseille"
@@ -1547,7 +1562,7 @@
       "datacenter": "Equinix Munich (MU1)",
       "exchanges": [
         "DE-CIX Munich",
-        "ECIX Munich"
+        "MegaIX/ECIX Munich"
       ]
     },
     {
@@ -1564,7 +1579,7 @@
       "host": "core2.par1.he.net",
       "country": "FR",
       "city": "Paris",
-      "datacenter": "Interxion Paris 2"
+      "datacenter": "Digital Realty PAR2"
     },
     {
       "host": "core2.par2.he.net",
@@ -1676,7 +1691,8 @@
       "city": "Thessaloniki",
       "datacenter": "Balkan Gate",
       "exchanges": [
-        "NetIX Greece"
+        "NetIX Greece",
+        "Free-IX Greece"
       ]
     },
     {
@@ -1701,7 +1717,7 @@
       "host": "core2.vie1.he.net",
       "country": "AT",
       "city": "Vienna",
-      "datacenter": "Interxion Vienna",
+      "datacenter": "Digital Realty VIE1",
       "exchanges": [
         "VIX"
       ]
@@ -1741,13 +1757,13 @@
       "host": "core1.zag2.he.net",
       "country": "HR",
       "city": "Zagreb",
-      "datacenter": "Interxion ZAG1 / Altus IT"
+      "datacenter": "Digital Realty ZAG1"
     },
     {
       "host": "core2.zrh2.he.net",
       "country": "CH",
       "city": "Glattbrugg",
-      "datacenter": "Interxion ZUR1",
+      "datacenter": "Digital Realty ZUR1",
       "exchanges": [
         "CHIX-CH"
       ]
@@ -1784,7 +1800,7 @@
       "host": "core1.akl2.he.net",
       "country": "NZ",
       "city": "Auckland",
-      "datacenter": "Vocus Albany"
+      "datacenter": "2degrees Albany"
     },
     {
       "host": "core1.bne1.he.net",
@@ -1925,7 +1941,7 @@
       "host": "core1.pnh1.he.net",
       "country": "KH",
       "city": "Phnom Penh",
-      "datacenter": "Sabay MNV",
+      "datacenter": "Cambodia CNX",
       "exchanges": [
         "CNX"
       ]
