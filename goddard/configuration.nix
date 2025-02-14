@@ -89,7 +89,28 @@
   isz.gpu.enable = true;
   isz.gpu.amd = true;
 
-  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  boot.binfmt.emulatedSystems = [
+    "aarch64-linux"
+    "armv7l-linux"
+    "armv6l-linux"
+  ];
+  boot.binfmt.registrations = {
+    armeb = let
+      qemu = "${pkgs.qemu-user}/bin/qemu-armeb";
+      wrapperName = "qemu-armeb-binfmt-P";
+      wrapper = pkgs.wrapQemuBinfmtP wrapperName qemu;
+      interpreter = "${wrapper}/bin/${wrapperName}";
+    in {
+      preserveArgvZero = true;
+      inherit interpreter;
+      fixBinary = false;
+      wrapInterpreterInShell = false;
+      interpreterSandboxPath = "${wrapper}";
+
+      magicOrExtension = ''\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28'';
+      mask = ''\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'';
+    };
+  };
 
   environment.systemPackages = with pkgs; [
     # Virtualisation
