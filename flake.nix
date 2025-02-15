@@ -111,8 +111,13 @@
             ? "default.nix" then [{
               inherit name;
               value = dir + "/${name}";
-            }] else
-              findModules (dir + "/${name}")) (builtins.readDir dir)));
+            }]
+            else
+              (map
+                (e: e // {name = "${name}/${e.name}";})
+                (findModules (dir + "/${name}"))
+              )
+          ) (builtins.readDir dir)));
     in (flake-utils.lib.eachDefaultSystem (system:
       let inherit ((
             import nixpkgs {
