@@ -24,6 +24,8 @@
           if err == null {
             .structured_metadata.level = get!(LEVELS, [parts.level])
             .message = parts.message
+            # TODO: Do something with time?
+            # 2025-02-13 03:50:01.083
           }
         '';
       }
