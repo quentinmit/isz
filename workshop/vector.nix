@@ -1,4 +1,3 @@
-{ ... }:
 {
   isz.vector.enable = true;
   services.vector = {

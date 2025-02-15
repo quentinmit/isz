@@ -5,6 +5,34 @@ in {
   options = with lib; {
     isz.vector = {
       enable = mkEnableOption "Vector agent";
+      journald.services = mkOption {
+        type = types.attrsOf (types.submodule ({ config, name, ... }: {
+          options = {
+            transforms = mkOption {
+              type = with types; listOf anything;
+            };
+            outputName = mkOption {
+              type = types.str;
+              readOnly = true;
+            };
+            settings = mkOption {
+              type = types.anything;
+            };
+          };
+          config = {
+            settings.transforms = lib.listToAttrs (lib.lists.imap1 (i: t: lib.nameValuePair
+              "journald_${name}_${toString i}"
+              (t // {
+                inputs = [
+                  (if i > 1 then "journald_${name}_${toString (i - 1)}" else "journald_route.${name}")
+                ];
+              })
+            ) config.transforms);
+            outputName = "journald_${name}_${toString (lib.length config.transforms)}";
+          };
+        }));
+        default = {};
+      };
     };
   };
   config = lib.mkIf cfg.enable {
@@ -14,181 +42,156 @@ in {
       enable = true;
       package = pkgs.unstable.vector;
       journaldAccess = true;
-      settings = {
-        api.enabled = true;
-        secret.systemd.type = "exec";
-        secret.systemd.command = [
-          (pkgs.writers.writePython3 "vector-secrets" {} ''
-            import os
-            import os.path
-            import json
-            import sys
+      settings = lib.mkMerge ([
+        {
+          api.enabled = true;
+          secret.systemd.type = "exec";
+          secret.systemd.command = [
+            (pkgs.writers.writePython3 "vector-secrets" {} ''
+              import os
+              import os.path
+              import json
+              import sys
 
-            req = json.load(sys.stdin)
-            assert req.get("version") == "1.0"
+              req = json.load(sys.stdin)
+              assert req.get("version") == "1.0"
 
-            out = {}
-            for name in req["secrets"]:
-                try:
-                    data = open(
-                        os.path.join(
-                            os.environ["CREDENTIALS_DIRECTORY"],
-                            name,
-                        )
-                    ).read()
-                    out[name] = {"value": data, "error": None}
-                except OSError as e:
-                    out[name] = {"value": None, "error": str(e)}
-            print(json.dumps(out))
-          '')
-        ];
-        sources.journald = {
-          type = "journald";
-          current_boot_only = false;
-        };
-        transforms.journald_remap = {
-          type = "remap";
-          inputs = ["journald"];
-          # Valid levels at: https://github.com/grafana/loki/blob/main/pkg/util/constants/levels.go#L15
-          # critical
-          # fatal
-          # error
-          # warn
-          # info
-          # debug
-          # trace
-          # unknown
-          source = ''
-            LEVELS = {
-              "0": "fatal", # emerg
-              "1": "error", # alert
-              "2": "error", # crit
-              "3": "error", # err
-              "4": "warn", # warning
-              "5": "info", # notice
-              "6": "info", # info
-              "7": "debug", # debug
-            }
-            .labels = {}
-            priority, err = to_syslog_level(to_int(.PRIORITY) ?? -1)
-            if err == null {
-              .priority = priority
-            }
-            if exists(.PRIORITY) {
-              level = get!(LEVELS, [.PRIORITY])
-              if level != null {
-                .level = level
+              out = {}
+              for name in req["secrets"]:
+                  try:
+                      data = open(
+                          os.path.join(
+                              os.environ["CREDENTIALS_DIRECTORY"],
+                              name,
+                          )
+                      ).read()
+                      out[name] = {"value": data, "error": None}
+                  except OSError as e:
+                      out[name] = {"value": None, "error": str(e)}
+              print(json.dumps(out))
+            '')
+          ];
+          sources.journald = {
+            type = "journald";
+            current_boot_only = false;
+          };
+          transforms.journald_remap = {
+            type = "remap";
+            inputs = ["journald"];
+            # Valid levels at: https://github.com/grafana/loki/blob/main/pkg/util/constants/levels.go#L15
+            # critical
+            # fatal
+            # error
+            # warn
+            # info
+            # debug
+            # trace
+            # unknown
+            source = ''
+              LEVELS = {
+                "0": "fatal", # emerg
+                "1": "error", # alert
+                "2": "error", # crit
+                "3": "error", # err
+                "4": "warn", # warning
+                "5": "info", # notice
+                "6": "info", # info
+                "7": "debug", # debug
               }
-            }
-            facility, err = to_syslog_facility(to_int(.SYSLOG_FACILITY) ?? -1)
-            if err == null {
-              .facility = facility
-            }
-            ${lib.concatMapStringsSep "\n" (key: ''
-              if exists(.${key}) {
-                .labels.${key} = .${key}
-                del(.${key})
-              }
-            '') [
-              "host"
-              "source_type"
-            ]}
-            ${pkgs.unstable.lib.concatMapAttrsStringSep "\n" (out: src: ''
-              if exists(.${src}) {
-                .labels.${out} = .${src}
-              }
-            '') {
-              service_namespace = "_SYSTEMD_SLICE";
-              service_name = "_SYSTEMD_UNIT";
-            }}
-            del(.source_type)
-            del(.host)
-            structured_metadata = filter(.) -> |key, _value| {
-              !includes(["labels", "message", "timestamp"], key)
-            }
-            # Work around https://github.com/grafana/loki/issues/16148
-            structured_metadata = map_keys(structured_metadata) -> |key| {
-              if starts_with(key, "_") {
-                "trusted" + key
-              } else {
-                key
-              }
-            }
-            . = {
-              "labels": .labels,
-              "message": .message,
-              "timestamp": .timestamp,
-              "structured_metadata": structured_metadata,
-            }
-            TELEGRAF_LEVELS = {
-              "E": "error",
-              "W": "warn",
-              "I": "info",
-              "D": "debug",
-            }
-            if structured_metadata.trusted_COMM == "telegraf" {
-              parts, err = parse_regex(.message, r'(?P<time>\S+)\s+(?P<level>.)!\s+(?P<message>(\[(?P<plugin>[^]]+)\]\s+)?.+)')
+              .labels = {}
+              priority, err = to_syslog_level(to_int(.PRIORITY) ?? -1)
               if err == null {
-                .structured_metadata.level = get!(TELEGRAF_LEVELS, [parts.level])
-                if parts.plugin != null {
-                  .structured_metadata.plugin = parts.plugin
-                }
-                .message = parts.message
+                .priority = priority
               }
-            }
-          '';
-        };
-        transforms.journald_route = {
-          inputs = ["journald_remap"];
-          type = "exclusive_route";
-          routes = [
-            { name = "homeassistant"; condition = ''.structured_metadata.trusted_SYSTEMD_UNIT == "home-assistant.service"''; }
-          ];
-        };
-        transforms.journald_homeassistant_reduce = {
-          type = "reduce";
-          inputs = ["journald_route.homeassistant"];
-          expire_after_ms = 1000;
-          starts_when = ''
-            match(string!(.message), r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
-          '';
-          merge_strategies.message = "concat_newline";
-        };
-        transforms.journald_homeassistant_remap = {
-          type = "remap";
-          inputs = ["journald_homeassistant_reduce"];
-          source = ''
-            LEVELS = {
-              "CRITICAL": "critical",
-              "ERROR": "error",
-              "WARNING": "warn",
-              "INFO": "info",
-              "DEBUG": "debug",
-            }
-            parts, err = parse_regex(.message, r'(?s)(?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+(?P<level>\S+)\s+(?P<message>.+)')
-            if err == null {
-              .structured_metadata.level = get!(LEVELS, [parts.level])
-              .message = parts.message
-            }
-          '';
-        };
-        sinks.loki_journald = {
-          type = "loki";
-          inputs = [
-            "journald_route._unmatched"
-            "journald_homeassistant_remap"
-          ];
-          endpoint = "https://loki.isz.wtf";
-          encoding.codec = "raw_message";
-          remove_label_fields = true;
-          labels."*" = "{{ labels }}";
-          remove_structured_metadata_fields = true;
-          structured_metadata."*" = "{{ structured_metadata }}";
-          slugify_dynamic_fields = false;
-          auth.strategy = "bearer";
-          auth.token = "SECRET[systemd.loki_oauth_token]";
-        };
-      };
+              if exists(.PRIORITY) {
+                level = get!(LEVELS, [.PRIORITY])
+                if level != null {
+                  .level = level
+                }
+              }
+              facility, err = to_syslog_facility(to_int(.SYSLOG_FACILITY) ?? -1)
+              if err == null {
+                .facility = facility
+              }
+              ${lib.concatMapStringsSep "\n" (key: ''
+                if exists(.${key}) {
+                  .labels.${key} = .${key}
+                  del(.${key})
+                }
+              '') [
+                "host"
+                "source_type"
+              ]}
+              ${pkgs.unstable.lib.concatMapAttrsStringSep "\n" (out: src: ''
+                if exists(.${src}) {
+                  .labels.${out} = .${src}
+                }
+              '') {
+                service_namespace = "_SYSTEMD_SLICE";
+                service_name = "_SYSTEMD_UNIT";
+              }}
+              del(.source_type)
+              del(.host)
+              structured_metadata = filter(.) -> |key, _value| {
+                !includes(["labels", "message", "timestamp"], key)
+              }
+              # Work around https://github.com/grafana/loki/issues/16148
+              structured_metadata = map_keys(structured_metadata) -> |key| {
+                if starts_with(key, "_") {
+                  "trusted" + key
+                } else {
+                  key
+                }
+              }
+              . = {
+                "labels": .labels,
+                "message": .message,
+                "timestamp": .timestamp,
+                "structured_metadata": structured_metadata,
+              }
+              TELEGRAF_LEVELS = {
+                "E": "error",
+                "W": "warn",
+                "I": "info",
+                "D": "debug",
+              }
+              if structured_metadata.trusted_COMM == "telegraf" {
+                parts, err = parse_regex(.message, r'(?P<time>\S+)\s+(?P<level>.)!\s+(?P<message>(\[(?P<plugin>[^]]+)\]\s+)?.+)')
+                if err == null {
+                  .structured_metadata.level = get!(TELEGRAF_LEVELS, [parts.level])
+                  if parts.plugin != null {
+                    .structured_metadata.plugin = parts.plugin
+                  }
+                  .message = parts.message
+                }
+              }
+            '';
+          };
+          transforms.journald_route = {
+            inputs = ["journald_remap"];
+            type = "exclusive_route";
+            routes = lib.map (name: {
+              inherit name;
+              condition = ''.structured_metadata.trusted_SYSTEMD_UNIT == "${name}.service"'';
+            }) (lib.attrNames config.isz.vector.journald.services);
+          };
+          sinks.loki_journald = {
+            type = "loki";
+            inputs = [
+              "journald_route._unmatched"
+            ] ++ lib.mapAttrsToList (_: config: config.outputName) cfg.journald.services;
+            endpoint = "https://loki.isz.wtf";
+            encoding.codec = "raw_message";
+            remove_label_fields = true;
+            labels."*" = "{{ labels }}";
+            remove_structured_metadata_fields = true;
+            structured_metadata."*" = "{{ structured_metadata }}";
+            slugify_dynamic_fields = false;
+            auth.strategy = "bearer";
+            auth.token = "SECRET[systemd.loki_oauth_token]";
+          };
+        }
+      ] ++ (lib.mapAttrsToList (_: config: config.settings) cfg.journald.services));
     };
   };
 }
