@@ -18,6 +18,7 @@ import (
 var (
 	address  = flag.String("addr", "192.168.0.1", "address of the linkzone")
 	interval = flag.Duration("interval", 10*time.Second, "interval for writing")
+	verbose = flag.Bool("verbose", false, "verbose logs")
 )
 
 func main() {
@@ -117,7 +118,9 @@ func report(writeApi api.WriteAPI, name string, result map[string]interface{}) {
 			fields[k] = v
 		}
 	}
-	log.Printf("%s: %#v", name, fields)
+	if *verbose {
+		log.Printf("%s: %#v", name, fields)
+	}
 	p := influxdb2.NewPoint(fmt.Sprintf("linkzone.%s", name),
 		map[string]string{
 			"host": hostname,
