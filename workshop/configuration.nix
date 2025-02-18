@@ -31,20 +31,8 @@
   sops.defaultSopsFile = ./secrets.yaml;
 
   # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot = {
-    enable = true;
-    memtest86.enable = true;
-    extraEntries = {
-      "debian.conf" = ''
-        title Debian
-        efi /efi/debian/grubx64.efi
-      '';
-    };
-  };
-  boot.loader.efi = {
-    efiSysMountPoint = "/boot/efi";
-    canTouchEfiVariables = true;
-  };
+  isz.secureBoot.enable = true;
+  boot.loader.efi.efiSysMountPoint = "/boot/efi";
 
   environment.etc."lvm/lvm.conf".text = ''
     devices/issue_discards=1
