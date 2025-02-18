@@ -119,7 +119,7 @@ def mikrotik_to_record(resource_type: str, entry: dict) -> Record:
             out['type'] = 'A'
     elif resource_type == '/ip/dhcp-server/lease':
         # Remove dynamic keys
-        for key in 'status expires-after last-seen active-server active-address active-mac-address active-client-id host-name radius blocked'.split():
+        for key in 'status expires-after last-seen active-server active-address active-mac-address active-client-id class-id host-name radius blocked'.split():
             out.pop(key, None)
         for key in set(out.keys()):
             if not out[key]:
