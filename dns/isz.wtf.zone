@@ -71,6 +71,8 @@ workshop-10g-sw  A 172.30.97.20
 workshop-pi      A 172.30.97.32
 bedroom-pi       A 172.30.97.33
 workshop         A 172.30.97.34
+workshop-kvm     A 172.30.97.38
+                 EUI48 44-B7-D0-E3-75-B0
 
 mac              A 172.30.97.100
 heartofgold      A 172.30.97.101
