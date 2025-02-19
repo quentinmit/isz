@@ -639,6 +639,21 @@
         "type": "github"
       }
     },
+    "oom-hardware": {
+      "locked": {
+        "lastModified": 1738657052,
+        "narHash": "sha256-5WMuYsMdXs4qcjeryIQpvt/3iQ+3Fv5NiztOWnch+tU=",
+        "owner": "robertjakub",
+        "repo": "oom-hardware",
+        "rev": "47c037c4f82a5f6d8f859f137cd80e444a8215ee",
+        "type": "github"
+      },
+      "original": {
+        "owner": "robertjakub",
+        "repo": "oom-hardware",
+        "type": "github"
+      }
+    },
     "plasma-manager": {
       "inputs": {
         "home-manager": [
@@ -739,6 +754,7 @@
         "nixpkgs-23_05": "nixpkgs-23_05",
         "nixpkgs-authentik": "nixpkgs-authentik",
         "nur-mweinelt": "nur-mweinelt",
+        "oom-hardware": "oom-hardware",
         "plasma-manager": "plasma-manager",
         "py-profinet": "py-profinet",
         "rust-overlay": "rust-overlay",

@@ -184,7 +184,7 @@ in
     ];
 
     boot = {
-      kernelPackages = pkgs.linuxPackages_rpi4;
+      kernelPackages = lib.mkDefault pkgs.linuxPackages_rpi4;
       initrd.availableKernelModules = [ "usbhid" "usb_storage" ];
       # ttyAMA0 is the serial console broken out to the GPIO
       kernelParams = lib.mkMerge [

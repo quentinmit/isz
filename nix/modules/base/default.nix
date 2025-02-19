@@ -20,7 +20,7 @@
 
     services.locate.enable = true;
     services.locate.package = pkgs.mlocate;
-    services.locate.localuser = null;
+    services.locate.localuser = lib.mkIf (lib.versionOlder lib.version "25.05") null;
 
     programs.mtr.enable = true;
 

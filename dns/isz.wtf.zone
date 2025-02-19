@@ -53,6 +53,8 @@ goddard-ether    A 172.30.96.105
                  EUI48 9C-BF-0D-00-50-29
 heartofgold-new  A 172.30.96.106
                  EUI48 E8-9C-25-6B-1E-B9
+uconsole         A 172.30.96.107
+                 EUI48 D8-3A-DD-B7-97-F8
 
 pap2t            CNAME pap2t.guest
 bedroom-tasmota  CNAME bedroom-tasmota.guest

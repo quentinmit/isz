@@ -63,6 +63,7 @@
     gradle2nix.url = "github:tadfisher/gradle2nix/v2";
     gradle2nix.inputs.nixpkgs.follows = "nixpkgs";
     gradle2nix.inputs.flake-utils.follows = "flake-utils";
+    oom-hardware.url = "github:robertjakub/oom-hardware";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
     let
@@ -142,7 +143,7 @@
           overlays.mosh-server-upnp
         ];
         overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
-        nixosConfigurations = nixpkgs.lib.genAttrs [
+        nixosConfigurations = (nixpkgs.lib.genAttrs [
           "workshop"
           "bedroom-pi"
           "droid"
@@ -155,7 +156,26 @@
             overlayModule
             ./${name}/configuration.nix
           ];
-        });
+        })) // {
+          uconsole = unstable.lib.nixosSystem {
+            inherit specialArgs;
+            modules = [ #(builtins.attrValues self.nixosModules) ++ [
+              self.nixosModules.base
+              self.nixosModules.sshd-sops
+              self.nixosModules.telegraf
+              ({
+                nixpkgs.overlays = [
+                  overlay
+                  self.overlays.new
+                  self.overlays.stable
+                  self.overlays.unstable
+                  self.overlays.mosh-server-upnp
+                ];
+              })
+              ./uconsole/configuration.nix
+            ];
+          };
+        };
         darwinConfigurations.mac = darwin.lib.darwinSystem {
           system = "x86_64-darwin";
           inherit specialArgs;
