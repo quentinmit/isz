@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nixpkgs, nixos-hardware, ... }:
+{ config, pkgs, lib, modulesPath, nixos-hardware, ... }:
 
 let
   toConfigTxt = with builtins; let
@@ -35,7 +35,7 @@ let
     mkKeyValue = lib.generators.mkKeyValueDefault { inherit mkValueString; } "=";
     mkGroup = group:
       lib.strings.concatMapStrings (k: "[${k}]\n") group.conditionals
-        + lib.generators.toKeyValue { inherit mkKeyValue; } group.items
+        + lib.generators.toKeyValue { inherit mkKeyValue; listsAsDuplicateKeys = true; } group.items
     ;
     in
       attrs:
@@ -52,7 +52,7 @@ in
   ];
   imports = [
     nixos-hardware.nixosModules.raspberry-pi-4
-    "${nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
+    "${modulesPath}/installer/sd-card/sd-image.nix"
   ];
 
   options = with lib; {
@@ -76,7 +76,10 @@ in
         '';
       };
       config = mkOption {
-        type = with types; let atom = oneOf [str int bool (attrsOf atom)]; in attrsOf atom;
+        type = with types; let
+          atom = oneOf [str int bool];
+          molecule = oneOf [atom (listOf atom) (attrsOf molecule)];
+        in attrsOf molecule;
         default = {
           pi3.kernel = "u-boot-rpi3.bin";
           pi02.kernel = "u-boot-rpi3.bin";
@@ -124,11 +127,11 @@ in
 
     timeoutStr = if blCfg.timeout == null then "-1" else toString blCfg.timeout;
 
-    ecbn = "${nixpkgs}/nixos/modules/system/boot/loader/generic-extlinux-compatible/extlinux-conf-builder.nix";
+    ecbn = "${modulesPath}/system/boot/loader/generic-extlinux-compatible/extlinux-conf-builder.nix";
     # The builder used to write during system activation
-    ecbBuilder = import ecbn { inherit pkgs; };
+    ecbBuilder = pkgs.callPackage ecbn {};
     # The builder which runs on the build architecture
-    ecbPopulateBuilder = import ecbn { pkgs = pkgs.buildPackages; };
+    ecbPopulateBuilder = pkgs.buildPackages.callPackage ecbn {};
     ecbBuilderArgs = "-g ${toString cfg.configurationLimit} -t ${timeoutStr}"
       + lib.optionalString (dtCfg.name != null) " -n ${dtCfg.name}";
 
@@ -149,7 +152,7 @@ in
       "bcm2711-rpi-cm4s.dtb"
     ];
     populateFirmwareCommands = ''
-      if findmnt /boot/firmware > /dev/null; then
+      if [ -n "$img" ] || findmnt /boot/firmware > /dev/null; then
         # Add the config
         cp ${configTxtPkg} firmware/config.txt
         # Add pi3 specific files
@@ -158,6 +161,7 @@ in
         cp ${cfg.uboot.rpi4}/u-boot.bin firmware/u-boot-rpi4.bin
         cp ${pkgs.raspberrypi-armstubs}/armstub8-gic.bin firmware/armstub8-gic.bin
         ${copyRpiFirmware}
+        echo "rpi firmware installed"
       else
         echo "/boot/firmware not mounted; skipping firmware installation"
       fi
