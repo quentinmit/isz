@@ -64,9 +64,10 @@ in
         type = with types; attrsOf package;
         default = {
           rpi3 = pkgs.ubootRaspberryPi3_64bit;
-          rpi4 = pkgs.ubootRaspberryPi4_64bit_nousb;
+          rpi4 = pkgs.ubootRaspberryPi4_64bit;
         };
       };
+      forceHDMI = mkEnableOption "Force HDMI output";
       configurationLimit = mkOption {
         default = 20;
         example = 10;
@@ -80,36 +81,7 @@ in
           atom = oneOf [str int bool];
           molecule = oneOf [atom (listOf atom) (attrsOf molecule)];
         in attrsOf molecule;
-        default = {
-          pi3.kernel = "u-boot-rpi3.bin";
-          pi02.kernel = "u-boot-rpi3.bin";
-          pi4 = {
-            kernel = "u-boot-rpi4.bin";
-            enable_gic = true;
-            armstub = "armstub8-gic.bin";
-            disable_overscan = true;
-            arm_boost = true;
-          };
-          cm4 = {
-            otg_mode = true;
-          };
-          # U-Boot used to need this to work, regardless of whether UART is actually used or not.
-          # TODO: check when/if this can be removed.
-          enable_uart = true;
-
-          # Prevent the firmware from smashing the framebuffer setup done by the mainline kernel
-          # when attempting to show low-voltage or overtemperature warnings.
-          avoid_warnings = true;
-
-          # Boot in 64-bit mode
-          arm_64bit = lib.mkIf pkgs.stdenv.hostPlatform.isAarch64 true;
-
-          # Force HDMI out
-          hdmi_force_hotplug = true;
-          # Force 1080p60
-          hdmi_group = 1;
-          hdmi_mode = 16;
-        };
+        default = {};
         description = "config.txt options";
       };
     };
@@ -124,6 +96,8 @@ in
     blCfg = config.boot.loader;
     dtCfg = config.hardware.deviceTree;
     cfg = blCfg.isz-raspi;
+    isRpi3 = cfg.uboot ? rpi3;
+    isRpi4 = cfg.uboot ? rpi4;
 
     timeoutStr = if blCfg.timeout == null then "-1" else toString blCfg.timeout;
 
@@ -136,12 +110,21 @@ in
       + lib.optionalString (dtCfg.name != null) " -n ${dtCfg.name}";
 
     configTxtPkg = pkgs.writeText "config.txt" (toConfigTxt cfg.config);
-    copyRpiFirmware = lib.strings.concatMapStringsSep "\n" (f: "cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/${f} firmware/") [
+    cp = lib.getExe' pkgs.coreutils "cp";
+    copyRpiFirmware = lib.strings.concatMapStringsSep "\n" (f: "${cp} ${pkgs.raspberrypifw}/share/raspberrypi/boot/${f} firmware/") [
       "bootcode.bin"
+      "fixup4cd.dat"
+      "fixup4.dat"
+      "fixup4db.dat"
+      "fixup4x.dat"
       "fixup.dat"
       "fixup_cd.dat"
       "fixup_db.dat"
       "fixup_x.dat"
+      "start4cd.elf"
+      "start4db.elf"
+      "start4.elf"
+      "start4x.elf"
       "start.elf"
       "start_cd.elf"
       "start_db.elf"
@@ -152,14 +135,18 @@ in
       "bcm2711-rpi-cm4s.dtb"
     ];
     populateFirmwareCommands = ''
-      if [ -n "$img" ] || findmnt /boot/firmware > /dev/null; then
+      if [ -n "''${img:+present}" ] || ${pkgs.util-linux}/bin/findmnt /boot/firmware > /dev/null; then
         # Add the config
-        cp ${configTxtPkg} firmware/config.txt
+        ${cp} ${configTxtPkg} firmware/config.txt
+        ${lib.optionalString isRpi3 ''
         # Add pi3 specific files
-        cp ${cfg.uboot.rpi3}/u-boot.bin firmware/u-boot-rpi3.bin
+        ${cp} ${cfg.uboot.rpi3}/u-boot.bin firmware/u-boot-rpi3.bin
+        ''}
+        ${lib.optionalString isRpi4 ''
         # Add pi4 specific files
-        cp ${cfg.uboot.rpi4}/u-boot.bin firmware/u-boot-rpi4.bin
-        cp ${pkgs.raspberrypi-armstubs}/armstub8-gic.bin firmware/armstub8-gic.bin
+        ${cp} ${cfg.uboot.rpi4}/u-boot.bin firmware/u-boot-rpi4.bin
+        ''}
+        ${cp} ${pkgs.raspberrypi-armstubs}/armstub8-gic.bin firmware/armstub8-gic.bin
         ${copyRpiFirmware}
         echo "rpi firmware installed"
       else
@@ -184,6 +171,34 @@ in
             CONFIG_PREBOOT="pci enum;"
           '';
         };
+      })
+    ];
+
+    boot.loader.isz-raspi.config = lib.mkMerge [
+      {
+        pi4.kernel = lib.mkIf isRpi4 (lib.mkDefault "u-boot-rpi4.bin");
+        pi4.enable_gic = lib.mkDefault true;
+        pi4.armstub = lib.mkDefault "armstrub8-gic.bin";
+        pi3.kernel = lib.mkIf isRpi3 (lib.mkDefault "u-boot-rpi3.bin");
+        pi02.kernel = lib.mkIf isRpi3 (lib.mkDefault "u-boot-rpi3.bin");
+
+        # U-Boot used to need this to work, regardless of whether UART is actually used or not.
+        # TODO: check when/if this can be removed.
+        enable_uart = lib.mkDefault true;
+
+        # Prevent the firmware from smashing the framebuffer setup done by the mainline kernel
+        # when attempting to show low-voltage or overtemperature warnings.
+        avoid_warnings = lib.mkDefault true;
+
+        # Boot in 64-bit mode
+        arm_64bit = lib.mkIf pkgs.stdenv.hostPlatform.isAarch64 true;
+      }
+      (lib.mkIf cfg.forceHDMI {
+        # Force HDMI out
+        hdmi_force_hotplug = true;
+        # Force 1080p60
+        hdmi_group = 1;
+        hdmi_mode = 16;
       })
     ];
 

@@ -18,6 +18,25 @@
 
   rpi.serialConsole = false;
 
+  boot.loader.isz-raspi.config = {
+    gpio = [
+      "10=ip,np"
+      "11=op"
+    ];
+    arm_boost = true;
+
+    #over_voltage = 6;
+    #arm_freq = 2000;
+    #gpu_freq = 750;
+
+    display_auto_detect = true;
+    ignore_lcd = true;
+    disable_overscan = true;
+    disable_fw_kms_setup = true;
+    disable_audio_dither = true;
+    pwm_sample_bits = 20;
+  };
+
   # Skip building HTML manual, but still install other docs.
   documentation.doc.enable = false;
   environment.pathsToLink = [ "/share/doc" ];

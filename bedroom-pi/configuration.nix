@@ -10,6 +10,11 @@
 
   boot = {
     tmp.useTmpfs = true;
+    # Disable USB in uboot to work around a bug.
+    loader.isz-raspi = {
+      uboot.rpi4 = pkgs.ubootRaspberryPi4_64bit_nousb;
+      forceHDMI = true;
+    };
   };
 
   hardware.deviceTree.overlays = [{
