@@ -52,6 +52,11 @@
 
   networking.networkmanager.enable = true;
 
+  # https://github.com/raspberrypi/linux/issues/6049#issuecomment-2485431104
+  boot.extraModprobeConfig = ''
+    options brcmfmac feature_disable=0x200000
+  '';
+
   networking.firewall.enable = false;
 
   isz.openssh = {
