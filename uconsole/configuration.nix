@@ -48,6 +48,8 @@
     virtualisation.graphics = false;
   };
 
+  hardware.keyboard.qmk.enable = true;
+
   networking.hostName = "uconsole";
 
   networking.networkmanager.enable = true;
@@ -71,11 +73,42 @@
   environment.systemPackages = with pkgs; [
     mmc-utils
     iw
-    wpa_supplicant
+    byobu
   ];
 
+  services.xserver.enable = true;
+  # Broken on arm:
+  # https://github.com/llvm/llvm-project/pull/78704
+#   services.displayManager.ly = {
+#     enable = true;
+#     settings = {
+#       animation = "matrix";
+#       bigclock = "en";
+#     };
+#   };
+  services.xserver.displayManager.setupCommands = ''
+    ${pkgs.xorg.xrandr}/bin/xrandr --output DSI-1 --rotate right
+  '';
+  services.displayManager.sddm.enable = true;
+  services.xserver.windowManager.twm.enable = true;
+
   users.users.root = {
-    hashedPassword = "";
+    initialHashedPassword = "";
+  };
+
+  users.users.quentin = {
+    isNormalUser = true;
+    description = "Quentin Smith";
+    extraGroups = [
+      "dialout"
+      "networkmanager"
+      "video"
+      "wheel"
+      "wireshark"
+      "libvirtd"
+      "podman"
+      "audio"
+    ];
   };
 
   nix = {
