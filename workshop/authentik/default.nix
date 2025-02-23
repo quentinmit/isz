@@ -47,8 +47,7 @@
 
       authentikComponents = let
         scope = (authentik.lib.mkAuthentikScope {
-          # TODO: update past https://github.com/NixOS/nixpkgs/pull/361930
-          pkgs = nixpkgs-authentik.legacyPackages.${pkgs.stdenv.system};
+          pkgs = pkgs.unstable;
         }).overrideScope (final: prev: {
           authentikComponents = prev.authentikComponents // {
             staticWorkdirDeps = prev.authentikComponents.staticWorkdirDeps.override (old: {

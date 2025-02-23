@@ -7,7 +7,6 @@
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-24.11";
     nixpkgs-23_05.url = "nixpkgs/nixos-23.05";
-    nixpkgs-authentik.url = "nixpkgs/8ca17d5b31690fae0f295a79cde620248aabf4dc";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
