@@ -219,7 +219,7 @@ in {
             bbenoist.nix
             golang.go
             ms-python.python
-            rust-lang.rust-analyzer
+            #broken rust-lang.rust-analyzer
             ms-toolsai.jupyter
             ms-vscode.cpptools-extension-pack
             LoyieKing.smalise

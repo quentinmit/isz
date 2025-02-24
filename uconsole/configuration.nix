@@ -74,6 +74,7 @@
     mmc-utils
     iw
     byobu
+    qmk
   ];
 
   services.xserver.enable = true;
@@ -91,6 +92,8 @@
   '';
   services.displayManager.sddm.enable = true;
   services.xserver.windowManager.twm.enable = true;
+  services.desktopManager.plasma6.enable = true;
+  programs.kdeconnect.enable = true;
 
   users.users.root = {
     initialHashedPassword = "";
