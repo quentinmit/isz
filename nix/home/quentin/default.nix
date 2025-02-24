@@ -11,11 +11,13 @@ in {
       default = config.isz.quentin.enable;
     };
   };
-  imports = [
-    ./multimedia.nix
-    ./theme.nix
-    ./python.nix
-  ];
+  imports = builtins.map (name: ./${name}) (
+    builtins.attrNames (
+      lib.filterAttrs
+        (name: type: type == "regular" && name != "default.nix")
+        (builtins.readDir ./.)
+    )
+  );
   config = lib.mkIf config.isz.quentin.enable (lib.mkMerge [
     {
       nixpkgs.overlays = lib.mkAfter [
@@ -31,40 +33,6 @@ in {
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         nix-du
       ];
-    }
-    # Imaging
-    {
-      home.packages = with pkgs; [
-        exiftool
-        feh
-        graphicsmagick_q16
-        imagemagickBig
-        #makeicns
-        libicns
-        libjpeg
-        libjpeg_turbo
-        libraw # Replaces dcraw
-        opencv
-        rawtherapee
-        #broken wxSVG
-        (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
-        libwmf
-        drawio
-        yeetgif
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
-        darktable
-        digikam
-        inkscape-with-extensions
-        krita
-        scribus
-        boxy-svg
-        kdePackages.kolourpaint
-      ] ++ (available libresprite);
-      home.file.".ExifTool_config".text = ''
-        %Image::ExifTool::UserDefined::Options = (
-            LargeFileSupport => 1,
-        );
-      '';
     }
     # 3D Modeling
     {
@@ -273,30 +241,6 @@ in {
         typescript-mode
       ];
     }
-    # Games
-    {
-      home.packages = with pkgs; [
-        lightsoff
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
-        bottles
-        gnuchess # broken on macOS
-        kblocks
-        kbounce
-        knights
-        stockfish
-        kmines
-        knetwalk
-        knavalbattle
-        kdePackages.ksudoku
-        kdePackages.kbreakout
-        kdePackages.palapeli
-        kdePackages.kolf
-        aisleriot
-        gnome-mines
-        gnome-sudoku
-        swell-foop
-      ];
-    }
     # Emulation
     {
       home.packages = with pkgs; [
@@ -342,48 +286,6 @@ in {
         icon = "${pkgs.cyberchef}/share/cyberchef/images/cyberchef-128x128.png";
         categories = ["Utility"];
       };
-    }
-    # Hardware
-    {
-      home.packages = with pkgs; [
-        sigrok-cli
-        pulseview
-        gtkwave
-        cutecom
-        lxi-tools-gui
-      ];
-    }
-    # Radio
-    {
-      home.packages = with pkgs; [
-        dsd
-        dsdcc
-        gnuradio
-        #already gpsbabel
-        gpsbabel-gui
-        #grig
-        hamlib_4
-        #already from soapysdr-with-plugins limesuite
-        multimon-ng
-        rtl-sdr
-        rtl_433
-        (rx_tools.override {
-          soapysdr = soapysdr-with-plugins;
-        })
-        soapyhackrf
-        xastir
-        sdrpp
-        nanovna-saver
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
-        csdr
-        fldigi
-        flrig
-        gpsd
-        pothos
-        sdrangel
-      ] ++ lib.optionals (!isAarch64Darwin) [
-        unstable.gqrx-portaudio
-      ];
     }
     # Security
     {

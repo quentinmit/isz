@@ -33,7 +33,6 @@ in {
       ];
     };
     home.packages = with pkgs; [
-      nerdfonts
       monaco-nerd-fonts
       corefonts
       aileron
@@ -48,7 +47,7 @@ in {
       apple-fonts.SF-Mono
       apple-fonts.SF-Compact
       apple-fonts.NY
-    ];
+    ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.unstable.nerd-fonts);
     fonts.fontconfig.enable = true;
     xdg.configFile."fontconfig/conf.d/10-hack.conf".text = ''
       <?xml version='1.0'?>

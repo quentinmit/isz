@@ -4,6 +4,7 @@
   imports = [
     ../nix/raspi.nix
     oom-hardware.nixosModules.uconsole
+    ./quentin.nix
   ];
 
   boot = {
