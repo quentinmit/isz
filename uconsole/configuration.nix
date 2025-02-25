@@ -113,6 +113,7 @@
       "podman"
       "audio"
     ];
+    openssh.authorizedKeys.keys = config.users.users.root.openssh.authorizedKeys.keys;
   };
 
   nix = {

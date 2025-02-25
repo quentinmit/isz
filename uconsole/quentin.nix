@@ -9,6 +9,7 @@
       #isz.quentin.enable = true;
       isz.plasma.enable = true;
       isz.quentin = {
+        utilities.enable = true;
         hardware.enable = true;
         radio.enable = true;
       };
