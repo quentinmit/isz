@@ -130,4 +130,5 @@ final: prev:
   piscsi = final.callPackage ./piscsi {};
   hfsutils = final.callPackage ./hfsutils {};
   hfdisk = final.callPackage ./hfdisk {};
+  fdt-viewer = final.qt6Packages.callPackage ./fdt-viewer {};
 }
