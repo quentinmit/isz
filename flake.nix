@@ -216,6 +216,11 @@
           hostname = "heartofgold.isz.wtf";
           profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.workshop.pkgs.system}.activate.nixos self.nixosConfigurations.heartofgold;
         };
+        deploy.nodes.uconsole = {
+          sshUser = "root";
+          hostname = "uconsole.isz.wtf";
+          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.uconsole.pkgs.system}.activate.nixos self.nixosConfigurations.uconsole;
+        };
         steamdeckSys = import ./steamdeck/sys.nix { inherit self nixpkgs specialArgs; };
         steamdeckSysext = import ./nix/sysext.nix {
           inherit self nixpkgs specialArgs;
