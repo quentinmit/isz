@@ -7,6 +7,8 @@
     ./quentin.nix
   ];
 
+  sops.defaultSopsFile = ./secrets.yaml;
+
   boot = {
     tmp.useTmpfs = true;
   };
@@ -64,10 +66,11 @@
 
   isz.openssh = {
     hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
+    useSops = true;
   };
 
   isz.telegraf = {
-    enable = false; # TODO: Enable
+    enable = true;
     smart.enable = false;
   };
 
