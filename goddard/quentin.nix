@@ -34,6 +34,7 @@
       services.baloo.excludeFolders = [
         "$HOME/.config/discord/"
         "$HOME/.config/Signal/"
+        "$HOME/Software/nixpkgs/"
       ];
 
       services.easyeffects = {

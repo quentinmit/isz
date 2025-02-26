@@ -319,7 +319,10 @@ in {
           cfg = config.services.baloo;
         in {
           "index hidden folders" = cfg.indexHiddenFolders;
-          "exclude folders[$e]" = lib.mkIf (cfg.excludeFolders != null) (arrayValue cfg.excludeFolders);
+          "exclude folders" = lib.mkIf (cfg.excludeFolders != null) {
+            value = arrayValue cfg.excludeFolders;
+            shellExpand = true;
+          };
         };
         "dolphinrc"."DetailsMode"."PreviewSize" = 16;
         "kdeglobals"."KDE"."SingleClick" = false;

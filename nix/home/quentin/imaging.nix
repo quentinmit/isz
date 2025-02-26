@@ -1,5 +1,7 @@
 { config, lib, pkgs, ... }:
-{
+let
+  available = pkg: lib.optional pkg.meta.available pkg;
+in {
   options.isz.quentin.imaging.enable = lib.mkOption {
     type = lib.types.bool;
     default = config.isz.quentin.enable;
