@@ -99,6 +99,16 @@
   services.desktopManager.plasma6.enable = true;
   programs.kdeconnect.enable = true;
 
+  nixpkgs.overlays = [
+    (final: prev: {
+      retroarch-joypad-autoconfig = prev.retroarch-joypad-autoconfig.overrideAttrs (old: {
+        postPatch = (old.postPatch or "") + ''
+          cp -vR ${./retroarch-joypad-autoconfig}/* ./
+        '';
+      });
+    })
+  ];
+
   users.users.root = {
     initialHashedPassword = "";
   };
