@@ -16,7 +16,7 @@ in {
     };
   };
   config = {
-    isz.telegraf.interval.hitron = lib.mkOptionDefault "60s";
+    isz.telegraf.interval.hitron = lib.mkOptionDefault "300s";
     services.telegraf.extraConfig = lib.mkIf (cfg.targets != []) {
       inputs.http = lib.concatMap (host: [
         {

@@ -55,6 +55,8 @@
     profinet = true;
   };
 
+  systemd.services.nscd.environment.NSNCD_WORKER_COUNT = "32";
+
   hardware.bluetooth.enable = true;
 
   services.fwupd.enable = true;
