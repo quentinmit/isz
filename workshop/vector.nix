@@ -1,5 +1,6 @@
 {
   isz.vector.enable = true;
+  systemd.services.vector.serviceConfig.RuntimeDirectory = "vector";
   services.vector = {
     settings = {
       sources.syslog_udp = {
@@ -59,7 +60,9 @@
       };
       sinks.console = {
         type = "console";
-        inputs = ["syslog_udp"];
+        inputs = [
+          "syslog_udp"
+        ];
         encoding.codec = "json";
         encoding.json.pretty = true;
       };
@@ -75,6 +78,50 @@
           subtopic = "{{ subtopic }}";
           level = "{{ severity }}";
         };
+        auth.strategy = "bearer";
+        auth.token = "SECRET[systemd.loki_oauth_token]";
+      };
+
+      sources.telegraf_netflow = {
+        type = "socket";
+        mode = "unix_datagram";
+        path = "/run/vector/telegraf_netflow.sock";
+        socket_file_mode = 438; # 0666 - TODO: restrict to a group shared with telegraf
+
+        framing.method = "newline_delimited";
+        decoding.codec = "json";
+      };
+      transforms.netflow_format = {
+        type = "remap";
+        inputs = ["telegraf_netflow"];
+        source = ''
+          host = .tags.source
+          del(.tags.source)
+          del(.tags.influxdb_bucket)
+
+          . = {
+            "labels": {
+              "host": host,
+              "source_type": "netflow",
+            },
+            "message": encode_logfmt!(.fields),
+            "timestamp": .timestamp,
+            "structured_metadata": .tags,
+          }
+        '';
+      };
+      sinks.loki_netflow = {
+        type = "loki";
+        inputs = [
+          "netflow_format"
+        ];
+        endpoint = "https://loki.isz.wtf";
+        encoding.codec = "raw_message";
+        remove_label_fields = true;
+        labels."*" = "{{ labels }}";
+        remove_structured_metadata_fields = true;
+        structured_metadata."*" = "{{ structured_metadata }}";
+        slugify_dynamic_fields = false;
         auth.strategy = "bearer";
         auth.token = "SECRET[systemd.loki_oauth_token]";
       };

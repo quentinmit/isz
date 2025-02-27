@@ -50,6 +50,13 @@
     };
     services.telegraf.extraConfig = lib.mkMerge [
       {
+        outputs.socket_writer = [{
+          namepass = ["netflow_raw"];
+          address = "unixgram:///run/vector/telegraf_netflow.sock";
+          data_format = "json";
+        }];
+      }
+      {
         inputs.nginx_vts = [{
           urls = ["http://localhost/status/format/json"];
         }];
