@@ -20,7 +20,12 @@
   };
   grafana-lokiexplore-app = grafanaPlugin {
     pname = "grafana-lokiexplore-app";
-    version = "1.0.6";
-    zipHash = "sha256-8XQV3wOSYgZwvnjZh4DwsiSBrkCVounGSxg3EVTN5mE=";
+    version = "1.0.8";
+    zipHash = "sha256-f7/6qvSoBEaxAj81WyE4MQPQFQe6TWc2P7mbsqRl2kw=";
+  };
+  grafana-pyroscope-app = grafanaPlugin {
+    pname = "grafana-pyroscope-app";
+    version = "1.1.0";
+    zipHash = "sha256-kgyXNrvDac1R72BLUiTOQoHacaxgtvLtgN+Fj53Xf9o=";
   };
 }

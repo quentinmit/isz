@@ -82,6 +82,7 @@
         server.root_url = "https://grafana.isz.wtf";
         security.allow_embedding = true;
         feature_toggles.enable = "timeSeriesTable";
+        feature_toggles.preinstallAutoUpdate = false;
         dataproxy.timeout = 300;
         plugins.allow_loading_unsigned_plugins = "operato-windrose-panel";
         news.news_feed_enabled = false;
@@ -94,6 +95,7 @@
         grafana-mqtt-datasource
         volkovlabs-echarts-panel
         grafana-lokiexplore-app
+        grafana-pyroscope-app
       ];
     };
   };
