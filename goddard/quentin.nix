@@ -30,11 +30,15 @@
         element-desktop
       ];
 
-      # Don't index Electron folders
       services.baloo.excludeFolders = [
-        "$HOME/.config/discord/"
-        "$HOME/.config/Signal/"
+        # Don't index Electron folders
+        "$HOME/.config/"
+        "$HOME/.cache/"
         "$HOME/Software/nixpkgs/"
+        "$HOME/.local/share/"
+        "$HOME/.gradle/"
+        "$HOME/.zoom/"
+        "$HOME/.npm/"
       ];
 
       services.easyeffects = {

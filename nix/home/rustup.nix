@@ -50,5 +50,11 @@ in {
     home.file.".rustup/toolchains/nix-stable-${stable.version}".source = stable;
     home.file.".rustup/toolchains/nix-stable".source = stable;
     home.file.".cargo/config.toml".source = tomlFormat.generate "cargo.toml" cfgCargo.settings;
+
+    services.baloo.excludeFolders = [
+      "$HOME/.rustup/"
+      "$HOME/.cargo/git/"
+      "$HOME/.cargo/registry/"
+    ];
   };
 }
