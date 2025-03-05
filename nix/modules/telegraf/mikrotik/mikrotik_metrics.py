@@ -477,6 +477,7 @@ async def main():
     resources = {}
 
     for name, props in tags.items():
+        logging.debug("fetching %s", name)
         r = api.get_resource(name)
 
         tag_props = props.get('tag_props', set())

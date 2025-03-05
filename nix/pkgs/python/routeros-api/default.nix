@@ -7,13 +7,17 @@
 }:
 
 buildPythonPackage rec {
-  pname = "RouterOS-api";
-  version = "0.17.0";
+  pname = "routeros_api";
+  version = "0.18.1";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-G5iYRg7MRme1Tkd9SVt0wvJK4KrEyQ3Q5i8j7H6uglI=";
+    hash = "sha256-I6Qm+KO4D659mTEewCU7GYlO0tFoiyAoHeqEe9k8t7w=";
   };
+
+  patches = [
+    ./ros718.patch
+  ];
 
   doCheck = false;
 
