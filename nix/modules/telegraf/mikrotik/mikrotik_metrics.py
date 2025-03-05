@@ -439,6 +439,9 @@ TAGS = {
         "skip_props": {
             "debug.fwp-ptr",
         },
+        "field_prop_defaults": {
+            "active": False,
+        },
     },
 }
 
@@ -524,6 +527,7 @@ async def main():
             'r': r,
             'tag_props': tag_props,
             'field_props': field_props,
+            'field_prop_defaults': props.get('field_prop_defaults', {}),
             'proplist': proplist,
         }
         if props.get('monitor') and ids:
@@ -573,6 +577,7 @@ async def main():
                 for tag in m['tag_props']:
                     if value := entry.get(tag):
                         p.tag(tag, value)
+                p.fields(m['field_prop_defaults'])
                 process_field_props(p, entry, m['field_props'])
                 points[entry.get('id')] = p
             if 'monitor' in m:
