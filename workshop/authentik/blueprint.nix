@@ -21,7 +21,7 @@ in {
     sops.secrets."authentik/google_oauth/consumer_secret" = {};
 
     lib.authentik = {
-      inherit find findFlow findSource findScope findApp findProvider findGroup findPrompt findSAMLPropertyMapping;
+      inherit keyOf find findFlow findSource findScope findApp findProvider findGroup findPrompt findSAMLPropertyMapping;
     };
 
     services.authentik.blueprint = {

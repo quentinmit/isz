@@ -13,7 +13,7 @@ let
       " > "$out"
     '';
   };
-  inherit (config.lib.authentik) find findApp findProvider findGroup findFlow findScope findSAMLPropertyMapping;
+  inherit (config.lib.authentik) keyOf find findApp findProvider findGroup findFlow findScope findSAMLPropertyMapping;
   signing_key = find "authentik_crypto.certificatekeypair" "name" "authentik Self-signed Certificate";
 in {
   options = with lib; {
@@ -42,7 +42,7 @@ in {
               type = enum ["oauth2" "proxy" "saml"];
             };
             redirect_uris = mkOption {
-              type = lines;
+              type = coercedTo str (s: lib.splitString "\n" (lib.trim s)) (listOf str);
             };
             host = mkOption {
               type = str;
@@ -54,6 +54,39 @@ in {
             groups = mkOption {
               type = listOf str;
               default = [];
+            };
+            entitlements = mkOption {
+              type = let
+                inherit (config) slug;
+              in attrsOf (submodule ({ name, config, ... }: {
+                options = let
+                  id = "${slug}-${name}";
+                in {
+                  groups = mkOption {
+                    type = listOf str;
+                    default = [];
+                  };
+                  entitlement = mkOption {
+                    inherit (format) type;
+                    default = {
+                      model = "authentik_core.applicationentitlement";
+                      identifiers.name = name;
+                      identifiers.app = findApp slug;
+                      inherit id;
+                    };
+                  };
+                  blueprint = mkOption {
+                    inherit (format) type;
+                    default = [config.entitlement] ++ (lib.imap0 (i: name: {
+                      model = "authentik_policies.policybinding";
+                      identifiers.target = keyOf id;
+                      identifiers.order = i;
+                      attrs.group = findGroup name;
+                    }) config.groups);
+                  };
+                };
+              }));
+              default = {};
             };
             provider = mkOption {
               type = nullOr format.type;
@@ -81,7 +114,7 @@ in {
                 identifiers.target = findApp config.slug;
                 identifiers.order = i;
                 attrs.group = findGroup name;
-              }) config.groups);
+              }) config.groups) ++ (lib.concatLists (lib.mapAttrsToList (_: e: e.blueprint) config.entitlements));
             };
           };
           config = {
@@ -101,10 +134,10 @@ in {
               ])
               (mkDefaultIf (config.type == "saml") [])
             ];
-            redirect_uris = lib.mkIf (config.type == "proxy") ''
-              https://${config.host}/outpost.goauthentik.io/callback\?X-authentik-auth-callback=true
-              https://${config.host}\?X-authentik-auth-callback=true
-            '';
+            redirect_uris = lib.mkIf (config.type == "proxy") [
+              ''https://${config.host}/outpost.goauthentik.io/callback\?X-authentik-auth-callback=true''
+              ''https://${config.host}\?X-authentik-auth-callback=true''
+            ];
             provider = let
               common = {
                 identifiers.name = config.name;
@@ -118,7 +151,10 @@ in {
                 model = "authentik_providers_oauth2.oauth2provider";
                 inherit (common) identifiers;
                 attrs = common.attrs // {
-                  inherit (config) redirect_uris;
+                  redirect_uris = map (url: {
+                    matching_mode = "strict";
+                    inherit url;
+                  }) config.redirect_uris;
 
                   client_id = lib.mkIf (sopsPlaceholder ? "authentik/apps/${config.slug}/client_id") sopsPlaceholder."authentik/apps/${config.slug}/client_id";
                   client_secret = lib.mkIf (sopsPlaceholder ? "authentik/apps/${config.slug}/client_secret") sopsPlaceholder."authentik/apps/${config.slug}/client_secret";
