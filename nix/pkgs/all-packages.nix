@@ -131,4 +131,5 @@ final: prev:
   hfsutils = final.callPackage ./hfsutils {};
   hfdisk = final.callPackage ./hfdisk {};
   fdt-viewer = final.qt6Packages.callPackage ./fdt-viewer {};
+  jellyfin-plugin-sso = final.callPackage ./jellyfin-plugin-sso {};
 }
