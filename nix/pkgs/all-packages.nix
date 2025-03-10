@@ -132,7 +132,5 @@ final: prev:
   hfdisk = final.callPackage ./hfdisk {};
   fdt-viewer = final.qt6Packages.callPackage ./fdt-viewer {};
   jellyfin-plugin-sso = final.callPackage ./jellyfin-plugin-sso {};
-  unleashed-recomp = final.callPackage ./unleashed-recomp {
-    inherit (final.unstable) directx-shader-compiler;
-  };
+  unleashed-recomp = final.unstable.callPackage ./unleashed-recomp {};
 }

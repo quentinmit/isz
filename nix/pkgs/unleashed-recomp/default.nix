@@ -14,20 +14,49 @@
 , libxkbcommon
 , wrapGAppsHook
 , fetchFromGitHub
+, requireFile
+, path
 }:
 let
   pname = "UnleashedRecomp";
   version = "1.0.2";
+  lld_ = clangStdenv.cc.bintools.override {
+    extraBuildCommands = ''
+      for ld in $(find ${lld}/bin -name "ld*" -printf "%f\n"); do
+        wrap ${clangStdenv.cc.bintools.targetPrefix}$ld \
+            ${path + /pkgs/build-support/bintools-wrapper/ld-wrapper.sh} \
+            ${lld}/bin/$ld
+      done
+    '';
+  };
   dxc = directx-shader-compiler.overrideAttrs (old: {
     installPhase = ''
       runHook preInstall
       mkdir -p $out/bin $out/lib $dev/include
       cp bin/dx* $out/bin/
       cp lib/libdx*.so* lib/libdx*.*dylib $out/lib/
+      ln -s libdxil.so $out/lib/libdxildll.so
       cp -r $src/include/dxc $dev/include/
       runHook postInstall
     '';
   });
+  romFiles = builtins.mapAttrs (name: hash: requireFile {
+    inherit name hash;
+    message = ''
+      Building UnleashedRecomp requires the following files from the original game:
+
+      - default.xex
+      - default.xexp
+      - shader.ar
+
+      Please add them to the nix store with
+        nix store add --mode=flat \$file
+    '';
+  }){
+    "default.xex" = "sha256-iaUxKCB6XpMUZUfJKzlrl85wUXet0L2dn2NneENHaLg=";
+    "default.xexp" = "sha256-sSu30I53t18HWPewUyJLcd6ZA1kmcSFP5N0iIJeRGhY=";
+    "shader.ar" = "sha256-5e/ysO+r1sSv9sVjMpIygQJxUm5P0Kvy3i93MNuLY+U=";
+  };
 in clangStdenv.mkDerivation {
   inherit pname version;
 
@@ -60,13 +89,15 @@ in clangStdenv.mkDerivation {
       set(DIRECTX_DXC_TOOL "${dxc}/bin/dxc")
     EOF
     sed -i '/file(CHMOD ..DIRECTX_DXC_TOOL./d' UnleashedRecomp/CMakeLists.txt
+
+    ${lib.concatMapStringsSep "\n" (f: "cp ${f} UnleashedRecompLib/private/${f.name}") (builtins.attrValues romFiles)}
   '';
 
   nativeBuildInputs = [
     wrapGAppsHook
     cmake
     ninja
-    lld
+    lld_
     pkg-config
     dxc
     wayland-scanner
@@ -86,6 +117,13 @@ in clangStdenv.mkDerivation {
     libxkbcommon
   ];
 
+  preConfigure = ''
+    prependToVar cmakeFlags "-DCMAKE_C_COMPILER_AR=$(command -v $AR)"
+    prependToVar cmakeFlags "-DCMAKE_C_COMPILER_RANLIB=$(command -v $RANLIB)"
+    prependToVar cmakeFlags "-DCMAKE_CXX_COMPILER_AR=$(command -v $AR)"
+    prependToVar cmakeFlags "-DCMAKE_CXX_COMPILER_RANLIB=$(command -v $RANLIB)"
+  '';
+
   cmakeFlags = [
     "--preset=linux-release"
     #"-DENABLE_VCPKG=OFF"
@@ -96,4 +134,17 @@ in clangStdenv.mkDerivation {
     "-DCMAKE_PREFIX_PATH=/build/cmake"
     #"-DDIRECTX_DXC_TOOL=${directx-shader-compiler}/bin/dxc"
   ];
+
+  ninjaFlags = [
+    "-v"
+  ];
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+    mv UnleashedRecomp/UnleashedRecomp $out/bin/
+
+    runHook postInstall
+  '';
 }
