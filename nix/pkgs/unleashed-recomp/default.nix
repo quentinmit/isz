@@ -11,6 +11,7 @@
 , wayland
 , wayland-protocols
 , wayland-scanner
+, sdl3
 , libxkbcommon
 , wrapGAppsHook
 , fetchFromGitHub
@@ -109,13 +110,12 @@ in clangStdenv.mkDerivation {
 
   buildInputs = [
     dxc
-    gtk3
-    pipewire
-    wayland
-    wayland-protocols
     curl
-    libxkbcommon
-  ];
+    gtk3
+  ] ++ sdl3.buildInputs ++ sdl3.propagatedBuildInputs;
+
+  env.NIX_LDFLAGS = sdl3.NIX_LDFLAGS;
+  dontPatchELF = true;
 
   preConfigure = ''
     prependToVar cmakeFlags "-DCMAKE_C_COMPILER_AR=$(command -v $AR)"
