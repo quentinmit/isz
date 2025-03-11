@@ -133,4 +133,5 @@ final: prev:
   fdt-viewer = final.qt6Packages.callPackage ./fdt-viewer {};
   jellyfin-plugin-sso = final.callPackage ./jellyfin-plugin-sso {};
   unleashed-recomp = final.unstable.callPackage ./unleashed-recomp {};
+  hedge-mod-manager = final.callPackage ./hedge-mod-manager {};
 }
