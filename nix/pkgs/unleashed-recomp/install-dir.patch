@@ -1,0 +1,224 @@
+diff --git a/README.md b/README.md
+index abf1a3de..eb329eec 100644
+--- a/README.md
++++ b/README.md
+@@ -1,3 +1,17 @@
++> [!WARNING]
++> This repository is a fork of the Unleashed Recompiled project, specifically designed to support binary Arch Linux packaging through the AUR and the PKGBUILD system. For Windows builds, please refer to the upstream repository.
++> **Do not attempt to compile the content of this repository with Windows targets**.
++> Please be also aware this package, unlike the Flatpak version provided upstream, may not be compatible with the Hedgemod Manager differently from the Flatpak version provided upstream.
++
++Binaries from this repository are built using:
++
++```
++$ cmake -DCMAKE_AR=/usr/bin/llvm-ar -DCMAKE_RANLIB=/usr/bin/llvm-ranlib  . --preset linux-release
++$ cmake --build ./out/build/linux-release --target UnleashedRecomp
++```
++
++---
++
+ <p align="center">
+     <img src="https://raw.githubusercontent.com/hedge-dev/UnleashedRecompResources/refs/heads/main/images/logo/Logo.png" width="512"/>
+ </p>
+diff --git a/UnleashedRecomp/CMakeLists.txt b/UnleashedRecomp/CMakeLists.txt
+index 66b60a44..d753a1dc 100644
+--- a/UnleashedRecomp/CMakeLists.txt
++++ b/UnleashedRecomp/CMakeLists.txt
+@@ -4,10 +4,6 @@ if (WIN32)
+     option(UNLEASHED_RECOMP_D3D12 "Add D3D12 support for rendering" ON)
+ endif()
+ 
+-if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+-    option(UNLEASHED_RECOMP_FLATPAK "Configure the build for Flatpak compatibility." OFF)
+-endif()
+-
+ function(BIN2C)
+     cmake_parse_arguments(BIN2C_ARGS "" "TARGET_OBJ;SOURCE_FILE;DEST_FILE;ARRAY_NAME;COMPRESSION_TYPE" "" ${ARGN})
+ 
+@@ -300,13 +296,6 @@ else()
+     add_executable(UnleashedRecomp ${UNLEASHED_RECOMP_CXX_SOURCES})
+ endif()
+ 
+-if (UNLEASHED_RECOMP_FLATPAK)
+-    target_compile_definitions(UnleashedRecomp PRIVATE 
+-        "UNLEASHED_RECOMP_FLATPAK"
+-        "GAME_INSTALL_DIRECTORY=\"/var/data\""
+-    )
+-endif()
+-
+ if (UNLEASHED_RECOMP_D3D12)
+     find_package(directx-headers CONFIG REQUIRED)
+     find_package(directx12-agility CONFIG REQUIRED)
+diff --git a/UnleashedRecomp/app.cpp b/UnleashedRecomp/app.cpp
+index b298ebc3..84d23762 100644
+--- a/UnleashedRecomp/app.cpp
++++ b/UnleashedRecomp/app.cpp
+@@ -33,7 +33,7 @@ PPC_FUNC_IMPL(__imp__sub_824EB490);
+ PPC_FUNC(sub_824EB490)
+ {
+     App::s_isInit = true;
+-    App::s_isMissingDLC = !Installer::checkAllDLC(GetGamePath());
++    App::s_isMissingDLC = !Installer::checkAllDLC(g_gameInstallPath);
+     App::s_language = Config::Language;
+ 
+     SWA::SGlobals::Init();
+diff --git a/UnleashedRecomp/kernel/xam.cpp b/UnleashedRecomp/kernel/xam.cpp
+index 3d7ca773..687df93c 100644
+--- a/UnleashedRecomp/kernel/xam.cpp
++++ b/UnleashedRecomp/kernel/xam.cpp
+@@ -315,11 +315,11 @@ uint32_t XamContentCreateEx(uint32_t dwUserIndex, const char* szRootName, const
+             }
+             else if (pContentData->dwContentType == XCONTENTTYPE_DLC)
+             {
+-                root = GAME_INSTALL_DIRECTORY "/dlc";
++                root = g_gameInstallPath / "dlc";
+             }
+             else
+             {
+-                root = GAME_INSTALL_DIRECTORY;
++                root = g_gameInstallPath;
+             }
+ 
+             XamRegisterContent(*pContentData, root);
+diff --git a/UnleashedRecomp/main.cpp b/UnleashedRecomp/main.cpp
+index a55c0181..2186a3a0 100644
+--- a/UnleashedRecomp/main.cpp
++++ b/UnleashedRecomp/main.cpp
+@@ -61,8 +61,8 @@ void KiSystemStartup()
+ {
+     const auto gameContent = XamMakeContent(XCONTENTTYPE_RESERVED, "Game");
+     const auto updateContent = XamMakeContent(XCONTENTTYPE_RESERVED, "Update");
+-    XamRegisterContent(gameContent, GAME_INSTALL_DIRECTORY "/game");
+-    XamRegisterContent(updateContent, GAME_INSTALL_DIRECTORY "/update");
++    XamRegisterContent(gameContent, (g_gameInstallPath / "game").string());
++    XamRegisterContent(updateContent, (g_gameInstallPath / "update").string());
+ 
+     const auto saveFilePath = GetSaveFilePath(true);
+     bool saveFileExists = std::filesystem::exists(saveFilePath);
+@@ -94,7 +94,7 @@ void KiSystemStartup()
+     XamContentCreateEx(0, "D", &gameContent, OPEN_EXISTING, nullptr, nullptr, 0, 0, nullptr);
+ 
+     std::error_code ec;
+-    for (auto& file : std::filesystem::directory_iterator(GAME_INSTALL_DIRECTORY "/dlc", ec))
++    for (auto& file : std::filesystem::directory_iterator(g_gameInstallPath / "dlc", ec))
+     {
+         if (file.is_directory())
+         {
+@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
+     HostStartup();
+ 
+     std::filesystem::path modulePath;
+-    bool isGameInstalled = Installer::checkGameInstall(GAME_INSTALL_DIRECTORY, modulePath);
++    bool isGameInstalled = Installer::checkGameInstall(g_gameInstallPath, modulePath);
+     bool runInstallerWizard = forceInstaller || forceDLCInstaller || !isGameInstalled;
+     if (runInstallerWizard)
+     {
+@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
+             std::_Exit(1);
+         }
+ 
+-        if (!InstallerWizard::Run(GAME_INSTALL_DIRECTORY, isGameInstalled && forceDLCInstaller))
++        if (!InstallerWizard::Run(g_gameInstallPath, isGameInstalled && forceDLCInstaller))
+         {
+             std::_Exit(0);
+         }
+diff --git a/UnleashedRecomp/mod/mod_loader.cpp b/UnleashedRecomp/mod/mod_loader.cpp
+index dd33c56d..a6d5eb87 100644
+--- a/UnleashedRecomp/mod/mod_loader.cpp
++++ b/UnleashedRecomp/mod/mod_loader.cpp
+@@ -100,7 +100,7 @@ void ModLoader::Init()
+     {
+         configIni = {};
+ 
+-        if (!configIni.read(GAME_INSTALL_DIRECTORY "/cpkredir.ini"))
++        if (!configIni.read(g_gameInstallPath / "cpkredir.ini"))
+             return;
+     }
+ 
+diff --git a/UnleashedRecomp/user/config.cpp b/UnleashedRecomp/user/config.cpp
+index dddcf5a5..163bc81e 100644
+--- a/UnleashedRecomp/user/config.cpp
++++ b/UnleashedRecomp/user/config.cpp
+@@ -3,6 +3,10 @@
+ #include <ui/game_window.h>
+ #include <user/paths.h>
+ 
++#if defined(__linux__)
++    const bool g_isRunningUnderFlatpak = getenv("FLATPAK_ID") != nullptr;
++#endif
++
+ std::vector<IConfigDef*> g_configDefinitions;
+ 
+ #define CONFIG_DEFINE_ENUM_TEMPLATE(type) \
+diff --git a/UnleashedRecomp/user/config.h b/UnleashedRecomp/user/config.h
+index 5cda9d9d..bf766c60 100644
+--- a/UnleashedRecomp/user/config.h
++++ b/UnleashedRecomp/user/config.h
+@@ -2,6 +2,10 @@
+ 
+ #include <locale/locale.h>
+ 
++#if defined(__linux__)
++    extern const bool g_isRunningUnderFlatpak;
++#endif
++
+ class IConfigDef
+ {
+ public:
+diff --git a/UnleashedRecomp/user/paths.cpp b/UnleashedRecomp/user/paths.cpp
+index 13a8588d..ffb7e5c1 100644
+--- a/UnleashedRecomp/user/paths.cpp
++++ b/UnleashedRecomp/user/paths.cpp
+@@ -3,6 +3,7 @@
+ 
+ std::filesystem::path g_executableRoot = os::process::GetExecutablePath().remove_filename();
+ std::filesystem::path g_userPath = BuildUserPath();
++extern const std::filesystem::path g_gameInstallPath = GetGamePath();
+ 
+ bool CheckPortable()
+ {
+diff --git a/UnleashedRecomp/user/paths.h b/UnleashedRecomp/user/paths.h
+index c0835204..b62edf47 100644
+--- a/UnleashedRecomp/user/paths.h
++++ b/UnleashedRecomp/user/paths.h
+@@ -1,23 +1,22 @@
+ #pragma once
+ 
+ #include <mod/mod_loader.h>
++#include "config.h"
+ 
+ #define USER_DIRECTORY "UnleashedRecomp"
+ 
+-#ifndef GAME_INSTALL_DIRECTORY
+-#define GAME_INSTALL_DIRECTORY "."
+-#endif
+-
+ extern std::filesystem::path g_executableRoot;
+ 
+ inline std::filesystem::path GetGamePath()
+ {
+-    return GAME_INSTALL_DIRECTORY;
++    const char* homeDir = getenv("HOME");
++    return (homeDir ? std::filesystem::path(homeDir) / ".local" / "share" / USER_DIRECTORY : g_executableRoot);
+ }
+ 
+ bool CheckPortable();
+ std::filesystem::path BuildUserPath();
+ const std::filesystem::path& GetUserPath();
++extern const std::filesystem::path g_gameInstallPath;
+ 
+ inline std::filesystem::path GetSavePath(bool checkForMods)
+ {
+diff --git a/flatpak/io.github.hedge_dev.unleashedrecomp.json b/flatpak/io.github.hedge_dev.unleashedrecomp.json
+index f6ae9324..34926b5f 100644
+--- a/flatpak/io.github.hedge_dev.unleashedrecomp.json
++++ b/flatpak/io.github.hedge_dev.unleashedrecomp.json
+@@ -20,7 +20,7 @@
+       "name": "UnleashedRecomp",
+       "buildsystem": "simple",
+       "build-commands": [
+-        "cmake --preset linux-release -DUNLEASHED_RECOMP_FLATPAK=ON -DSDL2MIXER_VORBIS=VORBISFILE -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache",
++        "cmake --preset linux-release -DSDL2MIXER_VORBIS=VORBISFILE -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache",
+         "cmake --build out/build/linux-release --target UnleashedRecomp",
+         "mkdir -p /app/bin",
+         "cp out/build/linux-release/UnleashedRecomp/UnleashedRecomp /app/bin/UnleashedRecomp",

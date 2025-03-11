@@ -28,6 +28,7 @@
         baudline
         pkgsi686Linux.mplayer-unfree
         element-desktop
+        unleashed-recomp
       ];
 
       services.baloo.excludeFolders = [

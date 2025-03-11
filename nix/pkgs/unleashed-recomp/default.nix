@@ -7,16 +7,14 @@
 , ninja
 , pkg-config
 , gtk3
-, pipewire
-, wayland
-, wayland-protocols
 , wayland-scanner
 , sdl3
-, libxkbcommon
 , wrapGAppsHook
 , fetchFromGitHub
 , requireFile
 , path
+, copyDesktopItems
+, makeDesktopItem
 }:
 let
   pname = "UnleashedRecomp";
@@ -69,6 +67,11 @@ in clangStdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
+  patches = [
+    # From https://github.com/Jujstme/UnleashedRecomp
+    ./install-dir.patch
+  ];
+
   postPatch = ''
     mkdir /build/cmake
     cat > /build/cmake/directx-dxc-config.cmake <<EOF
@@ -95,6 +98,7 @@ in clangStdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [
+    copyDesktopItems
     wrapGAppsHook
     cmake
     ninja
@@ -139,11 +143,23 @@ in clangStdenv.mkDerivation {
     "-v"
   ];
 
+  desktopItems = [(makeDesktopItem {
+    name = "UnleashedRecomp";
+    desktopName = "Unleashed Recompiled";
+    exec = "UnleashedRecomp";
+    type = "Application";
+    icon = "UnleashedRecomp";
+    categories = [ "Game" ];
+    comment = "Static recompilation of Sonic Unleashed.";
+    mimeTypes = ["x-scheme-handler/unleashedrecomp"];
+  })];
+
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/bin
     mv UnleashedRecomp/UnleashedRecomp $out/bin/
+    install -m 444 -D ../../../UnleashedRecompResources/images/game_icon.png $out/share/icons/hicolor/128x128/apps/UnleashedRecomp.png
 
     runHook postInstall
   '';
