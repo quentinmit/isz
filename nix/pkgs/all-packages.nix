@@ -134,4 +134,5 @@ final: prev:
   jellyfin-plugin-sso = final.callPackage ./jellyfin-plugin-sso {};
   unleashed-recomp = final.unstable.callPackage ./unleashed-recomp {};
   hedge-mod-manager = final.callPackage ./hedge-mod-manager {};
+  plasma-homeassistant = final.callPackage ./plasma-homeassistant {};
 }

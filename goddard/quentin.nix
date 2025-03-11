@@ -30,6 +30,7 @@
         element-desktop
         unleashed-recomp
         hedge-mod-manager
+        plasma-homeassistant
       ];
 
       services.baloo.excludeFolders = [
