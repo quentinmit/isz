@@ -29,6 +29,7 @@
         pkgsi686Linux.mplayer-unfree
         element-desktop
         unleashed-recomp
+        hedge-mod-manager
       ];
 
       services.baloo.excludeFolders = [
