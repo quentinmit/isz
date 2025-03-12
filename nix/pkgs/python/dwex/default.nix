@@ -6,14 +6,14 @@
 with python3Packages;
 buildPythonApplication rec {
   pname = "dwex";
-  version = "3.25";
+  version = "4.47";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sevaa";
     repo = pname;
     rev = version;
-    hash = "sha256-5q6HcpfXevz/bjmxvZ7u+F8kkITannDKy5RbudeQhgg=";
+    hash = "sha256-kSL7ucp42f+bvFCc6cfA85CV/1xztqjgXIsBDf/OJuE=";
   };
 
   build-system = with python3Packages; [
