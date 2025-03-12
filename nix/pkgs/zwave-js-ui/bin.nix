@@ -53,7 +53,7 @@ stdenv.mkDerivation rec {
     postFixupHooks+=(fixoffsets)
   '';
 
-  passthru.updateScript = nix-update-script;
+  passthru.updateScript = nix-update-script { extraArgs = ["--flake"]; };
 
   meta = with lib; {
     description = "Z-Wave JS UI";
