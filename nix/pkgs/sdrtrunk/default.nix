@@ -2,7 +2,7 @@
 , jdk23
 , fetchFromGitHub
 , makeWrapper
-, wrapGAppsHook
+, wrapGAppsHook3
 , lib
 }:
 let
@@ -17,7 +17,7 @@ in gradle2nix.buildGradlePackage {
 
   nativeBuildInputs = [
     makeWrapper
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   src = fetchFromGitHub {

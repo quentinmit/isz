@@ -6,7 +6,7 @@
 , bison
 , flex
 , python3
-, wrapGAppsHook
+, wrapGAppsHook3
 , darwin
 , fetchFromGitHub
 , applyPatches
@@ -87,7 +87,7 @@ in stdenv.mkDerivation {
   ];
 
   nativeBuildInputs = [
-    wrapGAppsHook
+    wrapGAppsHook3
     cmake
     bison
     flex

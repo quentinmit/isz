@@ -1,7 +1,7 @@
 { lib
 , buildPythonPackage
 , fetchFromGitHub
-, Mako
+, mako
 , webob
 , pytest
 , mock
@@ -20,7 +20,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [
-    Mako
+    mako
     webob
   ];
 

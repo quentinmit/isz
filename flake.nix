@@ -69,7 +69,8 @@
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
         unstable = import unstable {
-          inherit (final) system config;
+          system = final.system or final.stdenv.system;
+          inherit (final) config;
           overlays = [
             self.overlays.new
             #self.overlays.stable
@@ -79,10 +80,7 @@
             bluechips.overlays.default
           ];
         };
-        nixpkgs-23_05 = import nixpkgs-23_05 {
-          inherit (final) system config;
-        };
-        inherit (gradle2nix.packages.${final.system}) gradle2nix;
+        inherit (gradle2nix.packages.${final.system or "x86_64-linux"}) gradle2nix;
       };
       overlays = [
         overlay
@@ -130,17 +128,14 @@
         devShells.esphome = import ./workshop/esphome/shell.nix { pkgs = pkgs.unstable; };
       })) // {
         inherit overlayModule;
+        inherit self args;
         overlays.new = import ./nix/pkgs/all-packages.nix;
         overlays.stable = import ./nix/pkgs/overlays.nix;
         overlays.stable-darwin = import ./nix/pkgs/darwin-overlays.nix;
         overlays.mosh-server-upnp = final: prev: {
           mosh-server-upnp = final.callPackage mosh-server-upnp.flakes.args.packages.mosh-server-upnp {};
         };
-        overlays.default = nixpkgs.lib.composeManyExtensions [
-          overlays.new
-          overlays.stable
-          overlays.mosh-server-upnp
-        ];
+        overlays.default = nixpkgs.lib.composeManyExtensions overlays;
         overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
         nixosConfigurations = (nixpkgs.lib.genAttrs [
           "workshop"
@@ -180,6 +175,11 @@
           inherit specialArgs;
           modules = (builtins.attrValues self.darwinModules) ++ [
             overlayModule
+            (final: prev: {
+              nixpkgs-23_05 = import nixpkgs-23_05 {
+                inherit (final) system config;
+              };
+            })
             ./mac/configuration.nix
           ];
         };

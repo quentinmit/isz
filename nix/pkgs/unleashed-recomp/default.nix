@@ -9,7 +9,7 @@
 , gtk3
 , wayland-scanner
 , sdl3
-, wrapGAppsHook
+, wrapGAppsHook3
 , fetchFromGitHub
 , requireFile
 , path
@@ -99,7 +99,7 @@ in clangStdenv.mkDerivation {
 
   nativeBuildInputs = [
     copyDesktopItems
-    wrapGAppsHook
+    wrapGAppsHook3
     cmake
     ninja
     lld_

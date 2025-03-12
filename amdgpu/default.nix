@@ -5,7 +5,6 @@
 , makeRustPlatform
 , makeWrapper
 , stdenv
-, hostPlatform
 , llvmPackages
 }:
 
