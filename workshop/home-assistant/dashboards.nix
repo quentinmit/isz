@@ -291,6 +291,79 @@ in {
             ] ++ (power_switch "receiver_power");
           }
           {
+            title = "Android TV";
+            path = "android";
+            icon = "mdi:android";
+            cards = let
+              abutton = command: attrs: {
+                type = "button";
+                show_name = false;
+                tap_action.action = "perform-action";
+                tap_action.perform_action = "remote.send_command";
+                tap_action.target.entity_id = "remote.google_home_hd";
+                tap_action.data = {
+                  inherit command;
+                };
+              } // attrs;
+              ahbutton = command: attrs: abutton command ({
+                hold_action.action = "perform-action";
+                hold_action.perform_action = "remote.send_command";
+                hold_action.target.entity_id = "remote.google_home_hd";
+                hold_action.data = {
+                  inherit command;
+                  hold_sec = 0.5;
+                };
+              } // attrs);
+              a2button = command: command2: attrs: abutton command ({
+                hold_action.action = "perform-action";
+                hold_action.perform_action = "remote.send_command";
+                hold_action.target.entity_id = "remote.google_home_hd";
+                hold_action.data.command = command2;
+              } // attrs);
+            in [
+              (grid {
+                square = true;
+                columns = 3;
+              } [
+                {
+                  type = "button";
+                  tap_action.action = "none";
+                }
+                (abutton "DPAD_UP" { icon = "mdi:arrow-up"; })
+                {
+                  type = "button";
+                  tap_action.action = "none";
+                }
+                (abutton "DPAD_LEFT" { icon = "mdi:arrow-left"; })
+                (ahbutton "DPAD_CENTER" { icon = "mdi:circle"; })
+                (abutton "DPAD_RIGHT" { icon = "mdi:arrow-right"; })
+                (ahbutton "BACK" { icon = "mdi:location-exit"; })
+                (abutton "DPAD_DOWN" { icon = "mdi:arrow-down"; })
+                (ahbutton "HOME" { icon = "mdi:home"; })
+              ])
+              (grid {
+                square = false;
+                columns = 3;
+              } [
+                (a2button "MEDIA_PREVIOUS" "MEDIA_REWIND" { icon = "mdi:skip-previous"; })
+                (a2button "MEDIA_PLAY_PAUSE" "MEDIA_STOP" { icon = "mdi:play-pause"; })
+                (a2button "MEDIA_NEXT" "MEDIA_FAST_FORWARD" { icon = "mdi:play-pause"; })
+                (abutton "MUTE" { icon = "mdi:volume-off"; })
+                (abutton "VOLUME_DOWN" { icon = "mdi:volume-medium"; })
+                (abutton "VOLUME_UP" { icon = "mdi:volume-high"; })
+              ])
+              {
+                type = "entity";
+                entity = "remote.google_home_hd";
+                attribute = "current_activity";
+              }
+              {
+                type = "media-control";
+                entity = "media_player.google_home_hd";
+              }
+            ];
+          }
+          {
             title = "Inkplate";
             path = "inkplate";
             cards = [
