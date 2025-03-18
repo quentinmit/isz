@@ -33,7 +33,11 @@ in {
       field = [
         { name = "hostname"; oid = ".1.3.6.1.2.1.1.5.0"; is_tag = true; }
 
-        { name = "uptime"; oid = ".1.3.6.1.2.1.1.3.0"; }
+        {
+          name = "uptime";
+          oid = ".1.3.6.1.2.1.1.3.0";
+          # TODO: conversion = "float(2)";
+        }
         { name = "cpu-frequency"; oid = ".1.3.6.1.4.1.14988.1.1.3.14.0"; }
         { name = "cpu-load"; oid = ".1.3.6.1.2.1.25.3.3.1.2.1"; }
         { name = "active-fan"; oid = ".1.3.6.1.4.1.14988.1.1.3.9.0"; }
@@ -127,6 +131,7 @@ in {
 
             { name = "total-memory"; oid = ".1.3.6.1.2.1.25.2.3.1.5"; }
             { name = "used-memory"; oid = ".1.3.6.1.2.1.25.2.3.1.6"; }
+            { name = "allocation-units"; oid = ".1.3.6.1.2.1.25.2.3.1.4"; }
           ];
         }
         { # Gauges
@@ -141,19 +146,32 @@ in {
         }
       ];
     }) cfg.targets;
-    processors.starlark = [{
-      namepass = ["snmp-mikrotik-gauges"];
-      source = ''
-        def apply(metric):
-          name = metric.tags.pop("name")
-          value = metric.fields.pop("value")
-          unit = metric.tags.get("unit")
-          if unit and unit[0] == "d":
-            value /= 10.
-            metric.tags["unit"] = unit[1:]
-          metric.fields[name] = value
-          return metric
-      '';
-    }];
+    processors.starlark = [
+      {
+        namepass = ["snmp-mikrotik-gauges"];
+        source = ''
+          def apply(metric):
+            name = metric.tags.pop("name")
+            value = metric.fields.pop("value")
+            unit = metric.tags.get("unit")
+            if unit and unit[0] == "d":
+              value /= 10.
+              metric.tags["unit"] = unit[1:]
+            metric.fields[name] = value
+            return metric
+        '';
+      }
+      {
+        namepass = ["snmp-memory-usage"];
+        source = ''
+          def apply(metric):
+            units = metric.fields.pop("allocation-units")
+            if units:
+              for f, v in metric.fields.items():
+                metric.fields[f] = v * units
+            return metric
+        '';
+      }
+    ];
   };
 }

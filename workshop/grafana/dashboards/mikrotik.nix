@@ -20,16 +20,19 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.title = "Identity";
         panel.gridPos = { x = 0; y = 1; w = 2; h = 3; };
         panel.type = "stat";
+        # TODO
       }
       {
         panel.title = "Routerboard HW";
         panel.gridPos = { x = 2; y = 1; w = 3; h = 2; };
         panel.type = "stat";
+        # TODO
       }
       {
         panel.title = "Installed Packages";
         panel.gridPos = { x = 5; y = 1; w = 5; h = 7; };
         panel.type = "table";
+        # TODO
       }
       {
         panel.gridPos = { x = 10; y = 1; w = 4; h = 7; };
@@ -49,18 +52,29 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.options = {
           displayMode = "lcd";
         };
-        influx.filter._measurement = "snmp-memory-usage";
-        influx.filter._field = ["total-memory" "used-memory"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.pivot = true;
-        influx.extra = ''
-          |> map(fn: (r) => ({
-            "memory-name": r["memory-name"],
-            _time: r._time,
-            _value: float(v: r["used-memory"])/float(v: r["total-memory"])*100.0
-          }))
-        '';
+        influx = [
+          {
+            filter._measurement = "snmp-memory-usage";
+            filter._field = ["total-memory" "used-memory"];
+            filter.hostname = "\${hostname}";
+            fn = "last1";
+            pivot = true;
+            extra = ''
+              |> map(fn: (r) => ({
+                "memory-name": r["memory-name"],
+                _time: r._time,
+                _value: float(v: r["used-memory"])/float(v: r["total-memory"])*100.0
+              }))
+            '';
+          }
+          {
+            filter._measurement = "snmp";
+            filter._field = "cpu-load";
+            filter.hostname = "\${hostname}";
+            fn = "last1";
+            groupBy.fn = "mean";
+          }
+        ];
         # Used RAM memory
         # HDD Utilization
         # TODO: CPU Load
@@ -69,7 +83,7 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.title = "CPU Load";
         panel.gridPos = { x = 14; y = 1; w = 5; h = 7; };
         influx.filter._measurement = "snmp";
-        influx.filter._field = ["cpu-load"];
+        influx.filter._field = "cpu-load";
         influx.filter.hostname = "\${hostname}";
         influx.fn = "mean";
         panel.fieldConfig.defaults = {
@@ -80,11 +94,93 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.title = "CPU Frequency";
         panel.gridPos = { x = 19; y = 1; w = 5; h = 7; };
         influx.filter._measurement = "snmp";
-        influx.filter._field = ["cpu-frequency"];
+        influx.filter._field = "cpu-frequency";
         influx.filter.hostname = "\${hostname}";
         influx.fn = "mean";
         panel.fieldConfig.defaults = {
           unit = "MHz";
+        };
+      }
+      {
+        panel.title = "CPU";
+        panel.gridPos = { x = 2; y = 3; w = 3; h = 2; };
+        panel.type = "stat";
+        # TODO
+      }
+      {
+        panel.title = "Temperature";
+        panel.gridPos = { x = 0; y = 4; w = 2; h = 6; };
+        panel.type = "gauge";
+        influx.filter._measurement = "snmp-mikrotik-gauges";
+        influx.filter.unit = "celsius";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.groupBy = {
+          fields = [];
+          fn = "max1";
+        };
+        panel.fieldConfig.defaults = {
+          unit = "celsius";
+          min = 0;
+          max = 100;
+          color.mode = "thresholds";
+          thresholds.steps = [
+            { value = null; color = "blue"; }
+            { value = 30; color = "green"; }
+            { value = 60; color = "yellow"; }
+            { value = 70; color = "orange"; }
+            { value = 80; color = "red"; }
+          ];
+        };
+      }
+      {
+        panel.title = "System version";
+        panel.gridPos = { x = 2; y = 5; w = 3; h = 3; };
+        panel.type = "stat";
+        # TODO
+      }
+      {
+        panel.title = "Uptime";
+        panel.gridPos = { x = 2; y = 8; w = 3; h = 2; };
+        panel.type = "stat";
+        influx.filter._measurement = "snmp";
+        influx.filter._field = "uptime";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: float(v: r._value)/100.0}))
+        '';
+        panel.fieldConfig.defaults = {
+          unit = "dtdurations";
+        };
+      }
+      {
+        panel.title = "Active Users";
+        panel.gridPos = { x = 5; y = 8; w = 9; h = 7; };
+        panel.type = "table";
+        # TODO
+      }
+      {
+        panel.title = "Memory Utilization";
+        panel.gridPos = { x = 14; y = 9; w = 10; h = 7; };
+        panel.fieldConfig.defaults = {
+          unit = "decbytes";
+        };
+        influx.filter._measurement = "snmp-memory-usage";
+        influx.filter._field = ["total-memory" "used-memory"];
+        influx.filter.memory-name = "main memory";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "mean";
+
+        fields."total-memory" = {
+          color.fixedColor = "#E24D42";
+          color.mode = "fixed";
+          custom.fillOpacity = 20;
+          custom.lineWidth = 0;
+        };
+        fields."used-memory" = {
+          color.fixedColor = "#1F78C1";
+          color.mode = "fixed";
         };
       }
     ];
