@@ -31,7 +31,7 @@
           influx.filter._measurement = "prometheus";
           influx.filter._field = ["authentik_flows_plan_time_sum" "authentik_flows_plan_time_count"];
           influx.fn = "derivative";
-          influx.groupBy.fields = ["flow_slug"];
+          influx.groupBy.fields = ["_field" "flow_slug"];
           influx.pivot = true;
           influx.extra = ''
             |> map(fn: (r) => ({flow_slug: r.flow_slug, _time: r._time, _value: r.authentik_flows_plan_time_sum/r.authentik_flows_plan_time_count}))
@@ -162,7 +162,7 @@
           influx.filter._measurement = "prometheus";
           influx.filter._field = ["authentik_policies_execution_time_sum" "authentik_policies_execution_time_count"];
           influx.fn = "derivative";
-          influx.groupBy.fields = ["binding_target_type"];
+          influx.groupBy.fields = ["_field" "binding_target_type"];
           influx.pivot = true;
           influx.extra = ''
             |> map(fn: (r) => ({binding_target_type: r.binding_target_type, _time: r._time, _value: r.authentik_policies_execution_time_sum/r.authentik_policies_execution_time_count}))
@@ -180,7 +180,7 @@
           influx.filter._measurement = "prometheus";
           influx.filter._field = ["authentik_policies_execution_time_sum" "authentik_policies_execution_time_count"];
           influx.fn = "derivative";
-          influx.groupBy.fields = ["object_type"];
+          influx.groupBy.fields = ["_field" "object_type"];
           influx.pivot = true;
           influx.extra = ''
             |> map(fn: (r) => ({object_type: r.object_type, _time: r._time, _value: r.authentik_policies_execution_time_sum/r.authentik_policies_execution_time_count}))

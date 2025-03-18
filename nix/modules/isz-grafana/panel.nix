@@ -55,9 +55,11 @@ in {
     Query = types.submodule ({ config, ... }:
       let
         agg = fn:
-            if fn == null then ""
+          if fn == null then ""
           else if fn == "last1" then ''
             |> last()
+          '' else if fn == "max1" then ''
+            |> max()
           '' else if fn == "count1" then ''
             |> count()
           '' else if fn == "derivative" then ''
@@ -108,7 +110,7 @@ in {
           default = [];
         };
         fn = mkOption {
-          type = types.nullOr (types.enum ["derivative" "mean" "min" "max" "sum" "last" "last1"]);
+          type = types.nullOr (types.enum ["derivative" "mean" "min" "max" "sum" "last" "last1" "max1"]);
         };
         createEmpty = mkOption {
           type = types.bool;
@@ -119,12 +121,15 @@ in {
           type = types.coercedTo types.attrs (x: [x]) (types.listOf (types.submodule ({ config, ... }: {
             options = {
               fn = mkOption {
-                type = types.enum ["derivative" "sum" "mean" "max" "min" "count" "last" "last1" "count1"];
+                type = types.enum ["derivative" "sum" "mean" "max" "min" "count" "last" "last1" "max1" "count1"];
                 default = "sum";
               };
               fields = mkOption {
                 type = types.listOf types.str;
-                default = [];
+                default = [
+                  "_measurement"
+                  "_field"
+                ];
               };
               expr = mkOption {
                 type = types.str;
@@ -132,7 +137,7 @@ in {
             };
             config = {
               expr = lib.mkDefault (''
-                |> group(columns: ${fluxValue (config.fields ++ ["_measurement" "_field" "_start" "_stop"])})
+                |> group(columns: ${fluxValue (config.fields ++ ["_start" "_stop"])})
               '' + (agg config.fn));
             };
           })));
