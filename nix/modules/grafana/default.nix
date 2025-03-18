@@ -94,15 +94,15 @@ in {
     };
   };
   config = lib.mkIf (cfg != {}) {
+    environment.etc."grafana/dashboards".source = pkgs.linkFarm "grafana-dashboards" (
+      lib.mapAttrs' (name: d: lib.nameValuePair "${name}.json" (
+        dashboardFormat.generate "${name}.json" d
+      )) cfg
+    );
     services.grafana.provision.enable = true;
-    services.grafana.provision.dashboards.settings.providers = let
-      dashboardPkg = pkgs.linkFarm "grafana-dashboards" (
-        lib.mapAttrs' (name: d: lib.nameValuePair "${name}.json" (
-          dashboardFormat.generate "${name}.json" d
-        )) cfg
-      );
-    in [{
-      options.path = "${dashboardPkg}";
+    services.grafana.provision.dashboards.settings.providers = [{
+      options.path = "/etc/grafana/dashboards";
+      options.updateIntervalSeconds = 10;
       options.foldersFromFilesStructure = true;
     }];
   };
