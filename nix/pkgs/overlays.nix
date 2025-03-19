@@ -272,4 +272,10 @@ final: prev: {
       "--codecsdir=${codecs}"
     ];
   });
+  povray = prev.povray.overrideAttrs (old: {
+    buildInputs = old.buildInputs ++ [
+      final.xorg.libXpm
+      final.SDL
+    ];
+  });
 }
