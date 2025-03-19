@@ -46,6 +46,34 @@ in {
       ++ (available bambu-studio)
       ++ (available orca-slicer)
       );
+      xdg.dataFile."OpenSCAD/libraries/BOSL".source = pkgs.fetchFromGitHub {
+        owner = "revarbat";
+        repo = "BOSL";
+        rev = "v1.0.3";
+        hash = "sha256-FHHZ5MnOWbWnLIL2+d5VJoYAto4/GshK8S0DU3Bx7O8=";
+        meta.license = lib.licenses.bsd2;
+      };
+      xdg.dataFile."OpenSCAD/libraries/BOSL2".source = pkgs.fetchFromGitHub {
+        owner = "BelfrySCAD";
+        repo = "BOSL2";
+        rev = "ec929bb4e7366a6892c38ad9ba876978894dbdef";
+        hash = "sha256-BdQGYwWsroNaAP9AEojQ6qWbrKutG6U3yMzlBcUPkXQ=";
+        meta.license = lib.licenses.bsd2;
+      };
+      xdg.dataFile."OpenSCAD/libraries/GoPro".source = pkgs.fetchFromGitHub {
+        owner = "ridercz";
+        repo = "GoProScad";
+        rev = "98c0161e58d4d912481cdf280b573563e221b2a7";
+        hash = "sha256-TY1qk+AQtg3gD0nftagyZbLmUsJHlGeR7jLkJpKMPjY=";
+        meta.license = lib.licenses.mit;
+      };
+      xdg.dataFile."OpenSCAD/libraries/NopSCADlib".source = pkgs.fetchFromGitHub {
+        owner = "nophead";
+        repo = "NopSCADlib";
+        rev = "v21.34.0";
+        hash = "sha256-WaNHG9b09HV5QtSXUqvugdGkZ5Uzjm4nRWipXmEaId8=";
+        meta.license = lib.licenses.gpl3Plus;
+      };
     }
     # (D)VCS
     {
