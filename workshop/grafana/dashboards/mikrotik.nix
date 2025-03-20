@@ -183,6 +183,58 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
           color.mode = "fixed";
         };
       }
+      {
+        panel.title = "Voltage";
+        panel.gridPos = { x = 0; y = 10; w = 2; h = 2; };
+        panel.type = "stat";
+        panel.fieldConfig.defaults = {
+          unit = "volt";
+        };
+        influx.filter._measurement = "snmp";
+        influx.filter._field = "voltage";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+      }
+      {
+        panel.title = "IP Address";
+        panel.gridPos = { x = 2; y = 10; w = 3; h = 2; };
+        panel.type = "stat";
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.interface}";
+        };
+        panel.options.fields = "/.*/";
+        influx.filter._measurement = "mikrotik-/ip/address";
+        influx.filter._field = "address";
+        influx.filter.disabled = "false";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.extra = ''
+          |> keep(columns: ["interface", "_value"])
+        '';
+      }
+      {
+        panel.title = "Public Address";
+        panel.gridPos = { x = 0; y = 12; w = 5; h = 3; };
+        panel.type = "stat";
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.interface}";
+        };
+        panel.options.fields = "/.*/";
+        influx.filter._measurement = "mikrotik-/ip/address";
+        influx.filter._field = "address";
+        influx.filter.disabled = "false";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.extra = ''
+          |> keep(columns: ["interface", "_value"])
+        '';
+      }
+
+      {
+        panel.title = "DHCP";
+        panel.gridPos = { x = 0; y = 15; w = 24; h = 1; };
+        panel.type = "row";
+      }
     ];
   };
 }
