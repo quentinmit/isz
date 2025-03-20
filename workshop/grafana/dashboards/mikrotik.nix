@@ -235,6 +235,41 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.gridPos = { x = 0; y = 15; w = 24; h = 1; };
         panel.type = "row";
       }
+      {
+        panel.title = "IP Pool Usage";
+        panel.gridPos = { x = 0; y = 16; w = 5; h = 8; };
+        panel.type = "bargauge";
+        panel.fieldConfig.defaults = {
+          color.mode = "thresholds";
+          thresholds.mode = "percentage";
+          thresholds.steps = [
+            { value = null; color = "green"; }
+            { value = 80; color = "yellow"; }
+            { value = 90; color = "red"; }
+          ];
+        };
+        panel.options = {
+          displayMode = "lcd";
+          orientation = "horizontal";
+        };
+        influx.filter._measurement = "mikrotik-/ip/pool";
+        influx.filter._field = ["total" "used"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.pivot = true;
+        influx.extra = ''
+          |> keep(columns: ["name", "total", "used"])
+          |> group()
+        '';
+        panel.transformations = [{
+          id = "rowsToFields";
+          options.mappings = [
+            { fieldName = "name"; handlerKey = "field.name"; }
+            { fieldName = "total"; handlerKey = "max"; }
+            { fieldName = "used"; handlerKey = "field.value"; }
+          ];
+        }];
+      }
     ];
   };
 }

@@ -443,6 +443,12 @@ TAGS = {
             "active": False,
         },
     },
+    "/ip/pool": {
+        "tag_props": {
+            "name",
+            "ranges",
+        },
+    },
 }
 
 async def main():
