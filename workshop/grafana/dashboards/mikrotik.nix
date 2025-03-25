@@ -202,7 +202,7 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.fieldConfig.defaults = {
           displayName = "\${__field.labels.interface}";
         };
-        panel.options.fields = "/.*/";
+        panel.options.reduceOptions.fields = "/.*/";
         influx.filter._measurement = "mikrotik-/ip/address";
         influx.filter._field = "address";
         influx.filter.disabled = "false";
@@ -219,7 +219,7 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.fieldConfig.defaults = {
           displayName = "\${__field.labels.interface}";
         };
-        panel.options.fields = "/.*/";
+        panel.options.reduceOptions.fields = "/.*/";
         influx.filter._measurement = "mikrotik-/ip/address";
         influx.filter._field = "address";
         influx.filter.disabled = "false";
@@ -269,6 +269,108 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
             { fieldName = "used"; handlerKey = "field.value"; }
           ];
         }];
+      }
+      {
+        panel.title = "DHCP Leases";
+        panel.gridPos = { x = 5; y = 16; w = 19; h = 19; };
+        panel.type = "table";
+        influx.imports = [
+          "date"
+          "internal/debug"
+        ];
+        influx.filter._measurement = "mikrotik-/ip/dhcp-server/lease";
+        influx.filter._field = ["active-address" "status" "expires-after-ns" "active-server" "class-id"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.pivot = true;
+        influx.extra = ''
+          |> map(fn: (r) => ({r with
+            "expires-at":
+              if exists r["expires-after-ns"]
+              then date.add(d:
+                duration(v: (r["expires-after-ns"])),
+                to: r._time
+              )
+              else debug.null(type: "time")
+          }))
+          |> filter(fn: (r) => r.status != "waiting")
+          |> drop(columns: ["_start", "_stop", "_measurement", "host", "agent_host", "hostname", "expires-after-ns"])
+          |> group()
+        '';
+      }
+      {
+        panel.title = "DHCP Leases by Server";
+        panel.gridPos = { x = 0; y = 24; w = 5; h = 8; };
+        panel.type = "bargauge";
+        panel.fieldConfig.defaults = {
+          displayName = "\${__field.labels.active-server}";
+        };
+        panel.options = {
+          displayMode = "lcd";
+          orientation = "horizontal";
+        };
+        influx.filter._measurement = "mikrotik-/ip/dhcp-server/lease";
+        influx.filter._field = ["status" "active-server"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.pivot = true;
+        influx.extra = ''
+          |> filter(fn: (r) => r.status != "waiting")
+          |> group(columns: ["_time", "active-server"])
+          |> count(column: "status")
+          |> group(columns: ["active-server"])
+          |> last(column: "status")
+        '';
+      }
+
+      {
+        panel.title = "Network";
+        panel.gridPos = { x = 0; y = 35; w = 24; h = 1; };
+        panel.type = "row";
+      }
+      {
+        panel.title = "Total Routes";
+        panel.gridPos = { x = 0; y = 36; w = 2; h = 5; };
+        panel.type = "gauge";
+        influx.filter._measurement = "mikrotik-/routing/route";
+        influx.filter._field = "active";
+        influx.filter._value.values = [(lib.literalExpression "true")];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.groupBy = [
+          {
+            fields = ["_time"];
+            fn = "count1";
+          }
+          {
+            fields = [];
+            fn = "last1";
+          }
+        ];
+      }
+      {
+        panel.title = "Routes per Protocol";
+        panel.gridPos = { x = 2; y = 36; w = 4; h = 5; };
+        panel.type = "bargauge";
+        panel.options = {
+          displayMode = "lcd";
+          orientation = "horizontal";
+        };
+        influx.filter._measurement = "mikrotik-/routing/route";
+        influx.filter._field = "active";
+        influx.filter._value.values = [(lib.literalExpression "true")];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.groupBy = [
+          {
+            fields = ["_time" "belongs-to"];
+            fn = "count1";
+          }
+          {
+            fields = ["belongs-to"];
+            fn = "last1";
+          }
+        ];
       }
     ];
   };
