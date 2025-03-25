@@ -2,6 +2,7 @@
 from influxdb_client import Point
 import asyncio
 import argparse
+from collections.abc import Callable
 from dataclasses import dataclass, field
 import functools
 import logging
@@ -59,8 +60,6 @@ def to_rate(base: str, value: str):
     return d
 
 def to_channel(base: str, value: str) -> dict:
-    if not base == 'channel':
-        raise ValueError("wrong field")
     freq_bands_mode = value
     if "+" in freq_bands_mode:
         freq_bands_mode = freq_bands_mode.split("+")[0]
@@ -134,14 +133,10 @@ def to_duration(base: str, value: str):
     raise ValueError("not a duration")
 
 def to_signal(base: str, value: str) -> dict:
-    if base != "signal-strength":
-        raise ValueError("wrong field")
     rssi, rate = value.split('@', 1)
     return to_int(base, rssi) | to_rate(base + '-rate', rate)
 
 def to_strength_at_rates(base: str, value: str) -> list:
-    if base != "strength-at-rates":
-        raise ValueError("wrong field")
     parts = value.split(',')
     ret = []
     for part in parts:
@@ -154,8 +149,6 @@ def to_strength_at_rates(base: str, value: str) -> list:
     return ret
 
 def to_current_tx_powers(base: str, value: str) -> list:
-    if base != "current-tx-powers":
-        raise ValueError("wrong field")
     parts = value.split(',')
     ret = []
     for part in parts:
@@ -179,8 +172,6 @@ def to_expires_after(base: str, value: str) -> dict:
     return ret
 
 def to_bandwidth(base: str, value: str) -> dict:
-    if base != "bandwidth":
-        raise ValueError("wrong field")
     parts = zip(("rx", "tx"), value.split('/', 1))
     ret = {}
     for suffix, value in parts:
@@ -198,14 +189,6 @@ def to_float(base: str, value: str) -> dict:
     return {base: float(value)}
 
 def to_ethernet_rates(base: str, value: str) -> list:
-    if base not in {
-        "advertise",
-        "advertising",
-        "supported",
-        "sfp-supported",
-        "link-partner-advertising",
-    }:
-        raise ValueError("wrong field")
     if value == "":
         return {}
     parts = value.split(",")
@@ -218,63 +201,11 @@ def to_ethernet_rates(base: str, value: str) -> list:
         ))
     return ret
 
-def to_eeprom_checksum(base: str, value: str) -> dict:
-    if base != "eeprom-checksum":
-        raise ValueError("wrong field")
-    return {
-        f"{base}-good": value == "good"
-    }
-
-STRING_FIELDS = {
-    "tx-rate-set",
-    "active-address",
-    "active-mac-address",
-    "active-client-id",
-    "active-server",
-    "state",
-    "status",
-    "ph2-state",
-    "host-name",
-    "wireless-protocol",
-    "local-address",
-    "remote-address",
-    "src-address",
-    "dst-address",
-    "sa-src-address",
-    "sa-dst-address",
-    "encoding",
-    "address",
-    "network",
-    "gateway",
-    "dhcp-server",
-    "primary-dns",
-    "secondary-dns",
-    "duid",
-    "dhcp-server-v6",
-    "immediate-gw",
-    "contribution",
-    "nexthop-id",
-    "class-id",
-    "loop-protect-status",
-    "auto-negotiation",
-    "sfp-rate-select",
-    "sfp-type",
-    "sfp-connector-type",
-    "sfp-vendor-name",
-    "sfp-vendor-part-number",
-    "sfp-vendor-revision",
-    "sfp-vendor-serial",
-    "sfp-manufacturing-date",
-    "poe-out",
-    "fec-mode",
-}
-
 def to_str(base: str, value: str) -> dict:
-    if base not in STRING_FIELDS:
-        raise ValueError("unknown field")
     return {
         base: value,
     }
+
 PARSERS = [
     to_float,
     to_int,
@@ -282,32 +213,53 @@ PARSERS = [
     to_txrx,
     to_bool,
     to_rate,
-    to_signal,
-    to_channel,
-    to_strength_at_rates,
-    to_current_tx_powers,
     to_expires_after,
-    to_str,
-    to_bandwidth,
-    to_ethernet_rates,
-    to_eeprom_checksum,
 ]
+
+ParseFunction = Callable[[str, str], dict|list]
 
 @dataclass(frozen=True)
 class Request:
-    skip_props: frozenset = field(default_factory=frozenset)
+    field_types: dict[str, ParseFunction|None] = field(default_factory=dict)
+    tag_props: frozenset[str] = field(default_factory=frozenset)
 
-    def __init__(self, *, skip_props={}):
-        object.__setattr__(self, "skip_props", frozenset(skip_props))
+    def __init__(self, *, field_types={}):
+        object.__setattr__(self, "field_types", field_types)
+        object.__setattr__(self, "tag_props", frozenset())
+
+    def detect_parsers(self, entry):
+        logging.debug("parsing %s", entry)
+        prop_parsers = {}
+        for k, v in entry.items():
+            if k in self.tag_props | {"id"}:
+                continue
+            if k in self.field_types:
+                p = self.field_types[k]
+                if not p:
+                    continue
+                p(k, v)
+                prop_parsers[k] = p
+                continue
+            for p in PARSERS:
+                try:
+                    p(k, v)
+                    logging.debug("parsed %s as %s", k, p.__name__)
+                    prop_parsers[k] = p
+                    break
+                except ValueError:
+                    pass
+            else:
+                logging.info("failed to find parser for %s='%s'", k, v)
+        return prop_parsers
+
 
 @dataclass(frozen=True)
 class Resource(Request):
-    tag_props: frozenset = field(default_factory=frozenset)
     field_prop_defaults: dict[str, any] = field(default_factory=dict)
     monitor: Request|None = None
 
-    def __init__(self, *, tag_props={}, skip_props={}, field_prop_defaults={}, monitor=None):
-        super().__init__(skip_props=skip_props)
+    def __init__(self, *, tag_props={}, field_types={}, field_prop_defaults={}, monitor=None):
+        super().__init__(field_types=field_types)
         object.__setattr__(self, "tag_props", frozenset(tag_props))
         object.__setattr__(self, "field_prop_defaults", dict(field_prop_defaults))
         object.__setattr__(self, "monitor", monitor)
@@ -330,20 +282,39 @@ TAGS = {
             "switch",
             "disabled",
         },
-        skip_props={
-            "advertise",
-            "arp",
-            "arp-timeout",
-            "loop-protect",
-            "loop-protect-send-interval",
-            "loop-protect-disable-time",
-            "power-cycle-interval",
-            "tx-flow-control", # Prefer prop from monitor
-            "rx-flow-control", # Prefer prop from monitor
+        field_types={
+            "bandwidth": to_bandwidth,
+            "loop-protect-status": to_str,
+            "poe-out": to_str,
+            "sfp-rate-select": to_str,
+            "fec-mode": to_str,
+            "advertise": None,
+            "arp": None,
+            "arp-timeout": None,
+            "loop-protect": None,
+            "loop-protect-send-interval": None,
+            "loop-protect-disable-time": None,
+            "power-cycle-interval": None,
+            "tx-flow-control": None, # Prefer prop from monitor
+            "rx-flow-control": None, # Prefer prop from monitor
         },
         monitor=Request(
-            skip_props={
-                "eeprom",
+            field_types={
+                "status": to_str,
+                "auto-negotiation": to_str,
+                "sfp-type": to_str,
+                "sfp-connector-type": to_str,
+                "sfp-vendor-name": to_str,
+                "sfp-vendor-part-number": to_str,
+                "sfp-vendor-revision": to_str,
+                "sfp-vendor-serial": to_str,
+                "sfp-manufacturing-date": to_str,
+                "eeprom": None,
+                "eeprom-checksum": lambda base, value: { f"{base}-good": value == "good" },
+                "supported": to_ethernet_rates,
+                "sfp-supported": to_ethernet_rates,
+                "advertising": to_ethernet_rates,
+                "link-partner-advertising": to_ethernet_rates,
             },
         ),
     ),
@@ -360,7 +331,17 @@ TAGS = {
             "disabled",
             "band",
         },
-        monitor=Request(),
+        field_types={
+            "wireless-protocol": to_str,
+        },
+        monitor=Request(
+            field_types={
+                "channel": to_channel,
+                "status": to_str,
+                "wireless-protocol": to_str,
+                "current-tx-powers": to_current_tx_powers,
+            },
+        ),
     ),
     "/interface/wireless/registration-table": Resource(
         tag_props={
@@ -370,6 +351,11 @@ TAGS = {
             "authentication-type",
             "encryption",
             "group-encryption"
+        },
+        field_types={
+            "tx-rate-set": to_str,
+            "signal-strength": to_signal,
+            "strength-at-rates": to_strength_at_rates,
         },
     ),
     "/interface/pptp-client": Resource(
@@ -385,11 +371,19 @@ TAGS = {
             "allow",
             "add-default-route",
         },
-        skip_props={
-            "user",
-            "password",
+        field_types={
+            "user": None,
+            "password": None,
         },
-        monitor=Request(),
+        monitor=Request(
+            field_types={
+                "status": to_str,
+                "encoding": to_str,
+                "local-address": to_str,
+                "remote-address": to_str,
+                ".about": None,
+            },
+        ),
     ),
     "/interface": Resource(
         tag_props={
@@ -415,6 +409,15 @@ TAGS = {
             "comment",
             "dhcp-option",
         },
+        field_types={
+            "status": to_str,
+            "active-address": to_str,
+            "active-client-id": to_str,
+            "active-mac-address": to_str,
+            "active-server": to_str,
+            "class-id": to_str,
+            "host-name": to_str,
+        },
     ),
     "/ip/ipsec/active-peers": Resource(
         tag_props={
@@ -424,9 +427,10 @@ TAGS = {
             "port",
             "remote-address",
         },
-        skip_props={
-            "spii",
-            "spir",
+        field_types={
+            "state": to_str,
+            "spii": None,
+            "spir": None,
         },
     ),
     "/ip/ipsec/policy": Resource(
@@ -450,6 +454,11 @@ TAGS = {
             "action",
             "level",
         },
+        field_types={
+            "ph2-state": to_str,
+            "sa-src-address": to_str,
+            "sa-dst-address": to_str,
+        },
     ),
     "/ip/ipsec/statistics": Resource(),
     "/ip/address": Resource(
@@ -459,6 +468,11 @@ TAGS = {
             "interface",
             "dynamic",
             "disabled",
+            "id"
+        },
+        field_types={
+            "address": to_str,
+            "network": to_str,
         },
     ),
     "/ipv6/address": Resource(
@@ -488,8 +502,13 @@ TAGS = {
             "use-peer-dns",
             "use-peer-ntp",
         },
-        skip_props={
-            "script",
+        field_types={
+            "status": to_str,
+            "gateway": to_str,
+            "dhcp-server": to_str,
+            "primary-dns": to_str,
+            "secondary-dns": to_str,
+            "script": None,
         },
     ),
     "/ipv6/dhcp-client": Resource(
@@ -504,6 +523,12 @@ TAGS = {
             "add-default-route",
             "rapid-commit",
             "pool-prefix-length",
+        },
+        field_types={
+            "address": to_expires_after,
+            "status": to_str,
+            "duid": to_str,
+            "dhcp-server-v6": to_str,
         },
     ),
     # "/ip/route": {
@@ -549,8 +574,12 @@ TAGS = {
             "static",
             "vpn",
         },
-        skip_props={
-            "debug.fwp-ptr",
+        field_types={
+            "contribution": to_str,
+            "nexthop-id": to_str,
+            "immediate-gw": to_str,
+            "local-address": to_str,
+            "debug.fwp-ptr": None,
         },
         field_prop_defaults={
             "active": False,
@@ -603,46 +632,27 @@ async def main():
         r = api.get_resource(name)
 
         tag_props = props.tag_props
-        skip_props = props.skip_props
         # Find all integer properties once
-        field_props = set()
-        def parse_entry(entry, tag_props, skip_props):
-            logging.debug("parsing %s", entry)
-            single_props = set()
-            for k, v in entry.items():
-                if k in tag_props | {"id"}:
-                    continue
-                if k in skip_props:
-                    continue
-                for p in PARSERS:
-                    try:
-                        p(k, v)
-                        #logging.debug("parsed %s as %s", k, p.__name__)
-                        single_props.add(k)
-                        break
-                    except ValueError:
-                        pass
-                else:
-                    logging.info("failed to find parser for %s='%s'", k, v)
-            return single_props
+        field_props = dict()
         ids = set()
         try:
             for entry in r.get():
                 if 'id' in entry:
                     ids.add(entry['id'])
-                field_props |= parse_entry(entry, tag_props, skip_props)
+                field_props |= props.detect_parsers(entry)
         except routeros_api.exceptions.RouterOsApiCommunicationError as e:
             if e.original_message == b'no such command prefix':
                 # This resource doesn't exist.
                 continue
             raise
-        proplist = set(tag_props | field_props)
+        proplist = set(tag_props | set(field_props))
         if 'id' in proplist:
             # ".id" in .proplist but "id" in result :(
             proplist.remove('id')
         proplist.add('.id')
         proplist = ','.join(list(proplist))
-        field_props -= tag_props
+        for p in tag_props:
+            field_props.pop(p, None)
         resources[name] = {
             'r': r,
             'tag_props': tag_props,
@@ -651,13 +661,15 @@ async def main():
             'proplist': proplist,
         }
         if props.monitor and ids:
-            monitor_field_props = set()
+            monitor_field_props = dict()
             logging.debug('Calling monitor on %s', ids)
             for entry in r.call('monitor', {'.id': ','.join(ids), 'once': ''}):
-                monitor_field_props |= parse_entry(entry, tag_props, props.monitor.skip_props)
+                monitor_field_props |= props.monitor.detect_parsers(entry)
+            for p in tag_props:
+                monitor_field_props.pop(p, None)
             resources[name]['monitor'] = {
                 'field_props': monitor_field_props,
-                'proplist': ','.join(monitor_field_props | {'.id'}),
+                'proplist': ','.join(monitor_field_props.keys() | {'.id'}),
             }
 
     logging.debug("identified resources: %s", resources)
@@ -676,22 +688,20 @@ async def main():
             logging.debug("listing %s: %s", measurement, m)
             points = dict()
             def process_field_props(p, entry, field_props):
-                for field in field_props:
+                for field, parser in field_props.items():
                     if field not in entry:
                         continue
-                    for parser in PARSERS:
-                        try:
-                            parsed = parser(field, entry[field])
-                            if isinstance(parsed, list):
-                                for tags, fields in parsed:
-                                    print(
-                                        p.clone_with_tags().tags(tags).fields(fields).to_line_protocol()
-                                    )
-                                break
+                    try:
+                        parsed = parser(field, entry[field])
+                        if isinstance(parsed, list):
+                            for tags, fields in parsed:
+                                print(
+                                    p.clone_with_tags().tags(tags).fields(fields).to_line_protocol()
+                                )
+                        else:
                             p.fields(parsed)
-                            break
-                        except ValueError:
-                            pass
+                    except ValueError:
+                        pass
             for entry in m['r'].call('print', {'.proplist': m['proplist']}):
                 p = point(measurement)
                 for tag in m['tag_props']:
