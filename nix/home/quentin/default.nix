@@ -458,6 +458,7 @@ in {
         qgis-ltr
         remmina
         sockdump
+        kdePackages.krdc
       ];
     }
     # Science
