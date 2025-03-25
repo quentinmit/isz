@@ -2,6 +2,7 @@
 from influxdb_client import Point
 import asyncio
 import argparse
+from dataclasses import dataclass, field
 import functools
 import logging
 import re
@@ -292,16 +293,35 @@ PARSERS = [
     to_eeprom_checksum,
 ]
 
+@dataclass(frozen=True)
+class Request:
+    skip_props: frozenset = field(default_factory=frozenset)
+
+    def __init__(self, *, skip_props={}):
+        object.__setattr__(self, "skip_props", frozenset(skip_props))
+
+@dataclass(frozen=True)
+class Resource(Request):
+    tag_props: frozenset = field(default_factory=frozenset)
+    field_prop_defaults: dict[str, any] = field(default_factory=dict)
+    monitor: Request|None = None
+
+    def __init__(self, *, tag_props={}, skip_props={}, field_prop_defaults={}, monitor=None):
+        super().__init__(skip_props=skip_props)
+        object.__setattr__(self, "tag_props", frozenset(tag_props))
+        object.__setattr__(self, "field_prop_defaults", dict(field_prop_defaults))
+        object.__setattr__(self, "monitor", monitor)
+
 TAGS = {
-    "/interface/ethernet/switch/port": {
-        "tag_props": {
+    "/interface/ethernet/switch/port": Resource(
+        tag_props={
             "id",
             "name",
             "switch",
         },
-    },
-    "/interface/ethernet": {
-        "tag_props": {
+    ),
+    "/interface/ethernet": Resource(
+        tag_props={
             "id",
             "name",
             "default-name",
@@ -310,7 +330,7 @@ TAGS = {
             "switch",
             "disabled",
         },
-        "skip_props": {
+        skip_props={
             "advertise",
             "arp",
             "arp-timeout",
@@ -321,13 +341,14 @@ TAGS = {
             "tx-flow-control", # Prefer prop from monitor
             "rx-flow-control", # Prefer prop from monitor
         },
-        "monitor": True,
-        "monitor_skip_props": {
-            "eeprom",
-        },
-    },
-    "/interface/wireless": {
-        "tag_props": {
+        monitor=Request(
+            skip_props={
+                "eeprom",
+            },
+        ),
+    ),
+    "/interface/wireless": Resource(
+        tag_props={
             "default-name",
             "name",
             "mac-address",
@@ -339,10 +360,10 @@ TAGS = {
             "disabled",
             "band",
         },
-        "monitor": True,
-    },
-    "/interface/wireless/registration-table": {
-        "tag_props": {
+        monitor=Request(),
+    ),
+    "/interface/wireless/registration-table": Resource(
+        tag_props={
             "interface",
             "mac-address",
             "last-ip",
@@ -350,9 +371,9 @@ TAGS = {
             "encryption",
             "group-encryption"
         },
-    },
-    "/interface/pptp-client": {
-        "tag_props": {
+    ),
+    "/interface/pptp-client": Resource(
+        tag_props={
             "name",
             "comment",
             "disabled",
@@ -364,14 +385,14 @@ TAGS = {
             "allow",
             "add-default-route",
         },
-        "skip_props": {
+        skip_props={
             "user",
             "password",
         },
-        "monitor": True,
-    },
-    "/interface": {
-        "tag_props": {
+        monitor=Request(),
+    ),
+    "/interface": Resource(
+        tag_props={
             "name",
             "default-name",
             "type",
@@ -381,9 +402,9 @@ TAGS = {
             "slave",
             "mtu",
         },
-    },
-    "/ip/dhcp-server/lease": {
-        "tag_props": {
+    ),
+    "/ip/dhcp-server/lease": Resource(
+        tag_props={
             "blocked",
             "disabled",
             "dynamic",
@@ -394,22 +415,22 @@ TAGS = {
             "comment",
             "dhcp-option",
         },
-    },
-    "/ip/ipsec/active-peers": {
-        "tag_props": {
+    ),
+    "/ip/ipsec/active-peers": Resource(
+        tag_props={
             "side",
             "responder",
             "local-address",
             "port",
             "remote-address",
         },
-        "skip_props": {
+        skip_props={
             "spii",
             "spir",
         },
-    },
-    "/ip/ipsec/policy": {
-        "tag_props": {
+    ),
+    "/ip/ipsec/policy": Resource(
+        tag_props={
             "id",
             "comment",
             "disabled",
@@ -429,19 +450,19 @@ TAGS = {
             "action",
             "level",
         },
-    },
-    "/ip/ipsec/statistics": {},
-    "/ip/address": {
-        "tag_props": {
+    ),
+    "/ip/ipsec/statistics": Resource(),
+    "/ip/address": Resource(
+        tag_props={
             "comment",
             "actual-interface",
             "interface",
             "dynamic",
             "disabled",
         },
-    },
-    "/ipv6/address": {
-        "tag_props": {
+    ),
+    "/ipv6/address": Resource(
+        tag_props={
             "comment",
             "actual-interface",
             "interface",
@@ -453,9 +474,9 @@ TAGS = {
             "no-dad",
             "link-local",
         },
-    },
-    "/ip/dhcp-client": {
-        "tag_props": {
+    ),
+    "/ip/dhcp-client": Resource(
+        tag_props={
             "comment",
             "interface",
             "request",
@@ -467,12 +488,12 @@ TAGS = {
             "use-peer-dns",
             "use-peer-ntp",
         },
-        "skip_props": {
+        skip_props={
             "script",
         },
-    },
-    "/ipv6/dhcp-client": {
-        "tag_props": {
+    ),
+    "/ipv6/dhcp-client": Resource(
+        tag_props={
             "comment",
             "interface",
             "disabled",
@@ -484,7 +505,7 @@ TAGS = {
             "rapid-commit",
             "pool-prefix-length",
         },
-    },
+    ),
     # "/ip/route": {
     #     "tag_props": {
     #         "id",
@@ -504,8 +525,8 @@ TAGS = {
     #         "suppress-hw-offload",
     #     },
     # },
-    "/routing/route": {
-        "tag_props": {
+    "/routing/route": Resource(
+        tag_props={
             "id",
             "comment",
             "afi",
@@ -528,19 +549,19 @@ TAGS = {
             "static",
             "vpn",
         },
-        "skip_props": {
+        skip_props={
             "debug.fwp-ptr",
         },
-        "field_prop_defaults": {
+        field_prop_defaults={
             "active": False,
         },
-    },
-    "/ip/pool": {
-        "tag_props": {
+    ),
+    "/ip/pool": Resource(
+        tag_props={
             "name",
             "ranges",
         },
-    },
+    ),
 }
 
 async def main():
@@ -581,8 +602,8 @@ async def main():
         logging.debug("fetching %s", name)
         r = api.get_resource(name)
 
-        tag_props = props.get('tag_props', set())
-        skip_props = props.get('skip_props', set())
+        tag_props = props.tag_props
+        skip_props = props.skip_props
         # Find all integer properties once
         field_props = set()
         def parse_entry(entry, tag_props, skip_props):
@@ -596,12 +617,13 @@ async def main():
                 for p in PARSERS:
                     try:
                         p(k, v)
+                        #logging.debug("parsed %s as %s", k, p.__name__)
                         single_props.add(k)
                         break
                     except ValueError:
                         pass
                 else:
-                    logging.debug("failed to find parser for %s='%s'", k, v)
+                    logging.info("failed to find parser for %s='%s'", k, v)
             return single_props
         ids = set()
         try:
@@ -614,7 +636,7 @@ async def main():
                 # This resource doesn't exist.
                 continue
             raise
-        proplist = tag_props | field_props
+        proplist = set(tag_props | field_props)
         if 'id' in proplist:
             # ".id" in .proplist but "id" in result :(
             proplist.remove('id')
@@ -625,14 +647,14 @@ async def main():
             'r': r,
             'tag_props': tag_props,
             'field_props': field_props,
-            'field_prop_defaults': props.get('field_prop_defaults', {}),
+            'field_prop_defaults': props.field_prop_defaults,
             'proplist': proplist,
         }
-        if props.get('monitor') and ids:
+        if props.monitor and ids:
             monitor_field_props = set()
             logging.debug('Calling monitor on %s', ids)
             for entry in r.call('monitor', {'.id': ','.join(ids), 'once': ''}):
-                monitor_field_props |= parse_entry(entry, tag_props, props.get('monitor_skip_props', set()))
+                monitor_field_props |= parse_entry(entry, tag_props, props.monitor.skip_props)
             resources[name]['monitor'] = {
                 'field_props': monitor_field_props,
                 'proplist': ','.join(monitor_field_props | {'.id'}),
