@@ -44,7 +44,7 @@ def to_bool(base: str, value: str):
         raise ValueError("not bool")
 
 def to_rate(base: str, value: str):
-    if not base.endswith("-rate"):
+    if base != "rate" and not base.endswith("-rate"):
         raise ValueError("not rate")
     d = {
         base+"-name": value,
@@ -53,6 +53,8 @@ def to_rate(base: str, value: str):
     num = parts[0]
     if num.endswith("Mbps"):
         d[base] = int(float(num[:-4])*1e6)
+    if num.endswith("Gbps"):
+        d[base] = int(float(num[:-4])*1e9)
     return d
 
 def to_channel(base: str, value: str) -> dict:
@@ -166,7 +168,7 @@ def to_current_tx_powers(base: str, value: str) -> list:
         ))
     return ret
 
-def to_expires_after(base: str, value: str) -> list:
+def to_expires_after(base: str, value: str) -> dict:
     if base not in {"prefix", "address"}:
         raise ValueError("wrong field")
     parts = value.split(", ")
@@ -174,6 +176,53 @@ def to_expires_after(base: str, value: str) -> list:
     if len(parts) > 1:
         ret.update(to_duration(f"{base}-expires-after", parts[1]))
     return ret
+
+def to_bandwidth(base: str, value: str) -> dict:
+    if base != "bandwidth":
+        raise ValueError("wrong field")
+    parts = zip(("rx", "tx"), value.split('/', 1))
+    ret = {}
+    for suffix, value in parts:
+        if value == "unlimited":
+            value = -1
+        value = int(value)
+        ret[f"{base}-{suffix}"] = value
+    return ret
+
+def to_float(base: str, value: str) -> dict:
+    if base not in {
+        "sfp-supply-voltage",
+    }:
+        raise ValueError("wrong field")
+    return {base: float(value)}
+
+def to_ethernet_rates(base: str, value: str) -> list:
+    if base not in {
+        "advertise",
+        "advertising",
+        "supported",
+        "sfp-supported",
+        "link-partner-advertising",
+    }:
+        raise ValueError("wrong field")
+    if value == "":
+        return {}
+    parts = value.split(",")
+    ret = []
+    for part in parts:
+        tags = {"link-mode": part}
+        ret.append((
+            tags,
+            {base: True},
+        ))
+    return ret
+
+def to_eeprom_checksum(base: str, value: str) -> dict:
+    if base != "eeprom-checksum":
+        raise ValueError("wrong field")
+    return {
+        f"{base}-good": value == "good"
+    }
 
 STRING_FIELDS = {
     "tx-rate-set",
@@ -204,6 +253,19 @@ STRING_FIELDS = {
     "immediate-gw",
     "contribution",
     "nexthop-id",
+    "class-id",
+    "loop-protect-status",
+    "auto-negotiation",
+    "sfp-rate-select",
+    "sfp-type",
+    "sfp-connector-type",
+    "sfp-vendor-name",
+    "sfp-vendor-part-number",
+    "sfp-vendor-revision",
+    "sfp-vendor-serial",
+    "sfp-manufacturing-date",
+    "poe-out",
+    "fec-mode",
 }
 
 def to_str(base: str, value: str) -> dict:
@@ -213,6 +275,7 @@ def to_str(base: str, value: str) -> dict:
         base: value,
     }
 PARSERS = [
+    to_float,
     to_int,
     to_duration,
     to_txrx,
@@ -224,6 +287,9 @@ PARSERS = [
     to_current_tx_powers,
     to_expires_after,
     to_str,
+    to_bandwidth,
+    to_ethernet_rates,
+    to_eeprom_checksum,
 ]
 
 TAGS = {
@@ -232,6 +298,32 @@ TAGS = {
             "id",
             "name",
             "switch",
+        },
+    },
+    "/interface/ethernet": {
+        "tag_props": {
+            "id",
+            "name",
+            "default-name",
+            "mac-address",
+            "orig-mac-address",
+            "switch",
+            "disabled",
+        },
+        "skip_props": {
+            "advertise",
+            "arp",
+            "arp-timeout",
+            "loop-protect",
+            "loop-protect-send-interval",
+            "loop-protect-disable-time",
+            "power-cycle-interval",
+            "tx-flow-control", # Prefer prop from monitor
+            "rx-flow-control", # Prefer prop from monitor
+        },
+        "monitor": True,
+        "monitor_skip_props": {
+            "eeprom",
         },
     },
     "/interface/wireless": {
@@ -493,7 +585,7 @@ async def main():
         skip_props = props.get('skip_props', set())
         # Find all integer properties once
         field_props = set()
-        def parse_entry(entry):
+        def parse_entry(entry, tag_props, skip_props):
             logging.debug("parsing %s", entry)
             single_props = set()
             for k, v in entry.items():
@@ -516,7 +608,7 @@ async def main():
             for entry in r.get():
                 if 'id' in entry:
                     ids.add(entry['id'])
-                field_props |= parse_entry(entry)
+                field_props |= parse_entry(entry, tag_props, skip_props)
         except routeros_api.exceptions.RouterOsApiCommunicationError as e:
             if e.original_message == b'no such command prefix':
                 # This resource doesn't exist.
@@ -540,7 +632,7 @@ async def main():
             monitor_field_props = set()
             logging.debug('Calling monitor on %s', ids)
             for entry in r.call('monitor', {'.id': ','.join(ids), 'once': ''}):
-                monitor_field_props |= parse_entry(entry)
+                monitor_field_props |= parse_entry(entry, tag_props, props.get('monitor_skip_props', set()))
             resources[name]['monitor'] = {
                 'field_props': monitor_field_props,
                 'proplist': ','.join(monitor_field_props | {'.id'}),
