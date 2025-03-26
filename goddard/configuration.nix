@@ -172,6 +172,15 @@
 
   fonts.fontDir.enable = true;
   fonts.fontconfig.subpixel.rgba = "rgb";
+  fonts.packages = with pkgs; [
+    corefonts
+  ];
+
+  environment.etc."xdg/Xwayland-session.d/10-nixos.sh".source = let
+    fontDir = builtins.elemAt (lib.strings.split "\"" config.services.xserver.filesSection) 2;
+  in pkgs.writeShellScript "xwayland-session-nixos" ''
+    ${pkgs.xorg.xset}/bin/xset +fp ${fontDir},${pkgs.xorg.fontadobe100dpi}/lib/X11/fonts/100dpi
+  '';
 
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];

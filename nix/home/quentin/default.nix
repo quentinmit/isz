@@ -548,6 +548,8 @@ in {
         xrandr
         xset
         xwininfo
+        xlsfonts
+        xfontsel
       ]);
     }
     # Kerberos
