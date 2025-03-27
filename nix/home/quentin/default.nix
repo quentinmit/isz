@@ -39,6 +39,7 @@ in {
       home.packages = with pkgs; [
         openscad
         gerbv
+        f3d
       ] ++ lib.optionals pkgs.stdenv.isLinux ([
         freecad
       ]
