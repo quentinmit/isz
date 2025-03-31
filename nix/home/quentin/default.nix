@@ -460,7 +460,8 @@ in {
         remmina
         sockdump
         kdePackages.krdc
-      ];
+      ] ++ (available mqtt-explorer)
+      ++ (available mqttx);
     }
     # Science
     {
