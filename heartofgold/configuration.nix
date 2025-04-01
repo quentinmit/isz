@@ -10,6 +10,7 @@
     ./quentin.nix
     ./openvpn
     ./jellyfin.nix
+    ./containers.nix
     disko.nixosModules.disko
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
