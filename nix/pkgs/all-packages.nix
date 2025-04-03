@@ -30,6 +30,12 @@ final: prev:
       simplepam = callPackage ./python/simplepam {};
       vcgencmd = callPackage ./python/vcgencmd {};
       piscsi-common = callPackage ./piscsi/common.nix {};
+      inventree = callPackage ./python/inventree {};
+      mouser = callPackage ./python/mouser {};
+      kiutils = callPackage ./python/kiutils {};
+      wrapt_timeout_decorator = callPackage ./python/wrapt_timeout_decorator {};
+      cli_exit_tools = callPackage ./python/cli_exit_tools {};
+      lib_detect_testenv = callPackage ./python/lib_detect_testenv {};
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
@@ -135,4 +141,5 @@ final: prev:
   unleashed-recomp = final.unstable.callPackage ./unleashed-recomp {};
   hedge-mod-manager = final.callPackage ./hedge-mod-manager {};
   plasma-homeassistant = final.callPackage ./plasma-homeassistant {};
+  kintree = final.callPackage ./python/kintree {};
 }
