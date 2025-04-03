@@ -1,21 +1,27 @@
+commit 71c82fbc1f29a1ed10f85a74397ae83965b067bf
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Thu Apr 3 01:27:28 2025 -0400
+
+    Support config.yaml SSO apps
+
 diff --git a/inventree-src/src/backend/InvenTree/InvenTree/forms.py b/inventree-src/src/backend/InvenTree/InvenTree/forms.py
-index 3358804a9..52d1a9ff5 100644
+index f37eafbf6..82d2092c6 100644
 --- a/inventree-src/src/backend/InvenTree/InvenTree/forms.py
 +++ b/inventree-src/src/backend/InvenTree/InvenTree/forms.py
-@@ -217,7 +217,7 @@ def registration_enabled():
-         InvenTreeSetting.get_setting('LOGIN_ENABLE_REG')
-         or InvenTree.sso.registration_enabled()
-     ):
+@@ -227,7 +227,7 @@ class CustomTOTPDeviceForm(TOTPDeviceForm):
+ def registration_enabled():
+     """Determine whether user registration is enabled."""
+     if get_global_setting('LOGIN_ENABLE_REG') or InvenTree.sso.registration_enabled():
 -        if settings.EMAIL_HOST:
-+        if settings.EMAIL_HOST or not InvenTreeSetting.get_setting('LOGIN_ENABLE_PWD_FORGOT'):
++        if settings.EMAIL_HOST or not get_global_setting('LOGIN_ENABLE_PWD_FORGOT'):
              return True
          else:
              logger.error(
 diff --git a/inventree-src/src/backend/InvenTree/InvenTree/sso.py b/inventree-src/src/backend/InvenTree/InvenTree/sso.py
-index 0ad165a0b..04c154535 100644
+index b77e9c136..49fdd38ad 100644
 --- a/inventree-src/src/backend/InvenTree/InvenTree/sso.py
 +++ b/inventree-src/src/backend/InvenTree/InvenTree/sso.py
-@@ -11,20 +11,19 @@ logger = logging.getLogger('inventree')
+@@ -18,20 +18,19 @@ logger = logging.getLogger('inventree')
  def get_provider_app(provider):
      """Return the SocialApp object for the given provider."""
      from allauth.socialaccount.models import SocialApp

@@ -591,11 +591,11 @@
         "pip2nix": "pip2nix"
       },
       "locked": {
-        "lastModified": 1743650884,
-        "narHash": "sha256-a9q3omw9xG5aXt1srOTBw0HI4P6J6SVhgWk73dSbhNM=",
+        "lastModified": 1743662909,
+        "narHash": "sha256-FU7F0w9dCvcUirg3HJ8IZxiNBRUhQyYArpCznSL/X5s=",
         "owner": "quentinmit",
         "repo": "nixos-inventree",
-        "rev": "080d56fbd99472692f285218c1ab5e0f13a11708",
+        "rev": "6d7f5e6cbcd6a3502a15172193bfeb3b701fa86f",
         "type": "github"
       },
       "original": {
