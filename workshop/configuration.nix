@@ -24,6 +24,7 @@
       ./speedtest.nix
       ./loki.nix
       ./vector.nix
+      ./inventree.nix
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];

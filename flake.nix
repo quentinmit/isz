@@ -63,6 +63,9 @@
     gradle2nix.inputs.nixpkgs.follows = "nixpkgs";
     gradle2nix.inputs.flake-utils.follows = "flake-utils";
     oom-hardware.url = "github:robertjakub/oom-hardware";
+    nixos-inventree.url = "github:quentinmit/nixos-inventree/isz";
+    nixos-inventree.inputs.nixpkgs.follows = "unstable";
+    nixos-inventree.inputs.flake-utils.follows = "flake-utils";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
     let

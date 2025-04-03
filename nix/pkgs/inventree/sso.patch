@@ -1,0 +1,45 @@
+diff --git a/inventree-src/src/backend/InvenTree/InvenTree/forms.py b/inventree-src/src/backend/InvenTree/InvenTree/forms.py
+index 3358804a9..52d1a9ff5 100644
+--- a/inventree-src/src/backend/InvenTree/InvenTree/forms.py
++++ b/inventree-src/src/backend/InvenTree/InvenTree/forms.py
+@@ -217,7 +217,7 @@ def registration_enabled():
+         InvenTreeSetting.get_setting('LOGIN_ENABLE_REG')
+         or InvenTree.sso.registration_enabled()
+     ):
+-        if settings.EMAIL_HOST:
++        if settings.EMAIL_HOST or not InvenTreeSetting.get_setting('LOGIN_ENABLE_PWD_FORGOT'):
+             return True
+         else:
+             logger.error(
+diff --git a/inventree-src/src/backend/InvenTree/InvenTree/sso.py b/inventree-src/src/backend/InvenTree/InvenTree/sso.py
+index 0ad165a0b..04c154535 100644
+--- a/inventree-src/src/backend/InvenTree/InvenTree/sso.py
++++ b/inventree-src/src/backend/InvenTree/InvenTree/sso.py
+@@ -11,20 +11,19 @@ logger = logging.getLogger('inventree')
+ def get_provider_app(provider):
+     """Return the SocialApp object for the given provider."""
+     from allauth.socialaccount.models import SocialApp
++    from allauth.socialaccount.adapter import get_adapter
+ 
++    adapter = get_adapter()
+     try:
+-        apps = SocialApp.objects.filter(provider__iexact=provider.id)
++        apps = adapter.list_apps(None)
++        logger.info("SSO SocialApps: %r", apps)
++        return adapter.get_app(None, provider.id)
+     except SocialApp.DoesNotExist:
+         logger.warning("SSO SocialApp not found for provider '%s'", provider.id)
+         return None
+-
+-    if apps.count() > 1:
++    except SocialApp.MultipleObjectsReturned:
+         logger.warning("Multiple SocialApps found for provider '%s'", provider.id)
+-
+-    if apps.count() == 0:
+-        logger.warning("SSO SocialApp not found for provider '%s'", provider.id)
+-
+-    return apps.first()
++        return None
+ 
+ 
+ def check_provider(provider):
