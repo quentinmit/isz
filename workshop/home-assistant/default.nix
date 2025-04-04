@@ -97,6 +97,7 @@ in {
       });
       customComponents = with pkgs.unstable.home-assistant-custom-components; [
         pyscript
+        bambu_lab
       ];
       extraPackages = lib.mkMerge [
         (lib.mkIf dbEnabled (python3Packages: with python3Packages; [
@@ -117,9 +118,14 @@ in {
         "backup"
         "cast"
         "default_config"
+        "device_automation"
         "elgato"
+        "ffmpeg"
+        "frontend"
+        "http"
         "esphome"
         "google_assistant"
+        "lovelace"
         "met"
         "mikrotik"
         "mobile_app"
@@ -129,6 +135,7 @@ in {
         "sun"
         "tasmota"
         "upnp"
+        "websocket_api"
         "wled"
         "zone"
         "zwave_js"

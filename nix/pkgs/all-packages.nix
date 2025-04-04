@@ -53,6 +53,7 @@ final: prev:
   };
   home-assistant-custom-components = prev.home-assistant-custom-components // {
     pyscript = final.home-assistant.python.pkgs.callPackage ./homeassistant/pyscript.nix {};
+    bambu_lab = final.home-assistant.python.pkgs.callPackage ./homeassistant/bambu_lab.nix {};
   };
   cisco-mibs = final.fetchFromGitHub {
     owner = "cisco";
