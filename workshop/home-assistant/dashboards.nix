@@ -56,12 +56,16 @@ in {
           compass-card
           layout-card
           restriction-card
+          button-card
+          card-mod
+          hui-element
         ;
         inherit (nur-mweinelt.packages.${pkgs.system}.hassLovelaceModules)
           apexcharts-card
           multiple-entity-row
           slider-button-card
         ;
+        ha-bambulab-cards = pkgs.unstable.home-assistant-custom-components.bambu_lab.cards;
         # TODO: Install https://github.com/thomasloven/lovelace-card-mod, which needs to be a frontend module
         # TODO: Fix mini-graph-card to properly handle show_state: false on first line, and to show extrema from an arbitrary query.
       };

@@ -50,6 +50,7 @@ final: prev:
     compass-card = final.callPackage ./homeassistant/compass-card.nix {};
     layout-card = final.callPackage ./homeassistant/layout-card.nix {};
     restriction-card = final.callPackage ./homeassistant/restriction-card.nix {};
+    hui-element = final.callPackage ./homeassistant/hui-element.nix {};
   };
   home-assistant-custom-components = prev.home-assistant-custom-components // {
     pyscript = final.home-assistant.python.pkgs.callPackage ./homeassistant/pyscript.nix {};
