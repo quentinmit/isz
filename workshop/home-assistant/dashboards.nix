@@ -59,10 +59,10 @@ in {
           button-card
           card-mod
           hui-element
-        ;
-        inherit (nur-mweinelt.packages.${pkgs.system}.hassLovelaceModules)
           apexcharts-card
           multiple-entity-row
+        ;
+        inherit (nur-mweinelt.packages.${pkgs.system}.hassLovelaceModules)
           slider-button-card
         ;
         ha-bambulab-cards = pkgs.unstable.home-assistant-custom-components.bambu_lab.cards;
