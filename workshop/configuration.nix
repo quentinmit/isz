@@ -310,4 +310,10 @@
     };
     bridgeVLANs = [{ PVID = 981; EgressUntagged = 981; }];
   };
+
+  services.bsproxy = {
+    enable = true;
+    inputInterfaces = ["vlan88"];
+    outputInterfaces = ["br0"];
+  };
 }

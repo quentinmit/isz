@@ -144,4 +144,5 @@ final: prev:
   hedge-mod-manager = final.callPackage ./hedge-mod-manager {};
   plasma-homeassistant = final.callPackage ./plasma-homeassistant {};
   kintree = final.callPackage ./python/kintree {};
+  bsproxy = final.callPackage ../../software/bsproxy {};
 }
