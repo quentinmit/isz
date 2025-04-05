@@ -48,6 +48,7 @@
 
   # Only use fingerprint for the kde-fingerprint PAM service.
   security.pam.services.kde.fprintAuth = false;
+  security.pam.services.kde-fingerprint.unixAuth = false;
 
   hardware.bluetooth.enable = true;
   hardware.bluetooth.package = if (lib.versionOlder pkgs.bluez.version "5.76") then pkgs.unstable.bluez else pkgs.bluez;
