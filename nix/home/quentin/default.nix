@@ -37,7 +37,7 @@ in {
     # 3D Modeling
     {
       home.packages = with pkgs; [
-        openscad
+        openscad-unstable
         gerbv
         f3d
       ] ++ lib.optionals pkgs.stdenv.isLinux ([
