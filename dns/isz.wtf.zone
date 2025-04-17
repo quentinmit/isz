@@ -121,6 +121,8 @@ airq             A 192.168.88.13
                  EUI48 48-27-E2-E3-08-EC
 bambu-a1mini     A 192.168.88.14
                  EUI48 C0-4E-30-2D-AB-B8
+workshop-lights  A 192.168.88.15
+                 EUI48 F4-12-FA-66-71-34
 ; DHCP range is 88.50-254
 
 mac              A 192.168.88.100
