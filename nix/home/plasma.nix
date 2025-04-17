@@ -35,18 +35,6 @@ in {
     home.packages = with pkgs; [
       monaco-nerd-fonts
       corefonts
-      aileron
-      fragment-mono
-      helvetica-neue-lt-std
-      bakoma_ttf
-      vistafonts
-      gyre-fonts
-      libertinus
-      #google-fonts
-      apple-fonts.SF-Pro
-      apple-fonts.SF-Mono
-      apple-fonts.SF-Compact
-      apple-fonts.NY
     ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.unstable.nerd-fonts);
     fonts.fontconfig.enable = true;
     xdg.configFile."fontconfig/conf.d/10-hack.conf".text = ''
