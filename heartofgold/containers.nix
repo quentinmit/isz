@@ -1,4 +1,4 @@
-{ config, pkgs, lib, self, ... }:
+{ config, pkgs, lib, self, specialArgs, ... }:
 {
   systemd.network.networks."20-ve-rtorrent" = {
     name = "ve-rtorrent";
@@ -15,9 +15,11 @@
     extraFlags = [
       "--network-veth"
     ];
+    inherit specialArgs;
     config = { config, pkgs, lib, ... }: {
       imports = [
-        #self.nixosModules.base
+        self.overlayModule
+        self.nixosModules.base
       ];
       networking.useHostResolvConf = false;
       networking.useNetworkd = true;
