@@ -1,5 +1,6 @@
 { lib, pkgs, config, options, ... }:
 let
+  vpnc-script-container = pkgs.callPackage ./vpnc-script-container.nix {};
   vpnc-script-sshd = pkgs.callPackage ./vpnc-script-sshd.nix {};
 in {
   config = {
@@ -22,6 +23,7 @@ in {
     systemd.services.openvpn-purevpn-DE = rec {
       requires = [
         "home-quentin-hog\\x2ddata.mount"
+        "container@rtorrent.service"
       ];
       after = requires;
       restartIfChanged = false;
@@ -36,37 +38,41 @@ in {
     services.openvpn.servers.purevpn-DE = {
       autoStart = false;
       up = ''
-        # cmd tun_dev tun_mtu link_mtu ifconfig_local_ip ifconfig_remote_ip [ init | restart ]
-
-        export TUNDEV=$1
-        export INTERNAL_IP4_MTU=$2
-        export reason=connect
-        export INTERNAL_IP4_ADDRESS=$ifconfig_local
-        export INTERNAL_IP4_GATEWAY=$ifconfig_remote
-
-        declare -a dns
-        for var in ''${!foreign_option_*}; do
-          set -- ''${!var}
-          if [ $1 = "dhcp-option" ]; then
-            case $2 in
-              DNS)
-                dns+=($3)
-                ;;
-            esac
-          fi
-        done
-
-
-        export INTERNAL_IP4_DNS="''${dns[@]}"
-        echo client.up "$@"
-
-        ${vpnc-script-sshd}/bin/vpnc-script-sshd
+        env | sort >&2
+        containerName=rtorrent exec ${vpnc-script-container}/bin/vpnc-script-container
       '';
-      down = ''
-        export TUNDEV=$1
-        export reason=disconnect
-        ${vpnc-script-sshd}/bin/vpnc-script-sshd
-      '';
+#       up = ''
+#         # cmd tun_dev tun_mtu link_mtu ifconfig_local_ip ifconfig_remote_ip [ init | restart ]
+#
+#         export TUNDEV=$1
+#         export INTERNAL_IP4_MTU=$2
+#         export reason=connect
+#         export INTERNAL_IP4_ADDRESS=$ifconfig_local
+#         export INTERNAL_IP4_GATEWAY=$ifconfig_remote
+#
+#         declare -a dns
+#         for var in ''${!foreign_option_*}; do
+#           set -- ''${!var}
+#           if [ $1 = "dhcp-option" ]; then
+#             case $2 in
+#               DNS)
+#                 dns+=($3)
+#                 ;;
+#             esac
+#           fi
+#         done
+#
+#
+#         export INTERNAL_IP4_DNS="''${dns[@]}"
+#         echo client.up "$@"
+#
+#         ${vpnc-script-sshd}/bin/vpnc-script-sshd
+#       '';
+#       down = ''
+#         export TUNDEV=$1
+#         export reason=disconnect
+#         ${vpnc-script-sshd}/bin/vpnc-script-sshd
+#       '';
       config = ''
         client
         verb 4
