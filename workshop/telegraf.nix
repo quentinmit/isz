@@ -41,6 +41,13 @@
       prometheus.apps = {
         grafana.url = "https://grafana.isz.wtf/metrics";
         influx.url = "https://influx.isz.wtf/metrics";
+        meshradio = {
+          url = "http://172.30.97.21:9100/metrics";
+          extraConfig.tags = {
+            agent_host = "172.30.97.21";
+            hostname = "meshradio";
+          };
+        };
       };
       hitron.targets = [
         { ip = "192.168.100.1"; }
