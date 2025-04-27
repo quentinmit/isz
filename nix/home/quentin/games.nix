@@ -7,6 +7,7 @@
 
   config = lib.mkIf config.isz.quentin.games.enable {
     home.packages = with pkgs; [
+      igir
       lightsoff
     ] ++ lib.optionals pkgs.stdenv.isLinux [
       bottles

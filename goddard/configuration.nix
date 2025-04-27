@@ -130,6 +130,7 @@
     # KDE
     kdePackages.plasma-firewall
     kdePackages.plasma-thunderbolt
+    kdePackages.partitionmanager
     kio-fuse
 
     # Thunderbolt

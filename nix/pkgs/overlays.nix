@@ -278,4 +278,25 @@ final: prev: {
       final.SDL
     ];
   });
+  igir = prev.igir.overrideAttrs (pfinal: old: let
+    version = "3.4.2";
+  in {
+    inherit version;
+    src = old.src.override {
+      rev = "v${version}";
+      hash = "sha256-UXrkBHybb/8U7aGIGYvlBEPJCWMejyFyMSMBEKGHZYA=";
+    };
+
+    buildInputs = old.buildInputs ++ [
+      final.SDL2
+      final.lz4
+      final.zlib
+      final.libuv
+    ];
+
+    npmDeps = final.fetchNpmDeps {
+      inherit (pfinal) src;
+      hash = "sha256-fqt/VvMoQsKDN50QO6bz6Di1CqA0NdY7FcEQ6Uo2irU=";
+    };
+  });
 }
