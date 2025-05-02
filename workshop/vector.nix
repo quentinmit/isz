@@ -1,3 +1,4 @@
+{ lib, pkgs, ... }:
 {
   isz.vector.enable = true;
   systemd.services.vector.serviceConfig.RuntimeDirectory = "vector";
@@ -8,6 +9,88 @@
         mode = "udp";
         address = "0.0.0.0:9000";
         # Fields: appname, facility, host, hostname, severity
+      };
+      transforms.syslog_remap = {
+        type = "remap";
+        inputs = ["syslog_udp"];
+        # Sample message:
+        #   "source_type": "syslog",
+        #   "source_ip": "172.30.97.21",
+        #   "host": "meshradio",
+        #   "severity": "info",
+        #   "timestamp": "2025-04-27T21:14:38Z"
+        #   "procid": 3285,
+        #   "facility": "authpriv",
+        #   "hostname": "meshradio",
+        #   "appname": "dropbear",
+        #   "message": "Child connection from 172.30.96.104:53240",
+        # Valid levels at: https://github.com/grafana/loki/blob/main/pkg/util/constants/levels.go#L15
+        # critical
+        # fatal
+        # error
+        # warn
+        # info
+        # debug
+        # trace
+        # unknown
+        source = ''
+          LEVELS = {
+            "emergency": "fatal", # emerg
+            "alert": "critical", # alert
+            "critical": "critical", # crit
+            "error": "error", # err
+            "warn": "warn", # warning
+            "notice": "info", # notice
+            "info": "info", # info
+            "debug": "debug", # debug
+          }
+          if exists(.severity) {
+            level = get!(LEVELS, [.severity])
+            if level != null {
+              .level = level
+            }
+          }
+          .labels = {}
+          ${lib.concatMapStringsSep "\n" (key: ''
+            if exists(.${key}) {
+              .labels.${key} = .${key}
+              del(.${key})
+            }
+          '') [
+            "host"
+            "source_ip"
+            "source_type"
+          ]}
+          ${pkgs.unstable.lib.concatMapAttrsStringSep "\n" (out: src: ''
+            if exists(.${src}) {
+              .labels.${out} = .${src}
+            }
+          '') {
+            service_name = "appname";
+          }}
+          structured_metadata = filter(.) -> |key, _value| {
+            !includes(["labels", "message", "timestamp"], key)
+          }
+          . = {
+            "labels": .labels,
+            "message": .message,
+            "timestamp": .timestamp,
+            "structured_metadata": structured_metadata,
+          }
+        '';
+      };
+      sinks.loki_syslog = {
+        type = "loki";
+        inputs = ["syslog_remap"];
+        endpoint = "https://loki.isz.wtf";
+        encoding.codec = "raw_message";
+        remove_label_fields = true;
+        labels."*" = "{{ labels }}";
+        remove_structured_metadata_fields = true;
+        structured_metadata."*" = "{{ structured_metadata }}";
+        slugify_dynamic_fields = false;
+        auth.strategy = "bearer";
+        auth.token = "SECRET[systemd.loki_oauth_token]";
       };
       sources.mikrotik = {
         type = "socket";
@@ -57,14 +140,6 @@
         # Can't use group_by because it produces out-of-order logs.
         merge_strategies.message = "concat_newline";
         merge_strategies.topics = "flat_unique";
-      };
-      sinks.console = {
-        type = "console";
-        inputs = [
-          "syslog_udp"
-        ];
-        encoding.codec = "json";
-        encoding.json.pretty = true;
       };
       sinks.loki_mikrotik = {
         type = "loki";
