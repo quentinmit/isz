@@ -219,7 +219,7 @@ PARSERS = [
 ParseFunction = Callable[[str, str], dict|list]
 
 @dataclass(frozen=True)
-class Request:
+class RequestConfig:
     field_types: dict[str, ParseFunction|None] = field(default_factory=dict)
     tag_props: frozenset[str] = field(default_factory=frozenset)
 
@@ -254,9 +254,9 @@ class Request:
 
 
 @dataclass(frozen=True)
-class Resource(Request):
+class ResourceConfig(RequestConfig):
     field_prop_defaults: dict[str, any] = field(default_factory=dict)
-    monitor: Request|None = None
+    monitor: RequestConfig|None = None
 
     def __init__(self, *, tag_props={}, field_types={}, field_prop_defaults={}, monitor=None):
         super().__init__(field_types=field_types)
@@ -264,15 +264,85 @@ class Resource(Request):
         object.__setattr__(self, "field_prop_defaults", dict(field_prop_defaults))
         object.__setattr__(self, "monitor", monitor)
 
+    def prepare(self, api: routeros_api.api.RouterOsApi, name: str):
+        logging.debug("fetching %s", name)
+        r = api.get_resource(name)
+
+        tag_props = self.tag_props
+        # Find all integer properties once
+        field_parsers = dict()
+        ids = set()
+        try:
+            for entry in r.get():
+                if 'id' in entry:
+                    ids.add(entry['id'])
+                field_parsers |= self.detect_parsers(entry)
+        except routeros_api.exceptions.RouterOsApiCommunicationError as e:
+            if e.original_message == b'no such command prefix':
+                # This resource doesn't exist.
+                return None
+            raise
+        proplist = set(tag_props | set(field_parsers))
+        if 'id' in proplist:
+            # ".id" in .proplist but "id" in result :(
+            proplist.remove('id')
+        proplist.add('.id')
+        for p in tag_props:
+            field_parsers.pop(p, None)
+        resource = Resource(
+            name=name,
+            r=r,
+            config=self,
+            tag_props=tag_props,
+            field_parsers=field_parsers,
+            field_prop_defaults=self.field_prop_defaults,
+            proplist=proplist,
+        )
+        if self.monitor and ids:
+            monitor_field_parsers = dict()
+            logging.debug('Calling monitor on %s', ids)
+            for entry in r.call('monitor', {'.id': ','.join(ids), 'once': ''}):
+                monitor_field_parsers |= self.monitor.detect_parsers(entry)
+            for p in tag_props:
+                monitor_field_parsers.pop(p, None)
+            resource.monitor = MonitorFetcher(
+                r=r,
+                field_parsers=monitor_field_parsers,
+                proplist=monitor_field_parsers.keys() | {'.id'},
+            )
+        return resource
+
+@dataclass(kw_only=True)
+class Fetcher:
+    r: routeros_api.resource.RouterOsResource
+    proplist: set[str]
+    field_parsers: dict[str, ParseFunction]
+    field_prop_defaults: dict[str, any] = field(default_factory=dict)
+
+    @property
+    def proplist_str(self):
+        return ",".join(self.proplist)
+
+@dataclass
+class MonitorFetcher(Fetcher):
+    pass
+
+@dataclass
+class Resource(Fetcher):
+    name: str
+    config: ResourceConfig
+    tag_props: set[str]
+    monitor: Fetcher|None = None
+
 TAGS = {
-    "/interface/ethernet/switch/port": Resource(
+    "/interface/ethernet/switch/port": ResourceConfig(
         tag_props={
             "id",
             "name",
             "switch",
         },
     ),
-    "/interface/ethernet": Resource(
+    "/interface/ethernet": ResourceConfig(
         tag_props={
             "id",
             "name",
@@ -298,7 +368,7 @@ TAGS = {
             "tx-flow-control": None, # Prefer prop from monitor
             "rx-flow-control": None, # Prefer prop from monitor
         },
-        monitor=Request(
+        monitor=RequestConfig(
             field_types={
                 "status": to_str,
                 "auto-negotiation": to_str,
@@ -318,7 +388,7 @@ TAGS = {
             },
         ),
     ),
-    "/interface/wireless": Resource(
+    "/interface/wireless": ResourceConfig(
         tag_props={
             "default-name",
             "name",
@@ -334,7 +404,7 @@ TAGS = {
         field_types={
             "wireless-protocol": to_str,
         },
-        monitor=Request(
+        monitor=RequestConfig(
             field_types={
                 "channel": to_channel,
                 "status": to_str,
@@ -343,7 +413,7 @@ TAGS = {
             },
         ),
     ),
-    "/interface/wireless/registration-table": Resource(
+    "/interface/wireless/registration-table": ResourceConfig(
         tag_props={
             "interface",
             "mac-address",
@@ -358,7 +428,7 @@ TAGS = {
             "strength-at-rates": to_strength_at_rates,
         },
     ),
-    "/interface/pptp-client": Resource(
+    "/interface/pptp-client": ResourceConfig(
         tag_props={
             "name",
             "comment",
@@ -375,7 +445,7 @@ TAGS = {
             "user": None,
             "password": None,
         },
-        monitor=Request(
+        monitor=RequestConfig(
             field_types={
                 "status": to_str,
                 "encoding": to_str,
@@ -385,7 +455,7 @@ TAGS = {
             },
         ),
     ),
-    "/interface": Resource(
+    "/interface": ResourceConfig(
         tag_props={
             "name",
             "default-name",
@@ -397,7 +467,7 @@ TAGS = {
             "mtu",
         },
     ),
-    "/ip/dhcp-server/lease": Resource(
+    "/ip/dhcp-server/lease": ResourceConfig(
         tag_props={
             "blocked",
             "disabled",
@@ -419,7 +489,7 @@ TAGS = {
             "host-name": to_str,
         },
     ),
-    "/ip/ipsec/active-peers": Resource(
+    "/ip/ipsec/active-peers": ResourceConfig(
         tag_props={
             "side",
             "responder",
@@ -433,7 +503,7 @@ TAGS = {
             "spir": None,
         },
     ),
-    "/ip/ipsec/policy": Resource(
+    "/ip/ipsec/policy": ResourceConfig(
         tag_props={
             "id",
             "comment",
@@ -460,8 +530,8 @@ TAGS = {
             "sa-dst-address": to_str,
         },
     ),
-    "/ip/ipsec/statistics": Resource(),
-    "/ip/address": Resource(
+    "/ip/ipsec/statistics": ResourceConfig(),
+    "/ip/address": ResourceConfig(
         tag_props={
             "comment",
             "actual-interface",
@@ -475,7 +545,7 @@ TAGS = {
             "network": to_str,
         },
     ),
-    "/ipv6/address": Resource(
+    "/ipv6/address": ResourceConfig(
         tag_props={
             "comment",
             "actual-interface",
@@ -489,7 +559,7 @@ TAGS = {
             "link-local",
         },
     ),
-    "/ip/dhcp-client": Resource(
+    "/ip/dhcp-client": ResourceConfig(
         tag_props={
             "comment",
             "interface",
@@ -511,7 +581,7 @@ TAGS = {
             "script": None,
         },
     ),
-    "/ipv6/dhcp-client": Resource(
+    "/ipv6/dhcp-client": ResourceConfig(
         tag_props={
             "comment",
             "interface",
@@ -550,7 +620,7 @@ TAGS = {
     #         "suppress-hw-offload",
     #     },
     # },
-    "/routing/route": Resource(
+    "/routing/route": ResourceConfig(
         tag_props={
             "id",
             "comment",
@@ -585,7 +655,7 @@ TAGS = {
             "active": False,
         },
     ),
-    "/ip/pool": Resource(
+    "/ip/pool": ResourceConfig(
         tag_props={
             "name",
             "ranges",
@@ -623,54 +693,16 @@ async def main():
         if t in tags:
             tags = {t: tags[t]}
         else:
-            tags = {t: {'tag_props': set()}}
+            tags = {t: ResourceConfig()}
 
     resources = {}
 
-    for name, props in tags.items():
+    for name, config in tags.items():
         logging.debug("fetching %s", name)
-        r = api.get_resource(name)
-
-        tag_props = props.tag_props
-        # Find all integer properties once
-        field_props = dict()
-        ids = set()
-        try:
-            for entry in r.get():
-                if 'id' in entry:
-                    ids.add(entry['id'])
-                field_props |= props.detect_parsers(entry)
-        except routeros_api.exceptions.RouterOsApiCommunicationError as e:
-            if e.original_message == b'no such command prefix':
-                # This resource doesn't exist.
-                continue
-            raise
-        proplist = set(tag_props | set(field_props))
-        if 'id' in proplist:
-            # ".id" in .proplist but "id" in result :(
-            proplist.remove('id')
-        proplist.add('.id')
-        proplist = ','.join(list(proplist))
-        for p in tag_props:
-            field_props.pop(p, None)
-        resources[name] = {
-            'r': r,
-            'tag_props': tag_props,
-            'field_props': field_props,
-            'field_prop_defaults': props.field_prop_defaults,
-            'proplist': proplist,
-        }
-        if props.monitor and ids:
-            monitor_field_props = dict()
-            logging.debug('Calling monitor on %s', ids)
-            for entry in r.call('monitor', {'.id': ','.join(ids), 'once': ''}):
-                monitor_field_props |= props.monitor.detect_parsers(entry)
-            for p in tag_props:
-                monitor_field_props.pop(p, None)
-            resources[name]['monitor'] = {
-                'field_props': monitor_field_props,
-                'proplist': ','.join(monitor_field_props.keys() | {'.id'}),
-            }
+        resource = config.prepare(api, name)
+        if not resource:
+            continue
+        resources[name] = resource
 
     logging.debug("identified resources: %s", resources)
 
@@ -702,18 +734,18 @@ async def main():
                             p.fields(parsed)
                     except ValueError:
                         pass
-            for entry in m['r'].call('print', {'.proplist': m['proplist']}):
+            for entry in m.r.call('print', {'.proplist': m.proplist_str}):
                 p = point(measurement)
-                for tag in m['tag_props']:
+                for tag in m.tag_props:
                     if value := entry.get(tag):
                         p.tag(tag, value)
-                p.fields(m['field_prop_defaults'])
-                process_field_props(p, entry, m['field_props'])
+                p.fields(m.field_prop_defaults)
+                process_field_props(p, entry, m.field_parsers)
                 points[entry.get('id')] = p
-            if 'monitor' in m:
-                for entry in m['r'].call('monitor', {'.proplist': m['monitor']['proplist'], '.id': ','.join(points.keys()), 'once': ''}):
+            if m.monitor:
+                for entry in m.r.call('monitor', {'.proplist': m.monitor.proplist_str, '.id': ','.join(points.keys()), 'once': ''}):
                     p = points[entry['id']]
-                    process_field_props(p, entry, m['monitor']['field_props'])
+                    process_field_props(p, entry, m.monitor.field_parsers)
             for p in points.values():
                 try:
                     l = p.to_line_protocol()
