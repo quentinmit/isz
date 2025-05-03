@@ -10,7 +10,22 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
       predicate = ''r["_measurement"] == "mikrotik-/interface"'';
       extra.label = "Host";
     };
-    panels = [
+    panels = let
+      firewallGraph = key: attrs: lib.recursiveUpdate {
+        panel.fieldConfig.defaults = {
+          unit = "bps";
+          displayName = "\${__field.labels.chain} | \${__field.labels.rule}";
+        };
+        influx.filter._measurement = ["mikrotik-/ipv6/firewall/${key}" "mikrotik-/ip/firewall/${key}"];
+        influx.filter._field = "bytes";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "derivative";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: 8. * r._value}))
+          |> map(fn: (r) => ({r with rule: if exists r.comment then r.comment else r.rule}))
+        '';
+      } attrs;
+    in [
       {
         panel.title = "System";
         panel.type = "row";
@@ -372,6 +387,132 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
           }
         ];
       }
+      {
+        panel.title = "Ethernet Ports";
+        panel.gridPos = { x = 6; y = 36; w = 6; h = 12; };
+        panel.type = "table";
+        influx.imports = ["strings" "contrib/bonitoo-io/hex"];
+        influx.filter._measurement = "mikrotik-/interface/ethernet";
+        # rate and full-duplex only exist for interfaces that are up
+        influx.filter._field = ["rate" "full-duplex" "status"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.pivot = true;
+        influx.extra = ''
+          |> keep(columns: ["id", "name", "rate", "full-duplex"])
+          |> group()
+          |> map(fn: (r) => ({r with id: hex.uint(v: strings.trimLeft(v: r.id, cutset: "*"))}))
+          |> sort(columns: ["id"])
+          |> drop(columns: ["id"])
+        '';
+        fieldOrder = ["name" "rate" "full-duplex"];
+        fields.rate = {
+          unit = "bps";
+          custom.width = 90;
+        };
+        fields.full-duplex = {
+          custom.width = 90;
+        };
+      }
+      {
+        panel.title = "Interface Errors";
+        panel.gridPos = { x = 12; y = 36; w = 12; h = 16; };
+        panel.fieldConfig.defaults = {
+          unit = "pps";
+          custom.axisLabel = "packets in (-) / out (+) per second";
+        };
+        influx.filter._measurement = "snmp-interfaces";
+        influx.filter._field = ["errors-in" "errors-out"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "derivative";
+
+        fields.errors-in = {
+          displayName = ''In ''${__field.labels.if-name}'';
+          custom.transform = "negative-Y";
+        };
+        fields.errors-out.displayName = ''Out ''${__field.labels.if-name}'';
+      }
+      {
+        panel.title = "POE";
+        panel.gridPos = { x = 0; y = 48; w = 12; h = 4; };
+        panel.type = "table";
+        influx.imports = ["strings" "contrib/bonitoo-io/hex"];
+        influx.filter._measurement = "mikrotik-/interface/ethernet";
+        influx.filter._field = ["poe-out" "poe-priority"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.pivot = true;
+        influx.extra = ''
+          |> keep(columns: ["id", "name", "poe-out", "poe-priority"])
+          |> group()
+          |> map(fn: (r) => ({r with id: hex.uint(v: strings.trimLeft(v: r.id, cutset: "*"))}))
+          |> sort(columns: ["id"])
+          |> drop(columns: ["id"])
+        '';
+      }
+      {
+        panel.title = "Interface Traffic";
+        panel.gridPos = { x = 0; y = 52; w = 24; h = 14; };
+        panel.fieldConfig.defaults = {
+          unit = "bps";
+          custom.axisLabel = "bits in (-) / out (+) per second";
+          custom.fillOpacity = 30;
+        };
+        panel.options.legend = {
+          displayMode = "table";
+          placement = "right";
+          calcs = ["mean" "max" "min"];
+        };
+        influx.filter._measurement = "snmp-interfaces";
+        influx.filter._field = ["bytes-in" "bytes-out"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "derivative";
+        influx.extra = ''
+          |> map(fn: (r) => ({r with _value: 8. * r._value}))
+        '';
+
+        fields.bytes-in = {
+          displayName = ''In ''${__field.labels.if-name}'';
+          custom.transform = "negative-Y";
+        };
+        fields.bytes-out.displayName = ''Out ''${__field.labels.if-name}'';
+      }
+
+      {
+        panel.title = "Firewall";
+        panel.gridPos = { x = 0; y = 66; w = 24; h = 1; };
+        panel.type = "row";
+      }
+      {
+        panel.title = "Open Connections";
+        panel.gridPos = { x = 0; y = 67; w = 12; h = 8; };
+        panel.type = "table";
+        # TODO
+      }
+      {
+        panel.title = "Open Connections Stats";
+        panel.gridPos = { x = 12; y = 67; w = 12; h = 8; };
+        panel.type = "barchart";
+        # TODO
+      }
+      (firewallGraph "filter" {
+        panel.title = "Logged Firewall Rules Traffic";
+        panel.gridPos = { x = 0; y = 75; w = 12; h = 8; };
+        influx.filter.log = "true";
+      })
+      (firewallGraph "nat" {
+        panel.title = "Logged NAT Firewall Rules Traffic";
+        panel.gridPos = { x = 12; y = 75; w = 12; h = 8; };
+        influx.filter.log = "true";
+      })
+      (firewallGraph "filter" {
+        panel.title = "Firewall Rules Traffic";
+        panel.gridPos = { x = 0; y = 83; w = 12; h = 8; };
+      })
+      (firewallGraph "nat" {
+        panel.title = "NAT Firewall Rules Traffic";
+        panel.gridPos = { x = 12; y = 83; w = 12; h = 8; };
+      })
     ];
   };
 }
