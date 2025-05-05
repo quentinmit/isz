@@ -1414,7 +1414,7 @@
       ]
     },
     {
-      "host": "core1.lba1.he.net",
+      "host": "core2.lba1.he.net",
       "country": "UK",
       "city": "Leeds",
       "datacenter": "aql Salem Church",
@@ -1588,8 +1588,7 @@
       "datacenter": "Telehouse Paris Voltaire",
       "exchanges": [
         "France-IX Paris",
-        "LU-CIX",
-        "FNC-IX"
+        "LU-CIX"
       ]
     },
     {
@@ -2001,7 +2000,8 @@
       "datacenter": "Chief LY Building",
       "exchanges": [
         "STUIX",
-        "TPIX Taiwan"
+        "TPIX Taiwan",
+        "FOX"
       ]
     },
     {
@@ -2145,7 +2145,8 @@
       "city": "Mombasa",
       "datacenter": "icolo.io Mombasa One",
       "exchanges": [
-        "KIXP Mombasa"
+        "KIXP Mombasa",
+        "Asteroid Mombasa"
       ]
     },
     {
