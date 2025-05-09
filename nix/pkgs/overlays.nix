@@ -299,4 +299,7 @@ final: prev: {
       hash = "sha256-fqt/VvMoQsKDN50QO6bz6Di1CqA0NdY7FcEQ6Uo2irU=";
     };
   });
+  pico-sdk-full = final.pico-sdk.override {
+    withSubmodules = true;
+  };
 }

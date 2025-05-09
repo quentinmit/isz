@@ -129,6 +129,19 @@
       in {
         legacyPackages = pkgs;
         devShells.esphome = import ./workshop/esphome/shell.nix { pkgs = pkgs.unstable; };
+        devShells.pico-sdk = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            gcc-arm-embedded
+            picotool
+            pico-sdk-full
+            cmake python3  # build requirements for pico-sdk
+            udisks         # Interact with bootloader filesystem
+            tio            # terminal program to interface with serial
+          ];
+          shellHook = ''
+            export PICO_SDK_PATH=${pkgs.pico-sdk-full}/lib/pico-sdk
+          '';
+        };
       })) // {
         inherit overlayModule;
         inherit self args;
