@@ -16,6 +16,11 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
           unit = "bps";
           displayName = "\${__field.labels.chain} | \${__field.labels.rule}";
         };
+        panel.options = {
+          legend.calcs = ["mean" "max" "min"];
+          legend.displayMode = "table";
+          tooltip.sort = "desc";
+        };
         influx.filter._measurement = ["mikrotik-/ipv6/firewall/${key}" "mikrotik-/ip/firewall/${key}"];
         influx.filter._field = "bytes";
         influx.filter.hostname = "\${hostname}";
@@ -497,22 +502,28 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
       }
       (firewallGraph "filter" {
         panel.title = "Logged Firewall Rules Traffic";
-        panel.gridPos = { x = 0; y = 75; w = 12; h = 8; };
+        panel.gridPos = { x = 0; y = 75; w = 12; h = 12; };
         influx.filter.log = "true";
       })
       (firewallGraph "nat" {
         panel.title = "Logged NAT Firewall Rules Traffic";
-        panel.gridPos = { x = 12; y = 75; w = 12; h = 8; };
+        panel.gridPos = { x = 12; y = 75; w = 12; h = 12; };
         influx.filter.log = "true";
       })
       (firewallGraph "filter" {
         panel.title = "Firewall Rules Traffic";
-        panel.gridPos = { x = 0; y = 83; w = 12; h = 8; };
+        panel.gridPos = { x = 0; y = 87; w = 12; h = 14; };
       })
       (firewallGraph "nat" {
         panel.title = "NAT Firewall Rules Traffic";
-        panel.gridPos = { x = 12; y = 83; w = 12; h = 8; };
+        panel.gridPos = { x = 12; y = 87; w = 12; h = 14; };
       })
+
+      {
+        panel.title = "Netwatch";
+        panel.gridPos = { x = 0; y = 101; w = 24; h = 1; };
+        panel.type = "row";
+      }
     ];
   };
 }
