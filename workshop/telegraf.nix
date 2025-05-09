@@ -43,9 +43,17 @@
         influx.url = "https://influx.isz.wtf/metrics";
         meshradio = {
           url = "http://172.30.97.21:9100/metrics";
-          extraConfig.tags = {
+          tags = {
             agent_host = "172.30.97.21";
             hostname = "meshradio";
+          };
+        };
+        workshop-kvm = {
+          url = "http://172.30.97.38/metrics";
+          tags = {
+            agent_host = "172.30.97.38";
+            hostname = "workshop-kvm";
+            app = "jetkvm";
           };
         };
       };
