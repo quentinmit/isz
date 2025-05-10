@@ -10,10 +10,13 @@
       IPv6SendRA = false;
     };
   };
-  systemd.services."container@rtorrent" = {
+  systemd.services."container@rtorrent" = let
     requires = ["home-quentin-hog\\x2ddata.mount"];
-    after = ["home-quentin-hog\\x2ddata.mount"];
+  in {
+    inherit requires;
+    after = requires;
   };
+
   containers.rtorrent = {
     privateNetwork = true;
     extraFlags = [

@@ -11,6 +11,7 @@
     ./openvpn
     ./jellyfin.nix
     ./containers.nix
+    ./bitmagnet
     disko.nixosModules.disko
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
@@ -122,6 +123,8 @@
     enable = true;
     nssmdns4 = true;
   };
+
+  services.postgresql.settings.full_page_writes = false;
 
   isz.krb5.enable = true;
 

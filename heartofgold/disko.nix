@@ -125,6 +125,18 @@
           mountpoint = "/var";
           options."com.sun:auto-snapshot" = "true";
         };
+        "var/lib" = {
+          type = "zfs_fs";
+          mountpoint = "/var/lib";
+        };
+        "var/lib/jellyfin" = {
+          type = "zfs_fs";
+        };
+        "var/lib/postgresql" = {
+          type = "zfs_fs";
+          options.atime = "off";
+          options."com.sun:auto-snapshot" = "false";
+        };
         home = {
           type = "zfs_fs";
           options = {
