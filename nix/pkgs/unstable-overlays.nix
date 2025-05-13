@@ -30,4 +30,11 @@ final: prev: {
       ./vector/loki-raw-labels.patch
     ];
   });
+  bitmagnet = prev.bitmagnet.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      ./bitmagnet/tmdb-no-xxx.patch
+      ./bitmagnet/http-unix.patch
+      ./bitmagnet/persist-files.patch
+    ];
+  });
 }

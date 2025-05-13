@@ -1,0 +1,19 @@
+commit 01e0cd8e9694530f616cbfe3057d29757be5bc50
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Sat May 10 19:05:31 2025 -0400
+
+    Don't look up XXX in TMDB
+
+diff --git a/internal/classifier/classifier.core.yml b/internal/classifier/classifier.core.yml
+index d8bcef3..78df547 100644
+--- a/internal/classifier/classifier.core.yml
++++ b/internal/classifier/classifier.core.yml
+@@ -68,7 +68,7 @@ workflows:
+           and:
+             - "torrent.hasHintedContentId && !result.hasAttachedContent"
+             # we might as well save work by restricting this to content types that have an API integration:
+-            - "result.contentType in [contentType.movie, contentType.tv_show, contentType.xxx]"
++            - "result.contentType in [contentType.movie, contentType.tv_show]"
+         if_action:
+           find_match:
+             - attach_local_content_by_id

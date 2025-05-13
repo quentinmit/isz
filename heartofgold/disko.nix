@@ -137,6 +137,11 @@
           options.atime = "off";
           options."com.sun:auto-snapshot" = "false";
         };
+        "var/lib/bitmagnet" = {
+          type = "zfs_fs";
+          options.atime = "off";
+          options."com.sun:auto-snapshot" = "false";
+        };
         home = {
           type = "zfs_fs";
           options = {

@@ -1,0 +1,23 @@
+commit d524e8d4fd6999d4819155e7f4678687ba8a7bd2
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Sat May 10 19:16:21 2025 -0400
+
+    Allow listening on a Unix socket
+
+diff --git a/internal/httpserver/server.go b/internal/httpserver/server.go
+index 66f957f..bd345da 100644
+--- a/internal/boilerplate/httpserver/server.go
++++ b/internal/boilerplate/httpserver/server.go
+@@ -52,7 +52,11 @@ func New(p Params) Result {
+ 						Addr:    p.Config.LocalAddress,
+ 						Handler: g.Handler(),
+ 					}
+-					ln, listenErr := net.Listen("tcp", s.Addr)
++					proto := "tcp"
++					if s.Addr[0] == '/' {
++						proto = "unix"
++					}
++					ln, listenErr := net.Listen(proto, s.Addr)
+ 					if listenErr != nil {
+ 						return listenErr
+ 					}

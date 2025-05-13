@@ -1,0 +1,219 @@
+commit d1ba10ee615d15633675fd348e08c101f683e367
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Sat May 10 19:38:18 2025 -0400
+
+    Persist torrent files to disk
+    
+    From https://github.com/LordMike/bitmagnet/pull/1
+
+diff --git a/internal/dhtcrawler/config.go b/internal/dhtcrawler/config.go
+index fdfc34b..ff3fc8d 100644
+--- a/internal/dhtcrawler/config.go
++++ b/internal/dhtcrawler/config.go
+@@ -19,6 +19,11 @@ type Config struct {
+ 	SavePieces bool
+ 	// RescrapeThreshold is the amount of time that must pass before a torrent is rescraped to count seeders and leechers.
+ 	RescrapeThreshold time.Duration
++
++	SaveTorrents     bool
++	SaveTorrentsRoot string
++	// When multiple instances of dht_crawler are running, it is possible to avoid torrent corruption by setting a unique temp file suffix for each instance
++	SaveTorrentsTempSuffix string
+ }
+ 
+ func NewDefaultConfig() Config {
+@@ -29,6 +34,9 @@ func NewDefaultConfig() Config {
+ 		SaveFilesThreshold:           100,
+ 		SavePieces:                   false,
+ 		RescrapeThreshold:            time.Hour * 24 * 30,
++		SaveTorrents:                 false,
++		SaveTorrentsRoot:             "./torrents",
++		SaveTorrentsTempSuffix:       ".tmp",
+ 	}
+ }
+ 
+diff --git a/internal/dhtcrawler/crawler.go b/internal/dhtcrawler/crawler.go
+index 44725b1..fcdb673 100644
+--- a/internal/dhtcrawler/crawler.go
++++ b/internal/dhtcrawler/crawler.go
+@@ -42,6 +42,9 @@ type crawler struct {
+ 	rescrapeThreshold            time.Duration
+ 	saveFilesThreshold           uint
+ 	savePieces                   bool
++	saveTorrents                 bool
++	saveTorrentsRoot             string
++	saveTorrentsTempSuffix       string
+ 	dao                          *dao.Query
+ 	// ignoreHashes is a thread-safe bloom filter that the crawler keeps in memory, containing every hash it has already encountered.
+ 	// This avoids multiple attempts to crawl the same hash, and takes a lot of load off the database query that checks if a hash
+@@ -85,7 +88,8 @@ type nodeHasPeersForHash struct {
+ 
+ type infoHashWithMetaInfo struct {
+ 	nodeHasPeersForHash
+-	metaInfo metainfo.Info
++	metaInfo      metainfo.Info
++	metaInfoBytes []byte
+ }
+ 
+ type infoHashWithPeers struct {
+diff --git a/internal/dhtcrawler/factory.go b/internal/dhtcrawler/factory.go
+index cfd8822..788bf50 100644
+--- a/internal/dhtcrawler/factory.go
++++ b/internal/dhtcrawler/factory.go
+@@ -96,10 +96,13 @@ func New(params Params) Result {
+ 							1000,
+ 							time.Minute,
+ 						),
+-						saveFilesThreshold: params.Config.SaveFilesThreshold,
+-						savePieces:         params.Config.SavePieces,
+-						rescrapeThreshold:  params.Config.RescrapeThreshold,
+-						dao:                query,
++						saveFilesThreshold:     params.Config.SaveFilesThreshold,
++						savePieces:             params.Config.SavePieces,
++						saveTorrents:           params.Config.SaveTorrents,
++						saveTorrentsRoot:       params.Config.SaveTorrentsRoot,
++						saveTorrentsTempSuffix: params.Config.SaveTorrentsTempSuffix,
++						rescrapeThreshold:      params.Config.RescrapeThreshold,
++						dao:                    query,
+ 						ignoreHashes: &ignoreHashes{
+ 							bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
+ 						},
+diff --git a/internal/dhtcrawler/persist.go b/internal/dhtcrawler/persist.go
+index 4c0a2c4..92628f5 100644
+--- a/internal/dhtcrawler/persist.go
++++ b/internal/dhtcrawler/persist.go
+@@ -2,6 +2,13 @@ package dhtcrawler
+ 
+ import (
+ 	"context"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"time"
++
+ 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+ 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+ 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
+@@ -10,7 +17,6 @@ import (
+ 	"github.com/prometheus/client_golang/prometheus"
+ 	"gorm.io/gen"
+ 	"gorm.io/gorm/clause"
+-	"time"
+ )
+ 
+ // runPersistTorrents waits on the persistTorrents channel, and persists torrents to the database in batches.
+@@ -51,6 +57,11 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
+ 					continue
+ 				}
+ 				hashMap[i.infoHash] = i
++				// Persist to disk
++				if c.saveTorrents {
++					c.saveRawMetadataToFile(i.infoHash.String(), i.metaInfoBytes)
++				}
++
+ 				if t, err := createTorrentModel(i.infoHash, i.metaInfo, c.savePieces, c.saveFilesThreshold); err != nil {
+ 					c.logger.Errorf("error creating torrent model: %s", err.Error())
+ 				} else {
+@@ -186,6 +197,66 @@ func createTorrentModel(
+ 	}, nil
+ }
+ 
++func (c *crawler) saveRawMetadataToFile(infoHash string, rawMetaInfo []byte) error {
++	// Convert infoHash to lowercase to ensure consistency
++	infoHash = strings.ToLower(infoHash)
++
++	// Create a two-level trie directory structure using the first 4 characters of the infoHash
++	dir1 := infoHash[:2] // First 2 characters
++	directory := filepath.Join(c.saveTorrentsRoot, dir1)
++
++	// Create the directory structure if it doesn't exist
++	if err := os.MkdirAll(directory, os.ModePerm); err != nil {
++		c.logger.Errorw("failed to create directory", "directory", directory, "error", err)
++		return fmt.Errorf("failed to create directory: %v", err)
++	}
++
++	// Define the final file path and temporary file path
++	finalFilePath := filepath.Join(directory, infoHash+".torrent")
++	tempFilePath := finalFilePath + c.saveTorrentsTempSuffix
++
++	// Check if the final file already exists, and skip if it does
++	if _, err := os.Stat(finalFilePath); err == nil {
++		c.logger.Debugw("File already exists, skipping save", "filePath", finalFilePath)
++		return nil
++	}
++
++	// Create and write to the temporary file
++	tempFile, err := os.Create(tempFilePath)
++	if err != nil {
++		c.logger.Errorw("failed to create temp file", "tempFilePath", tempFilePath, "error", err)
++		return fmt.Errorf("failed to create temp file: %v", err)
++	}
++	if err := func() error {
++		defer tempFile.Close()
++
++		if _, err = tempFile.Write([]byte("d4:info")); err != nil {
++			return err
++		}
++
++		if _, err = tempFile.Write(rawMetaInfo); err != nil {
++			return err
++		}
++
++		if _, err = tempFile.Write([]byte("e")); err != nil {
++			return err
++		}
++		return nil
++	}(); err != nil {
++		c.logger.Errorw("failed to write raw metadata to temp file", "tempFilePath", tempFilePath, "error", err)
++		return fmt.Errorf("failed to write raw metadata to temp file: %v", err)
++	}
++
++	// Rename the temp file to the final file
++	if err := os.Rename(tempFilePath, finalFilePath); err != nil {
++		c.logger.Errorw("failed to rename temp file to final file", "tempFilePath", tempFilePath, "finalFilePath", finalFilePath, "error", err)
++		return fmt.Errorf("failed to rename temp file to final file: %v", err)
++	}
++
++	c.logger.Debugf("saved torrent", infoHash)
++	return nil
++}
++
+ const classifyBatchSize = 100
+ 
+ // runPersistSources waits on the persistSources channel for scraped torrents, and persists sources
+diff --git a/internal/dhtcrawler/request_meta_info.go b/internal/dhtcrawler/request_meta_info.go
+index 23c774a..da36894 100644
+--- a/internal/dhtcrawler/request_meta_info.go
++++ b/internal/dhtcrawler/request_meta_info.go
+@@ -20,6 +20,7 @@ func (c *crawler) runRequestMetaInfo(ctx context.Context) {
+ 		case c.persistTorrents.In() <- infoHashWithMetaInfo{
+ 			nodeHasPeersForHash: req.nodeHasPeersForHash,
+ 			metaInfo:            mi.Info,
++			metaInfoBytes:       mi.MetaInfoBytes,
+ 		}:
+ 		}
+ 	})
+diff --git a/internal/protocol/metainfo/metainforequester/requester.go b/internal/protocol/metainfo/metainforequester/requester.go
+index af755d6..b118275 100644
+--- a/internal/protocol/metainfo/metainforequester/requester.go
++++ b/internal/protocol/metainfo/metainforequester/requester.go
+@@ -72,7 +72,8 @@ type HandshakeInfo struct {
+ 
+ type Response struct {
+ 	HandshakeInfo
+-	Info metainfo.Info
++	Info          metainfo.Info
++	MetaInfoBytes []byte
+ }
+ 
+ func (r requester) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
+@@ -107,6 +108,7 @@ func (r requester) Request(ctx context.Context, infoHash protocol.ID, addr netip
+ 	return Response{
+ 		HandshakeInfo: hsInfo,
+ 		Info:          parsed,
++		MetaInfoBytes: pieces,
+ 	}, nil
+ }
+ 
