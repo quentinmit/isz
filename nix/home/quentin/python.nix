@@ -96,6 +96,7 @@
         };
       in with ps2; [
         pillow
+        aioesphomeapi
         aiohttp
         alabaster
         ansible

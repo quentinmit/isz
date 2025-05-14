@@ -31,6 +31,7 @@
         unleashed-recomp
         hedge-mod-manager
         plasma-homeassistant
+        home-assistant-cli
       ];
 
       services.baloo.excludeFolders = [

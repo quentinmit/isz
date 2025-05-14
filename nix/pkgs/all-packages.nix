@@ -36,6 +36,7 @@ final: prev:
       wrapt_timeout_decorator = callPackage ./python/wrapt_timeout_decorator {};
       cli_exit_tools = callPackage ./python/cli_exit_tools {};
       lib_detect_testenv = callPackage ./python/lib_detect_testenv {};
+      ionit = callPackage ./python/ionit {};
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
