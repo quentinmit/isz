@@ -153,14 +153,21 @@
         };
         overlays.default = nixpkgs.lib.composeManyExtensions overlays;
         overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
-        nixosConfigurations = (nixpkgs.lib.genAttrs [
+        nixosConfigurations = let
+          lib = nixpkgs.lib.extend (final: prev: {
+            types = prev.types // {
+              # TODO: Remove with NixOS 25.05
+              inherit (unstable.lib.types) pathWith;
+            };
+          });
+        in (lib.genAttrs [
           "workshop"
           "bedroom-pi"
           "droid"
           "goddard"
           "heartofgold"
           "rascsi"
-        ] (name: nixpkgs.lib.nixosSystem {
+        ] (name: lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [
             overlayModule
