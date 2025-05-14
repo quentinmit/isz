@@ -1,5 +1,5 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index 7b02680afee..62a72f1ffe1 100644
+index 7b02680afee..00a3e8719dc 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
 @@ -5,7 +5,7 @@ from __future__ import annotations
@@ -25,7 +25,15 @@ index 7b02680afee..62a72f1ffe1 100644
  from .enum_mapper import EsphomeEnumMapper
  
  _InfoT = TypeVar("_InfoT", bound=EntityInfo)
-@@ -210,6 +211,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+@@ -198,7 +199,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
+ class EsphomeBaseEntity(Entity):
+     """Define a base esphome entity."""
+ 
+-    _attr_has_entity_name = True
+     _attr_should_poll = False
+     _device_info: EsphomeDeviceInfo
+     device_entry: dr.DeviceEntry
+@@ -210,6 +210,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
      _static_info: _InfoT
      _state: _StateT
      _has_state: bool
@@ -33,10 +41,40 @@ index 7b02680afee..62a72f1ffe1 100644
  
      def __init__(
          self,
-@@ -242,6 +244,20 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
-             # an empty string so we drop the object_id.
-             self.entity_id = f"{domain}.{device_info.name}"
- 
+@@ -231,16 +232,39 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+         self._attr_device_info = DeviceInfo(
+             connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)}
+         )
+-        if entity_info.name:
+-            self.entity_id = f"{domain}.{device_info.name}_{entity_info.object_id}"
+-        else:
+-            # https://github.com/home-assistant/core/issues/132532
+-            # If name is not set, ESPHome will use the sanitized friendly name
+-            # as the name, however we want to use the original object_id
+-            # as the entity_id before it is sanitized since the sanitizer
+-            # is not utf-8 aware. In this case, its always going to be
+-            # an empty string so we drop the object_id.
+-            self.entity_id = f"{domain}.{device_info.name}"
++        #
++        # If `friendly_name` is set, we use the Friendly naming rules, if
++        # `friendly_name` is not set we make an exception to the naming rules for
++        # backwards compatibility and use the Legacy naming rules.
++        #
++        # Friendly naming
++        # - Friendly name is prepended to entity names
++        # - Device Name is prepended to entity ids
++        # - Entity id is constructed from device name and object id
++        #
++        # Legacy naming
++        # - Device name is not prepended to entity names
++        # - Device name is not prepended to entity ids
++        # - Entity id is constructed from entity name
++        #
++        if not device_info.friendly_name:
++            return
++        self._attr_has_entity_name = True
++        self.entity_id = f"{domain}.{device_info.name}_{entity_info.object_id}"
++
 +    @property
 +    def entity_id(self):
 +        # Can't set this in __init__ because self._static_info doesn't exist yet.
@@ -50,7 +88,48 @@ index 7b02680afee..62a72f1ffe1 100644
 +    def entity_id(self, entity_id):
 +        self._entity_id = entity_id
 +
-+
+ 
      async def async_added_to_hass(self) -> None:
          """Register callbacks."""
-         entry_data = self._entry_data
+diff --git a/homeassistant/components/esphome/manager.py b/homeassistant/components/esphome/manager.py
+index 1b0e4fc8986..4e5416c8638 100644
+--- a/homeassistant/components/esphome/manager.py
++++ b/homeassistant/components/esphome/manager.py
+@@ -521,15 +521,6 @@ class ESPHomeManager:
+         if device_info.name:
+             reconnect_logic.name = device_info.name
+ 
+-        if not device_info.friendly_name:
+-            _LOGGER.info(
+-                "No `friendly_name` set in the `esphome:` section of the "
+-                "YAML config for device '%s' (MAC: %s); It's recommended "
+-                "to add one for easier identification and better alignment "
+-                "with Home Assistant naming conventions",
+-                device_info.name,
+-                device_mac,
+-            )
+         self.device_id = _async_setup_device_registry(hass, entry, entry_data)
+ 
+         entry_data.async_update_device_state()
+@@ -791,7 +782,7 @@ def _async_setup_device_registry(
+         config_entry_id=entry.entry_id,
+         configuration_url=configuration_url,
+         connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)},
+-        name=entry_data.friendly_name or entry_data.name,
++        name=entry_data.friendly_name,
+         manufacturer=manufacturer,
+         model=model,
+         sw_version=sw_version,
+diff --git a/tests/components/esphome/test_entity.py b/tests/components/esphome/test_entity.py
+index ee6e6b6785f..635252b38de 100644
+--- a/tests/components/esphome/test_entity.py
++++ b/tests/components/esphome/test_entity.py
+@@ -480,7 +480,7 @@ async def test_esphome_device_without_friendly_name(
+         states=states,
+         device_info={"friendly_name": None},
+     )
+-    state = hass.states.get("binary_sensor.test_mybinary_sensor")
++    state = hass.states.get("binary_sensor.my_binary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
