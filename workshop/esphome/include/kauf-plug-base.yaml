@@ -40,7 +40,7 @@ time:
 binary_sensor:
 - platform: gpio
   id: front_button
-  name: ${friendly_name} Button
+  name: Button
   pin:
     number: GPIO13
     mode:
@@ -52,7 +52,7 @@ binary_sensor:
     - delayed_on: 50ms
 #  on_press:
 #    then:
-#      switch.toggle: relay
+#      switch.toggle: power_outlet
 
 status_led:
   pin:
@@ -69,8 +69,8 @@ switch:
 
   # relay output
 - platform: gpio
-  id: relay
-  name: ${friendly_name} Power Outlet
+  id: power_outlet
+  name: Power Outlet
   pin: GPIO4
   restore_mode: ALWAYS_ON
 
@@ -91,20 +91,20 @@ sensor:   # Power monitoring sensors output to Home Assistant
   current_resistor: 0.001 # The value of the shunt resistor for current measurement.
   voltage_divider: "${voltage_divider}" #2401   # The value of the voltage divider on the board as (R_upstream + R_downstream) / R_downstream.
   power:
-    name: ${friendly_name} Power
+    name: Power
     unit_of_measurement: W
     accuracy_decimals: 2
-    id: wattage
+    id: power
   current:
-    name: ${friendly_name} Current
+    name: Current
     unit_of_measurement: A
     accuracy_decimals: 3
   voltage:
-    name: ${friendly_name} Voltage
+    name: Voltage
     unit_of_measurement: V
     accuracy_decimals: 2
   energy:
-    name: ${friendly_name} Total Energy
+    name: Total Energy
     unit_of_measurement: Wh
     accuracy_decimals: 2
   change_mode_every: 1
@@ -113,8 +113,8 @@ sensor:   # Power monitoring sensors output to Home Assistant
 # Reports the total Power so-far each day, resets at midnight
 # See https://esphome.io/components/sensor/total_daily_energy.html
 - platform: total_daily_energy
-  name: ${friendly_name} Total Daily Energy
-  power_id: wattage
+  name: Total Daily Energy
+  power_id: power
   filters:
   - multiply: 0.001  ## convert Wh to kWh
   unit_of_measurement: kWh
@@ -123,6 +123,6 @@ remote_transmitter:
   pin: GPIO3
   carrier_duty_percent: 50%
 
-dallas:
-- pin: GPIO1
-  update_interval: 10s
+one_wire:
+- platform: gpio
+  pin: GPIO1

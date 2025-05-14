@@ -25,6 +25,9 @@ substitutions:
   friendly_name: Living Room AC
   voltage_divider: "2078"
 
+esphome:
+  friendly_name: Living Room AC
+
 packages:
   kauf_plug_base: !include include/kauf-plug-base.yaml
   frigidaire_ac_ir: !include include/frigidaire-ac-ir.yaml
@@ -35,39 +38,40 @@ binary_sensor:
     then:
       if:
         condition:
-          lambda: return id(climate_ac).mode != CLIMATE_MODE_OFF;
+          lambda: return id(livingroom_ac).mode != CLIMATE_MODE_OFF;
         then:
           climate.control:
-            id: climate_ac
+            id: livingroom_ac
             mode: "OFF"
         else:
           climate.control:
-            id: climate_ac
+            id: livingroom_ac
             mode: COOL
 
 sensor:
-- platform: dallas
+- platform: dallas_temp
   address: 0x6600000284ba8b28
-  name: ${friendly_name} Temperature
-  id: ac_output_temperature
+  name: Temperature
+  id: temperature
   accuracy_decimals: 4
+  update_interval: 10s
 
 text_sensor:
 - platform: template
-  name: "Living Room AC Status"
+  name: Status
   update_interval: 5s
   lambda: !lambda |-
-    float power = id(wattage).state;
-    if (power > 150) {
+    float watts = id(power).state;
+    if (watts > 150) {
     return std::string("Cool On"); // 500W
-    } else if (power > 50) {
+    } else if (watts > 50) {
     return std::string("Fan On"); // 112W
     }
     return std::string("Standby"); // 0.7W
 
 climate:
 - platform: frigidaire_ac
-  name: ${friendly_name}
-  id: climate_ac
-  temperature_sensor: ac_output_temperature
-  power_sensor: wattage
+  name: None
+  id: livingroom_ac
+  temperature_sensor: temperature
+  power_sensor: power

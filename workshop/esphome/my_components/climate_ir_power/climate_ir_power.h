@@ -78,6 +78,7 @@ class ClimateIRPower : public Component, public climate::Climate {
     remote_base::NECData data{};
     data.address = ir_address_;
     data.command = cmd | (~cmd)<<8;
+    data.command_repeats = 1;
     remote_base::NECProtocol().encode(call.get_data(), data);
     call.set_send_times(count);
     call.set_send_wait(send_wait); // ms

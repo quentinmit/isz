@@ -25,28 +25,33 @@ substitutions:
   friendly_name: Bedroom AC
   voltage_divider: "2078"
 
+esphome:
+  friendly_name: Bedroom AC
+
 packages:
   kauf_plug_base: !include include/kauf-plug-base.yaml
   kenmore_ac_ir: !include include/kenmore-ac-ir.yaml
 
 sensor:
-- platform: dallas
+- platform: dallas_temp
   address: 0xa4000002849c3328
-  name: ${friendly_name} Output Temperature
-  id: ac_output_temperature
+  name: Output Temperature
+  id: output_temperature
   accuracy_decimals: 4
-- platform: dallas
+  update_interval: 10s
+- platform: dallas_temp
   address: 0xf100000284a16d28
-  name: ${friendly_name} Input Temperature
-  id: ac_input_temperature
+  name: Input Temperature
+  id: input_temperature
   accuracy_decimals: 4
+  update_interval: 10s
 
 #text_sensor:
 #- platform: template
 #  name: "Living Room AC Status"
 #  update_interval: 5s
 #  lambda: !lambda |-
-#    float power = id(wattage).state;
+#    float power = id(power).state;
 #    if (power > 150) {
 #    return std::string("Cool On"); // 500W
 #    } else if (power > 50) {
@@ -56,6 +61,6 @@ sensor:
 
 climate:
 - platform: kenmore_ac
-  name: ${friendly_name}
-  temperature_sensor: ac_input_temperature
-  power_sensor: wattage
+  name: None
+  temperature_sensor: input_temperature
+  power_sensor: power

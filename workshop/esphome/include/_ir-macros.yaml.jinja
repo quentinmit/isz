@@ -3,8 +3,8 @@
 {%- endmacro -%}
 {%- macro nec_button(address, function, device_name, name, icon) -%}
 - platform: template
-  name: {{ device_name }} - {{ name }}
-  id: ir_{{ sanitize(device_name | lower) }}_{{ sanitize(name) }}
+  name: {% if device_name %}{{ device_name }} - {% endif %}{{ name }}
+  id: ir_{% if device_name %}{{ sanitize(device_name | lower) }}_{% endif %}{{ sanitize(name) }}
   {%- if icon %}
   icon: {{ icon }}
   {%- endif %}
