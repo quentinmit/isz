@@ -134,8 +134,6 @@
       "ATTRS{idProduct}" = "0200";
       "ATTRS{idVendor}" = "0658";
       RUN = { op = "+="; value = "${pkgs.coreutils}/bin/ln -f $devnode /dev/ttyZwave"; };
-      OWNER = { op = "="; value = "zwave-js-ui"; };
-      GROUP = { op = "="; value = "zwave-js-ui"; };
     }
     {
       SUBSYSTEM = "tty";
@@ -268,7 +266,7 @@
   # Configure zwave-js-ui
   services.zwave-js-ui = {
     enable = true;
-    serialPort = "char-ttyACM";
+    serialPort = "/dev/ttyZwave";
     settings.HOME = "%t/zwave-js-ui";
     settings.BACKUPS_DIR = "%S/zwave-js-ui/backups";
   };
@@ -277,6 +275,10 @@
   in {
     wants = deps;
     after = deps;
+    serviceConfig.BindReadOnlyPaths = [
+      "/etc/resolv.conf"
+    ];
+    serviceConfig.RestrictAddressFamilies = lib.mkForce "AF_INET AF_INET6 AF_NETLINK";
   };
   # TODO: Configure atuin
   # TODO: Configure freepbx-app
