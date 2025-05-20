@@ -7,7 +7,7 @@
         source = ''
           parts, err = parse_logfmt(.message)
           if err == null {
-            .structured_metadata.level = parts.level
+            .structured_metadata.level = parts.level[0] || parts.level
             del(parts.level)
             # TODO: Do something with parts.ts?
             # ts=2025-02-15T07:29:14.030104886Z
