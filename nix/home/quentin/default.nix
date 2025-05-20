@@ -100,7 +100,7 @@ in {
     {
       home.packages = with pkgs; [
         arduino-cli
-        #broken pkgsCross.arm-embedded.buildPackages.bintools # arm-none-eabi-{ld,objdump,strings,nm,...}
+        pkgsCross.arm-embedded.buildPackages.bintools # arm-none-eabi-{ld,objdump,strings,nm,...}
         # gcc provides info pages that overlap; prioritize one to prevent a conflict message.
         (lib.setPrio 15 pkgsCross.arm-embedded.stdenv.cc)
         #arm-none-linux-gnueabi-binutils

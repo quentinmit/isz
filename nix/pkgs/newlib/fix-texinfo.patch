@@ -1,0 +1,26 @@
+commit d6cdcc146e98fc39e00d38c301e7090611240115
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Tue May 20 11:31:32 2025 -0400
+
+    libgloss: doc: fix @direntry definition
+    
+    @direntry automatically generates START/END-INFO-DIR-ENTRY. Specifying
+    them again in the source causes install-info to choke on the resulting
+    info file:
+    
+      install-info: START-INFO-DIR-ENTRY without matching END-INFO-DIR-ENTRY
+
+diff --git a/libgloss/doc/porting.texi b/libgloss/doc/porting.texi
+index 1f68757be..dd5e29e41 100644
+--- a/libgloss/doc/porting.texi
++++ b/libgloss/doc/porting.texi
+@@ -50,9 +50,7 @@ into another language, under the above conditions for modified versions.
+ @end titlepage
+ 
+ @direntry
+-START-INFO-DIR-ENTRY
+ * Embed with GNU: (porting-).         Embed with GNU
+-END-INFO-DIR-ENTRY
+ @end direntry
+ 
+ @ifnottex

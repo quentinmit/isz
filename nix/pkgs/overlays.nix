@@ -163,4 +163,9 @@ final: prev: {
   pico-sdk-full = final.pico-sdk.override {
     withSubmodules = true;
   };
+  newlib = prev.newlib.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      ./newlib/fix-texinfo.patch
+    ];
+  });
 }
