@@ -42,6 +42,7 @@ in {
         f3d
       ] ++ lib.optionals pkgs.stdenv.isLinux ([
         freecad
+        meshlab
       ]
       ++ (available kicad)
       ++ (available bambu-studio)
@@ -74,6 +75,10 @@ in {
         rev = "v21.34.0";
         hash = "sha256-WaNHG9b09HV5QtSXUqvugdGkZ5Uzjm4nRWipXmEaId8=";
         meta.license = lib.licenses.gpl3Plus;
+      };
+      xdg.dataFile."OpenSCAD/libraries/Recymbol/library.scad".source = pkgs.fetchurl {
+        url = "https://files.printables.com/media/prints/136201/stls/2283997_49a84ad3-2b2a-4281-ae60-85db844003f4/library.scad";
+        hash = "sha256-ez94OhQJM3jHH2gKZavu1uryR+LYqsy++ag0jlNTzms=";
       };
     }
     # (D)VCS
