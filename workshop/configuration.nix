@@ -268,6 +268,15 @@
   # Configure zwave-js-ui
   services.zwave-js-ui = {
     enable = true;
+    serialPort = "char-ttyACM";
+    settings.HOME = "%t/zwave-js-ui";
+    settings.BACKUPS_DIR = "%S/zwave-js-ui/backups";
+  };
+  systemd.services.zwave-js-ui = let
+    deps = ["modprobe@cdc_acm.service"];
+  in {
+    wants = deps;
+    after = deps;
   };
   # TODO: Configure atuin
   # TODO: Configure freepbx-app

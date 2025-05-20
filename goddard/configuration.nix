@@ -10,14 +10,12 @@
   nixpkgs.hostPlatform = "x86_64-linux";
   nixpkgs.overlays = lib.mkAfter [
     (final: prev: {
-      openssh = final.openssh_gssapi.override {
-        dsaKeysSupport = true;
-      };
+      openssh = final.openssh_gssapi;
     })
   ];
   nixpkgs.config.permittedInsecurePackages = [
     "python3.11-youtube-dl-2021.12.17"
-    "segger-jlink-qt4-796s"
+    "segger-jlink-qt4-810"
     "segger-systemview-qt4-352a"
     "olm-3.2.16"
   ];

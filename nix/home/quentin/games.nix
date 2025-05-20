@@ -12,13 +12,13 @@
     ] ++ lib.optionals pkgs.stdenv.isLinux [
       bottles
       gnuchess # broken on macOS
-      kblocks
-      kbounce
-      knights
+      kdePackages.kblocks
+      kdePackages.kbounce
+      kdePackages.knights
       stockfish
-      kmines
-      knetwalk
-      knavalbattle
+      kdePackages.kmines
+      kdePackages.knetwalk
+      kdePackages.knavalbattle
       kdePackages.ksudoku
       kdePackages.kbreakout
       kdePackages.palapeli

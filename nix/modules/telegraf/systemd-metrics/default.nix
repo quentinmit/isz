@@ -21,5 +21,5 @@ rustPlatform.buildRustPackage rec {
     openssl
   ];
 
-  cargoHash = "sha256-Orsl9SCfR9bDG53BoFeEgU608o9j4lBhHmvQW4piP/U=";
+  cargoHash = "sha256-I8pLCvGvWJuWc0dSjWNcYC/6RSH2HJLvvVbc2LyvnR4=";
 }

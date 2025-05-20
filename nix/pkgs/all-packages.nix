@@ -4,7 +4,6 @@ final: prev:
   gcn64tools = final.callPackage ./gcn64tools {};
   dashboard = final.callPackage ../../workshop/dashboard {};
   cec = final.callPackage ../../workshop/cec {};
-  rtlamr = final.callPackage ./rtlamr {};
   rtlamr-collect = final.callPackage ./rtlamr-collect {};
   speedtest-influxdb = final.callPackage ./speedtest-influxdb {};
   zwave-js-ui-bin = final.callPackage ./zwave-js-ui/bin.nix {};
@@ -22,10 +21,8 @@ final: prev:
   process-bandwidth = final.callPackage ./process-bandwidth {};
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (python-final: python-prev: with python-final; {
-      RouterOS-api = callPackage ./python/routeros-api {};
       Dozer = callPackage ./python/dozer {};
       pyweatherflowudp = callPackage ./python/pyweatherflowudp {};
-      psychrolib = callPackage ./python/psychrolib {};
       hass-pyscript-kernel = callPackage ./python/hass-pyscript-kernel {};
       simplepam = callPackage ./python/simplepam {};
       vcgencmd = callPackage ./python/vcgencmd {};
@@ -69,25 +66,12 @@ final: prev:
   knock = final.knockd.override {
     withKnockd = false;
   };
-  gotenberg = final.callPackage ./gotenberg {};
-  unoconverter = final.callPackage ./gotenberg/unoconverter.nix {};
   mactelnet = final.callPackage ./mactelnet {
     inherit (final.darwin.apple_sdk.frameworks) SystemConfiguration;
   };
   retrogram-rtlsdr = final.callPackage ./retrogram-rtlsdr {};
   sdrtrunk = final.callPackage ./sdrtrunk {};
   jmbe = final.callPackage ./sdrtrunk/jmbe {};
-  xpra-html5 = final.callPackage ./xpra-html5 {
-    inherit (final.nodePackages) uglify-js;
-  };
-  xpraFull = (final.xpra.overrideAttrs (old: {
-    preInstall = ''
-      cp -a ${final.xpra-html5} $out
-      chmod -R u+w $out
-    '';
-  })).override {
-    pulseaudio = final.pulseaudioFull;
-  };
   json2prefs = final.callPackage ../../software/json2prefs {};
   boxy-svg = final.callPackage ./boxy-svg {};
   iszTelegraf = let
@@ -96,7 +80,6 @@ final: prev:
     paths = lib.mapAttrs (name: _: ../modules/telegraf/${name}/default.nix) dir;
     files = lib.filterAttrs (_: path: lib.pathExists path) paths;
   in lib.makeScope final.newScope (self: lib.mapAttrs (_: file: self.callPackage file {}) files);
-  fw-ectool = final.callPackage ./fw-ectool {};
   vscode-extensions = prev.vscode-extensions // {
     Surendrajat.apklab = final.vscode-utils.extensionFromVscodeMarketplace {
       name = "apklab";

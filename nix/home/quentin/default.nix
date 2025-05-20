@@ -20,16 +20,13 @@ in {
   );
   config = lib.mkIf config.isz.quentin.enable (lib.mkMerge [
     {
-      nixpkgs.overlays = lib.mkAfter [
-        deploy-rs.overlay
-      ];
       isz.base = true;
     }
     # Nix
     {
       home.packages = with pkgs; [
         statix
-        pkgs.deploy-rs.deploy-rs
+        (pkgs.extend deploy-rs.overlay).deploy-rs.deploy-rs
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         nix-du
       ];
@@ -103,7 +100,7 @@ in {
     {
       home.packages = with pkgs; [
         arduino-cli
-        pkgsCross.arm-embedded.buildPackages.bintools # arm-none-eabi-{ld,objdump,strings,nm,...}
+        #broken pkgsCross.arm-embedded.buildPackages.bintools # arm-none-eabi-{ld,objdump,strings,nm,...}
         # gcc provides info pages that overlap; prioritize one to prevent a conflict message.
         (lib.setPrio 15 pkgsCross.arm-embedded.stdenv.cc)
         #arm-none-linux-gnueabi-binutils
@@ -128,7 +125,7 @@ in {
     {
       home.packages = with pkgs; [
         # rustup provides rustc and cargo
-        cargo-asm
+        cargo-show-asm
         cargo-binutils
         cargo-bloat
         cargo-edit
@@ -206,7 +203,7 @@ in {
         loccount
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         heaptrack
-        kcachegrind
+        kdePackages.kcachegrind
       ];
       home.file.".gdbinit".text = ''
         set history filename ~/.gdb_history
@@ -234,7 +231,7 @@ in {
           ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];
-      programs.vscode = {
+      programs.vscode.profiles.default = {
         userSettings = {
           "telemetry.enableTelemetry" = false;
           "editor.autoClosingBrackets" = "beforeWhitespace";
@@ -454,7 +451,7 @@ in {
         rclone
         rdesktop
         tintin
-        transmission
+        transmission_4
         websocat
         termshark
         mactelnet
@@ -479,9 +476,9 @@ in {
         xdot
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         kgraphviewer
-        (if kdePackages.kig.meta.available then kdePackages.kig else kig)
+        (if kdePackages.kig.meta.available then kdePackages.kig else libsForQt5.kig) # KDE 6 version is currently broken
         kstars
-        marble
+        kdePackages.marble
         stellarium
         kdePackages.kalgebra
         kdePackages.kalzium

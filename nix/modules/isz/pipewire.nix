@@ -8,7 +8,7 @@
       pipewire.jack
     ];
 
-    hardware.pulseaudio.enable = false; # Override GNOME etc.
+    services.pulseaudio.enable = false; # Override GNOME etc.
 
     services.pipewire = {
       enable = true;
