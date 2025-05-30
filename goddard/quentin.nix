@@ -18,7 +18,8 @@
         vulkan-caps-viewer
         opensnitch-ui
         signal-desktop
-        discord
+        #discord
+        vesktop
         davinci-resolve-studio
         zoom-us
         caprine-bin
@@ -74,7 +75,8 @@
       xdg.configFile = {
         "autostart/signal-desktop.desktop".source = "${pkgs.signal-desktop}/share/applications/signal-desktop.desktop";
         "autostart/caprine.desktop".source = "${pkgs.caprine-bin}/share/applications/caprine.desktop";
-        "autostart/discord.desktop".source = "${pkgs.discord}/share/applications/discord.desktop";
+        #"autostart/discord.desktop".source = "${pkgs.discord}/share/applications/discord.desktop";
+        "autostart/vesktop.desktop".source = "${pkgs.vesktop}/share/applications/vesktop.desktop";
       };
 
       xdg.dataFile."DaVinciResolve/configs/.soundlibrary".text = "${pkgs.fairlight-sound-library}";
