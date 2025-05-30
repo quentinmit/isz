@@ -215,10 +215,11 @@ in {
       home.packages = with pkgs; lib.mkIf config.isz.quentin.vscode.install [
         (unstable.vscode-with-extensions.override {
           vscodeExtensions = with unstable.vscode-extensions; [
+            mkhl.direnv
             bbenoist.nix
             golang.go
             ms-python.python
-            #broken rust-lang.rust-analyzer
+            rust-lang.rust-analyzer
             ms-toolsai.jupyter
             ms-vscode.cpptools-extension-pack
             LoyieKing.smalise
