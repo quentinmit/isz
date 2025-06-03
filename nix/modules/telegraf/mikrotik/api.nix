@@ -35,6 +35,7 @@ in {
       restart_delay = "10s";
       data_format = "influx";
       name_prefix = "mikrotik-";
+      buffer_size = "1MiB";
     }) cfg.targets;
   };
 }

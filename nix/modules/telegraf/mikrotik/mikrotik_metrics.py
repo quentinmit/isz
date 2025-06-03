@@ -7,6 +7,7 @@ from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass, field
 import functools
+import io
 import logging
 import re
 import sys
@@ -788,6 +789,8 @@ async def main():
     # Retrieve hostname
     hostname = api.get_resource("/system/identity").get()[0]["name"]
 
+    sys.stdout = io.TextIOWrapper(io.BufferedWriter(sys.stdout.buffer.raw, 1*1024*1024))
+
     for line in sys.stdin:
         t = time.time_ns()
         for measurement, m in resources.items():
@@ -808,6 +811,7 @@ async def main():
                 except ValueError:
                     logging.exception("failed to print %s", p._fields)
                     raise
+        sys.stdout.flush()
 
 
 if __name__ == "__main__":
