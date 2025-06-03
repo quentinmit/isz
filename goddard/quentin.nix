@@ -33,6 +33,7 @@
         hedge-mod-manager
         plasma-homeassistant
         home-assistant-cli
+        zapzap
       ];
 
       services.baloo.excludeFolders = [

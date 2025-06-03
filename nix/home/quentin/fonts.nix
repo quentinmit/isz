@@ -24,6 +24,7 @@
       apple-fonts.SF-Mono
       apple-fonts.SF-Compact
       apple-fonts.NY
+      whatsapp-emoji-font
     ];
   };
 }
