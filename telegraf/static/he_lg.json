@@ -11,18 +11,6 @@
       ]
     },
     {
-      "host": "core2.ash1.he.net",
-      "country": "US",
-      "city": "Ashburn",
-      "datacenter": "Equinix Ashburn (DC2)",
-      "state": "VA",
-      "exchanges": [
-        "Equinix Ashburn",
-        "MegaIX Ashburn",
-        "DACS-IX East"
-      ]
-    },
-    {
       "host": "core3.ash1.he.net",
       "country": "US",
       "city": "Ashburn",
@@ -325,7 +313,7 @@
       ]
     },
     {
-      "host": "core3.fmt1.he.net",
+      "host": "core1.fmt1.he.net",
       "country": "US",
       "city": "Fremont",
       "datacenter": "Hurricane Electric Fremont 1",
@@ -513,7 +501,7 @@
       ]
     },
     {
-      "host": "core1.mnz1.he.net",
+      "host": "core2.mnz1.he.net",
       "country": "US",
       "city": "Manassas",
       "datacenter": "Iron Mountain VA-1",
@@ -860,7 +848,10 @@
       "host": "core1.yqb1.he.net",
       "country": "CA",
       "city": "Quebec City, QC",
-      "datacenter": "Vantage"
+      "datacenter": "Vantage",
+      "exchanges": [
+        "QIX Quebec City"
+      ]
     },
     {
       "host": "core2.rno1.he.net",
@@ -1389,7 +1380,6 @@
       "city": "Hamburg",
       "datacenter": "GlobalConnect HAM2",
       "exchanges": [
-        "BREM-IX",
         "DE-CIX Hamburg",
         "ECIX Hamburg"
       ]
@@ -1538,16 +1528,10 @@
       ]
     },
     {
-      "host": "core2.mil1.he.net",
-      "country": "IT",
-      "city": "Milan",
-      "datacenter": "MIX Milan Via Caldera"
-    },
-    {
       "host": "core2.mil2.he.net",
       "country": "IT",
       "city": "Milan",
-      "datacenter": "Enter Milan",
+      "datacenter": "Retelit Avalon 1",
       "exchanges": [
         "MIX",
         "MINAP Milan",
