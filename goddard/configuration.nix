@@ -51,7 +51,9 @@
     rules.auth.fprintd.settings = {
       max-tries = 10;
       debug = true;
-      timeout = 3600;
+      # Work around https://bugs.kde.org/show_bug.cgi?id=499893
+      # The timeout starts running when the screen locks, so make sure it's long enough that a fingerprint will still be requested at unlock.
+      timeout = 7*24*60*60;
     };
   };
 
