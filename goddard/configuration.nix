@@ -158,6 +158,8 @@
     segger-jlink
     segger-ozone
     segger-systemview
+    cynthion
+    packetry
   ];
 
   services.udev.packages = with pkgs; [
