@@ -18,6 +18,9 @@ in {
       #server.grpc_listen_network = "unix";
       #server.grpc_listen_address = "/run/loki/loki,sock";
       server.grpc_listen_address = "127.0.0.1";
+      # https://github.com/grafana/loki/issues/7700
+      server.grpc_server_max_recv_msg_size = 100 * 1024 * 1024;
+      server.grpc_server_max_send_msg_size = 100 * 1024 * 1024;
       frontend_worker.frontend_address = "127.0.0.1:9095";
       common.replication_factor = 1;
       common.path_prefix = dataDir;
