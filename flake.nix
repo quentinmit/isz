@@ -153,12 +153,7 @@
         overlays.default = nixpkgs.lib.composeManyExtensions overlays;
         overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
         nixosConfigurations = let
-          lib = nixpkgs.lib.extend (final: prev: {
-            types = prev.types // {
-              # TODO: Remove with NixOS 25.05
-              inherit (unstable.lib.types) pathWith;
-            };
-          });
+          inherit (nixpkgs) lib;
         in (lib.genAttrs [
           "workshop"
           "bedroom-pi"
