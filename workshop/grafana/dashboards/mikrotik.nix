@@ -524,6 +524,205 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.gridPos = { x = 0; y = 101; w = 24; h = 1; };
         panel.type = "row";
       }
+      {
+        panel.title = "Status over time";
+        panel.gridPos = { x = 0; y = 102; w = 12; h = 8; };
+        panel.type = "state-timeline";
+        # TODO
+      }
+      {
+        panel.title = "Netwatch Info";
+        panel.gridPos = { x = 12; y = 102; w = 12; h = 8; };
+        panel.type = "table";
+        # TODO
+      }
+
+      {
+        panel.title = "Wireless";
+        panel.gridPos = { x = 0; y = 110; w = 24; h = 1; };
+        panel.type = "row";
+      }
+      {
+        panel.title = "Noise Floor";
+        panel.gridPos = { x = 0; y = 111; w = 12; h = 8; };
+        panel.fieldConfig.defaults = {
+          unit = "dBm";
+          displayName = "\${__field.labels.channel-name}";
+        };
+        panel.options = {
+          legend.calcs = ["mean" "lastNotNull" "max" "min"];
+          legend.displayMode = "table";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless";
+        influx.filter._field = ["noise-floor" "channel-name"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = null;
+        influx.groupBy = [
+          {
+            pivot = true;
+            fields = ["_time" "channel-name"];
+            column = "noise-floor";
+            fn = "mean";
+          }
+          {
+            fields = ["channel-name"];
+            column = "noise-floor";
+            fn = "mean";
+          }
+        ];
+      }
+      {
+        panel.title = "Overall TX CCQ";
+        panel.gridPos = { x = 12; y = 111; w = 12; h = 8; };
+        panel.fieldConfig.defaults = {
+          unit = "percent";
+          displayName = "\${__field.labels.channel-name}";
+        };
+        panel.options = {
+          legend.calcs = ["mean" "lastNotNull" "max" "min"];
+          legend.displayMode = "table";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless";
+        influx.filter._field = ["overall-tx-ccq" "channel-name"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = null;
+        influx.groupBy = [
+          {
+            pivot = true;
+            fields = ["_time" "channel-name"];
+            column = "overall-tx-ccq";
+            fn = "mean";
+          }
+          {
+            fields = ["channel-name"];
+            column = "overall-tx-ccq";
+            fn = "mean";
+          }
+        ];
+      }
+      {
+        panel.title = "Client Devices";
+        panel.gridPos = { x = 0; y = 119; w = 12; h = 8; };
+        panel.type = "table";
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = [
+          "tx-rate-name"
+          "rx-rate-name"
+          "uptime-ns"
+        ];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.pivot = true;
+        influx.extra = ''
+          |> drop(columns: ["_measurement", "host", "hostname", "agent_host"])
+          |> group()
+        '';
+        fieldOrder = [
+          "_time"
+          "last-ip"
+          "mac-address"
+          "rx-rate-name"
+          "tx-rate-name"
+          "uptime-ns"
+          "interface"
+        ];
+        fields.uptime-ns = {
+          unit = "ns";
+        };
+      }
+      {
+        panel.title = "Number of clients";
+        panel.gridPos = { x = 12; y = 119; w = 12; h = 8; };
+        panel.options = {
+          legend.calcs = ["mean" "lastNotNull" "max" "min"];
+          legend.displayMode = "table";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = "uptime-ns";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "mean";
+        influx.groupBy = [
+          {
+            fields = ["_time" "interface"];
+            fn = "count";
+          }
+          {
+            fields = ["interface"];
+            fn = "mean";
+          }
+        ];
+      }
+      {
+        panel.title = "WLAN Clients Tx CCQ";
+        panel.gridPos = { x = 0; y = 127; w = 12; h = 8; };
+        panel.fieldConfig.defaults = {
+          unit = "percent";
+          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+        };
+        panel.options = {
+          legend.calcs = ["mean"];
+          legend.displayMode = "table";
+          legend.placement = "right";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = "tx-ccq";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "mean";
+      }
+      {
+        panel.title = "Clients Traffic";
+        panel.gridPos = { x = 12; y = 127; w = 12; h = 8; };
+        panel.fieldConfig.defaults = {
+          unit = "bps";
+          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+        };
+        panel.options = {
+          legend.calcs = [];
+          legend.displayMode = "table";
+          legend.placement = "right";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = ["tx-bytes" "rx-bytes"];
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "derivative";
+        fields.tx-bytes = {
+          custom.transform = "negative-Y";
+        };
+      }
+      {
+        panel.title = "Clients Signal Strength";
+        panel.gridPos = { x = 0; y = 135; w = 12; h = 7; };
+        panel.fieldConfig.defaults = {
+          unit = "dBm";
+          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+        };
+        panel.options = {
+          legend.calcs = ["mean"];
+          legend.displayMode = "table";
+          legend.placement = "right";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = "signal-strength";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "mean";
+      }
+      {
+        panel.title = "Clients Signal-to-Noise";
+        panel.gridPos = { x = 12; y = 135; w = 12; h = 7; };
+        panel.fieldConfig.defaults = {
+          unit = "dBm";
+          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+        };
+        panel.options = {
+          legend.calcs = ["mean"];
+          legend.displayMode = "table";
+          legend.placement = "right";
+        };
+        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+        influx.filter._field = "signal-to-noise";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "mean";
+      }
     ];
   };
 }

@@ -54,21 +54,21 @@ in {
   options = with lib; let
     Query = types.submodule ({ config, ... }:
       let
-        agg = fn:
+        agg = fn: column:
           if fn == null then ""
           else if fn == "last1" then ''
-            |> last()
+            |> last(column: ${fluxValue column})
           '' else if fn == "max1" then ''
-            |> max()
+            |> max(column: ${fluxValue column})
           '' else if fn == "count1" then ''
-            |> count()
+            |> count(column: ${fluxValue column})
           '' else if fn == "derivative" then ''
             |> window(every: v.windowPeriod)
-            |> last()
+            |> last(column: ${fluxValue column})
             |> window(every: inf)
-            |> derivative(unit: 1s, nonNegative: true)
+            |> derivative(columns: [${fluxValue column}], unit: 1s, nonNegative: true)
           '' else ''
-            |> aggregateWindow(every: v.windowPeriod, fn: ${fn}, createEmpty: ${fluxValue config.createEmpty})
+            |> aggregateWindow(column: ${fluxValue column}, every: v.windowPeriod, fn: ${fn}, createEmpty: ${fluxValue config.createEmpty})
           '';
         filters = lib.mapAttrsToList (field: values:
           ''|> filter(fn: (r) => ${fluxFilter field values})'');
@@ -120,9 +120,14 @@ in {
           default = [];
           type = types.coercedTo types.attrs (x: [x]) (types.listOf (types.submodule ({ config, ... }: {
             options = {
+              pivot = mkEnableOption "pivot before grouping";
               fn = mkOption {
                 type = types.enum ["derivative" "sum" "mean" "max" "min" "count" "last" "last1" "max1" "count1"];
                 default = "sum";
+              };
+              column = mkOption {
+                type = types.str;
+                default = "_value";
               };
               fields = mkOption {
                 type = types.listOf types.str;
@@ -136,9 +141,12 @@ in {
               };
             };
             config = {
-              expr = lib.mkDefault (''
+              expr = lib.mkDefault (lib.optionalString config.pivot ''
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                |> drop(columns: ["_start", "_stop"])
+              '' + ''
                 |> group(columns: ${fluxValue (config.fields ++ ["_start" "_stop"])})
-              '' + (agg config.fn));
+              '' + (agg config.fn config.column));
             };
           })));
         };
@@ -163,7 +171,7 @@ in {
             from (bucket: ${if config.bucket != null then (fluxValue config.bucket) else "v.defaultBucket"})
             |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
             ${lib.concatStringsSep "\n" (filters (extraInfluxFilter // config.filter))}
-          '' + (agg config.fn) + lib.concatMapStrings (g: g.expr) config.groupBy + lib.optionalString config.pivot ''
+          '' + (agg config.fn "_value") + lib.concatMapStrings (g: g.expr) config.groupBy + lib.optionalString config.pivot ''
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> drop(columns: ["_start", "_stop"])
           '' + config.extra
