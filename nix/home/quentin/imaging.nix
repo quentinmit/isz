@@ -24,7 +24,6 @@ in {
       (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
       libwmf
       drawio
-      yeetgif
     ] ++ lib.optionals pkgs.stdenv.isLinux [
       darktable
       digikam
@@ -33,7 +32,9 @@ in {
       scribus
       boxy-svg
       kdePackages.kolourpaint
-    ] ++ (available libresprite);
+    ]
+    ++ (available libresprite)
+    ++ (available yeetgif);
     home.file.".ExifTool_config".text = ''
       %Image::ExifTool::UserDefined::Options = (
           LargeFileSupport => 1,
