@@ -1,5 +1,5 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index 7b02680afee..00a3e8719dc 100644
+index 37f8e738aee..cacc639b232 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
 @@ -5,7 +5,7 @@ from __future__ import annotations
@@ -25,7 +25,7 @@ index 7b02680afee..00a3e8719dc 100644
  from .enum_mapper import EsphomeEnumMapper
  
  _InfoT = TypeVar("_InfoT", bound=EntityInfo)
-@@ -198,7 +199,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
+@@ -214,7 +215,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
  class EsphomeBaseEntity(Entity):
      """Define a base esphome entity."""
  
@@ -33,15 +33,15 @@ index 7b02680afee..00a3e8719dc 100644
      _attr_should_poll = False
      _device_info: EsphomeDeviceInfo
      device_entry: dr.DeviceEntry
-@@ -210,6 +210,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+@@ -226,6 +226,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
      _static_info: _InfoT
      _state: _StateT
      _has_state: bool
 +    _entity_id: Optional[str] = None
+     unique_id: str
  
      def __init__(
-         self,
-@@ -231,16 +232,39 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+@@ -247,16 +248,39 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
          self._attr_device_info = DeviceInfo(
              connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)}
          )
@@ -92,10 +92,10 @@ index 7b02680afee..00a3e8719dc 100644
      async def async_added_to_hass(self) -> None:
          """Register callbacks."""
 diff --git a/homeassistant/components/esphome/manager.py b/homeassistant/components/esphome/manager.py
-index 1b0e4fc8986..4e5416c8638 100644
+index b4af39586d4..fbf4b69b1bd 100644
 --- a/homeassistant/components/esphome/manager.py
 +++ b/homeassistant/components/esphome/manager.py
-@@ -521,15 +521,6 @@ class ESPHomeManager:
+@@ -518,15 +518,6 @@ class ESPHomeManager:
          if device_info.name:
              reconnect_logic.name = device_info.name
  
@@ -111,7 +111,7 @@ index 1b0e4fc8986..4e5416c8638 100644
          self.device_id = _async_setup_device_registry(hass, entry, entry_data)
  
          entry_data.async_update_device_state()
-@@ -791,7 +782,7 @@ def _async_setup_device_registry(
+@@ -788,7 +779,7 @@ def _async_setup_device_registry(
          config_entry_id=entry.entry_id,
          configuration_url=configuration_url,
          connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)},
@@ -121,10 +121,10 @@ index 1b0e4fc8986..4e5416c8638 100644
          model=model,
          sw_version=sw_version,
 diff --git a/tests/components/esphome/test_entity.py b/tests/components/esphome/test_entity.py
-index ee6e6b6785f..635252b38de 100644
+index 36185efeb72..56c93ef8326 100644
 --- a/tests/components/esphome/test_entity.py
 +++ b/tests/components/esphome/test_entity.py
-@@ -480,7 +480,7 @@ async def test_esphome_device_without_friendly_name(
+@@ -482,7 +482,7 @@ async def test_esphome_device_without_friendly_name(
          states=states,
          device_info={"friendly_name": None},
      )

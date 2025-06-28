@@ -26,7 +26,7 @@ in {
     {
       home.packages = with pkgs; [
         statix
-        (pkgs.extend deploy-rs.overlay).deploy-rs.deploy-rs
+        (pkgs.extend deploy-rs.overlays.default).deploy-rs.deploy-rs
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         nix-du
       ];

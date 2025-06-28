@@ -11,7 +11,6 @@
             ../nix/pkgs/inventree/sso.patch
           ];
         });
-        python3 = pkgs.unstable.python3;
       });
     })];
     services.inventree = {

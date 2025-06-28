@@ -91,7 +91,7 @@
         self.overlays.stable-darwin
         self.overlays.mosh-server-upnp
         cargo2nix.overlays.default
-        deploy-rs.overlay
+        deploy-rs.overlays.default
       ];
       # Overlays-module makes "pkgs.unstable" available in configuration.nix
       overlayModule = { config, pkgs, ... }: {
