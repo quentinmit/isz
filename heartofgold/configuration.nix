@@ -28,6 +28,16 @@
   boot.kernelModules = [
     "nct6775" # For sensors
   ];
+
+  # nvme nvme0: controller is down; will reset: CSTS=0xffffffff, PCI_STATUS=0xffff
+  # nvme nvme0: Does your device have a faulty power saving mode enabled?
+  # nvme nvme0: Try "nvme_core.default_ps_max_latency_us=0 pcie_aspm=off pcie_port_pm=off" and report a bug
+  boot.kernelParams = [
+    "nvme_core.default_ps_max_latency_us=0"
+    "pcie_aspm=off"
+    "pcie_port_pm=off"
+  ];
+
   boot.loader.systemd-boot.memtest86.enable = true;
 #   boot.loader.grub.enable = false;
 #   boot.loader.systemd-boot.enable = true;
