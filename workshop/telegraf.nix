@@ -108,6 +108,8 @@
 
           servers = ["tcp://mqtt.isz.wtf:1883"];
 
+          max_undelivered_messages = config.services.telegraf.extraConfig.agent.metric_buffer_limit;
+
           topics = [
             "homeassistant/sensor/weatherflow2mqtt_ST-00122016/+/config"
             "homeassistant/sensor/weatherflow2mqtt_ST-00122016/+/state"
