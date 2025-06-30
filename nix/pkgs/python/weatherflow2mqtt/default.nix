@@ -11,12 +11,10 @@ buildPythonApplication rec {
     owner = "quentinmit";
     repo = "hass-weatherflow2mqtt";
     rev = "main";
-    sha256 = "sha256-Yf+gxj3z6IQ0fo1KD8A1pq0OeVKqy16jGALXkJpE2EA=";
+    sha256 = "sha256-c5sXQmeh4TTDMCz7bihN9NHxobgR7f7UY58Q0XT9zJ0=";
   };
 
-  prePatch = ''
-    sed -i 's/==.*//' requirements.txt test_requirements.txt
-  '';
+  pythonRelaxDeps = true;
 
   nativeBuildInputs = [
     flake8
