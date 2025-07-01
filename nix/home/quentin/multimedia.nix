@@ -112,7 +112,7 @@ in {
           #obs-ndi
           obs-pipewire-audio-capture
           obs-replay-source
-          obs-rgb-levels-filter
+          (pkgs.obs-studio-plugins.obs-rgb-levels or obs-rgb-levels-filter)
           obs-scale-to-sound
           obs-shaderfilter
           obs-source-clone
@@ -125,6 +125,12 @@ in {
           waveform
         ];
       })];
+    })
+    # Multimedia - Carla
+    (lib.mkIf (pkgs.stdenv.isLinux && (builtins.tryEval pkgs.carla.outPath).success) {
+      home.packages = [
+        pkgs.carla
+      ];
     })
     # Multimedia - Audio
     (lib.mkIf pkgs.stdenv.isLinux (let
@@ -182,7 +188,6 @@ in {
 
         # DAWs/plugin hosts
         ardour
-        carla
         qtractor
         plugin-torture
         ams
@@ -204,12 +209,11 @@ in {
         lsp-plugins
         lv2
         soundfont-fluid
-        ysfx
         #missing signalizer
         #https://github.com/JoepVanlier/JSFX
         #https://github.com/geraintluff/jsfx
         #https://github.com/Justin-Johnson/ReJJ
-      ];
+      ] ++ (lib.optional juce.meta.available ysfx);
       home.sessionVariables = {
         CLAP_PATH = colons paths.clap;
         DSSI_PATH = colons paths.dssi;

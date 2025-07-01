@@ -9,7 +9,6 @@
   };
   config = lib.mkIf config.isz.quentin.theme.enable {
     # KDE likes to replace the symlink with a text file.
-    home.file.${config.gtk.gtk2.configLocation}.force = true;
     gtk = {
       enable = true;
       theme.name = "Breeze";
@@ -21,6 +20,7 @@
       # Plasma will try to overwrite ~/.gtkrc-2.0
       # KDE >= 5.27.2 won't do it if the file doesn't exist, but either way, just use a different path.
       gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+      gtk2.force = true;
       gtk2.extraConfig = ''
         gtk-enable-animations=1
         gtk-primary-button-warps-slider=0

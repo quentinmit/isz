@@ -199,7 +199,6 @@ in {
         ghc
         gperftools
         upx
-        sloccount
         loccount
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         heaptrack
