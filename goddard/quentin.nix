@@ -3,6 +3,9 @@
 {
   home-manager.users.quentin = lib.mkMerge [
     {
+      imports = [
+        ./quentin-emacs.nix
+      ];
       home.stateVersion = "23.11";
 
       isz.quentin.enable = true;
@@ -81,19 +84,6 @@
       };
 
       xdg.dataFile."DaVinciResolve/configs/.soundlibrary".text = "${pkgs.fairlight-sound-library}";
-    }
-    # Emacs
-    {
-      programs.emacs = {
-        enable = true;
-        package = pkgs.emacs;
-        extraPackages = epkgs: with epkgs; [
-          nix-mode
-          magit
-          go-mode
-          yaml-mode
-        ];
-      };
     }
     {
       programs.git.extraConfig.url = {

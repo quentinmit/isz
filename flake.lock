@@ -124,6 +124,28 @@
         "type": "github"
       }
     },
+    "chemacs2nix": {
+      "inputs": {
+        "emacs-overlay": "emacs-overlay",
+        "home-manager": [
+          "home-manager"
+        ],
+        "pre-commit-hooks": []
+      },
+      "locked": {
+        "lastModified": 1669152936,
+        "narHash": "sha256-83kfXaTcxdCjo00TcVcj8O9U1H+IZ48bXqSnXeIispk=",
+        "owner": "league",
+        "repo": "chemacs2nix",
+        "rev": "e3bfb67a62c8af974a9fd9f7690565aa040768b4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "league",
+        "repo": "chemacs2nix",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1731098351,
@@ -206,6 +228,29 @@
         "type": "github"
       }
     },
+    "emacs-overlay": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": [
+          "chemacs2nix",
+          "home-manager",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1668973951,
+        "narHash": "sha256-4KHSC7les2Ex0RmeLmtnK1CpbIeu84jOkDgsZ7QdgEo=",
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "rev": "721aa34f1468f13b664c5f42aed1e4a560c2801c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "type": "github"
+      }
+    },
     "fl-config": {
       "locked": {
         "lastModified": 1653159448,
@@ -278,6 +323,21 @@
       }
     },
     "flake-utils": {
+      "locked": {
+        "lastModified": 1667395993,
+        "narHash": "sha256-nuEHfE/LcWyuSWnS8t12N1wc105Qtau+/OdUAjtQ0rA=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "5aed5285a952e0b949eb3ba02c12fa4fcfef535f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
       "inputs": {
         "systems": "systems_2"
       },
@@ -295,7 +355,7 @@
         "type": "github"
       }
     },
-    "flake-utils_2": {
+    "flake-utils_3": {
       "inputs": {
         "systems": "systems_3"
       },
@@ -674,7 +734,7 @@
     },
     "pip2nix": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
+        "flake-utils": "flake-utils_3",
         "nixpkgs": "nixpkgs"
       },
       "locked": {
@@ -794,11 +854,12 @@
         "authentik": "authentik",
         "bluechips": "bluechips",
         "cargo2nix": "cargo2nix",
+        "chemacs2nix": "chemacs2nix",
         "darwin": "darwin",
         "deploy-rs": "deploy-rs",
         "disko": "disko",
         "flake-compat": "flake-compat",
-        "flake-utils": "flake-utils",
+        "flake-utils": "flake-utils_2",
         "gradle2nix": "gradle2nix",
         "home-manager": "home-manager",
         "lanzaboote": "lanzaboote",

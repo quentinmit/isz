@@ -65,6 +65,9 @@
     nixos-inventree.url = "github:quentinmit/nixos-inventree/isz";
     nixos-inventree.inputs.nixpkgs.follows = "unstable";
     nixos-inventree.inputs.flake-utils.follows = "flake-utils";
+    chemacs2nix.url = "github:league/chemacs2nix";
+    chemacs2nix.inputs.home-manager.follows = "home-manager";
+    chemacs2nix.inputs.pre-commit-hooks.follows = "";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
     let
