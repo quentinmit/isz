@@ -70,6 +70,7 @@
       yq
     ] ++ lib.optionals (config.isz.graphical && pkgs.stdenv.isLinux) ([
       d-spy
+      devtoolbox
       wl-clipboard
     ] ++ lib.optional (config.isz.graphical && !bustle.meta.broken) bustle);
   };
