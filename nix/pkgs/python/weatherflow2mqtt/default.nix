@@ -11,7 +11,7 @@ buildPythonApplication rec {
     owner = "quentinmit";
     repo = "hass-weatherflow2mqtt";
     rev = "main";
-    sha256 = "sha256-CEfxvwkuDvWLitGSTD7jKDI1JcRSj4Ynfz8wMh+iZow=";
+    sha256 = "sha256-noA/1DwTdf1Sa8yLzILardmEMjcI4xupsfsQUdEuESA=";
   };
 
   pythonRelaxDeps = true;

@@ -170,6 +170,9 @@
             def apply(metric):
               device = metric.tags.get("device")
               name = metric.name.lstrip("weatherflow_")
+              if "replay" in metric.fields:
+                 # Ignore replayed data
+                 return []
               if name == "config":
                  if device not in state:
                    state[device] = dict()
