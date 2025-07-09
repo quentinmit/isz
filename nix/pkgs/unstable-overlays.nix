@@ -8,14 +8,6 @@ final: prev: {
   esptool_3 = prev.esptool_3.overrideAttrs (old: {
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
-  gqrx-portaudio = (prev.gqrx-portaudio.override {
-    inherit (final.libsForQt5) qtbase;
-    inherit (final.libsForQt5) qtsvg;
-    qtwayland = null;
-    alsa-lib = null;
-  }).overrideAttrs (old: {
-    meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
-  });
   gnuradioMinimal = prev.gnuradioMinimal.overrideAttrs (gold: {
     passthru = gold.passthru // {
       pkgs = gold.passthru.pkgs.overrideScope (gself: gsuper: {

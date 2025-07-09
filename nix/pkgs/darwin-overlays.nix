@@ -4,6 +4,12 @@ in if prev.stdenv.isDarwin then {
   multimon-ng = prev.multimon-ng.overrideAttrs (old: {
     buildInputs = with final; old.buildInputs ++ [ libpulseaudio xorg.libX11 ];
   });
+  gqrx-portaudio = (prev.gqrx-portaudio.override {
+    qtwayland = null;
+    alsa-lib = null;
+  }).overrideAttrs (old: {
+    meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
+  });
   wireshark-qt5 = (prev.wireshark.overrideAttrs (old: {
     pname = "wireshark-qt5";
 
