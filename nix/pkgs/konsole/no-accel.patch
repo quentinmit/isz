@@ -1,0 +1,35 @@
+diff --git a/src/MainWindow.cpp b/src/MainWindow.cpp
+index e89319727..3b57c41c3 100644
+--- a/src/MainWindow.cpp
++++ b/src/MainWindow.cpp
+@@ -1127,6 +1127,16 @@ bool MainWindow::focusNextPrevChild(bool v)
+     return QMainWindow::focusNextPrevChild(v);
+ }
+ 
++QWidget *MainWindow::createContainer(QWidget *parent, int index, const QDomElement &element, QAction *&containerAction)
++{
++    // ensure we don't have toolbar accelerators that clash with other stuff
++    QWidget *createdContainer = KXmlGuiWindow::createContainer(parent, index, element, containerAction);
++    if (element.tagName() == QLatin1String("ToolBar")) {
++        KAcceleratorManager::setNoAccel(createdContainer);
++    }
++    return createdContainer;
++}
++
+ void MainWindow::saveNewToolbarConfig()
+ {
+     KXmlGuiWindow::saveNewToolbarConfig();
+diff --git a/src/MainWindow.h b/src/MainWindow.h
+index 990904d65..f1b10b4d0 100644
+--- a/src/MainWindow.h
++++ b/src/MainWindow.h
+@@ -149,6 +149,9 @@ protected:
+     // reimplemented from QWidget
+     bool focusNextPrevChild(bool next) override;
+ 
++    // reimplemented from KXMLGUIBuilder
++    QWidget *createContainer(QWidget *parent, int index, const QDomElement &element, QAction *&containerAction) override;
++
+ protected Q_SLOTS:
+     void saveNewToolbarConfig() override;
+ 

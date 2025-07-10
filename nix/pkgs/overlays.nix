@@ -168,4 +168,11 @@ final: prev: {
       ./newlib/fix-texinfo.patch
     ];
   });
+  kdePackages = prev.kdePackages.overrideScope (kfinal: kprev: {
+    konsole = kprev.konsole.overrideAttrs (old: {
+      patches = old.patches or [] ++ [
+        ./konsole/no-accel.patch
+      ];
+    });
+  });
 }
