@@ -174,6 +174,11 @@
   services.xserver.windowManager.twm.enable = true;
   services.desktopManager.plasma6.enable = true;
   programs.kdeconnect.enable = true;
+  systemd.user.services.kde-baloo = {
+    # With an 8 GB index, the default memory limit of 512 MiB is just too small.
+    overrideStrategy = "asDropin";
+    serviceConfig.MemoryHigh = "25%";
+  };
 
   fonts.fontDir.enable = true;
   fonts.fontconfig.subpixel.rgba = "rgb";
