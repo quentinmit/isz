@@ -129,4 +129,5 @@ final: prev:
   plasma-homeassistant = final.callPackage ./plasma-homeassistant {};
   kintree = final.callPackage ./python/kintree {};
   bsproxy = final.callPackage ../../software/bsproxy {};
+  lisaem = final.callPackage ./lisaem {};
 }
