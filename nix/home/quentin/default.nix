@@ -465,6 +465,16 @@ in {
         kdePackages.krdc
       ] ++ (available mqtt-explorer)
       ++ (available mqttx);
+      programs.tio = {
+        enable = true;
+        settings = {
+          bp = {
+            pattern = "^bp(.+)";
+            device = "/dev/tty%m1";
+            map = "INLCRNL,ODELBS";
+          };
+        };
+      };
     }
     # Science
     {
