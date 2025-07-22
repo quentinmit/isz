@@ -1,17 +1,8 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index 37f8e738aee..cacc639b232 100644
+index b9f0125094a..f4342d8e10b 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
-@@ -5,7 +5,7 @@ from __future__ import annotations
- from collections.abc import Awaitable, Callable, Coroutine
- import functools
- import math
--from typing import TYPE_CHECKING, Any, Concatenate, Generic, TypeVar, cast
-+from typing import TYPE_CHECKING, Any, Concatenate, Generic, Optional, ParamSpec, TypeVar, cast
- 
- from aioesphomeapi import (
-     APIConnectionError,
-@@ -28,11 +28,12 @@ from homeassistant.helpers import (
+@@ -29,6 +29,7 @@ from homeassistant.helpers import (
  from homeassistant.helpers.device_registry import DeviceInfo
  from homeassistant.helpers.entity import Entity
  from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -19,13 +10,7 @@ index 37f8e738aee..cacc639b232 100644
  
  from .const import DOMAIN
  
- # Import config flow so that it's added to the registry
--from .entry_data import ESPHomeConfigEntry, RuntimeEntryData
-+from .entry_data import ESPHomeConfigEntry, RuntimeEntryData, INFO_TYPE_TO_PLATFORM
- from .enum_mapper import EsphomeEnumMapper
- 
- _InfoT = TypeVar("_InfoT", bound=EntityInfo)
-@@ -214,7 +215,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
+@@ -270,7 +271,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
  class EsphomeBaseEntity(Entity):
      """Define a base esphome entity."""
  
@@ -33,66 +18,57 @@ index 37f8e738aee..cacc639b232 100644
      _attr_should_poll = False
      _device_info: EsphomeDeviceInfo
      device_entry: dr.DeviceEntry
-@@ -226,6 +226,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
-     _static_info: _InfoT
-     _state: _StateT
-     _has_state: bool
-+    _entity_id: Optional[str] = None
-     unique_id: str
- 
-     def __init__(
-@@ -247,16 +248,39 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
-         self._attr_device_info = DeviceInfo(
-             connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)}
-         )
+@@ -310,6 +310,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+                     (DOMAIN, f"{device_info.mac_address}_{entity_info.device_id}")
+                 }
+             )
++            self._attr_has_entity_name = True
+             # Use the pre-computed device_id_to_name mapping for O(1) lookup
+             device_name = entry_data.device_id_to_name.get(
+                 entity_info.device_id, device_info.name
+@@ -319,9 +320,28 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+             self._attr_device_info = DeviceInfo(
+                 connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)}
+             )
+-
 -        if entity_info.name:
--            self.entity_id = f"{domain}.{device_info.name}_{entity_info.object_id}"
--        else:
--            # https://github.com/home-assistant/core/issues/132532
--            # If name is not set, ESPHome will use the sanitized friendly name
--            # as the name, however we want to use the original object_id
--            # as the entity_id before it is sanitized since the sanitizer
--            # is not utf-8 aware. In this case, its always going to be
--            # an empty string so we drop the object_id.
--            self.entity_id = f"{domain}.{device_info.name}"
-+        #
-+        # If `friendly_name` is set, we use the Friendly naming rules, if
-+        # `friendly_name` is not set we make an exception to the naming rules for
-+        # backwards compatibility and use the Legacy naming rules.
-+        #
-+        # Friendly naming
-+        # - Friendly name is prepended to entity names
-+        # - Device Name is prepended to entity ids
-+        # - Entity id is constructed from device name and object id
-+        #
-+        # Legacy naming
-+        # - Device name is not prepended to entity names
-+        # - Device name is not prepended to entity ids
-+        # - Entity id is constructed from entity name
-+        #
-+        if not device_info.friendly_name:
-+            return
-+        self._attr_has_entity_name = True
-+        self.entity_id = f"{domain}.{device_info.name}_{entity_info.object_id}"
+-            self.entity_id = f"{domain}.{device_name}_{entity_info.name}"
++            if device_info.friendly_name:
++                self._attr_has_entity_name = True
 +
-+    @property
-+    def entity_id(self):
-+        # Can't set this in __init__ because self._static_info doesn't exist yet.
-+        if self._entity_id:
-+            return self._entity_id
-+        if self._static_info.object_id:
-+            platform = INFO_TYPE_TO_PLATFORM[type(self._static_info)]
-+            return "%s.%s" % (platform, slugify(self._static_info.object_id))
-+        return None
-+    @entity_id.setter
-+    def entity_id(self, entity_id):
-+        self._entity_id = entity_id
-+
++        if not getattr(self, "_attr_has_entity_name", False):
++            #
++            # If `friendly_name` is set, we use the Friendly naming rules, if
++            # `friendly_name` is not set we make an exception to the naming rules for
++            # backwards compatibility and use the Legacy naming rules.
++            #
++            # Friendly naming
++            # - Friendly name is prepended to entity names
++            # - Device Name is prepended to entity ids
++            # - Entity id is constructed from device name and object id
++            #
++            # Legacy naming
++            # - Device name is not prepended to entity names
++            # - Device name is not prepended to entity ids
++            # - Entity id is constructed from entity name
++            #
++            self.entity_id = f"{domain}.{entity_info.object_id}"
++        elif entity_info.name:
++            self.entity_id = f"{domain}.{device_name}_{entity_info.object_id}"
+         else:
+             # https://github.com/home-assistant/core/issues/132532
+             # If name is not set, ESPHome will use the sanitized friendly name
+@@ -431,6 +451,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+ class EsphomeAssistEntity(EsphomeBaseEntity):
+     """Define a base entity for Assist Pipeline entities."""
  
-     async def async_added_to_hass(self) -> None:
-         """Register callbacks."""
++    _attr_has_entity_name = True
++
+     def __init__(self, entry_data: RuntimeEntryData) -> None:
+         """Initialize the binary sensor."""
+         self._entry_data = entry_data
 diff --git a/homeassistant/components/esphome/manager.py b/homeassistant/components/esphome/manager.py
-index b4af39586d4..fbf4b69b1bd 100644
+index 6c2da31e48b..e2f0a588d98 100644
 --- a/homeassistant/components/esphome/manager.py
 +++ b/homeassistant/components/esphome/manager.py
 @@ -518,15 +518,6 @@ class ESPHomeManager:
@@ -108,10 +84,10 @@ index b4af39586d4..fbf4b69b1bd 100644
 -                device_info.name,
 -                device_mac,
 -            )
-         self.device_id = _async_setup_device_registry(hass, entry, entry_data)
- 
-         entry_data.async_update_device_state()
-@@ -788,7 +779,7 @@ def _async_setup_device_registry(
+         # Build device_id_to_name mapping for efficient lookup
+         entry_data.device_id_to_name = {
+             sub_device.device_id: sub_device.name or device_info.name
+@@ -818,7 +809,7 @@ def _async_setup_device_registry(
          config_entry_id=entry.entry_id,
          configuration_url=configuration_url,
          connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)},
@@ -120,16 +96,2628 @@ index b4af39586d4..fbf4b69b1bd 100644
          manufacturer=manufacturer,
          model=model,
          sw_version=sw_version,
-diff --git a/tests/components/esphome/test_entity.py b/tests/components/esphome/test_entity.py
-index 36185efeb72..56c93ef8326 100644
---- a/tests/components/esphome/test_entity.py
-+++ b/tests/components/esphome/test_entity.py
-@@ -482,7 +482,7 @@ async def test_esphome_device_without_friendly_name(
+diff --git a/tests/components/esphome/test_alarm_control_panel.py b/tests/components/esphome/test_alarm_control_panel.py
+index 62924404458..5a90086eac0 100644
+--- a/tests/components/esphome/test_alarm_control_panel.py
++++ b/tests/components/esphome/test_alarm_control_panel.py
+@@ -59,7 +59,7 @@ async def test_generic_alarm_control_panel_requires_code(
+         user_service=user_service,
          states=states,
-         device_info={"friendly_name": None},
      )
--    state = hass.states.get("binary_sensor.test_mybinary_sensor")
-+    state = hass.states.get("binary_sensor.my_binary_sensor")
+-    state = hass.states.get("alarm_control_panel.test_my_alarm_control_panel")
++    state = hass.states.get("alarm_control_panel.test_myalarm_control_panel")
+     assert state is not None
+     assert state.state == AlarmControlPanelState.ARMED_AWAY
+ 
+@@ -67,7 +67,7 @@ async def test_generic_alarm_control_panel_requires_code(
+         ALARM_CONTROL_PANEL_DOMAIN,
+         SERVICE_ALARM_ARM_AWAY,
+         {
+-            ATTR_ENTITY_ID: "alarm_control_panel.test_my_alarm_control_panel",
++            ATTR_ENTITY_ID: "alarm_control_panel.test_myalarm_control_panel",
+             ATTR_CODE: 1234,
+         },
+         blocking=True,
+@@ -81,7 +81,7 @@ async def test_generic_alarm_control_panel_requires_code(
+         ALARM_CONTROL_PANEL_DOMAIN,
+         SERVICE_ALARM_ARM_CUSTOM_BYPASS,
+         {
+-            ATTR_ENTITY_ID: "alarm_control_panel.test_my_alarm_control_panel",
++            ATTR_ENTITY_ID: "alarm_control_panel.test_myalarm_control_panel",
+             ATTR_CODE: 1234,
+         },
+         blocking=True,
+@@ -95,7 +95,7 @@ async def test_generic_alarm_control_panel_requires_code(
+         ALARM_CONTROL_PANEL_DOMAIN,
+         SERVICE_ALARM_ARM_HOME,
+         {
+-            ATTR_ENTITY_ID: "alarm_control_panel.test_my_alarm_control_panel",
++            ATTR_ENTITY_ID: "alarm_control_panel.test_myalarm_control_panel",
+             ATTR_CODE: 1234,
+         },
+         blocking=True,
+@@ -109,7 +109,7 @@ async def test_generic_alarm_control_panel_requires_code(
+         ALARM_CONTROL_PANEL_DOMAIN,
+         SERVICE_ALARM_ARM_NIGHT,
+         {
+-            ATTR_ENTITY_ID: "alarm_control_panel.test_my_alarm_control_panel",
++            ATTR_ENTITY_ID: "alarm_control_panel.test_myalarm_control_panel",
+             ATTR_CODE: 1234,
+         },
+         blocking=True,
+@@ -123,7 +123,7 @@ async def test_generic_alarm_control_panel_requires_code(
+         ALARM_CONTROL_PANEL_DOMAIN,
+         SERVICE_ALARM_ARM_VACATION,
+         {
+-            ATTR_ENTITY_ID: "alarm_control_panel.test_my_alarm_control_panel",
++            ATTR_ENTITY_ID: "alarm_control_panel.test_myalarm_control_panel",
+             ATTR_CODE: 1234,
+         },
+         blocking=True,
+@@ -137,7 +137,7 @@ async def test_generic_alarm_control_panel_requires_code(
+         ALARM_CONTROL_PANEL_DOMAIN,
+         SERVICE_ALARM_TRIGGER,
+         {
+-            ATTR_ENTITY_ID: "alarm_control_panel.test_my_alarm_control_panel",
++            ATTR_ENTITY_ID: "alarm_control_panel.test_myalarm_control_panel",
+             ATTR_CODE: 1234,
+         },
+         blocking=True,
+@@ -151,7 +151,7 @@ async def test_generic_alarm_control_panel_requires_code(
+         ALARM_CONTROL_PANEL_DOMAIN,
+         SERVICE_ALARM_DISARM,
+         {
+-            ATTR_ENTITY_ID: "alarm_control_panel.test_my_alarm_control_panel",
++            ATTR_ENTITY_ID: "alarm_control_panel.test_myalarm_control_panel",
+             ATTR_CODE: 1234,
+         },
+         blocking=True,
+@@ -192,14 +192,14 @@ async def test_generic_alarm_control_panel_no_code(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("alarm_control_panel.test_my_alarm_control_panel")
++    state = hass.states.get("alarm_control_panel.test_myalarm_control_panel")
+     assert state is not None
+     assert state.state == AlarmControlPanelState.ARMED_AWAY
+ 
+     await hass.services.async_call(
+         ALARM_CONTROL_PANEL_DOMAIN,
+         SERVICE_ALARM_DISARM,
+-        {ATTR_ENTITY_ID: "alarm_control_panel.test_my_alarm_control_panel"},
++        {ATTR_ENTITY_ID: "alarm_control_panel.test_myalarm_control_panel"},
+         blocking=True,
+     )
+     mock_client.alarm_control_panel_command.assert_has_calls(
+@@ -238,6 +238,6 @@ async def test_generic_alarm_control_panel_missing_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("alarm_control_panel.test_my_alarm_control_panel")
++    state = hass.states.get("alarm_control_panel.test_myalarm_control_panel")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+diff --git a/tests/components/esphome/test_binary_sensor.py b/tests/components/esphome/test_binary_sensor.py
+index d2cab36c672..fee285ea312 100644
+--- a/tests/components/esphome/test_binary_sensor.py
++++ b/tests/components/esphome/test_binary_sensor.py
+@@ -36,7 +36,7 @@ async def test_binary_sensor_generic_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == hass_state
+ 
+@@ -64,7 +64,7 @@ async def test_status_binary_sensor(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
      assert state is not None
      assert state.state == STATE_ON
  
+@@ -91,7 +91,7 @@ async def test_binary_sensor_missing_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+@@ -118,12 +118,12 @@ async def test_binary_sensor_has_state_false(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+     mock_device.set_state(BinarySensorState(key=1, state=True, missing_state=False))
+     await hass.async_block_till_done()
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+diff --git a/tests/components/esphome/test_button.py b/tests/components/esphome/test_button.py
+index d3fec2a56d2..8c120949caa 100644
+--- a/tests/components/esphome/test_button.py
++++ b/tests/components/esphome/test_button.py
+@@ -29,22 +29,22 @@ async def test_button_generic_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("button.test_my_button")
++    state = hass.states.get("button.test_mybutton")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+     await hass.services.async_call(
+         BUTTON_DOMAIN,
+         SERVICE_PRESS,
+-        {ATTR_ENTITY_ID: "button.test_my_button"},
++        {ATTR_ENTITY_ID: "button.test_mybutton"},
+         blocking=True,
+     )
+     mock_client.button_command.assert_has_calls([call(1)])
+-    state = hass.states.get("button.test_my_button")
++    state = hass.states.get("button.test_mybutton")
+     assert state is not None
+     assert state.state != STATE_UNKNOWN
+ 
+     await mock_device.mock_disconnect(False)
+-    state = hass.states.get("button.test_my_button")
++    state = hass.states.get("button.test_mybutton")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+diff --git a/tests/components/esphome/test_camera.py b/tests/components/esphome/test_camera.py
+index e29eed16d9f..b03d2bb7983 100644
+--- a/tests/components/esphome/test_camera.py
++++ b/tests/components/esphome/test_camera.py
+@@ -41,7 +41,7 @@ async def test_camera_single_image(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == CameraState.IDLE
+ 
+@@ -51,9 +51,9 @@ async def test_camera_single_image(
+     mock_client.request_single_image = _mock_camera_image
+ 
+     client = await hass_client()
+-    resp = await client.get("/api/camera_proxy/camera.test_my_camera")
++    resp = await client.get("/api/camera_proxy/camera.test_mycamera")
+     await hass.async_block_till_done()
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == CameraState.IDLE
+ 
+@@ -86,15 +86,15 @@ async def test_camera_single_image_unavailable_before_requested(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == CameraState.IDLE
+     await mock_device.mock_disconnect(False)
+ 
+     client = await hass_client()
+-    resp = await client.get("/api/camera_proxy/camera.test_my_camera")
++    resp = await client.get("/api/camera_proxy/camera.test_mycamera")
+     await hass.async_block_till_done()
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+ 
+@@ -124,7 +124,7 @@ async def test_camera_single_image_unavailable_during_request(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == CameraState.IDLE
+ 
+@@ -134,9 +134,9 @@ async def test_camera_single_image_unavailable_during_request(
+     mock_client.request_single_image = _mock_camera_image
+ 
+     client = await hass_client()
+-    resp = await client.get("/api/camera_proxy/camera.test_my_camera")
++    resp = await client.get("/api/camera_proxy/camera.test_mycamera")
+     await hass.async_block_till_done()
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+ 
+@@ -166,7 +166,7 @@ async def test_camera_stream(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == CameraState.IDLE
+     remaining_responses = 3
+@@ -182,9 +182,9 @@ async def test_camera_stream(
+     mock_client.request_single_image = _mock_camera_image
+ 
+     client = await hass_client()
+-    resp = await client.get("/api/camera_proxy_stream/camera.test_my_camera")
++    resp = await client.get("/api/camera_proxy_stream/camera.test_mycamera")
+     await hass.async_block_till_done()
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == CameraState.IDLE
+ 
+@@ -223,16 +223,16 @@ async def test_camera_stream_unavailable(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == CameraState.IDLE
+ 
+     await mock_device.mock_disconnect(False)
+ 
+     client = await hass_client()
+-    await client.get("/api/camera_proxy_stream/camera.test_my_camera")
++    await client.get("/api/camera_proxy_stream/camera.test_mycamera")
+     await hass.async_block_till_done()
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+ 
+@@ -260,7 +260,7 @@ async def test_camera_stream_with_disconnection(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == CameraState.IDLE
+     remaining_responses = 3
+@@ -278,8 +278,8 @@ async def test_camera_stream_with_disconnection(
+     mock_client.request_single_image = _mock_camera_image
+ 
+     client = await hass_client()
+-    await client.get("/api/camera_proxy_stream/camera.test_my_camera")
++    await client.get("/api/camera_proxy_stream/camera.test_mycamera")
+     await hass.async_block_till_done()
+-    state = hass.states.get("camera.test_my_camera")
++    state = hass.states.get("camera.test_mycamera")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+diff --git a/tests/components/esphome/test_climate.py b/tests/components/esphome/test_climate.py
+index 3c529adf21f..dd42ee97029 100644
+--- a/tests/components/esphome/test_climate.py
++++ b/tests/components/esphome/test_climate.py
+@@ -83,14 +83,14 @@ async def test_climate_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("climate.test_my_climate")
++    state = hass.states.get("climate.test_myclimate")
+     assert state is not None
+     assert state.state == HVACMode.COOL
+ 
+     await hass.services.async_call(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_TEMPERATURE,
+-        {ATTR_ENTITY_ID: "climate.test_my_climate", ATTR_TEMPERATURE: 25},
++        {ATTR_ENTITY_ID: "climate.test_myclimate", ATTR_TEMPERATURE: 25},
+         blocking=True,
+     )
+     mock_client.climate_command.assert_has_calls([call(key=1, target_temperature=25.0)])
+@@ -137,7 +137,7 @@ async def test_climate_entity_with_step_and_two_point(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("climate.test_my_climate")
++    state = hass.states.get("climate.test_myclimate")
+     assert state is not None
+     assert state.state == HVACMode.COOL
+ 
+@@ -145,7 +145,7 @@ async def test_climate_entity_with_step_and_two_point(
+         await hass.services.async_call(
+             CLIMATE_DOMAIN,
+             SERVICE_SET_TEMPERATURE,
+-            {ATTR_ENTITY_ID: "climate.test_my_climate", ATTR_TEMPERATURE: 25},
++            {ATTR_ENTITY_ID: "climate.test_myclimate", ATTR_TEMPERATURE: 25},
+             blocking=True,
+         )
+ 
+@@ -153,7 +153,7 @@ async def test_climate_entity_with_step_and_two_point(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_TEMPERATURE,
+         {
+-            ATTR_ENTITY_ID: "climate.test_my_climate",
++            ATTR_ENTITY_ID: "climate.test_myclimate",
+             ATTR_HVAC_MODE: HVACMode.AUTO,
+             ATTR_TARGET_TEMP_LOW: 20,
+             ATTR_TARGET_TEMP_HIGH: 30,
+@@ -217,7 +217,7 @@ async def test_climate_entity_with_step_and_target_temp(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("climate.test_my_climate")
++    state = hass.states.get("climate.test_myclimate")
+     assert state is not None
+     assert state.state == HVACMode.COOL
+ 
+@@ -225,7 +225,7 @@ async def test_climate_entity_with_step_and_target_temp(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_TEMPERATURE,
+         {
+-            ATTR_ENTITY_ID: "climate.test_my_climate",
++            ATTR_ENTITY_ID: "climate.test_myclimate",
+             ATTR_HVAC_MODE: HVACMode.AUTO,
+             ATTR_TEMPERATURE: 25,
+         },
+@@ -241,7 +241,7 @@ async def test_climate_entity_with_step_and_target_temp(
+             CLIMATE_DOMAIN,
+             SERVICE_SET_TEMPERATURE,
+             {
+-                ATTR_ENTITY_ID: "climate.test_my_climate",
++                ATTR_ENTITY_ID: "climate.test_myclimate",
+                 ATTR_HVAC_MODE: HVACMode.AUTO,
+                 ATTR_TARGET_TEMP_LOW: 20,
+                 ATTR_TARGET_TEMP_HIGH: 30,
+@@ -253,7 +253,7 @@ async def test_climate_entity_with_step_and_target_temp(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_HVAC_MODE,
+         {
+-            ATTR_ENTITY_ID: "climate.test_my_climate",
++            ATTR_ENTITY_ID: "climate.test_myclimate",
+             ATTR_HVAC_MODE: HVACMode.HEAT,
+         },
+         blocking=True,
+@@ -271,7 +271,7 @@ async def test_climate_entity_with_step_and_target_temp(
+     await hass.services.async_call(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_PRESET_MODE,
+-        {ATTR_ENTITY_ID: "climate.test_my_climate", ATTR_PRESET_MODE: "away"},
++        {ATTR_ENTITY_ID: "climate.test_myclimate", ATTR_PRESET_MODE: "away"},
+         blocking=True,
+     )
+     mock_client.climate_command.assert_has_calls(
+@@ -287,7 +287,7 @@ async def test_climate_entity_with_step_and_target_temp(
+     await hass.services.async_call(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_PRESET_MODE,
+-        {ATTR_ENTITY_ID: "climate.test_my_climate", ATTR_PRESET_MODE: "preset1"},
++        {ATTR_ENTITY_ID: "climate.test_myclimate", ATTR_PRESET_MODE: "preset1"},
+         blocking=True,
+     )
+     mock_client.climate_command.assert_has_calls([call(key=1, custom_preset="preset1")])
+@@ -296,7 +296,7 @@ async def test_climate_entity_with_step_and_target_temp(
+     await hass.services.async_call(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_FAN_MODE,
+-        {ATTR_ENTITY_ID: "climate.test_my_climate", ATTR_FAN_MODE: FAN_HIGH},
++        {ATTR_ENTITY_ID: "climate.test_myclimate", ATTR_FAN_MODE: FAN_HIGH},
+         blocking=True,
+     )
+     mock_client.climate_command.assert_has_calls(
+@@ -307,7 +307,7 @@ async def test_climate_entity_with_step_and_target_temp(
+     await hass.services.async_call(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_FAN_MODE,
+-        {ATTR_ENTITY_ID: "climate.test_my_climate", ATTR_FAN_MODE: "fan2"},
++        {ATTR_ENTITY_ID: "climate.test_myclimate", ATTR_FAN_MODE: "fan2"},
+         blocking=True,
+     )
+     mock_client.climate_command.assert_has_calls([call(key=1, custom_fan_mode="fan2")])
+@@ -316,7 +316,7 @@ async def test_climate_entity_with_step_and_target_temp(
+     await hass.services.async_call(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_SWING_MODE,
+-        {ATTR_ENTITY_ID: "climate.test_my_climate", ATTR_SWING_MODE: SWING_BOTH},
++        {ATTR_ENTITY_ID: "climate.test_myclimate", ATTR_SWING_MODE: SWING_BOTH},
+         blocking=True,
+     )
+     mock_client.climate_command.assert_has_calls(
+@@ -368,7 +368,7 @@ async def test_climate_entity_with_humidity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("climate.test_my_climate")
++    state = hass.states.get("climate.test_myclimate")
+     assert state is not None
+     assert state.state == HVACMode.AUTO
+     attributes = state.attributes
+@@ -380,7 +380,7 @@ async def test_climate_entity_with_humidity(
+     await hass.services.async_call(
+         CLIMATE_DOMAIN,
+         SERVICE_SET_HUMIDITY,
+-        {ATTR_ENTITY_ID: "climate.test_my_climate", ATTR_HUMIDITY: 23},
++        {ATTR_ENTITY_ID: "climate.test_myclimate", ATTR_HUMIDITY: 23},
+         blocking=True,
+     )
+     mock_client.climate_command.assert_has_calls([call(key=1, target_humidity=23)])
+@@ -430,7 +430,7 @@ async def test_climate_entity_with_inf_value(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("climate.test_my_climate")
++    state = hass.states.get("climate.test_myclimate")
+     assert state is not None
+     assert state.state == HVACMode.AUTO
+     attributes = state.attributes
+@@ -492,7 +492,7 @@ async def test_climate_entity_attributes(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("climate.test_my_climate")
++    state = hass.states.get("climate.test_myclimate")
+     assert state is not None
+     assert state.state == HVACMode.COOL
+     assert state.attributes == snapshot(name="climate-entity-attributes")
+@@ -526,6 +526,6 @@ async def test_climate_entity_attribute_current_temperature_unsupported(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("climate.test_my_climate")
++    state = hass.states.get("climate.test_myclimate")
+     assert state is not None
+     assert state.attributes[ATTR_CURRENT_TEMPERATURE] is None
+diff --git a/tests/components/esphome/test_cover.py b/tests/components/esphome/test_cover.py
+index f6ec9f20d6b..2ea789e9cc1 100644
+--- a/tests/components/esphome/test_cover.py
++++ b/tests/components/esphome/test_cover.py
+@@ -62,7 +62,7 @@ async def test_cover_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("cover.test_my_cover")
++    state = hass.states.get("cover.test_mycover")
+     assert state is not None
+     assert state.state == CoverState.OPENING
+     assert state.attributes[ATTR_CURRENT_POSITION] == 50
+@@ -71,7 +71,7 @@ async def test_cover_entity(
+     await hass.services.async_call(
+         COVER_DOMAIN,
+         SERVICE_CLOSE_COVER,
+-        {ATTR_ENTITY_ID: "cover.test_my_cover"},
++        {ATTR_ENTITY_ID: "cover.test_mycover"},
+         blocking=True,
+     )
+     mock_client.cover_command.assert_has_calls([call(key=1, position=0.0)])
+@@ -80,7 +80,7 @@ async def test_cover_entity(
+     await hass.services.async_call(
+         COVER_DOMAIN,
+         SERVICE_OPEN_COVER,
+-        {ATTR_ENTITY_ID: "cover.test_my_cover"},
++        {ATTR_ENTITY_ID: "cover.test_mycover"},
+         blocking=True,
+     )
+     mock_client.cover_command.assert_has_calls([call(key=1, position=1.0)])
+@@ -89,7 +89,7 @@ async def test_cover_entity(
+     await hass.services.async_call(
+         COVER_DOMAIN,
+         SERVICE_SET_COVER_POSITION,
+-        {ATTR_ENTITY_ID: "cover.test_my_cover", ATTR_POSITION: 50},
++        {ATTR_ENTITY_ID: "cover.test_mycover", ATTR_POSITION: 50},
+         blocking=True,
+     )
+     mock_client.cover_command.assert_has_calls([call(key=1, position=0.5)])
+@@ -98,7 +98,7 @@ async def test_cover_entity(
+     await hass.services.async_call(
+         COVER_DOMAIN,
+         SERVICE_STOP_COVER,
+-        {ATTR_ENTITY_ID: "cover.test_my_cover"},
++        {ATTR_ENTITY_ID: "cover.test_mycover"},
+         blocking=True,
+     )
+     mock_client.cover_command.assert_has_calls([call(key=1, stop=True)])
+@@ -107,7 +107,7 @@ async def test_cover_entity(
+     await hass.services.async_call(
+         COVER_DOMAIN,
+         SERVICE_OPEN_COVER_TILT,
+-        {ATTR_ENTITY_ID: "cover.test_my_cover"},
++        {ATTR_ENTITY_ID: "cover.test_mycover"},
+         blocking=True,
+     )
+     mock_client.cover_command.assert_has_calls([call(key=1, tilt=1.0)])
+@@ -116,7 +116,7 @@ async def test_cover_entity(
+     await hass.services.async_call(
+         COVER_DOMAIN,
+         SERVICE_CLOSE_COVER_TILT,
+-        {ATTR_ENTITY_ID: "cover.test_my_cover"},
++        {ATTR_ENTITY_ID: "cover.test_mycover"},
+         blocking=True,
+     )
+     mock_client.cover_command.assert_has_calls([call(key=1, tilt=0.0)])
+@@ -125,7 +125,7 @@ async def test_cover_entity(
+     await hass.services.async_call(
+         COVER_DOMAIN,
+         SERVICE_SET_COVER_TILT_POSITION,
+-        {ATTR_ENTITY_ID: "cover.test_my_cover", ATTR_TILT_POSITION: 50},
++        {ATTR_ENTITY_ID: "cover.test_mycover", ATTR_TILT_POSITION: 50},
+         blocking=True,
+     )
+     mock_client.cover_command.assert_has_calls([call(key=1, tilt=0.5)])
+@@ -135,7 +135,7 @@ async def test_cover_entity(
+         ESPHomeCoverState(key=1, position=0.0, current_operation=CoverOperation.IDLE)
+     )
+     await hass.async_block_till_done()
+-    state = hass.states.get("cover.test_my_cover")
++    state = hass.states.get("cover.test_mycover")
+     assert state is not None
+     assert state.state == CoverState.CLOSED
+ 
+@@ -145,7 +145,7 @@ async def test_cover_entity(
+         )
+     )
+     await hass.async_block_till_done()
+-    state = hass.states.get("cover.test_my_cover")
++    state = hass.states.get("cover.test_mycover")
+     assert state is not None
+     assert state.state == CoverState.CLOSING
+ 
+@@ -153,7 +153,7 @@ async def test_cover_entity(
+         ESPHomeCoverState(key=1, position=1.0, current_operation=CoverOperation.IDLE)
+     )
+     await hass.async_block_till_done()
+-    state = hass.states.get("cover.test_my_cover")
++    state = hass.states.get("cover.test_mycover")
+     assert state is not None
+     assert state.state == CoverState.OPEN
+ 
+@@ -190,7 +190,7 @@ async def test_cover_entity_without_position(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("cover.test_my_cover")
++    state = hass.states.get("cover.test_mycover")
+     assert state is not None
+     assert state.state == CoverState.OPENING
+     assert ATTR_CURRENT_TILT_POSITION not in state.attributes
+diff --git a/tests/components/esphome/test_date.py b/tests/components/esphome/test_date.py
+index 331c3d50bd4..4bf291c50f5 100644
+--- a/tests/components/esphome/test_date.py
++++ b/tests/components/esphome/test_date.py
+@@ -37,14 +37,14 @@ async def test_generic_date_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("date.test_my_date")
++    state = hass.states.get("date.test_mydate")
+     assert state is not None
+     assert state.state == "2024-12-31"
+ 
+     await hass.services.async_call(
+         DATE_DOMAIN,
+         SERVICE_SET_VALUE,
+-        {ATTR_ENTITY_ID: "date.test_my_date", ATTR_DATE: "1999-01-01"},
++        {ATTR_ENTITY_ID: "date.test_mydate", ATTR_DATE: "1999-01-01"},
+         blocking=True,
+     )
+     mock_client.date_command.assert_has_calls([call(1, 1999, 1, 1)])
+@@ -73,6 +73,6 @@ async def test_generic_date_missing_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("date.test_my_date")
++    state = hass.states.get("date.test_mydate")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+diff --git a/tests/components/esphome/test_datetime.py b/tests/components/esphome/test_datetime.py
+index 63ca02360fd..1ccb101f581 100644
+--- a/tests/components/esphome/test_datetime.py
++++ b/tests/components/esphome/test_datetime.py
+@@ -37,7 +37,7 @@ async def test_generic_datetime_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("datetime.test_my_datetime")
++    state = hass.states.get("datetime.test_mydatetime")
+     assert state is not None
+     assert state.state == "2024-04-16T12:34:56+00:00"
+ 
+@@ -45,7 +45,7 @@ async def test_generic_datetime_entity(
+         DATETIME_DOMAIN,
+         SERVICE_SET_VALUE,
+         {
+-            ATTR_ENTITY_ID: "datetime.test_my_datetime",
++            ATTR_ENTITY_ID: "datetime.test_mydatetime",
+             ATTR_DATETIME: "2000-01-01T01:23:45+00:00",
+         },
+         blocking=True,
+@@ -76,6 +76,6 @@ async def test_generic_datetime_missing_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("datetime.test_my_datetime")
++    state = hass.states.get("datetime.test_mydatetime")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+diff --git a/tests/components/esphome/test_entity.py b/tests/components/esphome/test_entity.py
+index ba6a82bbd23..0b102340ffe 100644
+--- a/tests/components/esphome/test_entity.py
++++ b/tests/components/esphome/test_entity.py
+@@ -72,10 +72,10 @@ async def test_entities_removed(
+     entry = mock_device.entry
+     entry_id = entry.entry_id
+     storage_key = f"esphome.{entry_id}"
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+@@ -84,13 +84,13 @@ async def test_entities_removed(
+ 
+     assert len(hass_storage[storage_key]["data"]["binary_sensor"]) == 2
+ 
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.attributes[ATTR_RESTORED] is True
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is not None
+     reg_entry = entity_registry.async_get(
+-        "binary_sensor.test_my_binary_sensor_to_be_removed"
++        "binary_sensor.test_mybinary_sensor_to_be_removed"
+     )
+     assert reg_entry is not None
+     assert state.attributes[ATTR_RESTORED] is True
+@@ -113,13 +113,13 @@ async def test_entities_removed(
+         entry=entry,
+     )
+     assert mock_device.entry.entry_id == entry_id
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is None
+     reg_entry = entity_registry.async_get(
+-        "binary_sensor.test_my_binary_sensor_to_be_removed"
++        "binary_sensor.test_mybinary_sensor_to_be_removed"
+     )
+     assert reg_entry is None
+     await hass.config_entries.async_unload(entry.entry_id)
+@@ -161,15 +161,15 @@ async def test_entities_removed_after_reload(
+     entry = mock_device.entry
+     entry_id = entry.entry_id
+     storage_key = f"esphome.{entry_id}"
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     reg_entry = entity_registry.async_get(
+-        "binary_sensor.test_my_binary_sensor_to_be_removed"
++        "binary_sensor.test_mybinary_sensor_to_be_removed"
+     )
+     assert reg_entry is not None
+ 
+@@ -178,15 +178,15 @@ async def test_entities_removed_after_reload(
+ 
+     assert len(hass_storage[storage_key]["data"]["binary_sensor"]) == 2
+ 
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.attributes[ATTR_RESTORED] is True
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is not None
+     assert state.attributes[ATTR_RESTORED] is True
+ 
+     reg_entry = entity_registry.async_get(
+-        "binary_sensor.test_my_binary_sensor_to_be_removed"
++        "binary_sensor.test_mybinary_sensor_to_be_removed"
+     )
+     assert reg_entry is not None
+ 
+@@ -195,14 +195,14 @@ async def test_entities_removed_after_reload(
+ 
+     assert len(hass_storage[storage_key]["data"]["binary_sensor"]) == 2
+ 
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert ATTR_RESTORED not in state.attributes
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is not None
+     assert ATTR_RESTORED not in state.attributes
+     reg_entry = entity_registry.async_get(
+-        "binary_sensor.test_my_binary_sensor_to_be_removed"
++        "binary_sensor.test_mybinary_sensor_to_be_removed"
+     )
+     assert reg_entry is not None
+ 
+@@ -230,23 +230,23 @@ async def test_entities_removed_after_reload(
+             on_future.set_result(None)
+ 
+     async_track_state_change_event(
+-        hass, ["binary_sensor.test_my_binary_sensor"], _async_wait_for_on
++        hass, ["binary_sensor.test_mybinary_sensor"], _async_wait_for_on
+     )
+     await hass.async_block_till_done()
+     async with asyncio.timeout(2):
+         await on_future
+ 
+     assert mock_device.entry.entry_id == entry_id
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is None
+ 
+     await hass.async_block_till_done()
+ 
+     reg_entry = entity_registry.async_get(
+-        "binary_sensor.test_my_binary_sensor_to_be_removed"
++        "binary_sensor.test_mybinary_sensor_to_be_removed"
+     )
+     assert reg_entry is None
+     assert await hass.config_entries.async_unload(entry.entry_id)
+@@ -281,7 +281,7 @@ async def test_entities_for_entire_platform_removed(
+     entry = mock_device.entry
+     entry_id = entry.entry_id
+     storage_key = f"esphome.{entry_id}"
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+@@ -290,10 +290,10 @@ async def test_entities_for_entire_platform_removed(
+ 
+     assert len(hass_storage[storage_key]["data"]["binary_sensor"]) == 1
+ 
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is not None
+     reg_entry = entity_registry.async_get(
+-        "binary_sensor.test_my_binary_sensor_to_be_removed"
++        "binary_sensor.test_mybinary_sensor_to_be_removed"
+     )
+     assert reg_entry is not None
+     assert state.attributes[ATTR_RESTORED] is True
+@@ -303,10 +303,10 @@ async def test_entities_for_entire_platform_removed(
+         entry=entry,
+     )
+     assert mock_device.entry.entry_id == entry_id
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor_to_be_removed")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor_to_be_removed")
+     assert state is None
+     reg_entry = entity_registry.async_get(
+-        "binary_sensor.test_my_binary_sensor_to_be_removed"
++        "binary_sensor.test_mybinary_sensor_to_be_removed"
+     )
+     assert reg_entry is None
+     await hass.config_entries.async_unload(entry.entry_id)
+@@ -334,7 +334,7 @@ async def test_entity_info_object_ids(
+         entity_info=entity_info,
+         states=states,
+     )
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_object_id_is_used")
+     assert state is not None
+ 
+ 
+@@ -353,7 +353,7 @@ async def test_deep_sleep_device(
+             unique_id="my_binary_sensor",
+         ),
+         SensorInfo(
+-            object_id="my_sensor",
++            object_id="mysensor",
+             key=3,
+             name="my sensor",
+             unique_id="my_sensor",
+@@ -370,29 +370,29 @@ async def test_deep_sleep_device(
+         states=states,
+         device_info={"has_deep_sleep": True},
+     )
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "123.0"
+ 
+     await mock_device.mock_disconnect(False)
+     await hass.async_block_till_done()
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+ 
+     await mock_device.mock_connect()
+     await hass.async_block_till_done()
+ 
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "123.0"
+ 
+@@ -403,19 +403,19 @@ async def test_deep_sleep_device(
+     mock_device.set_state(BinarySensorState(key=1, state=False, missing_state=False))
+     mock_device.set_state(SensorState(key=3, state=56, missing_state=False))
+     await hass.async_block_till_done()
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_OFF
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "56"
+ 
+     await mock_device.mock_disconnect(True)
+     await hass.async_block_till_done()
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_OFF
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "56"
+ 
+@@ -423,23 +423,23 @@ async def test_deep_sleep_device(
+     await hass.async_block_till_done()
+     await mock_device.mock_disconnect(False)
+     await hass.async_block_till_done()
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == STATE_UNAVAILABLE
+ 
+     await mock_device.mock_connect()
+     await hass.async_block_till_done()
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+     hass.bus.async_fire(EVENT_HOMEASSISTANT_STOP)
+     await hass.async_block_till_done()
+     # Verify we do not dispatch any more state updates or
+     # availability updates after the stop event is fired
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+@@ -469,7 +469,7 @@ async def test_esphome_device_without_friendly_name(
+         states=states,
+         device_info={"friendly_name": None},
+     )
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+@@ -884,7 +884,7 @@ async def test_entity_friendly_names_with_empty_device_names(
+ 
+     # Check entity friendly name on sub-device with empty name
+     # Since sub device has empty name, it falls back to main device name "test"
+-    state_1 = hass.states.get("binary_sensor.test_motion_detected")
++    state_1 = hass.states.get("binary_sensor.test_motion")
+     assert state_1 is not None
+     # With has_entity_name, friendly name is "{device_name} {entity_name}"
+     # Since sub-device falls back to main device name: "Main Device Motion Detected"
+@@ -954,7 +954,7 @@ async def test_entity_switches_between_devices(
+     )
+     assert main_device is not None
+ 
+-    sensor_entity = entity_registry.async_get("binary_sensor.test_test_sensor")
++    sensor_entity = entity_registry.async_get("binary_sensor.test_sensor")
+     assert sensor_entity is not None
+     assert sensor_entity.device_id == main_device.id
+ 
+@@ -983,7 +983,7 @@ async def test_entity_switches_between_devices(
+     )
+     assert sub_device_1 is not None
+ 
+-    sensor_entity = entity_registry.async_get("binary_sensor.test_test_sensor")
++    sensor_entity = entity_registry.async_get("binary_sensor.test_sensor")
+     assert sensor_entity is not None
+     assert sensor_entity.device_id == sub_device_1.id
+ 
+@@ -1010,7 +1010,7 @@ async def test_entity_switches_between_devices(
+     )
+     assert sub_device_2 is not None
+ 
+-    sensor_entity = entity_registry.async_get("binary_sensor.test_test_sensor")
++    sensor_entity = entity_registry.async_get("binary_sensor.test_sensor")
+     assert sensor_entity is not None
+     assert sensor_entity.device_id == sub_device_2.id
+ 
+@@ -1032,7 +1032,7 @@ async def test_entity_switches_between_devices(
+     await device.mock_connect()
+ 
+     # Verify entity is back on main device
+-    sensor_entity = entity_registry.async_get("binary_sensor.test_test_sensor")
++    sensor_entity = entity_registry.async_get("binary_sensor.test_sensor")
+     assert sensor_entity is not None
+     assert sensor_entity.device_id == main_device.id
+ 
+@@ -1614,6 +1614,7 @@ async def test_entity_device_id_rename_in_yaml(
+         ("τιμή αισθητήρα", "binary_sensor.test_time_aisthetera"),
+     ],
+ )
++@pytest.mark.skip(reason="moot")
+ async def test_entity_with_unicode_name(
+     hass: HomeAssistant,
+     mock_client: APIClient,
+diff --git a/tests/components/esphome/test_event.py b/tests/components/esphome/test_event.py
+index 2756aa6d251..d4688e8ab4e 100644
+--- a/tests/components/esphome/test_event.py
++++ b/tests/components/esphome/test_event.py
+@@ -36,7 +36,7 @@ async def test_generic_event_entity(
+     await hass.async_block_till_done()
+ 
+     # Test initial state
+-    state = hass.states.get("event.test_my_event")
++    state = hass.states.get("event.test_myevent")
+     assert state is not None
+     assert state.state == "2024-04-24T00:00:00.000+00:00"
+     assert state.attributes["event_type"] == "type1"
+@@ -44,7 +44,7 @@ async def test_generic_event_entity(
+     # Test device becomes unavailable
+     await device.mock_disconnect(True)
+     await hass.async_block_till_done()
+-    state = hass.states.get("event.test_my_event")
++    state = hass.states.get("event.test_myevent")
+     assert state.state == STATE_UNAVAILABLE
+ 
+     # Test device becomes available again
+@@ -52,6 +52,6 @@ async def test_generic_event_entity(
+     await hass.async_block_till_done()
+ 
+     # Event entity should be available immediately without waiting for data
+-    state = hass.states.get("event.test_my_event")
++    state = hass.states.get("event.test_myevent")
+     assert state.state == "2024-04-24T00:00:00.000+00:00"
+     assert state.attributes["event_type"] == "type1"
+diff --git a/tests/components/esphome/test_fan.py b/tests/components/esphome/test_fan.py
+index 558acb281b5..05a95fe0e00 100644
+--- a/tests/components/esphome/test_fan.py
++++ b/tests/components/esphome/test_fan.py
+@@ -66,14 +66,14 @@ async def test_fan_entity_with_all_features_old_api(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("fan.test_my_fan")
++    state = hass.states.get("fan.test_myfan")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_PERCENTAGE: 20},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_PERCENTAGE: 20},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls(
+@@ -84,7 +84,7 @@ async def test_fan_entity_with_all_features_old_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_PERCENTAGE: 50},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_PERCENTAGE: 50},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls(
+@@ -95,7 +95,7 @@ async def test_fan_entity_with_all_features_old_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_DECREASE_SPEED,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan"},
++        {ATTR_ENTITY_ID: "fan.test_myfan"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls(
+@@ -106,7 +106,7 @@ async def test_fan_entity_with_all_features_old_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_INCREASE_SPEED,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan"},
++        {ATTR_ENTITY_ID: "fan.test_myfan"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls(
+@@ -117,7 +117,7 @@ async def test_fan_entity_with_all_features_old_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan"},
++        {ATTR_ENTITY_ID: "fan.test_myfan"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, state=False)])
+@@ -126,7 +126,7 @@ async def test_fan_entity_with_all_features_old_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_SET_PERCENTAGE,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_PERCENTAGE: 100},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_PERCENTAGE: 100},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls(
+@@ -172,14 +172,14 @@ async def test_fan_entity_with_all_features_new_api(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("fan.test_my_fan")
++    state = hass.states.get("fan.test_myfan")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_PERCENTAGE: 20},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_PERCENTAGE: 20},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, speed_level=1, state=True)])
+@@ -188,7 +188,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_PERCENTAGE: 50},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_PERCENTAGE: 50},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, speed_level=2, state=True)])
+@@ -197,7 +197,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_DECREASE_SPEED,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan"},
++        {ATTR_ENTITY_ID: "fan.test_myfan"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, speed_level=2, state=True)])
+@@ -206,7 +206,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_INCREASE_SPEED,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan"},
++        {ATTR_ENTITY_ID: "fan.test_myfan"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, speed_level=4, state=True)])
+@@ -215,7 +215,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan"},
++        {ATTR_ENTITY_ID: "fan.test_myfan"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, state=False)])
+@@ -224,7 +224,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_SET_PERCENTAGE,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_PERCENTAGE: 100},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_PERCENTAGE: 100},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, speed_level=4, state=True)])
+@@ -233,7 +233,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_SET_PERCENTAGE,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_PERCENTAGE: 0},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_PERCENTAGE: 0},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, state=False)])
+@@ -242,7 +242,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_OSCILLATE,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_OSCILLATING: True},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_OSCILLATING: True},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, oscillating=True)])
+@@ -251,7 +251,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_OSCILLATE,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_OSCILLATING: False},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_OSCILLATING: False},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, oscillating=False)])
+@@ -260,7 +260,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_SET_DIRECTION,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_DIRECTION: "forward"},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_DIRECTION: "forward"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls(
+@@ -271,7 +271,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_SET_DIRECTION,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_DIRECTION: "reverse"},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_DIRECTION: "reverse"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls(
+@@ -282,7 +282,7 @@ async def test_fan_entity_with_all_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_SET_PRESET_MODE,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan", ATTR_PRESET_MODE: "Preset1"},
++        {ATTR_ENTITY_ID: "fan.test_myfan", ATTR_PRESET_MODE: "Preset1"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, preset_mode="Preset1")])
+@@ -316,14 +316,14 @@ async def test_fan_entity_with_no_features_new_api(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("fan.test_my_fan")
++    state = hass.states.get("fan.test_myfan")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan"},
++        {ATTR_ENTITY_ID: "fan.test_myfan"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, state=True)])
+@@ -332,7 +332,7 @@ async def test_fan_entity_with_no_features_new_api(
+     await hass.services.async_call(
+         FAN_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "fan.test_my_fan"},
++        {ATTR_ENTITY_ID: "fan.test_myfan"},
+         blocking=True,
+     )
+     mock_client.fan_command.assert_has_calls([call(key=1, state=False)])
+diff --git a/tests/components/esphome/test_light.py b/tests/components/esphome/test_light.py
+index 34ada36a4f8..0cf3e10f11e 100644
+--- a/tests/components/esphome/test_light.py
++++ b/tests/components/esphome/test_light.py
+@@ -70,14 +70,14 @@ async def test_light_on_off(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -112,14 +112,14 @@ async def test_light_brightness(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -130,7 +130,7 @@ async def test_light_brightness(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -148,7 +148,7 @@ async def test_light_brightness(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_TRANSITION: 2},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_TRANSITION: 2},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -159,7 +159,7 @@ async def test_light_brightness(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_FLASH: FLASH_LONG},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_FLASH: FLASH_LONG},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -170,7 +170,7 @@ async def test_light_brightness(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_TRANSITION: 2},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_TRANSITION: 2},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -188,7 +188,7 @@ async def test_light_brightness(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_FLASH: FLASH_SHORT},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_FLASH: FLASH_SHORT},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -234,7 +234,7 @@ async def test_light_legacy_brightness(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [
+@@ -244,7 +244,7 @@ async def test_light_legacy_brightness(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -283,7 +283,7 @@ async def test_light_brightness_on_off(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [
+@@ -294,7 +294,7 @@ async def test_light_brightness_on_off(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -311,7 +311,7 @@ async def test_light_brightness_on_off(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -357,14 +357,14 @@ async def test_light_legacy_white_converted_to_brightness(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -417,7 +417,7 @@ async def test_light_legacy_white_with_rgb(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [
+@@ -428,7 +428,7 @@ async def test_light_legacy_white_with_rgb(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_WHITE: 60},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_WHITE: 60},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -480,14 +480,14 @@ async def test_light_brightness_on_off_with_unknown_color_mode(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -504,7 +504,7 @@ async def test_light_brightness_on_off_with_unknown_color_mode(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -549,14 +549,14 @@ async def test_light_on_and_brightness(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -602,14 +602,14 @@ async def test_rgb_color_temp_light(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -626,7 +626,7 @@ async def test_rgb_color_temp_light(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -644,7 +644,7 @@ async def test_rgb_color_temp_light(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_COLOR_TEMP_KELVIN: 2500},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_COLOR_TEMP_KELVIN: 2500},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -688,14 +688,14 @@ async def test_light_rgb(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -714,7 +714,7 @@ async def test_light_rgb(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -735,7 +735,7 @@ async def test_light_rgb(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+         {
+-            ATTR_ENTITY_ID: "light.test_my_light",
++            ATTR_ENTITY_ID: "light.test_mylight",
+             ATTR_BRIGHTNESS: 127,
+             ATTR_HS_COLOR: (100, 100),
+         },
+@@ -760,7 +760,7 @@ async def test_light_rgb(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_RGB_COLOR: (255, 255, 255)},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_RGB_COLOR: (255, 255, 255)},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -822,7 +822,7 @@ async def test_light_rgbw(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [ColorMode.RGBW]
+@@ -831,7 +831,7 @@ async def test_light_rgbw(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -851,7 +851,7 @@ async def test_light_rgbw(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -873,7 +873,7 @@ async def test_light_rgbw(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+         {
+-            ATTR_ENTITY_ID: "light.test_my_light",
++            ATTR_ENTITY_ID: "light.test_mylight",
+             ATTR_BRIGHTNESS: 127,
+             ATTR_HS_COLOR: (100, 100),
+         },
+@@ -900,7 +900,7 @@ async def test_light_rgbw(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_RGB_COLOR: (255, 255, 255)},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_RGB_COLOR: (255, 255, 255)},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -923,7 +923,7 @@ async def test_light_rgbw(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_RGBW_COLOR: (255, 255, 255, 255)},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_RGBW_COLOR: (255, 255, 255, 255)},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -992,7 +992,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [
+@@ -1008,7 +1008,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1025,7 +1025,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1044,7 +1044,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+         {
+-            ATTR_ENTITY_ID: "light.test_my_light",
++            ATTR_ENTITY_ID: "light.test_mylight",
+             ATTR_BRIGHTNESS: 127,
+             ATTR_HS_COLOR: (100, 100),
+         },
+@@ -1067,7 +1067,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_RGB_COLOR: (255, 255, 255)},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_RGB_COLOR: (255, 255, 255)},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1086,7 +1086,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_RGBW_COLOR: (255, 255, 255, 255)},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_RGBW_COLOR: (255, 255, 255, 255)},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1107,7 +1107,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+         {
+-            ATTR_ENTITY_ID: "light.test_my_light",
++            ATTR_ENTITY_ID: "light.test_mylight",
+             ATTR_RGBWW_COLOR: (255, 255, 255, 255, 255),
+         },
+         blocking=True,
+@@ -1130,7 +1130,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_COLOR_TEMP_KELVIN: 2500},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_COLOR_TEMP_KELVIN: 2500},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1194,7 +1194,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [ColorMode.RGBWW]
+@@ -1204,7 +1204,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1225,7 +1225,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1248,7 +1248,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+         {
+-            ATTR_ENTITY_ID: "light.test_my_light",
++            ATTR_ENTITY_ID: "light.test_mylight",
+             ATTR_BRIGHTNESS: 127,
+             ATTR_HS_COLOR: (100, 100),
+         },
+@@ -1277,7 +1277,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_RGB_COLOR: (255, 255, 255)},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_RGB_COLOR: (255, 255, 255)},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1302,7 +1302,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_RGBW_COLOR: (255, 255, 255, 255)},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_RGBW_COLOR: (255, 255, 255, 255)},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1328,7 +1328,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+         {
+-            ATTR_ENTITY_ID: "light.test_my_light",
++            ATTR_ENTITY_ID: "light.test_mylight",
+             ATTR_RGBWW_COLOR: (255, 255, 255, 255, 255),
+         },
+         blocking=True,
+@@ -1355,7 +1355,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_COLOR_TEMP_KELVIN: 2500},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_COLOR_TEMP_KELVIN: 2500},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1416,7 +1416,7 @@ async def test_light_color_temp(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     attributes = state.attributes
+@@ -1426,7 +1426,7 @@ async def test_light_color_temp(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1445,7 +1445,7 @@ async def test_light_color_temp(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls([call(key=1, state=False)])
+@@ -1490,7 +1490,7 @@ async def test_light_color_temp_no_mireds_set(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     attributes = state.attributes
+@@ -1500,7 +1500,7 @@ async def test_light_color_temp_no_mireds_set(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1519,7 +1519,7 @@ async def test_light_color_temp_no_mireds_set(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_COLOR_TEMP_KELVIN: 6000},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_COLOR_TEMP_KELVIN: 6000},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1539,7 +1539,7 @@ async def test_light_color_temp_no_mireds_set(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls([call(key=1, state=False)])
+@@ -1591,7 +1591,7 @@ async def test_light_color_temp_legacy(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     attributes = state.attributes
+@@ -1604,7 +1604,7 @@ async def test_light_color_temp_legacy(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1623,7 +1623,7 @@ async def test_light_color_temp_legacy(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls([call(key=1, state=False)])
+@@ -1677,7 +1677,7 @@ async def test_light_rgb_legacy(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     attributes = state.attributes
+@@ -1687,7 +1687,7 @@ async def test_light_rgb_legacy(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1703,7 +1703,7 @@ async def test_light_rgb_legacy(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls([call(key=1, state=False)])
+@@ -1712,7 +1712,7 @@ async def test_light_rgb_legacy(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_RGB_COLOR: (255, 255, 255)},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_RGB_COLOR: (255, 255, 255)},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1762,7 +1762,7 @@ async def test_light_effects(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_EFFECT_LIST] == ["effect1", "effect2"]
+@@ -1770,7 +1770,7 @@ async def test_light_effects(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_EFFECT: "effect1"},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_EFFECT: "effect1"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1830,7 +1830,7 @@ async def test_only_cold_warm_white_support(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [ColorMode.COLOR_TEMP]
+@@ -1839,7 +1839,7 @@ async def test_only_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1850,7 +1850,7 @@ async def test_only_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_BRIGHTNESS: 127},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_BRIGHTNESS: 127},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1868,7 +1868,7 @@ async def test_only_cold_warm_white_support(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light", ATTR_COLOR_TEMP_KELVIN: 2500},
++        {ATTR_ENTITY_ID: "light.test_mylight", ATTR_COLOR_TEMP_KELVIN: 2500},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls(
+@@ -1911,7 +1911,7 @@ async def test_light_no_color_modes(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("light.test_my_light")
++    state = hass.states.get("light.test_mylight")
+     assert state is not None
+     assert state.state == STATE_ON
+     assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [ColorMode.ONOFF]
+@@ -1919,7 +1919,7 @@ async def test_light_no_color_modes(
+     await hass.services.async_call(
+         LIGHT_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "light.test_my_light"},
++        {ATTR_ENTITY_ID: "light.test_mylight"},
+         blocking=True,
+     )
+     mock_client.light_command.assert_has_calls([call(key=1, state=True, color_mode=0)])
+diff --git a/tests/components/esphome/test_lock.py b/tests/components/esphome/test_lock.py
+index ab16311fc68..96c91b1d79f 100644
+--- a/tests/components/esphome/test_lock.py
++++ b/tests/components/esphome/test_lock.py
+@@ -47,14 +47,14 @@ async def test_lock_entity_no_open(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("lock.test_my_lock")
++    state = hass.states.get("lock.test_mylock")
+     assert state is not None
+     assert state.state == LockState.UNLOCKING
+ 
+     await hass.services.async_call(
+         LOCK_DOMAIN,
+         SERVICE_LOCK,
+-        {ATTR_ENTITY_ID: "lock.test_my_lock"},
++        {ATTR_ENTITY_ID: "lock.test_mylock"},
+         blocking=True,
+     )
+     mock_client.lock_command.assert_has_calls([call(1, LockCommand.LOCK)])
+@@ -83,7 +83,7 @@ async def test_lock_entity_start_locked(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("lock.test_my_lock")
++    state = hass.states.get("lock.test_mylock")
+     assert state is not None
+     assert state.state == LockState.LOCKED
+ 
+@@ -112,14 +112,14 @@ async def test_lock_entity_supports_open(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("lock.test_my_lock")
++    state = hass.states.get("lock.test_mylock")
+     assert state is not None
+     assert state.state == LockState.LOCKING
+ 
+     await hass.services.async_call(
+         LOCK_DOMAIN,
+         SERVICE_LOCK,
+-        {ATTR_ENTITY_ID: "lock.test_my_lock"},
++        {ATTR_ENTITY_ID: "lock.test_mylock"},
+         blocking=True,
+     )
+     mock_client.lock_command.assert_has_calls([call(1, LockCommand.LOCK)])
+@@ -128,7 +128,7 @@ async def test_lock_entity_supports_open(
+     await hass.services.async_call(
+         LOCK_DOMAIN,
+         SERVICE_UNLOCK,
+-        {ATTR_ENTITY_ID: "lock.test_my_lock"},
++        {ATTR_ENTITY_ID: "lock.test_mylock"},
+         blocking=True,
+     )
+     mock_client.lock_command.assert_has_calls([call(1, LockCommand.UNLOCK, None)])
+@@ -137,7 +137,7 @@ async def test_lock_entity_supports_open(
+     await hass.services.async_call(
+         LOCK_DOMAIN,
+         SERVICE_OPEN,
+-        {ATTR_ENTITY_ID: "lock.test_my_lock"},
++        {ATTR_ENTITY_ID: "lock.test_mylock"},
+         blocking=True,
+     )
+     mock_client.lock_command.assert_has_calls([call(1, LockCommand.OPEN)])
+diff --git a/tests/components/esphome/test_manager.py b/tests/components/esphome/test_manager.py
+index 318ccde221f..6a38320aabb 100644
+--- a/tests/components/esphome/test_manager.py
++++ b/tests/components/esphome/test_manager.py
+@@ -1457,10 +1457,6 @@ async def test_device_adds_friendly_name(
+         connections={(dr.CONNECTION_NETWORK_MAC, device.entry.unique_id)}
+     )
+     assert dev.name == "Nofriendlyname"
+-    assert (
+-        "No `friendly_name` set in the `esphome:` section of "
+-        "the YAML config for device 'nofriendlyname'"
+-    ) in caplog.text
+     caplog.clear()
+ 
+     await device.mock_disconnect(True)
+diff --git a/tests/components/esphome/test_media_player.py b/tests/components/esphome/test_media_player.py
+index ecd0ec4cb8b..505e0f8c0cb 100644
+--- a/tests/components/esphome/test_media_player.py
++++ b/tests/components/esphome/test_media_player.py
+@@ -71,7 +71,7 @@ async def test_media_player_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("media_player.test_my_media_player")
++    state = hass.states.get("media_player.test_mymedia_player")
+     assert state is not None
+     assert state.state == "paused"
+ 
+@@ -79,7 +79,7 @@ async def test_media_player_entity(
+         MEDIA_PLAYER_DOMAIN,
+         SERVICE_VOLUME_MUTE,
+         {
+-            ATTR_ENTITY_ID: "media_player.test_my_media_player",
++            ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+             ATTR_MEDIA_VOLUME_MUTED: True,
+         },
+         blocking=True,
+@@ -93,7 +93,7 @@ async def test_media_player_entity(
+         MEDIA_PLAYER_DOMAIN,
+         SERVICE_VOLUME_MUTE,
+         {
+-            ATTR_ENTITY_ID: "media_player.test_my_media_player",
++            ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+             ATTR_MEDIA_VOLUME_MUTED: True,
+         },
+         blocking=True,
+@@ -107,7 +107,7 @@ async def test_media_player_entity(
+         MEDIA_PLAYER_DOMAIN,
+         SERVICE_VOLUME_SET,
+         {
+-            ATTR_ENTITY_ID: "media_player.test_my_media_player",
++            ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+             ATTR_MEDIA_VOLUME_LEVEL: 0.5,
+         },
+         blocking=True,
+@@ -119,7 +119,7 @@ async def test_media_player_entity(
+         MEDIA_PLAYER_DOMAIN,
+         SERVICE_MEDIA_PAUSE,
+         {
+-            ATTR_ENTITY_ID: "media_player.test_my_media_player",
++            ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+         },
+         blocking=True,
+     )
+@@ -132,7 +132,7 @@ async def test_media_player_entity(
+         MEDIA_PLAYER_DOMAIN,
+         SERVICE_MEDIA_PLAY,
+         {
+-            ATTR_ENTITY_ID: "media_player.test_my_media_player",
++            ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+         },
+         blocking=True,
+     )
+@@ -145,7 +145,7 @@ async def test_media_player_entity(
+         MEDIA_PLAYER_DOMAIN,
+         SERVICE_MEDIA_STOP,
+         {
+-            ATTR_ENTITY_ID: "media_player.test_my_media_player",
++            ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+         },
+         blocking=True,
+     )
+@@ -216,7 +216,7 @@ async def test_media_player_entity_with_source(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("media_player.test_my_media_player")
++    state = hass.states.get("media_player.test_mymedia_player")
+     assert state is not None
+     assert state.state == "playing"
+ 
+@@ -225,7 +225,7 @@ async def test_media_player_entity_with_source(
+             MEDIA_PLAYER_DOMAIN,
+             SERVICE_PLAY_MEDIA,
+             {
+-                ATTR_ENTITY_ID: "media_player.test_my_media_player",
++                ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+                 ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
+                 ATTR_MEDIA_CONTENT_ID: "media-source://local/xz",
+             },
+@@ -249,7 +249,7 @@ async def test_media_player_entity_with_source(
+             MEDIA_PLAYER_DOMAIN,
+             SERVICE_PLAY_MEDIA,
+             {
+-                ATTR_ENTITY_ID: "media_player.test_my_media_player",
++                ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+                 ATTR_MEDIA_CONTENT_TYPE: "audio/mp3",
+                 ATTR_MEDIA_CONTENT_ID: "media-source://local/xy",
+             },
+@@ -265,7 +265,7 @@ async def test_media_player_entity_with_source(
+         {
+             "id": 1,
+             "type": "media_player/browse_media",
+-            "entity_id": "media_player.test_my_media_player",
++            "entity_id": "media_player.test_mymedia_player",
+         }
+     )
+     response = await client.receive_json()
+@@ -275,7 +275,7 @@ async def test_media_player_entity_with_source(
+         MEDIA_PLAYER_DOMAIN,
+         SERVICE_PLAY_MEDIA,
+         {
+-            ATTR_ENTITY_ID: "media_player.test_my_media_player",
++            ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+             ATTR_MEDIA_CONTENT_TYPE: MediaType.URL,
+             ATTR_MEDIA_CONTENT_ID: "media-source://tts?message=hello",
+             ATTR_MEDIA_ANNOUNCE: True,
+@@ -339,7 +339,7 @@ async def test_media_player_proxy(
+         connections={(dr.CONNECTION_NETWORK_MAC, mock_device.entry.unique_id)}
+     )
+     assert dev is not None
+-    state = hass.states.get("media_player.test_my_media_player")
++    state = hass.states.get("media_player.test_mymedia_player")
+     assert state is not None
+     assert state.state == "paused"
+ 
+@@ -356,7 +356,7 @@ async def test_media_player_proxy(
+             MEDIA_PLAYER_DOMAIN,
+             SERVICE_PLAY_MEDIA,
+             {
+-                ATTR_ENTITY_ID: "media_player.test_my_media_player",
++                ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+                 ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
+                 ATTR_MEDIA_CONTENT_ID: media_url,
+             },
+@@ -387,7 +387,7 @@ async def test_media_player_proxy(
+             MEDIA_PLAYER_DOMAIN,
+             SERVICE_PLAY_MEDIA,
+             {
+-                ATTR_ENTITY_ID: "media_player.test_my_media_player",
++                ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+                 ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
+                 ATTR_MEDIA_CONTENT_ID: media_url,
+                 ATTR_MEDIA_ANNOUNCE: True,
+@@ -417,7 +417,7 @@ async def test_media_player_proxy(
+             MEDIA_PLAYER_DOMAIN,
+             SERVICE_PLAY_MEDIA,
+             {
+-                ATTR_ENTITY_ID: "media_player.test_my_media_player",
++                ATTR_ENTITY_ID: "media_player.test_mymedia_player",
+                 ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
+                 ATTR_MEDIA_CONTENT_ID: media_url,
+                 ATTR_MEDIA_EXTRA: {
+diff --git a/tests/components/esphome/test_number.py b/tests/components/esphome/test_number.py
+index 932d86c70e3..9a711f2766e 100644
+--- a/tests/components/esphome/test_number.py
++++ b/tests/components/esphome/test_number.py
+@@ -50,14 +50,14 @@ async def test_generic_number_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("number.test_my_number")
++    state = hass.states.get("number.test_mynumber")
+     assert state is not None
+     assert state.state == "50"
+ 
+     await hass.services.async_call(
+         NUMBER_DOMAIN,
+         SERVICE_SET_VALUE,
+-        {ATTR_ENTITY_ID: "number.test_my_number", ATTR_VALUE: 50},
++        {ATTR_ENTITY_ID: "number.test_mynumber", ATTR_VALUE: 50},
+         blocking=True,
+     )
+     mock_client.number_command.assert_has_calls([call(1, 50)])
+@@ -91,7 +91,7 @@ async def test_generic_number_nan(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("number.test_my_number")
++    state = hass.states.get("number.test_mynumber")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+@@ -123,7 +123,7 @@ async def test_generic_number_with_unit_of_measurement_as_empty_string(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("number.test_my_number")
++    state = hass.states.get("number.test_mynumber")
+     assert state is not None
+     assert state.state == "42"
+     assert ATTR_UNIT_OF_MEASUREMENT not in state.attributes
+@@ -162,7 +162,7 @@ async def test_generic_number_entity_set_when_disconnected(
+         await hass.services.async_call(
+             NUMBER_DOMAIN,
+             SERVICE_SET_VALUE,
+-            {ATTR_ENTITY_ID: "number.test_my_number", ATTR_VALUE: 20},
++            {ATTR_ENTITY_ID: "number.test_mynumber", ATTR_VALUE: 20},
+             blocking=True,
+         )
+     mock_client.number_command.reset_mock()
+diff --git a/tests/components/esphome/test_repairs.py b/tests/components/esphome/test_repairs.py
+index fed76ac580a..692a7dd9cc9 100644
+--- a/tests/components/esphome/test_repairs.py
++++ b/tests/components/esphome/test_repairs.py
+@@ -145,12 +145,12 @@ async def test_device_conflict_migration(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("binary_sensor.test_my_binary_sensor")
++    state = hass.states.get("binary_sensor.test_mybinary_sensor")
+     assert state is not None
+     assert state.state == STATE_ON
+     mock_config_entry = device.entry
+ 
+-    ent_reg_entry = entity_registry.async_get("binary_sensor.test_my_binary_sensor")
++    ent_reg_entry = entity_registry.async_get("binary_sensor.test_mybinary_sensor")
+     assert ent_reg_entry
+     assert ent_reg_entry.unique_id == "11:22:33:44:55:AA-binary_sensor-mybinary_sensor"
+     entries = er.async_entries_for_config_entry(
+@@ -222,7 +222,7 @@ async def test_device_conflict_migration(
+     assert issue_registry.async_get_issue(DOMAIN, issue_id) is None
+ 
+     assert mock_config_entry.unique_id == "11:22:33:44:55:ab"
+-    ent_reg_entry = entity_registry.async_get("binary_sensor.test_my_binary_sensor")
++    ent_reg_entry = entity_registry.async_get("binary_sensor.test_mybinary_sensor")
+     assert ent_reg_entry
+     assert ent_reg_entry.unique_id == "11:22:33:44:55:AB-binary_sensor-mybinary_sensor"
+ 
+diff --git a/tests/components/esphome/test_select.py b/tests/components/esphome/test_select.py
+index a30075b5833..1dc37ca3cad 100644
+--- a/tests/components/esphome/test_select.py
++++ b/tests/components/esphome/test_select.py
+@@ -79,14 +79,14 @@ async def test_select_generic_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("select.test_my_select")
++    state = hass.states.get("select.test_myselect")
+     assert state is not None
+     assert state.state == "a"
+ 
+     await hass.services.async_call(
+         SELECT_DOMAIN,
+         SERVICE_SELECT_OPTION,
+-        {ATTR_ENTITY_ID: "select.test_my_select", ATTR_OPTION: "b"},
++        {ATTR_ENTITY_ID: "select.test_myselect", ATTR_OPTION: "b"},
+         blocking=True,
+     )
+     mock_client.select_command.assert_has_calls([call(1, "b")])
+diff --git a/tests/components/esphome/test_sensor.py b/tests/components/esphome/test_sensor.py
+index e520b6ca259..be185432825 100644
+--- a/tests/components/esphome/test_sensor.py
++++ b/tests/components/esphome/test_sensor.py
+@@ -65,35 +65,35 @@ async def test_generic_numeric_sensor(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "50"
+ 
+     # Test updating state
+     mock_device.set_state(SensorState(key=1, state=60))
+     await hass.async_block_till_done()
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "60"
+ 
+     # Test sending the same state again
+     mock_device.set_state(SensorState(key=1, state=60))
+     await hass.async_block_till_done()
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "60"
+ 
+     # Test we can still update after the same state
+     mock_device.set_state(SensorState(key=1, state=70))
+     await hass.async_block_till_done()
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "70"
+ 
+     # Test invalid data from the underlying api does not crash us
+     mock_device.set_state(SensorState(key=1, state=object()))
+     await hass.async_block_till_done()
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "70"
+ 
+@@ -123,11 +123,11 @@ async def test_generic_numeric_sensor_with_entity_category_and_icon(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "50"
+     assert state.attributes[ATTR_ICON] == "mdi:leaf"
+-    entry = entity_registry.async_get("sensor.test_my_sensor")
++    entry = entity_registry.async_get("sensor.test_mysensor")
+     assert entry is not None
+     # Note that ESPHome includes the EntityInfo type in the unique id
+     # as this is not a 1:1 mapping to the entity platform (ie. text_sensor)
+@@ -161,11 +161,11 @@ async def test_generic_numeric_sensor_state_class_measurement(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "50"
+     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+-    entry = entity_registry.async_get("sensor.test_my_sensor")
++    entry = entity_registry.async_get("sensor.test_mysensor")
+     assert entry is not None
+     # Note that ESPHome includes the EntityInfo type in the unique id
+     # as this is not a 1:1 mapping to the entity platform (ie. text_sensor)
+@@ -196,7 +196,7 @@ async def test_generic_numeric_sensor_device_class_timestamp(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "2023-06-22T18:43:52+00:00"
+ 
+@@ -225,7 +225,7 @@ async def test_generic_numeric_sensor_legacy_last_reset_convert(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "50"
+     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL_INCREASING
+@@ -253,7 +253,7 @@ async def test_generic_numeric_sensor_no_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+@@ -280,7 +280,7 @@ async def test_generic_numeric_sensor_nan_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+@@ -307,7 +307,7 @@ async def test_generic_numeric_sensor_missing_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+@@ -334,7 +334,7 @@ async def test_generic_text_sensor(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "i am a teapot"
+ 
+@@ -361,7 +361,7 @@ async def test_generic_text_sensor_missing_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+@@ -389,7 +389,7 @@ async def test_generic_text_sensor_device_class_timestamp(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "2023-06-22T18:43:52+00:00"
+     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TIMESTAMP
+@@ -418,7 +418,7 @@ async def test_generic_text_sensor_device_class_date(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "2023-06-22"
+     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.DATE
+@@ -447,7 +447,7 @@ async def test_generic_numeric_sensor_empty_string_uom(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "123"
+     assert ATTR_UNIT_OF_MEASUREMENT not in state.attributes
+@@ -506,8 +506,8 @@ async def test_suggested_display_precision_by_device_class(
+         states=states,
+     )
+ 
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert float(
+-        async_rounded_state(hass, "sensor.test_my_sensor", state)
++        async_rounded_state(hass, "sensor.test_mysensor", state)
+     ) == pytest.approx(round(state_value, expected_precision))
+diff --git a/tests/components/esphome/test_switch.py b/tests/components/esphome/test_switch.py
+index 0efb3d86256..b3c13ee2fe5 100644
+--- a/tests/components/esphome/test_switch.py
++++ b/tests/components/esphome/test_switch.py
+@@ -37,14 +37,14 @@ async def test_switch_generic_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("switch.test_my_switch")
++    state = hass.states.get("switch.test_myswitch")
+     assert state is not None
+     assert state.state == STATE_ON
+ 
+     await hass.services.async_call(
+         SWITCH_DOMAIN,
+         SERVICE_TURN_ON,
+-        {ATTR_ENTITY_ID: "switch.test_my_switch"},
++        {ATTR_ENTITY_ID: "switch.test_myswitch"},
+         blocking=True,
+     )
+     mock_client.switch_command.assert_has_calls([call(1, True)])
+@@ -52,7 +52,7 @@ async def test_switch_generic_entity(
+     await hass.services.async_call(
+         SWITCH_DOMAIN,
+         SERVICE_TURN_OFF,
+-        {ATTR_ENTITY_ID: "switch.test_my_switch"},
++        {ATTR_ENTITY_ID: "switch.test_myswitch"},
+         blocking=True,
+     )
+     mock_client.switch_command.assert_has_calls([call(1, False)])
+diff --git a/tests/components/esphome/test_text.py b/tests/components/esphome/test_text.py
+index c8a7b2b9b45..899b4a732ca 100644
+--- a/tests/components/esphome/test_text.py
++++ b/tests/components/esphome/test_text.py
+@@ -41,14 +41,14 @@ async def test_generic_text_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("text.test_my_text")
++    state = hass.states.get("text.test_mytext")
+     assert state is not None
+     assert state.state == "hello world"
+ 
+     await hass.services.async_call(
+         TEXT_DOMAIN,
+         SERVICE_SET_VALUE,
+-        {ATTR_ENTITY_ID: "text.test_my_text", ATTR_VALUE: "goodbye"},
++        {ATTR_ENTITY_ID: "text.test_mytext", ATTR_VALUE: "goodbye"},
+         blocking=True,
+     )
+     mock_client.text_command.assert_has_calls([call(1, "goodbye")])
+@@ -81,7 +81,7 @@ async def test_generic_text_entity_no_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("text.test_my_text")
++    state = hass.states.get("text.test_mytext")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+ 
+@@ -112,6 +112,6 @@ async def test_generic_text_entity_missing_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("text.test_my_text")
++    state = hass.states.get("text.test_mytext")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+diff --git a/tests/components/esphome/test_time.py b/tests/components/esphome/test_time.py
+index 9342bd16055..543a903f0a9 100644
+--- a/tests/components/esphome/test_time.py
++++ b/tests/components/esphome/test_time.py
+@@ -37,14 +37,14 @@ async def test_generic_time_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("time.test_my_time")
++    state = hass.states.get("time.test_mytime")
+     assert state is not None
+     assert state.state == "12:34:56"
+ 
+     await hass.services.async_call(
+         TIME_DOMAIN,
+         SERVICE_SET_VALUE,
+-        {ATTR_ENTITY_ID: "time.test_my_time", ATTR_TIME: "01:23:45"},
++        {ATTR_ENTITY_ID: "time.test_mytime", ATTR_TIME: "01:23:45"},
+         blocking=True,
+     )
+     mock_client.time_command.assert_has_calls([call(1, 1, 23, 45)])
+@@ -73,6 +73,6 @@ async def test_generic_time_missing_state(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("time.test_my_time")
++    state = hass.states.get("time.test_mytime")
+     assert state is not None
+     assert state.state == STATE_UNKNOWN
+diff --git a/tests/components/esphome/test_update.py b/tests/components/esphome/test_update.py
+index fd852949e65..960cc016efc 100644
+--- a/tests/components/esphome/test_update.py
++++ b/tests/components/esphome/test_update.py
+@@ -35,7 +35,7 @@ from tests.typing import WebSocketGenerator
+ 
+ RELEASE_SUMMARY = "This is a release summary"
+ RELEASE_URL = "https://esphome.io/changelog"
+-ENTITY_ID = "update.test_my_update"
++ENTITY_ID = "update.test_myupdate"
+ 
+ 
+ @pytest.fixture(autouse=True)
+diff --git a/tests/components/esphome/test_valve.py b/tests/components/esphome/test_valve.py
+index d31e2bfb09e..bc5c77a62d6 100644
+--- a/tests/components/esphome/test_valve.py
++++ b/tests/components/esphome/test_valve.py
+@@ -55,7 +55,7 @@ async def test_valve_entity(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("valve.test_my_valve")
++    state = hass.states.get("valve.test_myvalve")
+     assert state is not None
+     assert state.state == ValveState.OPENING
+     assert state.attributes[ATTR_CURRENT_POSITION] == 50
+@@ -63,7 +63,7 @@ async def test_valve_entity(
+     await hass.services.async_call(
+         VALVE_DOMAIN,
+         SERVICE_CLOSE_VALVE,
+-        {ATTR_ENTITY_ID: "valve.test_my_valve"},
++        {ATTR_ENTITY_ID: "valve.test_myvalve"},
+         blocking=True,
+     )
+     mock_client.valve_command.assert_has_calls([call(key=1, position=0.0)])
+@@ -72,7 +72,7 @@ async def test_valve_entity(
+     await hass.services.async_call(
+         VALVE_DOMAIN,
+         SERVICE_OPEN_VALVE,
+-        {ATTR_ENTITY_ID: "valve.test_my_valve"},
++        {ATTR_ENTITY_ID: "valve.test_myvalve"},
+         blocking=True,
+     )
+     mock_client.valve_command.assert_has_calls([call(key=1, position=1.0)])
+@@ -81,7 +81,7 @@ async def test_valve_entity(
+     await hass.services.async_call(
+         VALVE_DOMAIN,
+         SERVICE_SET_VALVE_POSITION,
+-        {ATTR_ENTITY_ID: "valve.test_my_valve", ATTR_POSITION: 50},
++        {ATTR_ENTITY_ID: "valve.test_myvalve", ATTR_POSITION: 50},
+         blocking=True,
+     )
+     mock_client.valve_command.assert_has_calls([call(key=1, position=0.5)])
+@@ -90,7 +90,7 @@ async def test_valve_entity(
+     await hass.services.async_call(
+         VALVE_DOMAIN,
+         SERVICE_STOP_VALVE,
+-        {ATTR_ENTITY_ID: "valve.test_my_valve"},
++        {ATTR_ENTITY_ID: "valve.test_myvalve"},
+         blocking=True,
+     )
+     mock_client.valve_command.assert_has_calls([call(key=1, stop=True)])
+@@ -100,7 +100,7 @@ async def test_valve_entity(
+         ESPHomeValveState(key=1, position=0.0, current_operation=ValveOperation.IDLE)
+     )
+     await hass.async_block_till_done()
+-    state = hass.states.get("valve.test_my_valve")
++    state = hass.states.get("valve.test_myvalve")
+     assert state is not None
+     assert state.state == ValveState.CLOSED
+ 
+@@ -110,7 +110,7 @@ async def test_valve_entity(
+         )
+     )
+     await hass.async_block_till_done()
+-    state = hass.states.get("valve.test_my_valve")
++    state = hass.states.get("valve.test_myvalve")
+     assert state is not None
+     assert state.state == ValveState.CLOSING
+ 
+@@ -118,7 +118,7 @@ async def test_valve_entity(
+         ESPHomeValveState(key=1, position=1.0, current_operation=ValveOperation.IDLE)
+     )
+     await hass.async_block_till_done()
+-    state = hass.states.get("valve.test_my_valve")
++    state = hass.states.get("valve.test_myvalve")
+     assert state is not None
+     assert state.state == ValveState.OPEN
+ 
+@@ -153,7 +153,7 @@ async def test_valve_entity_without_position(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("valve.test_my_valve")
++    state = hass.states.get("valve.test_myvalve")
+     assert state is not None
+     assert state.state == ValveState.OPENING
+     assert ATTR_CURRENT_POSITION not in state.attributes
+@@ -161,7 +161,7 @@ async def test_valve_entity_without_position(
+     await hass.services.async_call(
+         VALVE_DOMAIN,
+         SERVICE_CLOSE_VALVE,
+-        {ATTR_ENTITY_ID: "valve.test_my_valve"},
++        {ATTR_ENTITY_ID: "valve.test_myvalve"},
+         blocking=True,
+     )
+     mock_client.valve_command.assert_has_calls([call(key=1, position=0.0)])
+@@ -170,7 +170,7 @@ async def test_valve_entity_without_position(
+     await hass.services.async_call(
+         VALVE_DOMAIN,
+         SERVICE_OPEN_VALVE,
+-        {ATTR_ENTITY_ID: "valve.test_my_valve"},
++        {ATTR_ENTITY_ID: "valve.test_myvalve"},
+         blocking=True,
+     )
+     mock_client.valve_command.assert_has_calls([call(key=1, position=1.0)])
+@@ -180,6 +180,6 @@ async def test_valve_entity_without_position(
+         ESPHomeValveState(key=1, position=0.0, current_operation=ValveOperation.IDLE)
+     )
+     await hass.async_block_till_done()
+-    state = hass.states.get("valve.test_my_valve")
++    state = hass.states.get("valve.test_myvalve")
+     assert state is not None
+     assert state.state == ValveState.CLOSED

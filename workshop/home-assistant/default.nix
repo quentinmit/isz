@@ -55,7 +55,14 @@ in {
   in {
     nixpkgs.overlays = [
       (self: super: {
-        inherit (pkgs.unstable) home-assistant;
+        inherit (pkgs.unstable.extend (final: prev: {
+          home-assistant = prev.home-assistant.overrideAttrs (old: {
+            patches = (old.patches or []) ++ [
+              ./patches/hass-mikrotik-comment.patch
+              ./patches/esphome-entity-ids.patch
+            ];
+          });
+        })) home-assistant;
       })
     ];
     nixpkgs.config.permittedInsecurePackages = [
@@ -88,13 +95,6 @@ in {
     };
     services.home-assistant = {
       enable = true;
-      package = pkgs.home-assistant.overrideAttrs (old: {
-        doInstallCheck = false;
-        patches = (old.patches or []) ++ [
-          ./patches/hass-mikrotik-comment.patch
-          ./patches/esphome-entity-ids.patch
-        ];
-      });
       customComponents = with pkgs.unstable.home-assistant-custom-components; [
         pyscript
         bambu_lab
