@@ -463,6 +463,7 @@ in {
         remmina
         sockdump
         kdePackages.krdc
+        kvirc
       ] ++ (available mqtt-explorer)
       ++ (available mqttx);
       programs.tio = {

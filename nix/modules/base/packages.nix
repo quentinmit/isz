@@ -112,6 +112,7 @@ let
     cryptsetup
 
     # Other devices
+    alsa-utils
     drm_info
     usbutils
     input-utils
