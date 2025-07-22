@@ -43,7 +43,7 @@ raspad           A 172.30.96.37
 mac              A 172.30.96.100
                  EUI48 D4-5D-64-55-59-3E ; quentin hackintosh
 heartofgold      A 172.30.96.101
-                 EUI48 8C-89-A5-1B-60-B2 ; heartofgold (public 8C:89:A5:1B:60:B2)
+                 EUI48 E8-9C-25-6B-1E-B9
 steamdeck        A 172.30.96.102
                  EUI48 2C-3B-70-EF-B6-6D
 steamdeckoled    A 172.30.96.103
@@ -52,8 +52,8 @@ goddard          A 172.30.96.104
                  EUI48 4C-82-A9-4C-D1-AF
 goddard-ether    A 172.30.96.105
                  EUI48 9C-BF-0D-00-50-29
-heartofgold-new  A 172.30.96.106
-                 EUI48 E8-9C-25-6B-1E-B9
+heartofgold-old  A 172.30.96.106
+                 EUI48 8C-89-A5-1B-60-B2 ; heartofgold (public 8C:89:A5:1B:60:B2)
 uconsole         A 172.30.96.107
                  EUI48 D8-3A-DD-B7-97-F8
 
@@ -133,7 +133,9 @@ livingroom-air-1 A 192.168.88.17
 mac              A 192.168.88.100
                  EUI48 D4-5D-64-55-59-3E ; quentin hackintosh
 heartofgold      A 192.168.88.101
-                 EUI48 8C-89-A5-1B-60-B2 ; heartofgold guest
+                 EUI48 E8-9C-25-6B-1E-B9 ; heartofgold guest
+heartofgold-old  A 192.168.88.106
+                 EUI48 8C-89-A5-1B-60-B2 ; heartofgold-old guest
 
 ; Personal devices
 dukrat-phone EUI48 38-78-62-01-F9-99 ; dukrat phone

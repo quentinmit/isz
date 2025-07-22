@@ -53,7 +53,7 @@
   };
 
   isz.networking = {
-    lastOctet = 106; # FIXME 101
+    lastOctet = 101;
     macAddress = "E8:9C:25:6B:1E:B9";
     vlan88 = true;
   };
