@@ -11,6 +11,7 @@
 
       home.packages = with pkgs; [
         zoom-us
+        google-chrome
       ];
     }
     # Emacs
