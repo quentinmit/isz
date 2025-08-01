@@ -175,4 +175,14 @@ final: prev: {
       ];
     });
   });
+  libraw-snapshot = prev.libraw.overrideAttrs (old: {
+    version = "202502";
+    src = old.src.override {
+      rev = "8afe44cd0e96611ba3cb73779b83ad05e945634c";
+      hash = "sha256-HRC9W0O/GW0Xc180OGcXx+vaRi7xHe1WrlCCQ3f69fo=";
+    };
+  });
+  rawtherapee-snapshot = prev.rawtherapee.override {
+    libraw = final.libraw-snapshot;
+  };
 }

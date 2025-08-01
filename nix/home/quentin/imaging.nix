@@ -19,7 +19,7 @@ in {
       libjpeg_turbo
       libraw # Replaces dcraw
       opencv
-      rawtherapee
+      rawtherapee-snapshot
       #broken wxSVG
       (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
       libwmf
