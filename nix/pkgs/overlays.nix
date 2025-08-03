@@ -185,4 +185,10 @@ final: prev: {
   rawtherapee-snapshot = prev.rawtherapee.override {
     libraw = final.libraw-snapshot;
   };
+  libsigrok = prev.libsigrok.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [(final.fetchpatch {
+      url = "https://patch-diff.githubusercontent.com/raw/sigrokproject/libsigrok/pull/246.diff";
+      hash = "sha256-jIWg3/5woFp4GjXNNoZj6SIn+lWGYrZQXcYGgBqV6sI=";
+    })];
+  });
 }
