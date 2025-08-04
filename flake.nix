@@ -164,6 +164,7 @@
           "goddard"
           "heartofgold"
           "rascsi"
+          "uconsole"
         ] (name: lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [
@@ -171,7 +172,7 @@
             ./${name}/configuration.nix
           ];
         })) // {
-          uconsole = unstable.lib.nixosSystem {
+          uconsole-unstable = unstable.lib.nixosSystem {
             inherit specialArgs;
             modules = [ #(builtins.attrValues self.nixosModules) ++ [
               self.nixosModules.base
