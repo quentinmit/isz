@@ -109,6 +109,59 @@ final: prev:
       hash = "sha256-mLiXHIkKZ32fKWF9Rao/QZwySskV5L4XGcgp+AWBIMI=";
       meta.license = final.lib.licenses.mit;
     };
+    eclipse-cdt.peripheral-inspector = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "peripheral-inspector";
+      publisher = "eclipse-cdt";
+      version = "1.8.1";
+      hash = "sha256-sk4F1UXNFq7bNYrWLAW7DxbXMUQGQUZh61UjIa+lfA4=";
+      meta.license = final.lib.licenses.mit;
+    };
+    eclipse-cdt.cdt-gdb-vscode = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "cdt-gdb-vscode";
+      publisher = "eclipse-cdt";
+      version = "2.2.0";
+      hash = "sha256-5KtpPyaMFZ5kxKZUpcHj9/tTYQ6eonGbP4LbycF1NmI=";
+      meta.license = final.lib.licenses.mit;
+    };
+    marus25.cortex-debug = let
+      publisher = "marus25";
+      name = "cortex-debug";
+      platformInfix = "";
+      platformSuffix = "";
+      version = "1.13.0-pre6";
+    in final.vscode-utils.buildVscodeMarketplaceExtension {
+      mktplcRef = {
+        inherit publisher name version;
+      };
+      vsix = final.fetchurl {
+        name = "${publisher}-${name}.zip";
+        url = "https://open-vsx.org/api/${publisher}/${name}${platformInfix}/${version}/file/${publisher}.${name}-${version}${platformSuffix}.vsix";
+        hash = "sha256-nr5yRzPsnpDuCEz0J5Lb9Nfb4zipDifNDGhsHHFFzoY=";
+      };
+    };
+    mcu-debug.debug-tracker-vscode = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "debug-tracker-vscode";
+      publisher = "mcu-debug";
+      version = "0.0.15";
+      hash = "sha256-2u4Moixrf94vDLBQzz57dToLbqzz7OenQL6G9BMCn3I=";
+      meta.license = final.lib.licenses.mit;
+    };
+    mcu-debug.memory-view = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "memory-view";
+      publisher = "mcu-debug";
+      version = "0.0.25";
+      hash = "sha256-Tck3MYKHJloiXChY/GbFvpBgLBzu6yFfcBd6VTpdDkc=";
+      meta.license = final.lib.licenses.mit;
+    };
+    ms-vscode = prev.vscode-extensions.ms-vscode // {
+      mock-debug = final.vscode-utils.extensionFromVscodeMarketplace {
+        name = "mock-debug";
+        publisher = "ms-vscode";
+        version = "0.52.0";
+        hash = "sha256-l+00y6xJt7vAS8kv6PjBMwUJCNG1ZgFsMQoGXlC6J88=";
+        meta.license = final.lib.licenses.mit;
+      };
+    };
   };
   wd-fw-update = final.callPackage ./python/wd-fw-update {};
   dwex = final.callPackage ./python/dwex {};

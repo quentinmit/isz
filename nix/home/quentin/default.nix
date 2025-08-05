@@ -229,6 +229,12 @@ in {
             ms-vscode.cmake-tools
             ms-vscode.makefile-tools
             ms-vsliveshare.vsliveshare
+            eclipse-cdt.peripheral-inspector
+            eclipse-cdt.cdt-gdb-vscode
+            ms-vscode.mock-debug
+            #marus25.cortex-debug
+            #mcu-debug.debug-tracker-vscode
+            #mcu-debug.memory-view
           ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];
