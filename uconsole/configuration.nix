@@ -40,6 +40,31 @@
     pwm_sample_bits = 20;
   };
 
+  hardware.deviceTree.overlays = let
+    mAh = 2*2600;
+    uWh = 3700 * mAh;
+    uAh = 1000 * mAh;
+  in [{
+    name = "99-isz";
+    filter = "bcm2711-rpi-cm4.dtb";
+    dtsText = ''
+      /dts-v1/;
+      /plugin/;
+
+      /{
+        compatible = "brcm,bcm2711";
+        fragment@1 {
+          target-path = "/battery@0";
+          __overlay__ {
+            voltage-min-design-microvolt = <3000000>;
+            energy-full-design-microwatt-hours = <${toString uWh}>;
+            charge-full-design-microamp-hours = <${toString uAh}>;
+          };
+        };
+      };
+    '';
+  }];
+
   # Skip building HTML manual, but still install other docs.
   documentation.doc.enable = false;
   environment.pathsToLink = [ "/share/doc" ];
