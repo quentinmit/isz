@@ -11,6 +11,7 @@ in {
   config = lib.mkIf cfg.enable {
     isz.telegraf.interval.netflow = lib.mkOptionDefault "60s";
     services.telegraf.extraConfig = {
+      agent.skip_processors_after_aggregators = false;
       inputs.netflow = [{
         name_suffix = "_raw";
         tags.influxdb_bucket = "netflow_raw";
