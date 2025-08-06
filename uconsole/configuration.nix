@@ -77,6 +77,17 @@
   };
 
   hardware.keyboard.qmk.enable = true;
+  # Treat the ball as a trackpoint to get better acceleration.
+  services.udev.extraHwdb = ''
+    id-input:modalias:input:b0003vFEEDp0000e0111-e0,1,2,4,k110,111,112,113,114,115,116,117,r0,1,6,8,B,C,am4,lsfw
+     ID_INPUT_POINTINGSTICK=1
+  '';
+  environment.etc."libinput/local-overrides.quirks".text = ''
+    [uConsole Keyboard Mouse]
+    MatchName=Clockwork uConsole*
+    MatchUdevType=pointingstick
+    AttrTrackpointMultiplier=5.0
+  '';
 
   networking.hostName = "uconsole";
 
