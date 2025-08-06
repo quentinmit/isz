@@ -108,6 +108,11 @@
   isz.telegraf = {
     enable = true;
     smart.enable = false;
+    powerSupply = true;
+  };
+
+  isz.vector = {
+    enable = true;
   };
 
   environment.systemPackages = with pkgs; [
