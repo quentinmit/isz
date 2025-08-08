@@ -183,4 +183,5 @@ final: prev:
   kintree = final.callPackage ./python/kintree {};
   bsproxy = final.callPackage ../../software/bsproxy {};
   lisaem = final.callPackage ./lisaem {};
+  orangepi-firmware = final.callPackage ./orangepi-firmware {};
 }
