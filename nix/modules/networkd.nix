@@ -9,7 +9,8 @@ in {
         default = null;
       };
       macAddress = mkOption {
-        type = types.strMatching "^([0-9a-fA-F]{2}\:){5}[0-9a-fA-F]{2}$";
+        type = types.nullOr (types.strMatching "^([0-9a-fA-F]{2}\:){5}[0-9a-fA-F]{2}$");
+        default = null;
       };
       vlans = mkOption {
         type = types.listOf vlanIdType;
@@ -39,6 +40,8 @@ in {
           netdevConfig = {
             Name = "br0";
             Kind = "bridge";
+          } // lib.optionalAttrs (cfg.macAddress != null) {
+            # TODO: Investigate why `lib.mkIf` doesn't work here.
             MACAddress = cfg.macAddress;
           };
           extraConfig =

@@ -37,6 +37,7 @@ rascsi           A 172.30.96.35
 macIIsi          A 172.30.96.36
 raspad           A 172.30.96.37
                  EUI48 DC-A6-32-D3-47-EA
+build-arm        A 172.30.96.38
 
 ; DHCP range is 96.50-200
 

@@ -165,6 +165,7 @@
           "heartofgold"
           "rascsi"
           "uconsole"
+          "build-arm"
         ] (name: lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [

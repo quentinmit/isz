@@ -1,0 +1,63 @@
+{ config, pkgs, disko, lib, ... }:
+{
+  imports = [
+    ./disko.nix
+    disko.nixosModules.disko
+  ];
+
+  nixpkgs.hostPlatform = { system = "aarch64-linux"; };
+
+  sops.defaultSopsFile = ./secrets.yaml;
+
+  hardware.deviceTree = {
+    name = "rockchip/rk3588-orangepi-5-max.dtb";
+  };
+
+  hardware.firmware = [
+    pkgs.orangepi-firmware
+  ];
+
+  # TODO: Install pkgs.unstable.ubootOrangePi5Max
+
+  boot = {
+    # TODO: Add config from https://github.com/armbian/build/blob/ca4dc8085a50e65158fc788800b1423cd7334fb5/config/kernel/linux-rockchip-rk3588-edge.config
+    # TODO: Do we need 6.16?
+    kernelPackages = pkgs.linuxKernel.packages.linux_6_15;
+
+    loader.grub.enable = false;
+    loader.generic-extlinux-compatible.enable = true;
+
+    tmp.useTmpfs = true;
+    initrd.systemd.enable = true;
+
+    kernelParams = [
+      "rootwait"
+
+      "earlycon" # enable early console, so we can see the boot messages via serial port / HDMI
+      "consoleblank=0" # disable console blanking(screen saver)
+#      "console=ttyS2,1500000" # serial port
+#      "console=tty1" # HDMI
+
+      # container metrics
+      "cgroup_enable=cpuset"
+      "cgroup_memory=1"
+      "cgroup_enable=memory"
+      "swapaccount=1"
+    ];
+  };
+
+  networking.hostName = "build-arm";
+  networking.hostId = "589a932a";
+
+  isz.networking = {
+    lastOctet = 38;
+  };
+
+  networking.firewall.enable = false;
+
+  system.stateVersion = "25.05";
+
+  users.users.root = {
+    hashedPassword = "";
+  };
+}
