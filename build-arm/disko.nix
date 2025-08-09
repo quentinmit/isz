@@ -1,17 +1,23 @@
-{ lib, ... }:
+{ lib, pkgs, config, ... }:
 {
   disko.devices = {
     disk.nvme0n1 = {
       type = "disk";
       device = "/dev/nvme0n1";
+      imageSize = "64G";
       content = {
         type = "gpt";
+        postCreateHook = let
+          uboot = "${pkgs.unstable.ubootOrangePi5Max}/u-boot-rockchip.bin";
+        in ''
+          dd if=${uboot} of=${config.disko.devices.disk.nvme0n1.content.partitions.loader1.device}
+        '';
         partitions = {
           # https://opensource.rock-chips.com/wiki_Partitions
           loader1 = {
             priority = 1;
             start = "64s";
-            end = "+7104s";
+            end = "+16M";
           };
           boot = {
             priority = 2;

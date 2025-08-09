@@ -19,6 +19,23 @@
 
   # TODO: Install pkgs.unstable.ubootOrangePi5Max
 
+  # Use x86-64 qemu for run-vm
+  virtualisation.vmVariantWithDisko = {
+    virtualisation.qemu.package = pkgs.pkgsNativeGnu64.qemu;
+    disko.devices.zpool.zpool = {
+      rootFsOptions.keylocation = "file:///tmp/secret.key";
+      preCreateHook = "echo 'secretsecret' > /tmp/secret.key";
+      postCreateHook = "zfs set keylocation=prompt zpool";
+    };
+  };
+  disko = {
+    imageBuilder = {
+      enableBinfmt = true;
+      pkgs = pkgs.pkgsNativeGnu64;
+      kernelPackages = pkgs.pkgsNativeGnu64.linuxPackages_6_15;
+    };
+  };
+
   boot = {
     # TODO: Add config from https://github.com/armbian/build/blob/ca4dc8085a50e65158fc788800b1423cd7334fb5/config/kernel/linux-rockchip-rk3588-edge.config
     # TODO: Do we need 6.16?
