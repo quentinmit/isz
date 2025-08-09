@@ -73,7 +73,6 @@
     amdgpu = true;
     powerSupply = true;
     drm = true;
-    zfs = true;
   };
 
   isz.vector = {

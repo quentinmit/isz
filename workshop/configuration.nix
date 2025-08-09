@@ -2,12 +2,14 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, nixos-hardware, ... }:
+{ config, pkgs, lib, nixos-hardware, disko, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      disko.nixosModules.disko
+      ./disko.nix
       ./nginx.nix
       ./postfix.nix
       ./postgresql.nix
@@ -33,7 +35,11 @@
 
   # Use the systemd-boot EFI boot loader.
   isz.secureBoot.enable = true;
-  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  boot.loader.efi.efiSysMountPoint = "/boot";
+  boot.initrd.clevis = {
+    enable = true;
+    devices.zpool.secretFile = ./zpool.jwe;
+  };
 
   environment.etc."lvm/lvm.conf".text = ''
     devices/issue_discards=1
@@ -42,6 +48,7 @@
   services.smartd.enable = true;
 
   networking.hostName = "workshop"; # Define your hostname.
+  networking.hostId = "98071ba3";
 
   isz.openssh = {
     hostKeyTypes = ["ecdsa" "ed25519" "rsa"];

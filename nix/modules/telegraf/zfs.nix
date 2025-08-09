@@ -3,7 +3,11 @@ let
   cfg = config.isz.telegraf;
 in {
   options = with lib; {
-    isz.telegraf.zfs = mkEnableOption "ZFS";
+    isz.telegraf.zfs = mkOption {
+      type = types.bool;
+      default = config.boot.zfs.enabled or false;
+      description = "Whether to enabe ZFS telemetry collection.";
+    };
   };
   config = lib.mkMerge [
     {
