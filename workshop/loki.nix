@@ -29,7 +29,12 @@ in {
         instance_interface_names = ["lo"];
         instance_addr = "127.0.0.1";
       };
-      query_scheduler.scheduler_ring.instance_addr = "127.0.0.1";
+      query_scheduler.scheduler_ring = {
+        kvstore.store = "inmemory";
+        instance_interface_names = ["lo"];
+        instance_addr = "127.0.0.1";
+      };
+      memberlist.advertise_addr = "127.0.0.1";
       schema_config.configs = [{
         from = "2024-01-01";
         store = "tsdb";
