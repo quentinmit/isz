@@ -1,5 +1,9 @@
 { lib, ... }:
 {
+  services.zfs = {
+    autoScrub.enable = true;
+    autoSnapshot.enable = true;
+  };
   disko.devices = {
     disk.nvme0n1 = {
       type = "disk";
@@ -91,11 +95,20 @@
         "var/lib/mosquitto".type = "zfs_fs";
         "var/lib/paperless".type = "zfs_fs";
         "var/lib/postfix".type = "zfs_fs";
-        "var/lib/postgresql".type = "zfs_fs";
+        "var/lib/postgresql" = {
+          type = "zfs_fs";
+          options = {
+            atime = "off";
+            recordsize = "16k";
+          };
+        };
         "var/lib/sdrtrunk".type = "zfs_fs";
         "var/lib/private".type = "zfs_fs";
         "var/lib/private/zwave-js-ui".type = "zfs_fs";
-        "var/log".type = "zfs_fs";
+        "var/log" = {
+          type = "zfs_fs";
+          mountpoint = "/var/log";
+        };
         "var/spool".type = "zfs_fs";
         "var/spool/mail".type = "zfs_fs";
         "var/tmp".type = "zfs_fs";

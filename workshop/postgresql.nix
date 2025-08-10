@@ -17,6 +17,11 @@
         "--encoding"
         "UTF8"
       ];
+      settings = lib.mkIf config.boot.zfs.enabled {
+        full_page_writes = false;
+        wal_init_zero = false;
+        wal_recycle = false;
+      };
     };
     services.postgresqlBackup = {
       enable = true;
