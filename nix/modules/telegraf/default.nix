@@ -147,7 +147,7 @@ in {
             interval = cfg.interval.agent;
             round_interval = true;
             metric_batch_size = 5000;
-            metric_buffer_limit = 50000;
+            metric_buffer_limit = 100000;
             collection_jitter = "0s";
             flush_interval = "10s";
             flush_jitter = "0s";
@@ -158,6 +158,23 @@ in {
             hostname = lib.mkIf (config.networking.hostName != null) "${config.networking.hostName}.${config.networking.domain}"; # defaults to os.Hostname()
             omit_hostname = false;
           };
+          processors.starlark = [{
+            alias = "dropnan";
+            order = 9999; # Run last
+            # Work around https://github.com/influxdata/telegraf/issues/17205
+            # The influxdb_v2 output drops an entire batch of metrics if there is a NaN value in any of them.
+            source = ''
+              load("logging.star", "log")
+              nan = float('nan')
+
+              def apply(metric):
+                for k, v in metric.fields.items():
+                  if v == nan:
+                    metric.fields.pop(k)
+                    log.warn("Dropped NaN value: metric {} field {}".format(metric.name, k))
+                return metric
+              '';
+          }];
           outputs = {
             influxdb_v2 = [{
               # TODO: Disable https for some hosts
