@@ -4,6 +4,7 @@
   imports = [
     ../nix/raspi.nix
     oom-hardware.nixosModules.uconsole
+    ./aio.nix
     ./quentin.nix
   ];
 
@@ -50,7 +51,7 @@
     pwm_sample_bits = 20;
   };
 
-  hardware.rtl-sdr.enable = true;
+  hardware.bluetooth.enable = true;
 
   hardware.deviceTree.overlays = let
     mAh = 2*2600;
