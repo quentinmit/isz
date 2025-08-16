@@ -133,6 +133,8 @@
     iw
     byobu
     qmk
+    dtc
+    ubootEnvtools
   ];
 
   services.xserver.enable = true;

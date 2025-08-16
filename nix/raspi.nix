@@ -148,6 +148,7 @@ in
         ''}
         ${cp} ${pkgs.raspberrypi-armstubs}/armstub8-gic.bin firmware/armstub8-gic.bin
         ${copyRpiFirmware}
+        ${cp} ${dtCfg.package}/broadcom/*.dtb firmware/
         echo "rpi firmware installed"
       else
         echo "/boot/firmware not mounted; skipping firmware installation"

@@ -191,4 +191,17 @@ final: prev: {
       hash = "sha256-jIWg3/5woFp4GjXNNoZj6SIn+lWGYrZQXcYGgBqV6sI=";
     })];
   });
+  ubootEnvtools = final.ubootTools.override {
+    extraMakeFlags = [ "HOST_TOOLS_ALL=y" "CROSS_BUILD_TOOLS=1" "NO_SDL=1" "envtools" ];
+
+    outputs = [ "out" "man" ];
+
+    postInstall = ''
+      ln -s $out/bin/fw_printenv $out/bin/fw_setenv
+      installManPage doc/*.1
+    '';
+    filesToInstall = [
+      "tools/env/fw_printenv"
+    ];
+  };
 }
