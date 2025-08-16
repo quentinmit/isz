@@ -21,6 +21,16 @@
 
   rpi.serialConsole = false;
 
+  boot.loader.isz-raspi.uboot.rpi4 = pkgs.ubootRaspberryPi4_64bit.override {
+    extraConfig = ''
+      CONFIG_DISPLAY_BOARDINFO_LATE=y
+      CONFIG_BOOTDELAY=-2
+    '';
+    extraPatches = [
+      ./uboot-disable-serial.patch
+    ];
+  };
+
   boot.loader.isz-raspi.config = {
     gpio = [
       "10=ip,np"
