@@ -50,6 +50,8 @@
     pwm_sample_bits = 20;
   };
 
+  hardware.rtl-sdr.enable = true;
+
   hardware.deviceTree.overlays = let
     mAh = 2*2600;
     uWh = 3700 * mAh;
@@ -169,6 +171,7 @@
     description = "Quentin Smith";
     extraGroups = [
       "dialout"
+      "plugdev"
       "networkmanager"
       "video"
       "wheel"
