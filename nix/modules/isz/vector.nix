@@ -1,4 +1,13 @@
 { config, lib, pkgs, ... }:
+# To provision a Loki token, first edit the Loki provider to have `days=50000`, then impersonate the service account and go to Loki.
+# Then,
+# systemd-run --pty --collect   --property DynamicUser=true --property EnvironmentFile=/run/secrets/authentik/environment --property StateDirectory=authentik --property User=authentik   --working-directory /var/lib/authentik --property SupplementaryGroups=redis-authentik -- /nix/store/4mhvdij442y364h0mxvyi6midszyswid-authentik-manage/bin/manage.py shell
+# from authentik.providers.oauth2.models import AccessToken
+# t = AccessToken.objects.get(provider=Provider.objects.get(name="Loki"), user=User.objects.get(name="vector@foo.isz.wtf"))
+# t.expiring = False
+# t.session = None
+# t.save()
+
 let
   cfg = config.isz.vector;
 in {
