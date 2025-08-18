@@ -5,6 +5,7 @@
       # GPS
       boot.kernelParams = [
         "8250.nr_uarts=1"
+        "console=tty0"
       ];
 
       environment.systemPackages = with pkgs; [
