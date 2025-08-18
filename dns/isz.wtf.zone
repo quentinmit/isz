@@ -37,7 +37,7 @@ rascsi           A 172.30.96.35
 macIIsi          A 172.30.96.36
 raspad           A 172.30.96.37
                  EUI48 DC-A6-32-D3-47-EA
-build-arm        A 172.30.96.38
+build-arm        A 172.30.96.39
                  EUI48 C0-74-2B-FB-9A-4D
 
 ; DHCP range is 96.50-200
@@ -79,6 +79,7 @@ bedroom-pi       A 172.30.97.33
 workshop         A 172.30.97.34
 workshop-kvm     A 172.30.97.38
                  EUI48 44-B7-D0-E3-75-B0
+build-arm        A 172.30.97.39
 
 mac              A 172.30.97.100
 heartofgold      A 172.30.97.101

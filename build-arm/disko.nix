@@ -19,12 +19,13 @@
             start = "64s";
             end = "+16M";
           };
-          boot = {
+          ESP = {
             priority = 2;
             size = "8G";
+            type = "EF00";
             content = {
               type = "filesystem";
-              format = "ext4";
+              format = "vfat";
               mountpoint = "/boot";
             };
           };

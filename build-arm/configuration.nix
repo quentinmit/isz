@@ -47,13 +47,14 @@
     tmp.useTmpfs = true;
     initrd.systemd.enable = true;
 
+    consoleLogLevel = 9;
     kernelParams = [
       "rootwait"
 
       "earlycon" # enable early console, so we can see the boot messages via serial port / HDMI
       "consoleblank=0" # disable console blanking(screen saver)
-#      "console=ttyS2,1500000" # serial port
-#      "console=tty1" # HDMI
+      "console=ttyS2,1500000" # serial port
+      "console=tty1" # HDMI
 
       # container metrics
       "cgroup_enable=cpuset"
@@ -67,14 +68,24 @@
   networking.hostId = "589a932a";
 
   isz.networking = {
-    lastOctet = 38;
+    lastOctet = 39;
+    macAddress = "C0:74:2B:FB:9A:4D";
+  };
+
+  isz.telegraf = {
+    enable = true;
   };
 
   networking.firewall.enable = false;
 
+  isz.openssh = {
+    hostKeyTypes = ["ecdsa" "ed25519"];
+    useSops = true;
+  };
+
   system.stateVersion = "25.05";
 
   users.users.root = {
-    hashedPassword = "";
+    initialHashedPassword = "";
   };
 }
