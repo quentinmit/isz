@@ -46,6 +46,15 @@
 
     tmp.useTmpfs = true;
     initrd.systemd.enable = true;
+    initrd.availableKernelModules = [
+      "rockchipdrm"
+      "panthor"
+      "display_connector"
+      "phy_rockchip_naneng_combphy"
+      "phy_rockchip_samsung_hdptx"
+      "phy_rockchip_usbdp"
+      "r8169"
+    ];
 
     consoleLogLevel = 9;
     kernelParams = [
