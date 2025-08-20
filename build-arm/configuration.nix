@@ -65,18 +65,28 @@
     kernelPackages = pkgs.linuxKernel.packages.linux_6_15;
 
     loader.grub.enable = false;
-    loader.generic-extlinux-compatible.enable = true;
+    loader.systemd-boot.enable = true;
 
     tmp.useTmpfs = true;
     initrd.systemd.enable = true;
+    initrd.systemd.network = config.systemd.network;
     initrd.availableKernelModules = [
+      # Display
       "rockchipdrm"
       "panthor"
       "display_connector"
       "phy_rockchip_naneng_combphy"
       "phy_rockchip_samsung_hdptx"
       "phy_rockchip_usbdp"
+      # Ethernet
       "r8169"
+      "bridge"
+      "8021q"
+      "cfg80211"
+      "macvlan"
+      "ip_tables"
+      "nfnetlink"
+      "tap"
       # RTC
       "rtc-hym8563"
     ];
@@ -95,7 +105,15 @@
       "cgroup_memory=1"
       "cgroup_enable=memory"
       "swapaccount=1"
+
+      ''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''
     ];
+  };
+
+  boot.initrd.clevis = {
+    enable = true;
+    useTang = true;
+    devices.zpool.secretFile = "/root/zpool.jwe";
   };
 
   networking.hostName = "build-arm";
