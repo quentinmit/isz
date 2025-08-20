@@ -27,6 +27,7 @@
       ./loki.nix
       ./vector.nix
       ./inventree.nix
+      ./tang.nix
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];
