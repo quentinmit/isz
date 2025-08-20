@@ -23,10 +23,12 @@
           "workshop.isz.wtf"
           "workshop.isz.wtf USB hubs"
           "Cable modem"
+
           "Front panel DC"
           "Front panel USB-C"
           "workshop-10g-sw.isz.wtf"
-          null
+          "build-arm.isz.wtf"
+
           "Top shelf chargers"
           "Middle shelf USB chargers"
           "Camera chargers"
@@ -70,7 +72,7 @@
             "Channel 1 nominal current" = "5 A";
             "Channel 2 nominal current" = "7 A";
             "Channel 3 nominal current" = "3 A";
-            "Channel 4 nominal current" = "1 A";
+            "Channel 4 nominal current" = "4 A";
           };
         };
         "3" = {
