@@ -136,6 +136,7 @@ let
     nftables
     vlan
     netcat-openbsd
+    ethtool
 
     # Utilities
     util-linux
