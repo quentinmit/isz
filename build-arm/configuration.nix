@@ -11,6 +11,29 @@
 
   hardware.deviceTree = {
     name = "rockchip/rk3588-orangepi-5-max.dtb";
+    overlays = [{
+      # The upstream device tree incorrectly puts rfkill on gpio0, which conflicts with the RTC interrupt pin.
+      name = "99-rfkill";
+      filter = "rockchip/rk3588-orangepi-5-max.dtb";
+      # shutdown-gpios = <&gpio2 RK_PC5 GPIO_ACTIVE_HIGH>;
+      dtsText = ''
+        /dts-v1/;
+        /plugin/;
+
+        #include <dt-bindings/gpio/gpio.h>
+        #include <dt-bindings/pinctrl/rockchip.h>
+
+        /{
+          compatible = "xunlong,orangepi-5-max";
+          fragment@1 {
+            target-path = "/rfkill";
+            __overlay__ {
+              status = "disabled";
+            };
+          };
+        };
+      '';
+    }];
   };
 
   hardware.firmware = [
@@ -54,6 +77,8 @@
       "phy_rockchip_samsung_hdptx"
       "phy_rockchip_usbdp"
       "r8169"
+      # RTC
+      "rtc-hym8563"
     ];
 
     consoleLogLevel = 9;
