@@ -10,11 +10,13 @@
   libuv,
   libxkbcommon,
   libX11,
+  orcania,
   yaml-cpp,
   stdenv,
   gccStdenv,
   stdenvNoCC,
   fetchFromGitHub,
+  fetchurl,
 }:
 let
   version = "2.6.11.60ec05e";
@@ -46,6 +48,7 @@ let
       cp -a pio $out
       runHook postInstall
     '';
+    # TODO: Remove non-determinism
     dontFixup = true;
     outputHash = depsHash;
     outputHashAlgo = if depsHash == "" then "sha256" else null;
@@ -55,6 +58,14 @@ in
 gccStdenv.mkDerivation {
   name = "meshtasticd";
   inherit version src;
+
+  web = let
+    version = "2.6.6";
+  in fetchurl {
+    inherit version;
+    url = "https://github.com/meshtastic/web/releases/download/v${version}/build.tar";
+    hash = "sha256-y0PfoEy2fsYqdHV7dZ2DThV/g7p8Y0+2412Ox23cmZc=";
+  };
 
   nativeBuildInputs = [
     platformio
@@ -70,6 +81,7 @@ gccStdenv.mkDerivation {
     libusb1
     libuv
     libX11
+    orcania
     yaml-cpp
   ];
 
@@ -99,8 +111,8 @@ gccStdenv.mkDerivation {
     cp .pio/build/native-tft/program $out/bin/meshtasticd
     cp bin/config-dist.yaml $out/etc/meshtasticd/config.yaml
     cp bin/meshtasticd.service $out/lib/systemd/system/
-    cp bin/config.d/* $out/etc/meshtasticd/available.d/
-    # TODO: Install web
+    cp -R bin/config.d/* $out/etc/meshtasticd/available.d/
+    tar -C $out/share/meshtasticd/web -xf $web
     runHook postInstall
   '';
 
