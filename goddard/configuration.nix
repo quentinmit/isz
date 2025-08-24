@@ -251,4 +251,20 @@
       "audio"
     ];
   };
+
+  sops.secrets."nix/builders/build-arm/id_ed25519" = {};
+  nix.buildMachines = [
+    {
+      hostName = "build-arm.isz.wtf";
+      sshUser = "goddard";
+      sshKey = config.sops.secrets."nix/builders/build-arm/id_ed25519".path;
+      publicHostKey = "c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUxlZ1prVTBwNGtQTzdXNFZUdE1RaWRJTERoNzJPRFBFTXZoQWJDUnJHKzEgcm9vdEBidWlsZC1hcm0K";
+      protocol = "ssh-ng";
+      systems = [
+        "aarch64-linux"
+        "armv7l-linux"
+        "armv8l-linux"
+      ];
+    }
+  ];
 }
