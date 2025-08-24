@@ -95,7 +95,23 @@
     }
     {
       # RTC
-      # TODO: Configure overlay
+      hardware.deviceTree.overlaysParams = [
+        {
+          name = "bcm2711-rpi-cm4";
+          params.i2c_arm = "on";
+        }
+        {
+          name = "i2c-rtc";
+          params = {
+            i2c1 = "on";
+            pcf85063a = "on";
+          };
+        }
+      ];
+      hardware.raspberry-pi."4".overlays = {
+        cpi-i2c1.enable = true;
+        i2c-rtc.enable = true;
+      };
     }
     {
       # LoRa
