@@ -98,14 +98,20 @@
       # TODO: Configure overlay
     }
     {
-      # LORA
-      # TODO: Enabling SPI conflicts with the pins used by the LCD panel
-      # hardware.deviceTree.overlaysParams = [
-      #   {
-      #     name = "bcm2711-rpi-cm4";
-      #     params.spi = "on";
-      #   }
-      # ];
+      # LoRa
+      hardware.deviceTree.overlaysParams = [
+        {
+          name = "bcm2711-rpi-cm4";
+          params.spi = "on";
+        }
+      ];
+      hardware.deviceTree.overlays = [
+        {
+          name = "spi1-1cs";
+          filter = "bcm2711-rpi-*.dtb";
+          dtsFile = ./spi1-1cs-overlay.dts;
+        }
+      ];
       # TODO: Install meshtastic
     }
   ];
