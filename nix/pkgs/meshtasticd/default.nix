@@ -22,6 +22,7 @@
   path,
   git,
   jq,
+  gzip,
 }:
 let
   version = "2.6.11.60ec05e";
@@ -89,6 +90,7 @@ gccStdenv.mkDerivation {
   nativeBuildInputs = [
     platformio
     pkg-config
+    gzip
   ];
 
   buildInputs = [
@@ -107,7 +109,9 @@ gccStdenv.mkDerivation {
   ];
 
   postPatch = ''
-    substituteInPlace bin/meshtasticd.service \
+    substituteInPlace \
+      bin/meshtasticd.service \
+      src/platform/portduino/PortduinoGlue.cpp \
       --replace-fail /usr $out
   '';
 
@@ -134,6 +138,7 @@ gccStdenv.mkDerivation {
     cp bin/meshtasticd.service $out/lib/systemd/system/
     cp -R bin/config.d/* $out/etc/meshtasticd/available.d/
     tar -C $out/share/meshtasticd/web -xf $web
+    gunzip $out/share/meshtasticd/web/ -r
     runHook postInstall
   '';
 
