@@ -11,6 +11,8 @@
   libxkbcommon,
   libX11,
   orcania,
+  ulfius,
+  openssl,
   yaml-cpp,
   stdenv,
   gccStdenv,
@@ -99,6 +101,8 @@ gccStdenv.mkDerivation {
     libuv
     libX11
     orcania
+    ulfius
+    openssl
     yaml-cpp
   ];
 
@@ -117,7 +121,7 @@ gccStdenv.mkDerivation {
     PLATFORMIO_CORE_DIR=pio/core \
     PLATFORMIO_LIBDEPS_DIR=pio/libdeps \
 	  PLATFORMIO_PACKAGES_DIR=pio/packages \
-    PLATFORMIO_BUILD_FLAGS="$NIX_CFLAGS_COMPILE $ldflags" \
+    PLATFORMIO_BUILD_FLAGS="$NIX_CFLAGS_COMPILE $ldflags $(pkg-config --libs libulfius openssl)" \
     platformio run -vv -e native-tft
     runHook postBuild
   '';
