@@ -17,6 +17,9 @@
   stdenvNoCC,
   fetchFromGitHub,
   fetchurl,
+  path,
+  git,
+  jq,
 }:
 let
   version = "2.6.11.60ec05e";
@@ -26,13 +29,15 @@ let
     rev = "v${version}";
     hash = "sha256-91VDpEobokHTv7Vil/AibPnLIawoOWK525FhmRdlicM=";
   };
-  depsHash = "sha256-C+ZIHLFC+tLQXcujG1j2fF/UABm1O17G2isFv2PSlos=";
+  depsHash = "sha256-DBt9Wk36OQ8im7Vpv1BDUxe/EPMDOq9dIHAT8J/a5oU=";
   pioCache = stdenvNoCC.mkDerivation {
     name = "meshtasticd-deps";
     inherit version src;
     nativeBuildInputs = [
       platformio
       cacert
+      git
+      jq
     ];
     buildPhase = ''
       runHook preBuild
@@ -44,11 +49,23 @@ let
     '';
     installPhase = ''
       runHook preInstall
-      find pio -name hooks | xargs rm -rf
+      jqi() {
+        t=$(mktemp)
+        jq "$@" > "$t"
+        mv "$t" "$2"
+      }
+      jqi '.last_check.prune_system = 0 | .created_at = 0' pio/core/appstate.json
+      rm -rf pio/core/.cache
+      find pio -wholename '*/.git/.piopm' | while read path; do
+        mv "$path" "$(dirname "$path")/../"
+      done
+      jqi '.version = "0.0.0"' pio/libdeps/native-tft/ArduinoThread/.piopm
+      find pio -name .git -exec rm -rf '{}' +
+      sort pio/libdeps/native-tft/integrity.dat > integrity.dat.new
+      mv integrity.dat.new pio/libdeps/native-tft/integrity.dat
       cp -a pio $out
       runHook postInstall
     '';
-    # TODO: Remove non-determinism
     dontFixup = true;
     outputHash = depsHash;
     outputHashAlgo = if depsHash == "" then "sha256" else null;
