@@ -106,6 +106,15 @@
 
   networking.networkmanager.enable = true;
 
+  services.firewalld = {
+    enable = true;
+    package = pkgs.firewalld-gui;
+    config = {
+      DefaultZone = "public";
+      FirewallBackend = "nftables";
+    };
+  };
+
   # https://github.com/raspberrypi/linux/issues/6049#issuecomment-2485431104
   boot.extraModprobeConfig = ''
     options brcmfmac feature_disable=0x200000
@@ -135,6 +144,7 @@
     qmk
     dtc
     ubootEnvtools
+    kdePackages.plasma-firewall
   ];
 
   services.xserver.enable = true;
