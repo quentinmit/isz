@@ -184,6 +184,4 @@ final: prev:
   bsproxy = final.callPackage ../../software/bsproxy {};
   lisaem = final.callPackage ./lisaem {};
   orangepi-firmware = final.callPackage ./orangepi-firmware {};
-  meshtasticd = final.callPackage ./meshtasticd {};
-  ulfius = final.callPackage ./ulfius {};
 }

@@ -169,6 +169,7 @@
     initialHashedPassword = "";
   };
 
+  users.groups.gpio = {};
   users.users.quentin = {
     isNormalUser = true;
     description = "Quentin Smith";
@@ -182,6 +183,7 @@
       "libvirtd"
       "podman"
       "audio"
+      "gpio"
     ];
     openssh.authorizedKeys.keys = config.users.users.root.openssh.authorizedKeys.keys;
   };

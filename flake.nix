@@ -68,6 +68,8 @@
     chemacs2nix.url = "github:league/chemacs2nix";
     chemacs2nix.inputs.home-manager.follows = "home-manager";
     chemacs2nix.inputs.pre-commit-hooks.follows = "";
+    nixos-meshtastic.url = "github:quentinmit/nixos-meshtastic/source-build";
+    nixos-meshtastic.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
     let

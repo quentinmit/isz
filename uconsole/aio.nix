@@ -1,5 +1,8 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs, config, nixos-meshtastic, ... }:
 {
+  imports = [
+    nixos-meshtastic.nixosModules.default
+  ];
   config = lib.mkMerge [
     {
       # GPS
@@ -128,7 +131,39 @@
           dtsFile = ./spi1-1cs-overlay.dts;
         }
       ];
+      users.groups.gpio = {};
+      services.udev.rules = [
+        {
+          SUBSYSTEM = "spidev";
+          KERNEL = "spidev1.0";
+          OWNER = { op = "="; value = config.services.meshtastic.user; };
+        }
+        {
+          SUBSYSTEM = "gpio";
+          GROUP = { op = "="; value = "gpio"; };
+        }
+      ];
+
       # TODO: Install meshtastic
+      systemd.sockets.gpsd-nmea.socketConfig.ListenFIFO = ["/run/gpsd-meshtastic.fifo"];
+      services.meshtastic = {
+        enable = true;
+        package = (pkgs.extend nixos-meshtastic.overlays.default).meshtasticd;
+        settings = {
+          Lora = {
+            Module = "sx1262";  # HackerGadgets RTL-SDR/LoRa extension board
+            DIO2_AS_RF_SWITCH = true;
+            DIO3_TCXO_VOLTAGE = true;
+            IRQ = 26;
+            Busy = 24;
+            Reset = 25;
+            spidev = "spidev1.0";
+          };
+          GPS.SerialPath = "/run/gpsd-meshtastic.fifo";
+          Webserver.Port = 9443;
+          # General.MACAddress = "";
+        };
+      };
     }
   ];
 }

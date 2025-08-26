@@ -636,6 +636,27 @@
         "type": "github"
       }
     },
+    "nixos-meshtastic": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1756190288,
+        "narHash": "sha256-Ex8DwTgyl2fbmCRNrDAnHF46AEd+Gnt3qSZonl4egtk=",
+        "owner": "quentinmit",
+        "repo": "nixos-meshtastic",
+        "rev": "228a8da12518a4369d5e0a56235838fdf520aaa1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "quentinmit",
+        "ref": "source-build",
+        "repo": "nixos-meshtastic",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1635350005,
@@ -868,6 +889,7 @@
         "nixgl": "nixgl",
         "nixos-hardware": "nixos-hardware",
         "nixos-inventree": "nixos-inventree",
+        "nixos-meshtastic": "nixos-meshtastic",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-23_05": "nixpkgs-23_05",
         "nur-mweinelt": "nur-mweinelt",
