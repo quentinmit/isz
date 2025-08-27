@@ -144,8 +144,25 @@
         }
       ];
 
-      # TODO: Install meshtastic
-      systemd.sockets.gpsd-nmea.socketConfig.ListenFIFO = ["/run/gpsd-meshtastic.fifo"];
+      systemd.sockets.gpsd-nmea-meshtastic = {
+        description = "GPSD NMEA for Meshtastic";
+        socketConfig.User = "meshtastic";
+        socketConfig.ListenFIFO = ["/run/gpsd-nmea-meshtastic.fifo"];
+      };
+      systemd.services."gpsd-nmea-meshtastic" = {
+        description = "GPSD NMEA connection for Meshtastic";
+        wants = ["gpsd.service"];
+        after = ["gpsd.service"];
+        unitConfig.CollectMode = "inactive-or-failed";
+        serviceConfig.Type = "exec";
+        serviceConfig.DynamicUser = true;
+        serviceConfig.ExecStart = "${lib.getExe' pkgs.gpsd "gpspipe"} -r";
+        serviceConfig.StandardOutput = "socket";
+      };
+      systemd.services.meshtastic = {
+        wants = ["gpsd-nmea-meshtastic.socket"];
+        after = ["gpsd-nmea-meshtastic.socket"];
+      };
       services.meshtastic = {
         enable = true;
         package = (pkgs.extend nixos-meshtastic.overlays.default).meshtasticd;
@@ -159,7 +176,7 @@
             Reset = 25;
             spidev = "spidev1.0";
           };
-          GPS.SerialPath = "/run/gpsd-meshtastic.fifo";
+          GPS.SerialPath = "/run/gpsd-nmea-meshtastic.fifo";
           Webserver.Port = 9443;
           # General.MACAddress = "";
         };
