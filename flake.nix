@@ -44,7 +44,7 @@
     nixgl.inputs.flake-utils.follows = "flake-utils";
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
-    authentik.url = "github:nix-community/authentik-nix";
+    authentik.url = "github:quentinmit/authentik-nix/ak-properties"; #"github:nix-community/authentik-nix";
     authentik.inputs.nixpkgs.follows = "nixpkgs";
     authentik.inputs.flake-utils.follows = "flake-utils";
     authentik.inputs.flake-compat.follows = "flake-compat";

@@ -41,15 +41,16 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1753369162,
-        "narHash": "sha256-pSAsUVueht3WyyFJ3K+QJKWqFZNbyvsXijHOAHApeLk=",
-        "owner": "nix-community",
+        "lastModified": 1756243475,
+        "narHash": "sha256-6/t+3UyXzncCLsqq2rg5Ci8XhUpF9lQmyHu8A+aMcGo=",
+        "owner": "quentinmit",
         "repo": "authentik-nix",
-        "rev": "1361d269fe10c527528264185567a053252e22b0",
+        "rev": "940f49870b1253edfd58d68726e13d1decd49b35",
         "type": "github"
       },
       "original": {
-        "owner": "nix-community",
+        "owner": "quentinmit",
+        "ref": "ak-properties",
         "repo": "authentik-nix",
         "type": "github"
       }
