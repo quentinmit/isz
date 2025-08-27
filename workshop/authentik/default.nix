@@ -59,6 +59,11 @@
                 ];
               };
             });
+            manage = prev.authentikComponents.manage.override (old: {
+              authentikComponents = old.authentikComponents // {
+                staticWorkdirDeps = "${./lib}:${old.authentikComponents.staticWorkdirDeps}";
+              };
+            });
           };
         });
         in scope.authentikComponents;
