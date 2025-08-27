@@ -129,6 +129,8 @@
     enable = true;
   };
 
+  isz.vector.enable = true;
+
   networking.firewall.enable = false;
 
   isz.openssh = {
