@@ -88,6 +88,11 @@
           type = "zfs_fs";
           mountpoint = "/var/lib";
         };
+        "var/tmp" = {
+          type = "zfs_fs";
+          mountpoint = "/var/tmp";
+          options."com.sun:auto-snapshot" = "false";
+        };
         home = {
           type = "zfs_fs";
           options = {

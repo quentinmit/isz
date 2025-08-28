@@ -60,6 +60,9 @@
     };
   };
 
+  # Use disk instead of tmpfs for builds.
+  systemd.services.nix-daemon.environment.TMPDIR = "/var/tmp";
+
   boot = {
     # TODO: Add config from https://github.com/armbian/build/blob/ca4dc8085a50e65158fc788800b1423cd7334fb5/config/kernel/linux-rockchip-rk3588-edge.config
     # TODO: Do we need 6.16?
