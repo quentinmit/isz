@@ -194,6 +194,7 @@
       reporting-disabled = true;
     };
   };
+  systemd.services.influxdb2.serviceConfig.TimeoutStartSec = "120m";
   # Configure services.grafana
   users.users."${config.services.nginx.user}".extraGroups = [ "grafana" ];
   # Configure pwrgate-logger
