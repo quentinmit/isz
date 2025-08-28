@@ -275,6 +275,7 @@
   # Configure zwave-js-ui
   services.zwave-js-ui = {
     enable = true;
+    package = pkgs.unstable.zwave-js-ui;
     serialPort = "/dev/ttyZwave";
     settings.HOME = "%t/zwave-js-ui";
     settings.BACKUPS_DIR = "%S/zwave-js-ui/backups";
