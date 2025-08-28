@@ -1,11 +1,11 @@
-commit 64eb7c3ffe2779d0f83b4d944cc68fbc140df07e
+commit 8a6993ba6b34eece7714c1804340580b881f9c27
 Author: Quentin Smith <quentin@mit.edu>
 Date:   Thu Feb 6 04:14:00 2025 -0500
 
     feat(loki sinks): support uppercase labels and structured metadata (#19038)
 
 diff --git a/src/common/expansion.rs b/src/common/expansion.rs
-index 11d694018..f826d2a43 100644
+index 04c737498..f6e60606f 100644
 --- a/src/common/expansion.rs
 +++ b/src/common/expansion.rs
 @@ -16,6 +16,7 @@ pub(crate) fn pair_expansion(
@@ -20,9 +20,9 @@ index 11d694018..f826d2a43 100644
          // key_* -> key_one, key_two, key_three
          // * -> one, two, three
          for (k, v) in output {
--            let key = slugify_text(&format!("{}{}", opening_prefix, k));
+-            let key = slugify_text(&format!("{opening_prefix}{k}"));
 +            let key = if slugify_dynamic_fields {
-+                slugify_text(&format!("{}{}", opening_prefix, k))
++                slugify_text(&format!("{opening_prefix}{k}"))
 +            } else {
 +                format!("{}{}", opening_prefix, k)
 +            };
@@ -48,7 +48,7 @@ index 06f827b35..6dae078db 100644
      ///
      /// The timestamp is still sent as event metadata for Loki to use for indexing.
 diff --git a/src/sinks/loki/sink.rs b/src/sinks/loki/sink.rs
-index 37be3a9ee..5b7f2e71b 100644
+index d206a792b..377c7ba48 100644
 --- a/src/sinks/loki/sink.rs
 +++ b/src/sinks/loki/sink.rs
 @@ -136,6 +136,7 @@ pub(super) struct EventEncoder {
@@ -59,7 +59,7 @@ index 37be3a9ee..5b7f2e71b 100644
  }
  
  impl EventEncoder {
-@@ -179,7 +180,7 @@ impl EventEncoder {
+@@ -177,7 +178,7 @@ impl EventEncoder {
  
              let key_s = key.unwrap();
              let value_s = value.unwrap();
@@ -68,7 +68,7 @@ index 37be3a9ee..5b7f2e71b 100644
              // we just need to check the error since the result have been inserted in the static_pairs or dynamic_pairs
              if let Err(err) = result {
                  warn!(
-@@ -261,6 +262,7 @@ impl EventEncoder {
+@@ -257,6 +258,7 @@ impl EventEncoder {
                  &value_s,
                  &mut static_structured_metadata,
                  &mut dynamic_structured_metadata,
@@ -76,7 +76,7 @@ index 37be3a9ee..5b7f2e71b 100644
              );
              // we just need to check the error since the result have been inserted in the static_pairs or dynamic_pairs
              if let Err(err) = result {
-@@ -492,6 +494,7 @@ impl LokiSink {
+@@ -488,6 +490,7 @@ impl LokiSink {
                  remove_label_fields: config.remove_label_fields,
                  remove_structured_metadata_fields: config.remove_structured_metadata_fields,
                  remove_timestamp: config.remove_timestamp,
@@ -84,7 +84,7 @@ index 37be3a9ee..5b7f2e71b 100644
              },
              batch_settings: config.batch.into_batcher_settings()?,
              out_of_order_action: config.out_of_order_action,
-@@ -591,6 +594,7 @@ mod tests {
+@@ -587,6 +590,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -92,7 +92,7 @@ index 37be3a9ee..5b7f2e71b 100644
          };
          let mut event = Event::Log(LogEvent::from("hello world"));
          let log = event.as_mut_log();
-@@ -636,6 +640,7 @@ mod tests {
+@@ -634,6 +638,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -217,7 +217,7 @@ index 37be3a9ee..5b7f2e71b 100644
          };
          let mut event = Event::Log(LogEvent::from("hello world"));
          let log = event.as_mut_log();
-@@ -835,6 +905,7 @@ mod tests {
+@@ -837,6 +907,7 @@ mod tests {
              remove_label_fields: true,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -225,7 +225,7 @@ index 37be3a9ee..5b7f2e71b 100644
          };
          let mut event = Event::Log(LogEvent::from("hello world"));
          let log = event.as_mut_log();
-@@ -873,6 +944,7 @@ mod tests {
+@@ -875,6 +946,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -233,7 +233,7 @@ index 37be3a9ee..5b7f2e71b 100644
          };
  
          let message = r#"
-@@ -928,6 +1000,7 @@ mod tests {
+@@ -930,6 +1002,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -242,7 +242,7 @@ index 37be3a9ee..5b7f2e71b 100644
          let base = chrono::Utc::now();
          let events = random_lines(100)
 diff --git a/src/sinks/loki/tests.rs b/src/sinks/loki/tests.rs
-index 3a6817002..29cf63397 100644
+index 90d3fc786..51ec03426 100644
 --- a/src/sinks/loki/tests.rs
 +++ b/src/sinks/loki/tests.rs
 @@ -202,3 +202,31 @@ async fn structured_metadata_as_json() {
@@ -278,15 +278,15 @@ index 3a6817002..29cf63397 100644
 +    assert_eq!(body[2], expected_metadata);
 +}
 diff --git a/src/transforms/log_to_metric.rs b/src/transforms/log_to_metric.rs
-index 48cfbecfe..dd88b3aed 100644
+index 02f084e55..3049b0aaf 100644
 --- a/src/transforms/log_to_metric.rs
 +++ b/src/transforms/log_to_metric.rs
-@@ -351,7 +351,7 @@ fn render_tag_into(
+@@ -355,7 +355,7 @@ fn render_tag_into(
          }
          Some(template) => match render_template(template, event) {
-             Ok(value_s) => {
--                let expanded_pairs = pair_expansion(&key_s, &value_s, static_tags, dynamic_tags)
-+                let expanded_pairs = pair_expansion(&key_s, &value_s, static_tags, dynamic_tags, true)
-                     .map_err(|_| TransformError::PairExpansionError)?;
+             Ok(value) => {
+-                let expanded_pairs = pair_expansion(&key, &value, static_tags, dynamic_tags)
++                let expanded_pairs = pair_expansion(&key, &value, static_tags, dynamic_tags, true)
+                     .map_err(|error| TransformError::PairExpansionError { key, value, error })?;
                  result.extend(expanded_pairs);
              }
