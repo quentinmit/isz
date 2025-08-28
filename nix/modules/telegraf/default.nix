@@ -228,6 +228,9 @@ in {
         (lib.mkIf pkgs.stdenv.isLinux {
           inputs = {
             kernel = [{}];
+            linux_cpu = [{
+              metrics = ["cpufreq" "thermal"];
+            }];
             cgroup = [{
               interval = cfg.interval.cgroup;
               paths = let
