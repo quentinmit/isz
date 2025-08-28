@@ -212,8 +212,8 @@ in {
     # Visual Studio Code
     {
       home.packages = with pkgs; lib.mkIf config.isz.quentin.vscode.install [
-        (unstable.vscode-with-extensions.override {
-          vscodeExtensions = with unstable.vscode-extensions; [
+        (vscode-with-extensions.override {
+          vscodeExtensions = with vscode-extensions; [
             mkhl.direnv
             bbenoist.nix
             golang.go
