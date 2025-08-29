@@ -19,7 +19,7 @@
         predicate = ''r["_measurement"] == "net" and r.interface != "all" and r.host =~ /''${host:regex}/'';
       };
       battery = {
-        tag = "device";
+        tag = "name";
         predicate = ''r._measurement == "power_supply" and r.type == "Battery" and r.host =~ /''${host:regex}/'';
         extra.hide = 2;
         extra.skipUrlSync = true;
@@ -270,8 +270,11 @@
           "charge_full_design"
           "charge_full"
           "charge_now"
+          "energy_full_design"
+          "energy_full"
+          "energy_now"
         ];
-        influx.filter.device = "\${battery}";
+        influx.filter.name = "\${battery}";
         influx.fn = "mean";
         influx.extra = ''
           |> map(fn: (r) => ({r with _value: r._value / 1000000.}))
@@ -280,7 +283,19 @@
         repeat = "battery";
         fields.charge_full_design.displayName = "Design capacity";
         fields.charge_full.displayName = "Last full capacity";
-        fields.charge_now.displayName = "Full charge";
+        fields.charge_now.displayName = "Charge";
+        fields.energy_full_design = {
+          displayName = "Design energy";
+          unit = "watth";
+        };
+        fields.energy_full = {
+          displayName = "Last full energy";
+          unit = "watth";
+        };
+        fields.energy_now = {
+          displayName = "Energy";
+          unit = "watth";
+        };
       };
       sensors.battery_voltage_ = {
         graph_title = "\${battery} voltage";
@@ -289,7 +304,7 @@
           "voltage_min_design"
           "voltage_now"
         ];
-        influx.filter.device = "\${battery}";
+        influx.filter.name = "\${battery}";
         influx.fn = "mean";
         influx.extra = ''
           |> map(fn: (r) => ({r with _value: r._value / 1000000.}))
@@ -305,7 +320,7 @@
         influx.filter._field = [
           "current_now"
         ];
-        influx.filter.device = "\${battery}";
+        influx.filter.name = "\${battery}";
         influx.fn = "mean";
         influx.extra = ''
           |> map(fn: (r) => ({r with _value: r._value / 1000000.}))
