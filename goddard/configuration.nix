@@ -265,6 +265,7 @@
         "armv7l-linux"
         "armv8l-linux"
       ];
+      maxJobs = 4;
     }
   ];
 }
