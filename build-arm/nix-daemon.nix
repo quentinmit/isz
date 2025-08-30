@@ -1,5 +1,9 @@
-{ lib, pkgs, ... }:
+{ lib, pkgs, config, ... }:
 {
+  sops.secrets."nix/secret-key" = {};
+  nix.settings.secret-key-files = [
+    config.sops.secrets."nix/secret-key".path
+  ];
   nix.settings.extra-platforms = [
     "armv7l-linux"
     "armv8l-linux"
