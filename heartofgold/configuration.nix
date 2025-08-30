@@ -106,7 +106,8 @@
   isz.gpu.amd = true;
 
   environment.systemPackages = with pkgs; [
-
+    kdePackages.krfb
+    kdePackages.krdc
   ];
 
   services.xserver.enable = true;
@@ -116,6 +117,10 @@
   };
   services.xserver.desktopManager.gnome.enable = true;
   services.xserver.windowManager.twm.enable = true;
+  services.desktopManager.plasma6.enable = true;
+  # Resolve conflict between GNOME and KDE
+  programs.ssh.askPassword = "${pkgs.kdePackages.ksshaskpass.out}/bin/ksshaskpass";
+  programs.kdeconnect.enable = true;
 
   fonts.fontDir.enable = true;
 

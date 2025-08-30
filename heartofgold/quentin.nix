@@ -8,6 +8,7 @@
       isz.base = true;
       isz.graphical = true;
       isz.quentin.multimedia = true;
+      isz.plasma.enable = true;
 
       home.packages = with pkgs; [
         zoom-us
