@@ -39,8 +39,8 @@
     ];
     arm_boost = true;
 
-    #over_voltage = 6;
-    #arm_freq = 2000;
+    over_voltage = 6;
+    arm_freq = 2000;
     #gpu_freq = 750;
 
     display_auto_detect = true;
@@ -145,6 +145,7 @@
     dtc
     ubootEnvtools
     kdePackages.plasma-firewall
+    libraspberrypi
   ];
 
   services.xserver.enable = true;
