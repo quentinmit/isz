@@ -232,6 +232,10 @@
   nix.settings = {
     trusted-users = [ "root" "quentin" ];
   };
+  sops.secrets."nix/secret-key" = {};
+  nix.settings.secret-key-files = [
+    config.sops.secrets."nix/secret-key".path
+  ];
 
   environment.wordlist = {
     enable = true;
