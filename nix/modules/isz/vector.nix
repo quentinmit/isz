@@ -156,6 +156,14 @@ in {
                 "timestamp": .timestamp,
                 "structured_metadata": structured_metadata,
               }
+              secs = to_unix_timestamp!(.timestamp)
+              age = to_unix_timestamp(now()) - secs
+              if age > 6*24*60*60 {
+                # Very old (early boot?)
+                # Just assume now is good enough
+                # TODO: use now() - uptime + .structured_metadata.trusted_SOURCE_BOOTTIME_TIMESTAMP
+                .timestamp = now()
+              }
               TELEGRAF_LEVELS = {
                 "E": "error",
                 "W": "warn",
