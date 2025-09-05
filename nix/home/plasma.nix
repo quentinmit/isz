@@ -7,7 +7,7 @@ let
       items;
 in {
   imports = [
-    plasma-manager.homeManagerModules.plasma-manager
+    plasma-manager.homeModules.plasma-manager
   ];
   options = with lib; {
     isz.plasma = {

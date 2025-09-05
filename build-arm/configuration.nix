@@ -57,7 +57,7 @@
     imageBuilder = {
       enableBinfmt = true;
       pkgs = pkgs.pkgsNativeGnu64;
-      kernelPackages = pkgs.pkgsNativeGnu64.linuxPackages_6_15;
+      kernelPackages = pkgs.pkgsNativeGnu64.linuxPackages_6_16;
     };
   };
 
@@ -67,7 +67,7 @@
   boot = {
     # TODO: Add config from https://github.com/armbian/build/blob/ca4dc8085a50e65158fc788800b1423cd7334fb5/config/kernel/linux-rockchip-rk3588-edge.config
     # TODO: Do we need 6.16?
-    kernelPackages = pkgs.linuxKernel.packages.linux_6_15;
+    kernelPackages = pkgs.linuxKernel.packages.linux_6_16;
 
     loader.grub.enable = false;
     loader.systemd-boot.enable = true;
