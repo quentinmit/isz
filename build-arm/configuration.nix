@@ -46,10 +46,10 @@
   # Use x86-64 qemu for run-vm
   virtualisation.vmVariantWithDisko = {
     virtualisation.qemu.package = pkgs.pkgsNativeGnu64.qemu;
-    disko.devices.zpool.zpool = {
-      rootFsOptions.keylocation = "file:///tmp/secret.key";
-      preCreateHook = "echo 'secretsecret' > /tmp/secret.key";
-      postCreateHook = "zfs set keylocation=prompt zpool";
+    disko.devices.disk.nvme0n1.content.partitions.luks.content = {
+      settings.keyFile = "/tmp/secret.key";
+      extraFormatArgs = lib.mkForce [];
+      preCreateHook = "echo -n 'secretsecret' > /tmp/secret.key";
     };
   };
   disko = {
@@ -117,7 +117,6 @@
   boot.initrd.clevis = {
     enable = true;
     useTang = true;
-    devices.zpool.secretFile = "/root/zpool.jwe";
   };
 
   networking.hostName = "build-arm";
