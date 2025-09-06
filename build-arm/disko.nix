@@ -23,8 +23,8 @@
     };
     unitConfig.DefaultDependencies = false;
     wants = ["network-online.target"];
-    after = ["network-online.target" "cryptsetup-pre.target" "dev-nvme0n1p4.device"];
-    requires = ["dev-nvme0n1p4.device"];
+    after = ["network-online.target" "cryptsetup-pre.target" "dev-nvme0n1p3.device"];
+    requires = ["dev-nvme0n1p3.device"];
     requiredBy = ["cryptsetup.target"];
     before = ["cryptsetup.target"];
   };
@@ -59,23 +59,31 @@
               mountOptions = ["fmask=0027" "dmask=0027"];
             };
           };
-          swap = {
-            priority = 3;
-            size = "32G";
-            content.type = "swap";
-          };
           luks = {
             priority = 4;
+            size = "100%";
             content = {
               type = "luks";
               name = "crypted";
               settings.allowDiscards = true;
               extraFormatArgs = ["--hw-opal-only"];
-              content.type = "zfs";
-              content.pool = "zpool";
+              content.type = "lvm_pv";
+              content.vg = "vg";
             };
           };
         };
+      };
+    };
+    lvm_vg.vg = {
+      type = "lvm_vg";
+      lvs.swap = {
+        size = "32G";
+        content.type = "swap";
+      };
+      lvs.zfs = {
+        size = "100%";
+        content.type = "zfs";
+        content.pool = "zpool";
       };
     };
     zpool.zpool = {
