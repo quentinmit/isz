@@ -61,6 +61,7 @@
               dht = auto
               dht_port = 6882
               network.local_address.set = "127.0.0.1"
+              throttle.up = 10K, 10
             '';
           };
         }
