@@ -15,14 +15,14 @@
     serviceConfig = {
       Type = "oneshot";
       User = "root";
-      ExecStart = "-${pkgs.clevis}/bin/clevis luks unlock -d ${config.disko.devices.disk.nvme0n1.content.partitions.luks.device} -n ${config.disko.devices.disk.nvme0n1.content.partitions.luks.name}";
+      ExecStart = "-${pkgs.clevis}/bin/clevis luks unlock -d ${config.disko.devices.disk.nvme0n1.content.partitions.luks.device} -n ${config.disko.devices.disk.nvme0n1.content.partitions.luks.content.name}";
     };
     unitConfig.DefaultDependencies = false;
     wants = ["network-online.target"];
     after = ["network-online.target" "cryptsetup-pre.target" devUnit];
     requires = [devUnit];
     requiredBy = ["cryptsetup.target"];
-    before = ["cryptsetup.target"];
+    before = ["cryptsetup.target" "systemd-cryptsetup@crypted.service"];
   };
   # Allow TRIM
   environment.etc."lvm/lvm.conf".text = ''
