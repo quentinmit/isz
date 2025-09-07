@@ -1,34 +1,38 @@
 { lib, pkgs, config, ... }:
 {
-  boot.initrd.systemd.services.unlock = {
-    path = with pkgs; [
-      clevis
-      curl
-      cryptsetup
-      luksmeta
-      gnused
-      tpm2-tools
-      jose
-      libpwquality
-      coreutils
-      gnugrep
-      bash
-    ];
+  # Utilities used by `clevis luks`
+  boot.initrd.systemd.initrdBin = with pkgs; [
+    cryptsetup
+    gnused
+    gnugrep
+    luksmeta
+  ];
+  boot.initrd.systemd.services.unlock = let
+    devUnit = "dev-disk-by\\x2dpartlabel-disk\\x2dnvme0n1\\x2dluks.device";
+  in {
     enable = true;
     unitConfig.Description = "Unlock root with clevis";
     serviceConfig = {
       Type = "oneshot";
       User = "root";
-      ExecStart = "${pkgs.clevis}/bin/clevis luks unlock -d ${config.disko.devices.disk.nvme0n1.content.partitions.luks.device} -n ${config.disko.devices.disk.nvme0n1.content.partitions.luks.name}";
+      ExecStart = "-${pkgs.clevis}/bin/clevis luks unlock -d ${config.disko.devices.disk.nvme0n1.content.partitions.luks.device} -n ${config.disko.devices.disk.nvme0n1.content.partitions.luks.name}";
     };
     unitConfig.DefaultDependencies = false;
     wants = ["network-online.target"];
-    after = ["network-online.target" "cryptsetup-pre.target" "dev-nvme0n1p3.device"];
-    requires = ["dev-nvme0n1p3.device"];
+    after = ["network-online.target" "cryptsetup-pre.target" devUnit];
+    requires = [devUnit];
     requiredBy = ["cryptsetup.target"];
     before = ["cryptsetup.target"];
   };
-
+  # Allow TRIM
+  environment.etc."lvm/lvm.conf".text = ''
+    devices/issue_discards = 1
+  '';
+  # Wait for LUKS before trying to import the pool
+  boot.initrd.systemd.services.zfs-import-zpool = {
+    after = [ "cryptsetup.target" ];
+    wants = [ "cryptsetup.target" ];
+  };
   disko.devices = {
     disk.nvme0n1 = {
       type = "disk";

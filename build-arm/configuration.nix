@@ -51,6 +51,7 @@
       extraFormatArgs = lib.mkForce [];
       preCreateHook = "echo -n 'secretsecret' > /tmp/secret.key";
     };
+    boot.initrd.systemd.emergencyAccess = true;
   };
   disko = {
     imageBuilder = {
