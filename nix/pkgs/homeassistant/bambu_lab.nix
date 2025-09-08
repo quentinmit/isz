@@ -8,12 +8,12 @@
 }:
 let
   owner = "greghesp";
-  version = "2.1.10";
+  version = "2.2.0";
   src = fetchFromGitHub {
     inherit owner;
     repo = "ha-bambulab";
     tag = "v${version}";
-    hash = "sha256-y6HFga1GjKOP5/E44aT0QnylqdeBqnfaoWcMwtUI8Jw=";
+    hash = "sha256-R6W7v/+cAdJc3QaeKIfAdE1Xu9INpf8Y0n966bfwIVQ=";
   };
 in buildHomeAssistantComponent {
   inherit owner version;
