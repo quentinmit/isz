@@ -8,7 +8,53 @@
     luksmeta
   ];
   boot.initrd.systemd.services.unlock = let
-    devUnit = "dev-disk-by\\x2dpartlabel-disk\\x2dnvme0n1\\x2dluks.device";
+    # https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#String%20Escaping%20for%20Inclusion%20in%20Unit%20Names
+    # https://www.freedesktop.org/software/systemd/man/latest/systemd-escape.html
+    # "/" is replaced with "-"
+    # 0-9A-Za-z/:_ are replaced with "\x2d" escapes
+    # "." is replaced with "\x2e" iff it is the first character in the string
+    escapePart = first: s: let
+      allowedChars = "[0-9A-Za-z/:_]";
+      charToHex = c: lib.toLower (lib.toHexString (lib.strings.charToInt c));
+    in
+      lib.concatImapStrings (i: c:
+        if
+          (c == "." && (i > 0 || !first))
+          || lib.match allowedChars c != null || c == ""
+        then
+          c
+        else
+          "\\x" + charToHex c
+      ) (lib.stringToCharacters s);
+    escapeUnitName = name: escapePart true name;
+    # For paths, additional rules apply:
+    # Leading, trailing, and duplicate "/" are removed
+    # Leading "../" components are removed
+    # "/./" components are removed
+    escapePathInUnitName = path: let
+      pathParts = builtins.split "[/]+" path;
+      pathParts' = lib.foldl' (acc: x:
+        if (acc == [] && (x == "" || x == [] || x == "..")) || x == "." || (acc != [] && x == [] && lib.last acc == []) then
+          acc
+        else
+          acc ++ [ x ]
+      ) [] pathParts;
+      pathParts'' = lib.foldr (x: acc:
+        if (acc == [] && (x == "" || x == [])) then
+          acc
+        else
+          [ x ] ++ acc
+      ) [] pathParts';
+    in
+      if
+        pathParts'' == [ ]
+      then
+        "-"
+      else
+         lib.concatImapStrings
+           (i: s: if lib.isList s then "-" else (escapePart (i == 0) s))
+           pathParts'';
+    devUnit = "${escapePathInUnitName "/dev/disk/by-partlabel/${config.disko.devices.disk.nvme0n1.content.partitions.luks.label}"}.device";
   in {
     enable = true;
     unitConfig.Description = "Unlock root with clevis";
