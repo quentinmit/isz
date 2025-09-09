@@ -34,7 +34,7 @@
     wants = [ "cryptsetup.target" ];
   };
   disko.devices = {
-    disk.nvme0n1 = {
+    disk.nvme0n1 = { config, ... }: {
       type = "disk";
       device = "/dev/nvme0n1";
       imageSize = "64G";
@@ -43,7 +43,7 @@
         postCreateHook = let
           uboot = "${pkgs.unstable.ubootOrangePi5Max}/u-boot-rockchip.bin";
         in ''
-          dd if=${uboot} of=${config.disko.devices.disk.nvme0n1.content.partitions.loader1.device}
+          dd if=${uboot} of=${config.content.partitions.loader1.device}
         '';
         partitions = {
           # https://opensource.rock-chips.com/wiki_Partitions
