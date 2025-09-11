@@ -45,6 +45,8 @@
         "$HOME/.cache/"
         "$HOME/Software/nixpkgs/"
         "$HOME/.local/share/"
+        "$HOME/.local/state/"
+        "$HOME/.emacs-profiles/spacemacs/.cache/"
         "$HOME/.gradle/"
         "$HOME/.zoom/"
         "$HOME/.npm/"
