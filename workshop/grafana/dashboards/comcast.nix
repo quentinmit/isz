@@ -179,6 +179,21 @@
       })
       {
         panel = {
+          gridPos = { x = 0; y = 31; w = 12; h = 8; };
+          title = "Modem Uptime";
+          interval = mikrotikInterval;
+        };
+        influx = {
+          filter._measurement = "hitron-sysinfo";
+          filter._field = "systemUptime";
+          fn = "last";
+        };
+        panel.fieldConfig.defaults = {
+          unit = "s";
+        };
+      }
+      {
+        panel = {
           gridPos = { x = 12; y = 31; w = 12; h = 8; };
           title = "DOCSIS DS OFDM Errors";
           inherit interval;
