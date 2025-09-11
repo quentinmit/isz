@@ -32,7 +32,7 @@
           "Top shelf chargers"
           "Middle shelf USB chargers"
           "Camera chargers"
-          "Turnigy charger"
+          "Front panel 140W USB-C"
         ];
       };
 
@@ -81,7 +81,7 @@
             "Channel 1 nominal current" = "3 A";
             "Channel 2 nominal current" = "5 A";
             "Channel 3 nominal current" = "6 A";
-            "Channel 4 nominal current" = "7 A";
+            "Channel 4 nominal current" = "10 A";
           };
         };
       };
