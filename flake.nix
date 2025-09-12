@@ -132,6 +132,7 @@
             })) pkgs;
       in {
         legacyPackages = pkgs;
+        devShells.systemd-metrics = import ./nix/modules/telegraf/systemd-metrics/shell.nix { inherit pkgs; };
         devShells.esphome = import ./workshop/esphome/shell.nix { pkgs = pkgs.unstable; };
         devShells.pico-sdk = pkgs.mkShell {
           buildInputs = with pkgs; [
