@@ -1,10 +1,12 @@
 #!/usr/bin/python3
-from influxdb_client import Point
+from typing import Any, cast
+from typing_extensions import TypeIs
+from influxdb_client.client.write.point import Point
 import asyncio
 import argparse
 import abc
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 import functools
 import io
@@ -13,6 +15,9 @@ import re
 import sys
 import time
 import routeros_api
+import routeros_api.api
+import routeros_api.exceptions
+import routeros_api.resource
 
 
 class MyPoint(Point):
@@ -51,7 +56,7 @@ def to_bool(base: str, value: str):
 def to_rate(base: str, value: str):
     if base != "rate" and not base.endswith("-rate"):
         raise ValueError("not rate")
-    d = {
+    d: dict[str, int|str] = {
         base+"-name": value,
     }
     parts = value.split("-", 1)
@@ -165,18 +170,18 @@ def to_current_tx_powers(base: str, value: str) -> list:
         ))
     return ret
 
-def to_expires_after(base: str, value: str) -> dict:
+def to_expires_after(base: str, value: str) -> Mapping[str, int|str]:
     if base not in {"prefix", "address"}:
         raise ValueError("wrong field")
     parts = value.split(", ")
-    ret = {base: parts[0]}
+    ret: dict[str, int|str] = {base: parts[0]}
     if len(parts) > 1:
         ret.update(to_duration(f"{base}-expires-after", parts[1]))
     return ret
 
 def to_bandwidth(base: str, value: str) -> dict:
     parts = zip(("rx", "tx"), value.split('/', 1))
-    ret = {}
+    ret: dict[str, int] = {}
     for suffix, value in parts:
         if value == "unlimited":
             value = -1
@@ -191,7 +196,7 @@ def to_float(base: str, value: str) -> dict:
         raise ValueError("wrong field")
     return {base: float(value)}
 
-def to_ethernet_rates(base: str, value: str) -> list:
+def to_ethernet_rates(base: str, value: str) -> dict|list:
     if value == "":
         return {}
     parts = value.split(",")
@@ -260,15 +265,17 @@ class Request(abc.ABC):
 
     @property
     def proplist_str(self):
+        if self.proplist is None:
+            return None
         return ",".join(self.proplist)
 
-    def process_entry(self, points: dict[str, MyPoint], entry: dict):
+    def process_entry(self, points: defaultdict[str|None, MyPoint], entry: dict[str, str]):
         p = points[entry.get('id')]
         for tag in self.tag_props:
             if value := entry.get(tag):
                 p.tag(tag, value)
         for field, parser in self.field_types.items():
-            if field not in entry:
+            if field not in entry or not parser:
                 continue
             try:
                 parsed = parser(field, entry[field])
@@ -283,24 +290,31 @@ class Request(abc.ABC):
                 pass
 
     @abc.abstractmethod
-    def call(self, points: dict[str, MyPoint]):
+    def call(self, points: defaultdict[str|None, MyPoint]) -> list[dict[str, str]]:
         pass
 
-    def __call__(self, points: dict[str, MyPoint]):
+    def __call__(self, points: defaultdict[str|None, MyPoint]):
         for entry in self.call(points):
             self.process_entry(points, entry)
 
+def is_iterable[T](obj, typ: type[T]=object) -> TypeIs[Iterable[T]]:
+    return isinstance(obj, Iterable) and all(isinstance(v, typ) for v in obj)
+
 @dataclass
 class MonitorRequest(Request):
-    def call(self, points: dict[str, MyPoint]):
+    def call(self, points: defaultdict[str|None, MyPoint]):
         if not points:
             # We didn't find any resources
             return []
-        return self.r.call('monitor', {'.proplist': self.proplist_str, '.id': ','.join(points.keys()), 'once': ''})
+        args = {'.proplist': self.proplist_str, 'once': ''}
+        ids = set(points.keys())
+        if is_iterable(ids, str):
+            args['.id'] = ','.join(cast(Iterable[str], ids))
+        return self.r.call('monitor', args)
 
 @dataclass
 class Resource(Request):
-    field_prop_defaults: dict[str, any] = field(default_factory=dict)
+    field_prop_defaults: dict[str, Any] = field(default_factory=dict)
     monitor: Request|None = None
 
     def __init__(self, *, tag_props={}, field_types={}, field_prop_defaults={}, monitor=None):
@@ -349,10 +363,10 @@ class Resource(Request):
             self.monitor.proplist = monitor_field_parsers.keys() | {'.id'}
         return self
 
-    def call(self, points: dict[str, MyPoint]):
+    def call(self, points: defaultdict[str|None, MyPoint]):
         return self.r.call('print', {'.proplist': self.proplist_str})
 
-    def __call__(self, points: dict[str, MyPoint]):
+    def __call__(self, points: defaultdict[str|None, MyPoint]):
         super().__call__(points)
         if self.monitor:
             self.monitor(points)
@@ -388,11 +402,11 @@ class FirewallResource(Resource):
             raise
         return self
 
-    def call(self, points: dict[str, MyPoint]):
+    def call(self, points: defaultdict[str|None, MyPoint]):
         # No proplist so we fetch every property
         return self.r.call('print')
 
-    def process_entry(self, points: dict[str, MyPoint], entry: dict):
+    def process_entry(self, points: defaultdict[str|None, MyPoint], entry: dict):
         p = points[entry.get('id')]
         rule = []
         for key, value in sorted(entry.items()):
@@ -741,6 +755,19 @@ TAGS = {
     "/ipv6/firewall/filter": FirewallResource(),
     "/ipv6/firewall/nat": FirewallResource(),
     "/ipv6/firewall/raw": FirewallResource(),
+    "/system/resource": Resource(
+        tag_props={
+            "architecture-name",
+            "board-name",
+            "platform",
+            "cpu",
+        },
+        field_types={
+            "version": to_str,
+            "factory-software": to_str,
+            "build-time": to_str,
+        },
+    ),
 }
 
 async def main():
