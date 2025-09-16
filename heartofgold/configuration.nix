@@ -142,6 +142,17 @@
 
   isz.krb5.enable = true;
 
+  nixpkgs.overlays = [(final: prev: {
+    libblurayFull = prev.libbluray.override {
+      withAACS = true;
+      withBDplus = true;
+      withJava = true;
+    };
+    vlc = prev.vlc.override {
+      libbluray = final.libblurayFull;
+    };
+  })];
+
   nix.settings = {
     trusted-users = [ "root" "quentin" ];
   };
