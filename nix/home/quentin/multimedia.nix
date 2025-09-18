@@ -51,6 +51,8 @@ in {
         jellyfin-media-player
         jftui
         delfin
+        haruna
+        smplayer
       ];
       programs.mpv = {
         enable = true;
