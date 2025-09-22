@@ -174,6 +174,8 @@ in {
           diverged = "⇕⇡\${ahead_count}⇣\${behind_count}";
           behind = "⇣\${count}";
         };
+        # Disable *.ts triggering NodeJS
+        nodejs.detect_extensions = ["js" "mjs" "cjs" "mts" "cts"];
       };
     };
 
