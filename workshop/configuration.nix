@@ -11,8 +11,10 @@
       disko.nixosModules.disko
       ./disko.nix
       ./nginx.nix
+      ./mail.nix
       ./postfix.nix
       ./postgresql.nix
+      ./quentin.nix
       ./home-assistant
       ./telegraf.nix
       ./dashboard.nix

@@ -42,7 +42,20 @@ in {
               type = enum ["oauth2" "proxy" "saml"];
             };
             redirect_uris = mkOption {
-              type = coercedTo str (s: lib.splitString "\n" (lib.trim s)) (listOf str);
+              type = coercedTo
+                str (s: lib.splitString "\n" (lib.trim s))
+                (listOf
+                  (coercedTo
+                    str (url: { matching_mode = "strict"; inherit url; })
+                    (submodule {
+                      options.matching_mode = mkOption {
+                        type = enum ["strict" "regex"];
+                        default = "strict";
+                      };
+                      options.url = mkOption {
+                        type = str;
+                      };
+                    })));
             };
             host = mkOption {
               type = str;
@@ -151,10 +164,7 @@ in {
                 model = "authentik_providers_oauth2.oauth2provider";
                 inherit (common) identifiers;
                 attrs = common.attrs // {
-                  redirect_uris = map (url: {
-                    matching_mode = "strict";
-                    inherit url;
-                  }) config.redirect_uris;
+                  inherit (config) redirect_uris;
 
                   client_id = lib.mkIf (sopsPlaceholder ? "authentik/apps/${config.slug}/client_id") sopsPlaceholder."authentik/apps/${config.slug}/client_id";
                   client_secret = lib.mkIf (sopsPlaceholder ? "authentik/apps/${config.slug}/client_secret") sopsPlaceholder."authentik/apps/${config.slug}/client_secret";
