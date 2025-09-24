@@ -88,7 +88,9 @@
               upload_rate = 1000
               port_random = yes
               dht.mode.set = auto
-              dht_port = 6882
+              dht.port.set = 6882
+              # https://github.com/rakshasa/rtorrent/issues/1569
+              network.bind_address.set = 0.0.0.0
               #network.local_address.set = "127.0.0.1"
 
               # Per-torrent slots (default 50/50)
