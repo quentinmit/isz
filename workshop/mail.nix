@@ -52,14 +52,64 @@ in {
       }
     '';
   };
+
+  sops.secrets."xoauth2/o365/tenant_id" = {};
+  sops.secrets."xoauth2/o365/client_id" = {};
+  sops.secrets."xoauth2/o365/client_secret" = {};
+  sops.templates."oauth2ms-config.json" = {
+    owner = "quentin";
+    content = builtins.toJSON {
+      tenant_id = config.sops.placeholder."xoauth2/o365/tenant_id";
+      client_id = config.sops.placeholder."xoauth2/o365/client_id";
+      client_secret = config.sops.placeholder."xoauth2/o365/client_secret";
+      redirect_host = "localhost";
+      redirect_port = "7000";
+      redirect_path = "/getToken/";
+      scopes = [
+        "https://outlook.office.com/IMAP.AccessAsUser.All"
+        "https://outlook.office.com/SMTP.Send"
+      ];
+    };
+  };
   home-manager.users.quentin = let
     isync = pkgs.isync.override {
         withCyrusSaslXoauth2 = true;
       };
-  in {
-    home.packages = [ isync ];
+    nixosConfig = config;
+  in { config, ... }: {
+    home.packages = [
+      isync
+      pkgs.oauth2ms
+    ];
+    xdg.configFile."oauth2ms/config.json".source = config.lib.file.mkOutOfStoreSymlink nixosConfig.sops.templates."oauth2ms-config.json".path;
     home.file.".mbsyncrc".text = ''
-      
+      IMAPAccount mit
+      Host outlook.office365.com
+      Port 993
+      User quentin@mit.edu
+      PassCmd ${lib.getExe pkgs.oauth2ms}
+      AuthMechs XOAUTH2
+      TLSType IMAPS
+      # It can be very, very slow.
+      Timeout 600
+
+      IMAPStore mit-remote
+      Account mit
+
+      MaildirStore mit-local
+      Path /home/quentin/Maildir/MIT/
+      Inbox /home/quentin/Maildir/MIT/INBOX
+      SubFolders Verbatim
+
+      Channel mit
+      Far :mit-remote:
+      Near :mit-local:
+      #Patterns Archive Drafts SentItems DeletedItems JunkEmail INBOX
+      Expunge none
+      #Expunge both
+      CopyArrivalDate yes
+      Sync pull
+      Create near
     '';
     services.mbsync = {
       enable = false;
