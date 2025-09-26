@@ -140,6 +140,9 @@ mister           A 192.168.88.16
                  EUI48 E0-AD-47-50-0A-A4
 livingroom-air-1 A 192.168.88.17
                  EUI48 E4-B3-23-CF-96-D0
+glkvm            A 192.168.88.18
+                 EUI48 94-83-C4-AD-91-9F
+
 ; DHCP range is 88.50-254
 
 mac              A 192.168.88.100
