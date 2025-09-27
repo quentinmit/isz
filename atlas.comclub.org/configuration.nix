@@ -3,6 +3,7 @@
   imports = [
     ./disko.nix
     disko.nixosModules.disko
+    ./firehol.nix
   ];
 
   nixpkgs.hostPlatform = { system = "x86_64-linux"; };
