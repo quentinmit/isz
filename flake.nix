@@ -169,6 +169,7 @@
           "rascsi"
           "uconsole"
           "build-arm"
+          "atlas.comclub.org"
         ] (name: lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [

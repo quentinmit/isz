@@ -28,7 +28,7 @@
       ];
       i18n.defaultLocale = "en_US.UTF-8";
 
-      networking.domain = "isz.wtf";
+      networking.domain = lib.mkDefault "isz.wtf";
 
       programs.mtr.enable = true;
 
