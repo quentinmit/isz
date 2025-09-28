@@ -37,6 +37,7 @@
         plasma-homeassistant
         home-assistant-cli
         zapzap
+        xgpro
       ];
 
       services.baloo.excludeFolders = [
