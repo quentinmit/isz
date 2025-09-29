@@ -4,13 +4,24 @@
     ./disko.nix
     disko.nixosModules.disko
     ./networking.nix
+    ./libvirt.nix
+    ./users.nix
+    ./dovecot.nix
+    ./nginx.nix
+    # home-assistant
+    # apcupsd
+    # postfix
+    # postgrey
+    # amavisd
+    # named
+    # dhcp
   ];
 
   nixpkgs.hostPlatform = { system = "x86_64-linux"; };
 
   sops.defaultSopsFile = ./secrets.yaml;
 
-  virtualisation.vmVariantWithDisko = let
+  virtualisation = let
     qemu-common = import "${modulesPath}/../lib/qemu-common.nix" { inherit lib pkgs; };
     interfaces = [{
       name = "enp2s0";
@@ -27,16 +38,21 @@
       # MAC Addresses for QEMU network devices are lowercase, and udev string comparison is case-sensitive.
       ''SUBSYSTEM=="net",ACTION=="add",ATTR{address}=="${lib.toLower (qemu-common.qemuNicMac fst.vlan 1)}",NAME="${fst.name}"''
     );
-  in {
-    users.users.root.hashedPassword = "";
-    boot.initrd.systemd.emergencyAccess = true;
-    disko.devices.zpool.zpool = {
-      rootFsOptions.keylocation = "file:///tmp/secret.key";
-      preCreateHook = "echo 'secretsecret' > /tmp/secret.key";
-      postCreateHook = "zfs set keylocation=prompt zpool";
+    vmVariant = {
+      users.users.root.hashedPassword = "";
+      boot.initrd.systemd.emergencyAccess = true;
     };
-    virtualisation.qemu.options = qemuOptions;
-    boot.initrd.services.udev.rules = lib.concatMapStrings (x: x + "\n") udevRules;
+  in {
+    inherit vmVariant;
+    vmVariantWithDisko = vmVariant // {
+      disko.devices.zpool.zpool = {
+        rootFsOptions.keylocation = "file:///tmp/secret.key";
+        preCreateHook = "echo 'secretsecret' > /tmp/secret.key";
+        postCreateHook = "zfs set keylocation=prompt zpool";
+      };
+      virtualisation.qemu.options = qemuOptions;
+      boot.initrd.services.udev.rules = lib.concatMapStrings (x: x + "\n") udevRules;
+    };
   };
 
   boot = {

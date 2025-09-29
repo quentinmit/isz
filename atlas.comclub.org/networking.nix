@@ -15,7 +15,21 @@
     br0 = {
       name = "br0";
       networkConfig.Address = "192.168.0.254/24";
+      routingPolicyRules = [{
+        Family = "ipv4";
+        FirewallMark = 5;
+        Table = 500;
+      }];
+      routes = [{
+        Destination = "192.168.0.5";
+        Table = 500;
+      }];
     };
+    lo.routes = [{
+      Destination = "0.0.0.0/0";
+      Type = "local";
+      Table = 500;
+    }];
     # Lower port
     enp2s0 = {
       matchConfig.Name = [
