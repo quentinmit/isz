@@ -10,7 +10,7 @@
     ./nginx.nix
     # home-assistant
     # apcupsd
-    # postfix
+    ./postfix.nix
     # postgrey
     # amavisd
     # named

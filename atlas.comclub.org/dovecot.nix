@@ -61,14 +61,14 @@ in {
       }
       mail_privileged_group = mail
       service lmtp {
-        unix_listener /var/spool/postfix/private/dovecot-lmtp {
+        unix_listener /var/lib/postfix/queue/private/dovecot-lmtp {
           mode = 0660
           user = postfix
           group = postfix
         }
       }
       service auth {
-        unix_listener /var/spool/postfix/private/auth {
+        unix_listener /var/lib/postfix/queue/private/auth {
           mode = 0660
           user = postfix
           group = postfix
