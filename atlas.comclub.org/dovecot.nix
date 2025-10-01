@@ -1,8 +1,9 @@
 { config, ... }:
 let
-  sslCertDir = config.security.acme.certs."mail.isz.wtf".directory;
+  sslCertDir = config.security.acme.certs."mail.comclub.org".directory;
 in {
-  services.nginx.virtualHosts."mail.isz.wtf".enableACME = true;
+  services.nginx.virtualHosts."mail.comclub.org".enableACME = true;
+  users.groups.mail = {};
   services.dovecot2 = {
     enable = true;
 
@@ -11,8 +12,9 @@ in {
     sslCACert = "${sslCertDir}/chain.pem";
 
     enableLmtp = true;
+    enablePAM = false; # Handled below
 
-    mailLocation = "mdbox:/var/lib/dovecot/mdbox/%u";
+    mailLocation = "mdbox:/var/lib/dovecot/mdbox/%d/%n";
 
     mailPlugins.globally.enable = [
       "acl"
@@ -23,7 +25,6 @@ in {
     ];
 
     extraConfig = ''
-      auth_username_format = %Ln
       auth_mechanisms = plain login
       auth_verbose = yes
 
@@ -33,8 +34,8 @@ in {
       namespace {
         type = shared
         separator = /
-        prefix = shared/%%u/
-        location = mdbox:/var/lib/dovecot/mdbox/%%u
+        prefix = shared/%%n/
+        location = mdbox:/var/lib/dovecot/mdbox/%%n
         subscriptions = no
         list = children
       }
@@ -75,6 +76,8 @@ in {
         }
       }
       # Virtual domains
+      auth_username_format = %Lu
+      auth_debug = yes
       passdb {
         driver = passwd-file
         # Each domain has a separate passwd-file:
@@ -85,10 +88,24 @@ in {
         # Each domain has a separate passwd-file:
         args = username_format=%n /etc/dovecot/auth/%d/passwd
       }
+      passdb {
+        driver = static
+        args = user=%u noauthenticate
+        skip = authenticated
+        username_filter = *@comclub.org
+      }
+      userdb {
+        driver = passwd
+      }
+      passdb {
+        driver = pam
+        args = dovecot2
+      }
     '';
     pluginSettings = {
       acl = "vfile:/etc/dovecot/global-acls:cache_secs=300";
       sieve = "file:~/sieve;active=~/.dovecot.sieve";
     };
   };
+  security.pam.services.dovecot2 = {};
 }

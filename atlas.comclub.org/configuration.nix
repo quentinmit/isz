@@ -12,7 +12,6 @@
     # apcupsd
     ./postfix.nix
     # postgrey
-    # amavisd
     # named
     # dhcp
   ];

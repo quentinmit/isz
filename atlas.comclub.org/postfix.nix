@@ -1,9 +1,10 @@
 { config, lib, pkgs, ... }:
 let
-  sslCertDir = config.security.acme.certs."mail.isz.wtf".directory;
+  sslCertDir = config.security.acme.certs."mail.comclub.org".directory;
   isVM = config.virtualisation ? qemu;
 in {
-  sops.secrets."smtp_sasl_password_maps" = {};
+  sops.secrets."postfix/smtp_sasl_password_maps" = {};
+  sops.secrets."postfix/user_aliases" = {};
   services.postfix = {
     enable = true;
 
@@ -25,13 +26,12 @@ in {
     ];
     recipientDelimiter = "+";
 
-    rootAlias = "root@isz.wtf";
     sslCert = "${sslCertDir}/fullchain.pem";
     sslKey = "${sslCertDir}/key.pem";
     networks = ["127.0.0.0/8" "[::ffff:127.0.0.0]/104" "[::1]/128" "192.168.0.0/16"];
     relayHost = "mail.smtp2go.com";
     relayPort = 2525;
-    mapFiles.smtp_sasl_password_maps = lib.mkIf (!isVM) config.sops.secrets."smtp_sasl_password_maps".path;
+    mapFiles.smtp_sasl_password_maps = lib.mkIf (!isVM) config.sops.secrets."postfix/smtp_sasl_password_maps".path;
     mapFiles.virtual = pkgs.writeText "virtual" ''
       postmaster@hb-rights.org        postmaster
     '';
@@ -41,7 +41,25 @@ in {
       topspotbrands.com REJECT UBCE
       colllisted.com REJECT UBCE
     '';
-    extraAliases = ""; # TODO
+    aliasFiles.user_aliases = lib.mkIf (!isVM) config.sops.secrets."postfix/user_aliases".path;
+    extraAliases = ''
+      mailer-daemon: postmaster
+      postmaster: root
+      nobody: root
+      root: quentin
+
+      # Standard RFC2142 aliases
+      abuse:              postmaster
+      ftp:                root
+      hostmaster:         root
+      news:               usenet
+      noc:                root
+      security:           root
+      usenet:             root
+      uucp:               root
+      webmaster:          root
+      www:                webmaster
+    '';
     config = {
       biff = false;
 
@@ -70,7 +88,6 @@ in {
       # 50 MiB
       message_size_limit = 52428800;
 
-      content_filter = "smtp-amavis:[127.0.0.1]:10024";
       smtpd_recipient_restrictions = [
         "permit_mynetworks"
         #reject_unauth_destination
@@ -97,8 +114,45 @@ in {
       #virtual_gid_maps = static:8
       virtual_alias_maps = ["hash:/var/lib/postfix/conf/virtual"];
 
+      # Merged with extraAliases
+      alias_maps = lib.mkIf (!isVM) ["hash:/var/lib/postfix/conf/user_aliases"];
+
       smtpd_sasl_type = "dovecot";
       smtpd_sasl_path = "private/auth";
     };
+    masterConfig.submission = {
+      type = "inet";
+      private = false;
+      command = "smtpd";
+      args = [
+        "-o" "smtpd_tls_security_level=encrypt"
+        "-o" "smtpd_sasl_auth_enable=yes"
+        "-o" "smtpd_client_restrictions=permit_sasl_authenticated,reject"
+        "-o" "milter_macro_daemon_name=ORIGINATING"
+      ];
+    };
+  };
+  services.rspamd = {
+    enable = true;
+    postfix.enable = true;
+    locals."milter_headers.conf".text = ''
+      extended_spam_headers = true;
+      use = ["x-spam-status"];
+    '';
+    # TODO: Enable DKIM signing?
+    locals."dkim_signing.conf".text = ''
+      enabled = false;
+    '';
+    locals."redis.conf".text = ''
+      servers = "${config.services.redis.servers.rspamd.unixSocket}";
+    '';
+  };
+  services.redis.servers.rspamd = {
+    enable = true;
+    # 0 disables listening to TCP ports and will only use unix sockets. Default
+    # unix socket path is /run/redis-${name}/redis.sock thus
+    # /run/redis-rspamd/redis.sock here.
+    port = 0;
+    user = config.services.rspamd.user;
   };
 }
