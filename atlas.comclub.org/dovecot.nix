@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   sslCertDir = config.security.acme.certs."mail.comclub.org".directory;
 in {
@@ -76,24 +76,20 @@ in {
         }
       }
       # Virtual domains
-      auth_username_format = %Lu
+      auth_username_format = %{if;%d;eq;comclub.org;%Ln;%Lu}
       auth_debug = yes
+      # First try to look up the user in a virtual passwd file.
       passdb {
         driver = passwd-file
         # Each domain has a separate passwd-file:
-        args = scheme=plain-md5 username_format=%n /etc/dovecot/auth/%d/passwd
+        args = scheme=plain-md5 username_format=%Ln /etc/dovecot/auth/%d/passwd
       }
       userdb {
         driver = passwd-file
         # Each domain has a separate passwd-file:
-        args = username_format=%n /etc/dovecot/auth/%d/passwd
+        args = username_format=%Ln /etc/dovecot/auth/%d/passwd
       }
-      passdb {
-        driver = static
-        args = user=%u noauthenticate
-        skip = authenticated
-        username_filter = *@comclub.org
-      }
+      # If that didn't work, maybe it's a local user.
       userdb {
         driver = passwd
       }
