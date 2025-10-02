@@ -54,10 +54,10 @@
     };
   };
 
-  boot = {
-    loader.grub.enable = false;
-    loader.systemd-boot.enable = true;
+  isz.secureBoot.enable = true;
+  boot.lanzaboote.pkiBundle = lib.mkForce "/var/lib/sbctl";
 
+  boot = {
     initrd.availableKernelModules = [
       "xhci_pci"
       "ahci"
@@ -68,8 +68,6 @@
       "sr_mod"
     ];
     kernelModules = [ "kvm-intel" ];
-
-    initrd.systemd.enable = true;
 
     consoleLogLevel = 9;
     kernelParams = [
@@ -89,6 +87,10 @@
 
   boot.initrd.clevis = {
     enable = true;
+    # Don't use in VM builds
+    devices.zpool = lib.mkIf config.boot.zfs.enabled {
+      secretFile = ./zpool.jwe;
+    };
   };
 
   networking.hostName = "atlas";
