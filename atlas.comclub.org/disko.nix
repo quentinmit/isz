@@ -102,6 +102,10 @@
         };
         "var/lib/hass".type = "zfs_fs";
         "var/lib/libvirt".type = "zfs_fs";
+        "var/lib/mail" = {
+          type = "zfs_fs";
+          options.atime = "off";
+        };
         "var/lib/postfix".type = "zfs_fs";
         "var/lib/postgresql" = {
           type = "zfs_fs";

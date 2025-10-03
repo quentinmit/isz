@@ -14,7 +14,7 @@ in {
     enableLmtp = true;
     enablePAM = false; # Handled below
 
-    mailLocation = "mdbox:/var/lib/dovecot/mdbox/%d/%n";
+    mailLocation = "mdbox:~/mdbox";
 
     mailPlugins.globally.enable = [
       "acl"
@@ -35,7 +35,7 @@ in {
         type = shared
         separator = /
         prefix = shared/%%n/
-        location = mdbox:/var/lib/dovecot/mdbox/%%n
+        location = mdbox:%%h/mdbox
         subscriptions = no
         list = children
       }
@@ -88,10 +88,12 @@ in {
         driver = passwd-file
         # Each domain has a separate passwd-file:
         args = username_format=%Ln /etc/dovecot/auth/%d/passwd
+        override_fields = home=/var/lib/mail/home/%d/%n
       }
       # If that didn't work, maybe it's a local user.
       userdb {
         driver = passwd
+        override_fields = home=/var/lib/mail/home/comclub.org/%n
       }
       passdb {
         driver = pam
