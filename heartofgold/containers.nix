@@ -34,6 +34,10 @@
     '';
   };
 
+  services.locate.prunePaths = lib.mkOptionDefault [
+    "/home/quentin/hog-data/quentin/private"
+  ];
+
   containers.rtorrent = {
     privateNetwork = true;
     extraFlags = [

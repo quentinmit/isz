@@ -68,7 +68,9 @@ in {
         type = with types; attrsOf app;
         default = {};
       };
-      postgresql = mkEnableOption "PostgreSQL support";
+      postgresql = mkEnableOption "PostgreSQL support" // {
+        default = config.services.postgresql.enable or false;
+      };
     };
   };
   config = let
