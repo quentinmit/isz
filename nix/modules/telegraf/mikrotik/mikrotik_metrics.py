@@ -37,6 +37,9 @@ class MyPoint(Point):
 def to_int(base, value):
     return {base: int(value)}
 
+def to_int_baseN(base, value):
+    return {base: int(value, 0)}
+
 def to_txrx(base, value):
     tx, rx = value.split(',')
     return {
@@ -212,6 +215,13 @@ def to_ethernet_rates(base: str, value: str) -> dict|list:
 def to_str(base: str, value: str) -> dict:
     return {
         base: value,
+    }
+
+def to_bridge_id(base: str, value: str) -> dict:
+    prio, mac = value.split(".")
+    return {
+        f"{base}-priority": int(prio, 0),
+        f"{base}-mac-address": mac,
     }
 
 PARSERS = [
@@ -767,6 +777,87 @@ TAGS = {
             "factory-software": to_str,
             "build-time": to_str,
         },
+    ),
+    "/interface/bridge": Resource(
+        tag_props={
+            "name",
+            "mac-address",
+            "admin-mac",
+            "dynamic",
+            "disabled",
+        },
+        field_types={
+            "arp": None,
+            "arp-timeout": None,
+            "port-cost-mode": None,
+            "ether-type": None,
+            "frame-types": None,
+            "max-learned-entries": None,
+            "ageing-time": None,
+            "fast-forward": None,
+            "forward-reserved-addresses": None,
+            "mvrp": None,
+            "dhcp-snooping": None,
+            "igmp-snooping": None,
+            "protocol-mode": to_str,
+        },
+        monitor=MonitorRequest(
+            field_types={
+                "bridge-id": to_bridge_id,
+                "root-bridge-id": to_bridge_id,
+                "current-mac-address": to_str,
+                "root-port": to_str,
+                "state": lambda _, value: {"state-enabled": value == "enabled"},
+            },
+        ),
+    ),
+    "/interface/bridge/port": Resource(
+        tag_props={
+            "bridge",
+            "interface",
+            "dynamic",
+            "disabled",
+            #"pvid",
+        },
+        field_types={
+            ".nextid": None,
+            "priority": to_int_baseN,
+            "frame-types": None,
+            "edge": None,
+            "point-to-point": None,
+            "learn": None,
+            "horizon": None,
+            "multicast-router": None,
+            "mvrp-registrar-state": None,
+            "mvrp-applicant-state": None,
+            "debug-info": None,
+            "bpdu-guard": None,
+            "auto-isolate": None,
+            "broadcast-flood": None,
+            "fast-leave": None,
+            "hw": None,
+            "ingress-filtering": None,
+            "internal-path-cost": None,
+            "path-cost": None,
+            "restricted-role": None,
+            "restricted-tcn": None,
+            "tag-stacking": None,
+            "trusted": None,
+            "unknown-multicast-flood": None,
+            "unknown-unicast-flood": None,
+            "status": lambda b, v: {f"{b}-in-bridge": v == "in-bridge"},
+            "role": to_str,
+        },
+        monitor=MonitorRequest(
+            tag_props={
+                "interface",
+            },
+            field_types={
+                "role": to_str,
+                "hw-offload-group": to_str,
+                "status": lambda b, v: {f"{b}-in-bridge": v == "in-bridge"},
+            },
+        ),
     ),
 }
 
