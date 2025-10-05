@@ -1,0 +1,16 @@
+hb-rights.org.            IN      SOA     hercules.comclub.org.   quentins.charter.net. (
+                        2005122000 ; serial
+                        28800 ; refresh
+                        7200 ; retry
+                        604800 ; expire
+                        86400 ; default_ttl
+                        )
+
+; Nameserver entries
+hb-rights.org.            IN      NS      hercules.comclub.org.
+hb-rights.org.            IN      NS      atlas.comclub.org.
+; All the other entries
+hb-rights.org.		IN	A	192.168.0.5
+server    		IN      A       192.168.0.5
+www			IN	CNAME	server
+mirror			IN	CNAME	www

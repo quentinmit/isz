@@ -11,6 +11,7 @@
     matchConfig.OriginalName = "eno1 eth0";
     linkConfig.Name = "wan0";
   };
+  networking.nameservers = ["127.0.0.1"];
   systemd.network.networks = {
     br0 = {
       name = "br0";
@@ -25,11 +26,15 @@
         Table = 500;
       }];
     };
-    lo.routes = [{
-      Destination = "0.0.0.0/0";
-      Type = "local";
-      Table = 500;
-    }];
+    lo = {
+      name = "lo";
+      routes = [{
+        Destination = "0.0.0.0/0";
+        Type = "local";
+        Table = 500;
+      }];
+      #dns = ["127.0.0.1"];
+    };
     # Lower port
     enp2s0 = {
       matchConfig.Name = [
@@ -47,6 +52,9 @@
       matchConfig.Name = "wan0";
       networkConfig = {
         DHCP = "ipv4";
+      };
+      dhcpV4Config = {
+        UseDNS = false;
       };
     };
   };

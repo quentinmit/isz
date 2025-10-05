@@ -12,7 +12,7 @@
     ./apcupsd.nix
     ./postfix.nix
     # postgrey
-    # named
+    ./named
     # dhcp
   ];
 
