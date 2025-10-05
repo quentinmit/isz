@@ -5,7 +5,7 @@ in {
   systemd.services."container@rtorrent" = let
     inherit (config.systemd.services.bitmagnet) requires;
   in {
-    inherit requires;
+    wants = requires;
     after = requires;
   };
 
