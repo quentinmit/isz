@@ -9,7 +9,7 @@
     ./dovecot.nix
     ./nginx.nix
     # home-assistant
-    # apcupsd
+    ./apcupsd.nix
     ./postfix.nix
     # postgrey
     # named
