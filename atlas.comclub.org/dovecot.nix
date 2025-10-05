@@ -3,6 +3,10 @@ let
   sslCertDir = config.security.acme.certs."mail.comclub.org".directory;
 in {
   services.nginx.virtualHosts."mail.comclub.org".enableACME = true;
+  users.users.mail = {
+    group = "mail";
+    isSystemUser = true;
+  };
   users.groups.mail = {};
   services.dovecot2 = {
     enable = true;
@@ -27,6 +31,10 @@ in {
     extraConfig = ''
       auth_mechanisms = plain login
       auth_verbose = yes
+      auth_debug = yes
+      #mail_debug = yes
+
+      mdbox_rotate_size = 64M
 
       namespace inbox {
         inbox = yes
@@ -77,7 +85,6 @@ in {
       }
       # Virtual domains
       auth_username_format = %{if;%d;eq;comclub.org;%Ln;%Lu}
-      auth_debug = yes
       # First try to look up the user in a virtual passwd file.
       passdb {
         driver = passwd-file
@@ -88,7 +95,7 @@ in {
         driver = passwd-file
         # Each domain has a separate passwd-file:
         args = username_format=%Ln /etc/dovecot/auth/%d/passwd
-        override_fields = home=/var/lib/mail/home/%d/%n
+        override_fields = home=/var/lib/mail/home/%d/%n uid=mail gid=mail
       }
       # If that didn't work, maybe it's a local user.
       userdb {
