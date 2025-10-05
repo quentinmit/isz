@@ -841,6 +841,66 @@
         fields.read_bytes.custom.transform = "negative-Y";
         unit = "Bps";
       };
+      fs.zfs_cache_efficiency = {
+        # https://gallery.munin-monitoring.org/plugins/munin-contrib/zfs_cache_efficiency/
+        graph_title = "ZFS ARC efficiency";
+        unit = "percentunit";
+        influx.filter._measurement = "zfs";
+        influx.filter._field = [
+          "arcstats_demand_data_hits"
+          "arcstats_demand_data_misses"
+          "arcstats_demand_metadata_hits"
+          "arcstats_demand_metadata_misses"
+          "arcstats_evict_skip"
+          "arcstats_hash_chain_max"
+          "arcstats_hash_chains"
+          "arcstats_hash_collisions"
+          "arcstats_hash_elements"
+          "arcstats_hash_elements_max"
+          "arcstats_hits"
+          "arcstats_l2_cksum_bad"
+          "arcstats_l2_evict_lock_retry"
+          "arcstats_l2_evict_reading"
+          "arcstats_l2_feeds"
+          "arcstats_l2_free_on_write"
+          "arcstats_l2_hits"
+          "arcstats_l2_io_error"
+          "arcstats_l2_misses"
+          "arcstats_l2_rw_clash"
+          "arcstats_l2_writes_done"
+          "arcstats_l2_writes_error"
+          "arcstats_l2_writes_hdr_miss"
+          "arcstats_l2_writes_sent"
+          "arcstats_mfu_ghost_hits"
+          "arcstats_mfu_hits"
+          "arcstats_misses"
+          "arcstats_mru_ghost_hits"
+          "arcstats_mru_hits"
+          "arcstats_mutex_miss"
+          "arcstats_prefetch_data_hits"
+          "arcstats_prefetch_data_misses"
+          "arcstats_prefetch_metadata_hits"
+          "arcstats_prefetch_metadata_misses"
+          "arcstats_recycle_miss"
+        ];
+        influx.fn = "derivative";
+        influx.pivot = true;
+        influx.extra = ''
+          |> map(fn: (r) => ({r with
+            arc_access_total: r.arcstats_hits + r.arcstats_misses,
+          }))
+          |> map(fn: (r) => ({
+            _time: r._time,
+            host: r.host,
+            pool: r.pools,
+            mfu_hits_perc: r.arcstats_mfu_hits / r.arc_access_total,
+            mru_hits_perc: r.arcstats_mru_hits / r.arc_access_total,
+            l2_hits_perc: r.arcstats_l2_hits / r.arc_access_total,
+            misses_perc: r.arcstats_l2_misses / r.arc_access_total,
+          }))
+        '';
+        stacking = true;
+      };
     };
   };
 }
