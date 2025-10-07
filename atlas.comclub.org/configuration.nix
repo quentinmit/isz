@@ -14,6 +14,7 @@
     # postgrey
     ./named
     # dhcp
+    ./ddclient.nix
   ];
 
   nixpkgs.hostPlatform = { system = "x86_64-linux"; };
@@ -40,6 +41,7 @@
     vmVariant = {
       users.users.root.hashedPassword = "";
       boot.initrd.systemd.emergencyAccess = true;
+      services.locate.enable = lib.mkForce false;
     };
   in {
     inherit vmVariant;
