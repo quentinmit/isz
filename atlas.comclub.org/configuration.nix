@@ -15,7 +15,9 @@
     ./named
     # dhcp
     ./ddclient.nix
+    ./timecapsule.nix
   ];
+
 
   nixpkgs.hostPlatform = { system = "x86_64-linux"; };
 

@@ -106,6 +106,7 @@
           type = "zfs_fs";
           options.atime = "off";
         };
+        "var/lib/netatalk".type = "zfs_fs";
         "var/lib/postfix".type = "zfs_fs";
         "var/lib/postgresql" = {
           type = "zfs_fs";
@@ -116,6 +117,7 @@
         };
         "var/lib/private".type = "zfs_fs";
         "var/lib/private/zwave-js-ui".type = "zfs_fs";
+        "var/lib/timecapsule".type = "zfs_fs";
         "var/log" = {
           type = "zfs_fs";
           mountpoint = "/var/log";
