@@ -1,5 +1,5 @@
 comclub.org.		IN	SOA	hercules.comclub.org.	quentins.charter.net. (
-			2020110800 ; serial
+			2025100900 ; serial
 			28800 ; refresh
 			7200 ; retry
 			604800 ; expire
@@ -96,6 +96,7 @@ myth				IN	CNAME	hercules
 maclap02.airport.comclub.org.	86400	IN	A	192.168.0.51
 chameleon.comclub.org.	86400	IN	A	192.168.2.2
 chameleongw.comclub.org.	86400	IN	A	192.168.2.1
+homeassistant IN CNAME atlas
 
 ; DHCP addresses
 $GENERATE	16-49	t$.dhcp	IN	A	192.168.0.$
