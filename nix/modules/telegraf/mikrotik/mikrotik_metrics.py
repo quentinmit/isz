@@ -115,6 +115,8 @@ $
 def to_duration(base: str, value: str):
     if not value:
         raise ValueError("empty duration")
+    if value == "never":
+        return {}
     m = DURATION_RE.match(value)
     if m:
         seconds = 0
@@ -174,8 +176,6 @@ def to_current_tx_powers(base: str, value: str) -> list:
     return ret
 
 def to_expires_after(base: str, value: str) -> Mapping[str, int|str]:
-    if base not in {"prefix", "address"}:
-        raise ValueError("wrong field")
     parts = value.split(", ")
     ret: dict[str, int|str] = {base: parts[0]}
     if len(parts) > 1:
@@ -231,7 +231,6 @@ PARSERS = [
     to_txrx,
     to_bool,
     to_rate,
-    to_expires_after,
 ]
 
 ParseFunction = Callable[[str, str], dict|list]
@@ -338,7 +337,7 @@ class Resource(Request):
         self.r = api.get_resource(name)
 
         # Find all integer properties once
-        field_parsers = dict()
+        field_parsers = {k: v for k,v in self.field_types.items() if v}
         ids = set()
         try:
             for entry in self.r.get():
@@ -466,6 +465,7 @@ TAGS = {
         },
         monitor=MonitorRequest(
             field_types={
+                "name": None,
                 "status": to_str,
                 "auto-negotiation": to_str,
                 "sfp-type": to_str,
@@ -542,6 +542,7 @@ TAGS = {
         field_types={
             "user": None,
             "password": None,
+            ".about": None,
         },
         monitor=MonitorRequest(
             field_types={
@@ -564,6 +565,11 @@ TAGS = {
             "slave",
             "mtu",
         },
+        field_types={
+            ".about": None,
+            "last-link-up-time": None, # TODO: Parse "YYYY-MM-DD hh:mm:ss" (what time zone?)
+            "last-link-down-time": None,
+        },
     ),
     "/ip/dhcp-server/lease": Resource(
         tag_props={
@@ -578,6 +584,7 @@ TAGS = {
             "dhcp-option",
         },
         field_types={
+            "address-lists": None,
             "status": to_str,
             "active-address": to_str,
             "active-client-id": to_str,
@@ -585,6 +592,7 @@ TAGS = {
             "active-server": to_str,
             "class-id": to_str,
             "host-name": to_str,
+            "last-seen": to_duration,
         },
     ),
     "/ip/ipsec/active-peers": Resource(
@@ -656,6 +664,9 @@ TAGS = {
             "no-dad",
             "link-local",
         },
+        field_types={
+            "address": to_str,
+        },
     ),
     "/ip/dhcp-client": Resource(
         tag_props={
@@ -672,11 +683,14 @@ TAGS = {
         },
         field_types={
             "status": to_str,
+            "address": to_str,
             "gateway": to_str,
             "dhcp-server": to_str,
             "primary-dns": to_str,
             "secondary-dns": to_str,
             "script": None,
+            "default-route-tables": None,
+            "check-gateway": None,
         },
     ),
     "/ipv6/dhcp-client": Resource(
@@ -693,7 +707,7 @@ TAGS = {
             "pool-prefix-length",
         },
         field_types={
-            "address": to_expires_after,
+            "prefix": to_expires_after,
             "status": to_str,
             "duid": to_str,
             "dhcp-server-v6": to_str,
@@ -836,6 +850,7 @@ TAGS = {
             "broadcast-flood": None,
             "fast-leave": None,
             "hw": None,
+            "hw-offload-group": None,
             "ingress-filtering": None,
             "internal-path-cost": None,
             "path-cost": None,
