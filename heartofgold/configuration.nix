@@ -153,6 +153,12 @@
     };
   })];
 
+  systemd.user.services.kde-baloo = {
+    # With a 20 GB index, the default memory limit of 512 MiB is just too small.
+    overrideStrategy = "asDropin";
+    serviceConfig.MemoryHigh = "25%";
+  };
+
   nix.settings = {
     trusted-users = [ "root" "quentin" ];
   };

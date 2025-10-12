@@ -10,6 +10,17 @@
       isz.quentin.multimedia = true;
       isz.plasma.enable = true;
 
+      services.baloo.excludeFolders = [
+        # Don't index Electron folders
+        "$HOME/.config/"
+        "$HOME/.cache/"
+        "$HOME/.local/share/"
+        "$HOME/.local/state/"
+        "$HOME/.zoom/"
+        "$HOME/hog-data/"
+      ];
+
+
       home.packages = with pkgs; [
         zoom-us
         google-chrome
