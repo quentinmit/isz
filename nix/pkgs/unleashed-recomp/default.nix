@@ -118,7 +118,6 @@ in clangStdenv.mkDerivation {
     gtk3
   ] ++ sdl3.buildInputs ++ sdl3.propagatedBuildInputs;
 
-  env.NIX_LDFLAGS = sdl3.NIX_LDFLAGS;
   dontPatchELF = true;
 
   preConfigure = ''

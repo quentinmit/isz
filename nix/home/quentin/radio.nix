@@ -33,7 +33,7 @@
       pothos
       sdrangel
     ] ++ lib.optionals (!(pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64)) [
-      unstable.gqrx-portaudio
+      gqrx-portaudio
     ];
   };
 }
