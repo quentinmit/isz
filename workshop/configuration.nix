@@ -281,6 +281,7 @@
     serialPort = "/dev/ttyZwave";
     settings.HOME = "%t/zwave-js-ui";
     settings.BACKUPS_DIR = "%S/zwave-js-ui/backups";
+    settings.TZ = config.time.timeZone;
   };
   systemd.services.zwave-js-ui = let
     deps = ["modprobe@cdc_acm.service"];
