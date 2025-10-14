@@ -127,6 +127,7 @@
           mountpoint = "/var";
           options."com.sun:auto-snapshot" = "true";
         };
+        "var/cache".type = "zfs_fs";
         "var/lib" = {
           type = "zfs_fs";
           mountpoint = "/var/lib";
@@ -142,7 +143,14 @@
         "var/lib/bitmagnet" = {
           type = "zfs_fs";
           options.atime = "off";
+          options.secondarycache = "metadata";
           options."com.sun:auto-snapshot" = "false";
+        };
+        "var/lib/nixos-containers".type = "zfs_fs";
+        "var/lib/nixos-containers/rtorrent".type = "zfs_fs";
+        "var/log" = {
+          type = "zfs_fs";
+          mountpoint = "/var/log";
         };
         home = {
           type = "zfs_fs";

@@ -36,6 +36,7 @@
 
   services.locate.prunePaths = lib.mkOptionDefault [
     "/home/quentin/hog-data/quentin/private"
+    "/var/lib/bitmagnet/torrents"
   ];
 
   containers.rtorrent = {
@@ -175,6 +176,11 @@
         {
           home.packages = with pkgs; [
             irssi
+          ];
+        }
+        {
+          home.packages = with pkgs; [
+            fclones
           ];
         }
       ];
