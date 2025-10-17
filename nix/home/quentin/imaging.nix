@@ -18,6 +18,7 @@ in {
       libjpeg
       libjpeg_turbo
       libraw # Replaces dcraw
+      nsxiv
       opencv
       rawtherapee-snapshot
       #broken wxSVG
@@ -32,6 +33,7 @@ in {
       scribus
       boxy-svg
       kdePackages.kolourpaint
+      swayimg
     ]
     ++ (available libresprite)
     ++ (available yeetgif);
