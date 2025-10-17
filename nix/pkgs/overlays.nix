@@ -211,4 +211,7 @@ final: prev: {
       "tools/env/fw_printenv"
     ];
   };
+  nbd-static = prev.nbd.overrideAttrs {
+    env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+  };
 }
