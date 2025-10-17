@@ -67,6 +67,8 @@
 
   hardware.bluetooth.enable = true;
 
+  hardware.rasdaemon.enable = true;
+
   isz.telegraf = {
     enable = true;
     intelRapl = true;

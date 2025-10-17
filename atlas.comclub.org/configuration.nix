@@ -106,6 +106,12 @@
     #useSops = true;
   };
 
+  hardware.rasdaemon.enable = true;
+
+  boot.swraid.mdadmConf = ''
+    MAILADDR=root@comclub.org
+  '';
+
   system.stateVersion = "25.05";
 
   users.users.root = {};
