@@ -87,6 +87,15 @@
 
       ''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''
     ];
+
+    extraModulePackages = [((pkgs.callPackage ../nix/kernel-module.nix {
+      inherit (config.boot.kernelPackages) kernel;
+      modulePath = "drivers/edac";
+    }).overrideAttrs {
+      patches = [
+        ./linux-edac.patch
+      ];
+    })];
   };
 
   boot.initrd.clevis = {

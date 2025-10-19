@@ -1,0 +1,68 @@
+commit da9f98cea0590e6abb964470ba931bdb887eddd7
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Fri Oct 17 11:12:46 2025 -0400
+
+    EDAC/ie31200: Add two more Intel Coffee Lake processors for EDAC support
+    
+    Host Device IDs (DID0) correspond to:
+    - Intel Xeon E-2176M
+    - Intel Xeon E-2186M
+    - Intel Xeon E-2254ME
+    - Intel Xeon E-2254ML
+    - Intel Xeon E-2276M
+    - Intel Xeon E-2276ME
+    - Intel Xeon E-2276ML
+    - Intel Xeon E-2286M
+    
+    See documentation:
+    * Intel® Xeon® E-2100 and E-2200 Processor Product Family Datasheet, Vol. 2
+        * https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/xeon-e-2100-datasheet-vol-2.pdf
+
+diff --git a/drivers/edac/ie31200_edac.c b/drivers/edac/ie31200_edac.c
+index e3635fba63b4..20b4b32deb14 100644
+--- a/drivers/edac/ie31200_edac.c
++++ b/drivers/edac/ie31200_edac.c
+@@ -31,6 +31,7 @@
+  * https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/xeon-e3-1200v6-vol-2-datasheet.pdf
+  * https://www.intel.com/content/www/us/en/processors/core/7th-gen-core-family-mobile-h-processor-lines-datasheet-vol-2.html
+  * https://www.intel.com/content/www/us/en/products/docs/processors/core/8th-gen-core-family-datasheet-vol-2.html
++ * https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/xeon-e-2100-datasheet-vol-2.pdf
+  *
+  * According to the above datasheet (p.16):
+  * "
+@@ -72,15 +73,17 @@
+ /* Coffee Lake-S */
+ #define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_MASK 0x3e00
+ #define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_1    0x3e0f
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_2    0x3e18
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_3    0x3e1f
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_4    0x3e30
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_5    0x3e31
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_6    0x3e32
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_7    0x3e33
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_8    0x3ec2
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_9    0x3ec6
+-#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_10   0x3eca
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_2    0x3e10
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_3    0x3e18
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_4    0x3e1f
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_5    0x3e30
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_6    0x3e31
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_7    0x3e32
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_8    0x3e33
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_9    0x3ec2
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_10   0x3ec4
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_11   0x3ec6
++#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_12   0x3eca
+ 
+ /* Test if HB is for Skylake or later. */
+ #define DEVICE_ID_SKYLAKE_OR_LATER(did)                                        \
+@@ -594,6 +597,8 @@ static const struct pci_device_id ie31200_pci_tbl[] = {
+ 	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_8),  PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
+ 	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_9),  PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
+ 	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_10), PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
++	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_11), PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
++	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_12), PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
+ 	{ 0, } /* 0 terminated list. */
+ };
+ MODULE_DEVICE_TABLE(pci, ie31200_pci_tbl);
