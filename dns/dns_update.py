@@ -32,6 +32,21 @@ Record = TypedDict('Record', {
 }, total=False)
 
 
+def to_ttl(seconds: int) -> str:
+    m, s = seconds // 60, seconds % 60
+    h, m = m // 60, m % 60
+    d, h = h // 24, h % 24
+    out = ""
+    if d > 0:
+        out += f"{d}d"
+    if h > 0:
+        out += f"{h}h"
+    if m > 0:
+        out += f"{m}m"
+    if s > 0 or not out:
+        out += f"{s}s"
+    return out
+
 def parse_file(input: Input) -> dict[str, Record]:
     """
     Parse a file of DNS data. See `hosts.txt.sample` for examples
@@ -52,46 +67,52 @@ def parse_file(input: Input) -> dict[str, Record]:
 
     def map_record(name, rec) -> Container[Record]:
         objects = []
-        for rd in rec.rdatasets:
-            out = {
-                "_resource": "/ip/dns/static",
-                "type": rd.rdtype.name,
-                "ttl": str(rd.ttl//60) + "m",
-            }
-            if rd[0].rdcomment:
-                out["comment"] = rd[0].rdcomment.strip()
-            name = str(name).rstrip('.')
-            if "*" in name:
-                out["regexp"] = name.replace(".", r"\.").replace("*", ".*") + "$"
-            else:
-                out["name"] = name
-
-            if rd[0].rdcomment and rd[0].rdcomment.strip().startswith("FWD"):
-                out["type"] = "FWD"
-                out["forward-to"] = rd[0].address
-            elif rd.rdtype == dns.rdatatype.A:
-                out["address"] = rd[0].address
-            elif rd.rdtype == dns.rdatatype.CNAME:
-                out["cname"] = str(rd[0].target)[:-1]
-            elif rd.rdtype == dns.rdatatype.SRV:
-                out["srv-priority"] = str(rd[0].priority)
-                out["srv-weight"] = str(rd[0].weight)
-                out["srv-port"] = str(rd[0].port)
-                out["srv-target"] = str(rd[0].target)[:-1]
-            elif rd.rdtype == dns.rdatatype.EUI48:
+        for rds in rec.rdatasets:
+            for rd in rds:
                 out = {
-                    "_resource": "/ip/dhcp-server/lease",
-                    "mac-address": ":".join("%02X" % x for x in rd[0].eui),
-                    "comment": out.get("comment", out["name"]),
+                    "_resource": "/ip/dns/static",
+                    "type": rds.rdtype.name,
+                    "ttl": to_ttl(rds.ttl),
                 }
-                for rd in rec.rdatasets:
-                    if rd.rdtype == dns.rdatatype.A:
-                        out["address"] = rd[0].address
-            else:
-                logging.warning("Ignoring unknown record of type %s", rd.rdtype)
-            # TODO: Support more record types
+                if rd.rdcomment:
+                    out["comment"] = rd.rdcomment.strip()
+                name = str(name).rstrip('.')
+                if "*" in name:
+                    out["regexp"] = name.replace(".", r"\.").replace("*", ".*") + "$"
+                else:
+                    out["name"] = name
 
-            objects.append(out)
+                if rd.rdcomment and rd.rdcomment.strip().startswith("FWD"):
+                    out["type"] = "FWD"
+                    out["forward-to"] = rd.address
+                elif rd.rdtype == dns.rdatatype.A:
+                    out["address"] = rd.address
+                elif rd.rdtype == dns.rdatatype.AAAA:
+                    out["address"] = rd.address
+                elif rd.rdtype == dns.rdatatype.CNAME:
+                    out["cname"] = str(rd.target)[:-1]
+                elif rd.rdtype == dns.rdatatype.MX:
+                    out["mx-preference"] = str(rd.preference)
+                    out["mx-exchange"] = str(rd.exchange)[:-1]
+                elif rd.rdtype == dns.rdatatype.SRV:
+                    out["srv-priority"] = str(rd.priority)
+                    out["srv-weight"] = str(rd.weight)
+                    out["srv-port"] = str(rd.port)
+                    out["srv-target"] = str(rd.target)[:-1]
+                elif rd.rdtype == dns.rdatatype.EUI48:
+                    out = {
+                        "_resource": "/ip/dhcp-server/lease",
+                        "mac-address": ":".join("%02X" % x for x in rd.eui),
+                        "comment": out.get("comment", out["name"]),
+                    }
+                    for rd in rec.rdatasets:
+                        if rd.rdtype == dns.rdatatype.A:
+                            out["address"] = rd[0].address
+                else:
+                    logging.warning("Ignoring unknown record of type %s", rds.rdtype)
+                # TODO: Support more record types
+
+                objects.append(out)
         return objects
     return {
         # Strip trailing . from names.
@@ -191,7 +212,7 @@ def dns_update(hosts: dict, config: dict, dry_run: bool = True):
     # Number of entries added or removed across all servers
     count_operations = 0
 
-    for server in config["server"]:
+    for server in config.get("server", []):
         # For each Mikrotik server
         logging.info("Processing Mikrotik server %s", server['host'])
 

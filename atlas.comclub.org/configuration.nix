@@ -11,8 +11,6 @@
     ./home-assistant.nix
     ./apcupsd.nix
     ./postfix.nix
-    ./named
-    # dhcp
     ./ddclient.nix
     ./timecapsule.nix
     "${nixos-hardware}/common/cpu/intel/coffee-lake"
