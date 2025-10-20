@@ -11,7 +11,6 @@
     ./home-assistant.nix
     ./apcupsd.nix
     ./postfix.nix
-    # postgrey
     ./named
     # dhcp
     ./ddclient.nix
@@ -24,22 +23,6 @@
   sops.defaultSopsFile = ./secrets.yaml;
 
   virtualisation = let
-    qemu-common = import "${modulesPath}/../lib/qemu-common.nix" { inherit lib pkgs; };
-    interfaces = [{
-      name = "enp2s0";
-      vlan = 2;
-    }];
-    interfacesNumbered = lib.zipLists interfaces (lib.range 1 255);
-    qemuOptions = lib.flatten (
-      lib.forEach interfacesNumbered (
-        { fst, snd }: [(lib.head (qemu-common.qemuNICFlags snd fst.vlan 1)) "-netdev hubport,id=vlan${toString snd},hubid=${toString snd}"]
-      )
-    );
-    udevRules = lib.forEach interfacesNumbered (
-      { fst, snd }:
-      # MAC Addresses for QEMU network devices are lowercase, and udev string comparison is case-sensitive.
-      ''SUBSYSTEM=="net",ACTION=="add",ATTR{address}=="${lib.toLower (qemu-common.qemuNicMac fst.vlan 1)}",NAME="${fst.name}"''
-    );
     vmVariant = {
       users.users.root.hashedPassword = "";
       boot.initrd.systemd.emergencyAccess = true;
@@ -53,8 +36,6 @@
         preCreateHook = "echo 'secretsecret' > /tmp/secret.key";
         postCreateHook = "zfs set keylocation=prompt zpool";
       };
-      virtualisation.qemu.options = qemuOptions;
-      boot.initrd.services.udev.rules = lib.concatMapStrings (x: x + "\n") udevRules;
     };
   };
 

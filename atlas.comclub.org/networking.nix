@@ -6,16 +6,11 @@
     netdevConfig.Name = "br0";
     netdevConfig.Kind = "bridge";
   };
-  # Upper port
-  systemd.network.links."00-wan0" = {
-    matchConfig.OriginalName = "eno1 eth0";
-    linkConfig.Name = "wan0";
-  };
-  networking.nameservers = ["127.0.0.1"];
   systemd.network.networks = {
     br0 = {
       name = "br0";
-      networkConfig.Address = "192.168.0.254/24";
+      networkConfig.DHCP = "ipv4";
+      # TODO: networkConfig.Address = "192.168.0.254/24";
       routingPolicyRules = [{
         Family = "ipv4";
         FirewallMark = 5;
@@ -33,12 +28,12 @@
         Type = "local";
         Table = 500;
       }];
-      #dns = ["127.0.0.1"];
     };
-    # Lower port
-    enp2s0 = {
+    bridge-physical = {
       matchConfig.Name = [
-        "enp2s0"
+        "eno1" # Upper port
+        "eth0" # VM
+        "enp2s0" # Lower port
         "eth1" # VM
       ];
       networkConfig = {
@@ -48,55 +43,31 @@
         EmitLLDP = true;
       };
     };
-    wan0 = {
-      matchConfig.Name = "wan0";
-      networkConfig = {
-        DHCP = "ipv4";
-      };
-      dhcpV4Config = {
-        UseDNS = false;
-      };
-    };
   };
   networking = {
     nftables.enable = true;
-
-    firewall = {
-      enable = true;
-
-      trustedInterfaces = [ "br0" ];
-
-      interfaces.wan0 = {
-        allowedTCPPorts = [
-          80 # http
-          25 # smtp
-          22 # ssh
-          993 # imaps
-          587 # submission
-        ];
-        allowedUDPPortRanges = [
-          # Mosh
-          { from = 60000; to=61000; }
-        ];
-      };
-    };
-
-    nat = {
-      enable = true;
-
-      internalInterfaces = [ "br0" ];
-
-      internalIPs = [ "192.168.0.0/24" ];
-
-      externalInterface = "eth0";
-
-      forwardPorts = [
-        {
-          sourcePort = 8081;
-          destination = "192.168.0.5:80";
-          proto = "tcp";
+    firewall.enable = false;
+    nftables.preCheckRuleset = ''
+      sed 's/skuid nginx/skuid nobody/g' -i ruleset.conf
+      sed 's/meta broute set 1//g' -i ruleset.conf
+    '';
+    nftables.tables.filter = {
+      family = "ip";
+      content = ''
+        chain output {
+          type filter hook output priority filter;
+          ip daddr 192.168.0.5 tcp dport 80 skuid ${config.services.nginx.user} ct mark set 5
         }
-      ];
+      '';
+    };
+    nftables.tables.br = {
+      family = "bridge";
+      content = ''
+        chain prerouting {
+          type filter hook prerouting priority -250; policy accept;
+          iifname "vnet*" ip saddr 192.168.0.5 tcp sport 80 meta broute set 1 accept
+        }
+      '';
     };
   };
 }
