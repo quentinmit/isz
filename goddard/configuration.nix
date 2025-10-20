@@ -62,6 +62,27 @@
 
   hardware.keyboard.qmk.enable = true;
 
+  # Disable wake-from-suspend on keyboard or mouse press.
+  services.udev.rules = [
+    {
+      ACTION = "add";
+      DRIVER = "i2c_hid_acpi";
+      "ATTR{power/wakeup}" = { op = "="; value = "disabled"; };
+    }
+    {
+      ACTION = "add";
+      "ATTR{idVendor}" = "32ac";
+      "ATTR{idProduct}" = "0012"; # Framework Laptop 16 Keyboard Module - ANSI
+      "ATTR{power/wakeup}" = { op = "="; value = "disabled"; };
+    }
+    {
+      ACTION = "add";
+      "ATTR{idVendor}" = "32ac";
+      "ATTR{idProduct}" = "0014"; # Framework Laptop 16 Numpad Module
+      "ATTR{power/wakeup}" = { op = "="; value = "disabled"; };
+    }
+  ];
+
   networking.networkmanager.enable = true;
 
   services.firewalld = {
