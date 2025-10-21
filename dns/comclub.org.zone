@@ -1,7 +1,7 @@
 $ORIGIN comclub.org.
 $TTL 86400
 
-nuswitch         A 192.168.0.1
+router           A 192.168.0.1
 mac02            A 192.168.0.2
                  HINFO 'Power-Macintosh' 'MACOS'
 maclap01         A 192.168.0.3
@@ -26,8 +26,6 @@ travelae         A 192.168.0.14
 receiver         A 192.168.0.15
                  EUI48 94-6A-B0-64-CA-B9
 $GENERATE 16-49 t$.dhcp A 192.168.0.$
-t50.airport      A 192.168.0.50
-maclap02.airport A 192.168.0.51
 camera           A 192.168.0.178
 basement.cam     A 192.168.0.179
                  EUI48 2C-AA-8E-77-C2-4D
@@ -38,74 +36,46 @@ win01            A 192.168.0.253
 atlas            A 192.168.0.254
 linux            A 192.168.0.254
 
-mac03            A 192.168.1.3
+chromecast       EUI48 6C-AD-F8-1B-D0-AD
+yardian          EUI48 9C-65-F9-48-D2-4A
 
-chameleongw      A 192.168.2.1
-chameleon        A 192.168.2.2
 localhost        A 127.0.0.1
 localhost        AAAA ::1
 
-cablemodem       A 10.85.4.15
-us2              A 66.98.162.91
-us2.zope         A 67.18.133.227
 us3              A 18.25.128.184
-us4              A 67.43.163.234
 us6              A 18.25.128.184
-webcache         A 67.18.133.229
-la-linux1        A 10.10.8.188
-stagetrack1      A 10.10.9.6
 
 @                MX 1 mail
 
 Astro            CNAME maclap01
 K-9              CNAME maclap02
-OldMaul          CNAME mac03
 Scooby           CNAME maclap01
-Sebulba          CNAME mac01
 Watto            CNAME mac02
 akira            CNAME hercules
 bible            CNAME hercules
-blog             CNAME us2.zope
 cacti            CNAME hercules
-ccx              CNAME hercules
 comics           CNAME hercules
-console          CNAME atlas
 dev              CNAME win01
-espeaker         CNAME maclap01
 eye              CNAME hercules
 files            CNAME hercules
 first            CNAME us6
-ftp              CNAME hercules
 gallery          CNAME hercules
 gallery2         CNAME hercules
-help             CNAME hercules
 holidays         CNAME hercules
 homeassistant    CNAME atlas
-internal         CNAME mac01
-irc              CNAME linux
 la               CNAME hercules
-leftoverfaerie   CNAME us2.zope
 mail             CNAME atlas
 mit2010          CNAME hercules
-mud              CNAME linux
 myth             CNAME hercules
-news             CNAME mac01
 ofc              CNAME us3
 planetrickoid    CNAME hercules
 qdr              CNAME hercules
-qvci             CNAME hercules
-qvcplatinum      CNAME mac01
 smtp             CNAME atlas
 spectrum         CNAME hercules
-symphero         CNAME linux
-umassbostonclub  CNAME hercules
 us1              CNAME hercules
 ww               CNAME hercules
 www              CNAME hercules
-www.pits         CNAME maclap01
 www1             CNAME hercules
-www2             CNAME us2
 www3             CNAME us3
 zm               CNAME hercules
 zope             CNAME hercules
-zope2            CNAME us2.zope
