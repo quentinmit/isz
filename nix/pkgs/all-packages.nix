@@ -34,6 +34,7 @@ final: prev:
       cli_exit_tools = callPackage ./python/cli_exit_tools {};
       lib_detect_testenv = callPackage ./python/lib_detect_testenv {};
       ionit = callPackage ./python/ionit {};
+      ymodem = callPackage ./python/ymodem {};
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
@@ -185,4 +186,5 @@ final: prev:
   lisaem = final.callPackage ./lisaem {};
   orangepi-firmware = final.callPackage ./orangepi-firmware {};
   xgpro = final.callPackage ./xgpro {};
+  ltchiptool = final.callPackage ./python/ltchiptool {};
 }
