@@ -161,15 +161,15 @@
         nixosConfigurations = let
           inherit (nixpkgs) lib;
         in (lib.genAttrs [
-          "workshop"
+          "atlas.comclub.org"
           "bedroom-pi"
+          "build-arm"
           "droid"
           "goddard"
           "heartofgold"
           "rascsi"
           "uconsole"
-          "build-arm"
-          "atlas.comclub.org"
+          "workshop"
         ] (name: lib.nixosSystem {
           inherit specialArgs;
           modules = (builtins.attrValues self.nixosModules) ++ [
@@ -222,31 +222,36 @@
         nixosModules = builtins.listToAttrs (findModules ./nix/modules);
         darwinModules = builtins.listToAttrs (findModules ./nix/darwin);
         homeModules = builtins.listToAttrs (findModules ./nix/home);
-        deploy.nodes.droid = {
-          sshUser = "root";
-          hostname = "droid.isz.wtf";
-          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.droid.pkgs.system}.activate.nixos self.nixosConfigurations.droid;
-        };
-        deploy.nodes.workshop = {
-          sshUser = "root";
-          hostname = "workshop.mgmt.isz.wtf";
-          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.workshop.pkgs.system}.activate.nixos self.nixosConfigurations.workshop;
-        };
-        deploy.nodes.bedroom-pi = {
-          sshUser = "root";
-          hostname = "bedroom-pi.mgmt.isz.wtf";
-          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.bedroom-pi.pkgs.system}.activate.nixos self.nixosConfigurations.bedroom-pi;
-        };
-        deploy.nodes.heartofgold = {
-          sshUser = "root";
-          hostname = "heartofgold.isz.wtf";
-          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.workshop.pkgs.system}.activate.nixos self.nixosConfigurations.heartofgold;
-        };
-        deploy.nodes.uconsole = {
-          sshUser = "root";
-          hostname = "uconsole.isz.wtf";
-          profiles.system.path = deploy-rs.lib.${self.nixosConfigurations.uconsole.pkgs.system}.activate.nixos self.nixosConfigurations.uconsole;
-        };
+        deploy.nodes = (nixpkgs.lib.genAttrs [
+          "atlas.comclub.org"
+          "bedroom-pi"
+          "build-arm"
+          "droid"
+          "heartofgold"
+          "rascsi"
+          "uconsole"
+          "workshop"
+        ] (name: let
+          cfg = self.nixosConfigurations.${name};
+          in {
+            sshUser = "root";
+            hostname = cfg.config.networking.fqdn;
+            profiles.system.path = deploy-rs.lib.${cfg.pkgs.system}.activate.nixos cfg;
+          })) // {
+            steamdeck = {
+              hostname = "steamdeck.isz.wtf";
+              # sshOpts doesn't work because of https://github.com/NixOS/nix/issues/8292
+              #sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];
+              #profiles.sys = {
+              #  sshUser = "root";
+              #  path = deploy-rs.lib.x86_64-linux.activate.custom self.steamdeckSys "./bin/nix-sys";
+              #};
+              profiles.deck = {
+                sshUser = "deck";
+                path = deploy-rs.lib.${self.homeConfigurations.deck.pkgs.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
+              };
+            };
+          };
         steamdeckSys = import ./steamdeck/sys.nix { inherit self nixpkgs specialArgs; };
         steamdeckSysext = import ./nix/sysext.nix {
           inherit self nixpkgs specialArgs;
@@ -254,19 +259,6 @@
           modules = [
             ./steamdeck/configuration.nix
           ];
-        };
-        deploy.nodes.steamdeck = {
-          hostname = "steamdeck.isz.wtf";
-          # sshOpts doesn't work because of https://github.com/NixOS/nix/issues/8292
-          #sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];
-          #profiles.sys = {
-          #  sshUser = "root";
-          #  path = deploy-rs.lib.x86_64-linux.activate.custom self.steamdeckSys "./bin/nix-sys";
-          #};
-          profiles.deck = {
-            sshUser = "deck";
-            path = deploy-rs.lib.${self.homeConfigurations.deck.pkgs.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
-          };
         };
         checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
     };
