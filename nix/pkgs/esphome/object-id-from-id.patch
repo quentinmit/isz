@@ -1,23 +1,87 @@
-diff --git a/esphome/cpp_helpers.py b/esphome/cpp_helpers.py
-index cc53f491..091d0a6a 100644
---- a/esphome/cpp_helpers.py
-+++ b/esphome/cpp_helpers.py
-@@ -4,6 +4,7 @@ from esphome.const import (
-     CONF_DISABLED_BY_DEFAULT,
-     CONF_ENTITY_CATEGORY,
-     CONF_ICON,
-+    CONF_ID,
-     CONF_INTERNAL,
-     CONF_NAME,
-     CONF_SETUP_PRIORITY,
-@@ -102,7 +103,9 @@ async def register_parented(var, value):
- async def setup_entity(var, config):
-     """Set up generic properties of an Entity"""
-     add(var.set_name(config[CONF_NAME]))
--    if not config[CONF_NAME]:
-+    if config.get(CONF_ID) and config[CONF_ID].is_manual:
-+        add(var.set_object_id(sanitize(snake_case(str(config[CONF_ID])))))
-+    elif not config[CONF_NAME]:
-         add(var.set_object_id(sanitize(snake_case(CORE.friendly_name))))
-     else:
-         add(var.set_object_id(sanitize(snake_case(config[CONF_NAME]))))
+diff --git a/esphome/core/entity_helpers.py b/esphome/core/entity_helpers.py
+index e1b2a8264..0768c50d5 100644
+--- a/esphome/core/entity_helpers.py
++++ b/esphome/core/entity_helpers.py
+@@ -22,7 +22,7 @@ _LOGGER = logging.getLogger(__name__)
+ 
+ 
+ def get_base_entity_object_id(
+-    name: str, friendly_name: str | None, device_name: str | None = None
++    name: str, friendly_name: str | None, device_name: str | None = None, id: ID | None = None
+ ) -> str:
+     """Calculate the base object ID for an entity that will be set via set_object_id().
+ 
+@@ -46,7 +46,10 @@ def get_base_entity_object_id(
+         The base object ID to use for duplicate checking and to pass to set_object_id()
+     """
+ 
+-    if name:
++    if id and id.is_manual:
++        # Entity has its own manual ID
++        base_str = str(id)
++    elif name:
+         # Entity has its own name (has_own_name will be true)
+         base_str = name
+     elif device_name:
+@@ -89,7 +92,7 @@ async def setup_entity(var: MockObj, config: ConfigType, platform: str) -> None:
+     # Calculate base object_id using the same logic as C++
+     # This must match the C++ behavior in esphome/core/entity_base.cpp
+     base_object_id = get_base_entity_object_id(
+-        config[CONF_NAME], CORE.friendly_name, device_name
++        config[CONF_NAME], CORE.friendly_name, device_name, config.get(CONF_ID)
+     )
+ 
+     if not config[CONF_NAME]:
+@@ -208,7 +211,7 @@ def entity_duplicate_validator(platform: str) -> Callable[[ConfigType], ConfigTy
+         # Calculate what object_id will actually be used
+         # This handles empty names correctly by using device/friendly names
+         name_key = get_base_entity_object_id(
+-            entity_name, CORE.friendly_name, device_name
++            entity_name, CORE.friendly_name, device_name, config.get(CONF_ID)
+         )
+ 
+         # Check for duplicates
+diff --git a/tests/unit_tests/core/test_entity_helpers.py b/tests/unit_tests/core/test_entity_helpers.py
+index 9ba536741..f45fd2d5c 100644
+--- a/tests/unit_tests/core/test_entity_helpers.py
++++ b/tests/unit_tests/core/test_entity_helpers.py
+@@ -615,7 +615,7 @@ def test_entity_duplicate_validator_error_message() -> None:
+     CORE.current_component = "sensor.uptime"
+ 
+     # First entity should pass
+-    config1 = {CONF_NAME: "Battery", CONF_ID: ID("battery_1")}
++    config1 = {CONF_NAME: "Battery"}
+     validated1 = validator(config1)
+     assert validated1 == config1
+ 
+@@ -623,11 +623,11 @@ def test_entity_duplicate_validator_error_message() -> None:
+     CORE.current_component = "sensor.template"
+ 
+     # Duplicate entity should fail with detailed error
+-    config2 = {CONF_NAME: "Battery", CONF_ID: ID("battery_2")}
++    config2 = {CONF_NAME: "Battery"}
+     with pytest.raises(
+         Invalid,
+         match=r"Duplicate sensor entity with name 'Battery' found.*"
+-        r"Conflicts with entity 'Battery' \(id: battery_1\) from component 'sensor\.uptime'",
++        r"Conflicts with entity 'Battery' from component 'sensor\.uptime'",
+     ):
+         validator(config2)
+ 
+diff --git a/tests/unit_tests/fixtures/core/entity_helpers/entity_conflict_components.yaml b/tests/unit_tests/fixtures/core/entity_helpers/entity_conflict_components.yaml
+index 6a1df0f7b..2fdb8380f 100644
+--- a/tests/unit_tests/fixtures/core/entity_helpers/entity_conflict_components.yaml
++++ b/tests/unit_tests/fixtures/core/entity_helpers/entity_conflict_components.yaml
+@@ -8,12 +8,10 @@ esp32:
+ sensor:
+   - platform: uptime
+     name: "Battery"
+-    id: uptime_battery
+ 
+ # Template sensor also named "Battery" - this should conflict
+   - platform: template
+     name: "Battery"
+-    id: template_battery
+     lambda: |-
+       return 95.0;
+     unit_of_measurement: "%"
