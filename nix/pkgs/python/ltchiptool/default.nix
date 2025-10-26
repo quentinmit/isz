@@ -1,6 +1,7 @@
 {
   python3,
   fetchPypi,
+  wrapGAppsHook3,
 }: let
   pname = "ltchiptool";
   version = "4.12.2";
@@ -16,6 +17,10 @@ in python3.pkgs.buildPythonApplication {
 
   build-system = with python3.pkgs; [
     poetry-core
+  ];
+
+  nativeBuildInputs = [
+    wrapGAppsHook3
   ];
 
   dependencies = with python3.pkgs; [
