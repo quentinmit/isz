@@ -17,16 +17,32 @@ packages:
 logger:
   hardware_uart: UART1
 
-status_led:
-  pin:
-    number: 6
-    inverted: yes
+light:
+  - platform: status_led
+    name: Status LED
+    id: status
+    entity_category: diagnostic
+    pin:
+      number: 6
+
+esphome:
+  on_boot:
+  - priority: -100
+    then:
+    - light.control:
+        id: status
+        state: !lambda return id(power).state;
 
 switch:
 - platform: gpio
   id: power
   name: ""
   pin: 7
+  restore_mode: ALWAYS_ON
+  on_state:
+  - light.control:
+      id: status
+      state: !lambda return x;
 
 binary_sensor:
 - platform: gpio
@@ -37,3 +53,7 @@ binary_sensor:
     mode:
       input: true
       pullup: true
+    inverted: true
+  on_click:
+  - switch.toggle:
+      id: power
