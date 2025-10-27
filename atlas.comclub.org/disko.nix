@@ -132,7 +132,10 @@
             normalization = "formD";
           };
         };
-        "home/root".type = "zfs_fs";
+        "home/root" = {
+          type = "zfs_fs";
+          options.mountpoint = "/root";
+        };
       };
     };
   };

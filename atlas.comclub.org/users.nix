@@ -1,6 +1,6 @@
 { lib, ... }:
-{
-  users.users = {
+let
+  users = {
     quentin = {
       isNormalUser = true;
       description = "Quentin Smith";
@@ -22,4 +22,9 @@
       description = "Phillip Smith";
     };
   };
+in {
+  disko.devices.zpool.zpool.datasets = lib.genAttrs' (builtins.attrNames users) (name: lib.nameValuePair "home/${name}" {
+    type = "zfs_fs";
+  });
+  users.users = users;
 }
