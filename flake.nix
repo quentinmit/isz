@@ -133,7 +133,7 @@
       in {
         legacyPackages = pkgs;
         devShells.systemd-metrics = import ./nix/modules/telegraf/systemd-metrics/shell.nix { inherit pkgs; };
-        devShells.esphome = import ./workshop/esphome/shell.nix { pkgs = pkgs.unstable; };
+        devShells.esphome = pkgs.callPackage ./workshop/esphome/shell.nix { inherit (pkgs.unstable) esphome; };
         devShells.pico-sdk = pkgs.mkShell {
           buildInputs = with pkgs; [
             gcc-arm-embedded

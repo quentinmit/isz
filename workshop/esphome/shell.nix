@@ -1,7 +1,11 @@
-{ pkgs, ... }:
+{ mkShell
+, esphome
+, ltchiptool
+}:
 
-pkgs.mkShell {
-  packages = with pkgs; [
+mkShell {
+  packages = [
     esphome
+    ltchiptool
   ];
 }
