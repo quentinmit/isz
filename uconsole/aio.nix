@@ -163,6 +163,9 @@
         wants = ["gpsd-nmea-meshtastic.socket"];
         after = ["gpsd-nmea-meshtastic.socket"];
       };
+      environment.systemPackages = [
+        pkgs.python3Packages.meshtastic
+      ];
       services.meshtastic = {
         enable = true;
         package = (pkgs.extend nixos-meshtastic.overlays.default).meshtasticd;
