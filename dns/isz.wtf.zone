@@ -142,6 +142,8 @@ livingroom-air-1 A 192.168.88.17
                  EUI48 E4-B3-23-CF-96-D0
 glkvm            A 192.168.88.18
                  EUI48 94-83-C4-AD-91-9F
+livingroom-traintrackr-power A 192.168.88.19
+                             EUI48 3C-0B-59-F0-B0-F6
 
 ; DHCP range is 88.50-254
 
