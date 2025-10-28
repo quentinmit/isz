@@ -166,6 +166,7 @@
           "build-arm"
           "droid"
           "goddard"
+          "goddard/afs"
           "heartofgold"
           "rascsi"
           "uconsole"

@@ -2,8 +2,8 @@
 {
   options = with lib; {
     isz.quentin.theme.enable = mkOption {
-      default = config.isz.quentin.enable && pkgs.stdenv.isLinux;
-      defaultText = literalExpression "config.isz.quentin.enable && pkgs.stdenv.isLinux";
+      default = config.isz.quentin.enable && config.isz.graphical && pkgs.stdenv.isLinux;
+      defaultText = literalExpression "config.isz.quentin.enable && config.isz.graphical && pkgs.stdenv.isLinux";
       type = types.bool;
     };
   };
