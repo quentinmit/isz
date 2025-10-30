@@ -30,6 +30,12 @@
 
       networking.domain = lib.mkDefault "isz.wtf";
 
+      # Allow Mosh
+      networking.firewall.allowedUDPPortRanges = [{
+        from = 60000;
+        to = 61000;
+      }];
+
       programs.mtr.enable = true;
 
       programs.ssh.extraConfig = lib.mkIf ((builtins.compareVersions config.programs.ssh.package.version "9.2p1") >= 0) ''

@@ -102,6 +102,8 @@ quentin-pixel-9-pro-xl A 172.30.98.66
 quentin-macbookpro3 A 172.30.98.67
 goddard          A 172.30.98.68
 uconsole         A 172.30.98.69
+pixel-9-pro-xl-linux A 172.30.98.70
+droid            CNAME pixel-9-pro-xl-linux
 
 ; Guest hosts on vlan 88 (192.168.88.0/24)
 

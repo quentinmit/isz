@@ -10,6 +10,7 @@ keys:
 - &mac_ssh_age age1ssvjqdur387pduhsqvn7cgkxatnxfrjfqf3wnw2eus75zecnsglshzdlrn
 - &build-arm_ssh_age age1s0vn6u4zqkz0k5wvagt942er99k3m588gh4vjp7e2lewzkms6asqntknaq
 - &atlas_ssh_age age1lnk5vwfyx26lvtu94fjvncse9ye3p64gsrm46hyudaayp8rlt5jsp8q6cy
+- &pixel9_pro_xl_linux_ssh_age age1dp8m5ap9z8tjkkhff0ylzh8gptw7z8y04keh6qu4lujahm58fqhs7x9qmr
 
 creation_rules:
 - path_regex: ^workshop/secrets\.yaml$
@@ -71,3 +72,9 @@ creation_rules:
     - *admin_quentin_gpg
     age:
     - *atlas_ssh_age
+- path_regex: ^droid/secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *pixel9_pro_xl_linux_ssh_age
