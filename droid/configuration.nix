@@ -15,6 +15,11 @@
     2222
   ];
 
+  isz.openssh = {
+    hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
+    useSops = true;
+  };
+
   networking.hostName = "pixel-9-pro-xl-linux";
   networking.domain = "wg.isz.wtf";
 
