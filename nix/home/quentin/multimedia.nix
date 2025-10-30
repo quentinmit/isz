@@ -13,16 +13,11 @@ in {
     {
       home.packages = with pkgs; [
         atomicparsley
-        audacity
         cdparanoia
         cdrkit
         codec2
-        (dav1d.override {
-          withTools = true;
-          withExamples = true;
-        })
         flac
-        (ffmpeg-full.override {
+        ((if config.isz.graphical then ffmpeg-full else ffmpeg-headless).override {
           withUnfree = true;
         })
         gsm
@@ -35,24 +30,34 @@ in {
         sox
         tsduck
         yt-dlp
-        jellycli
       ] ++ available youtube-dl
+        ++ available jellycli
         ++ lib.optionals pkgs.stdenv.isLinux [
-        avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
         dvdbackup
-        guvcview
         mikmod
-        mkvtoolnix
         vapoursynth
-        vlc
-        kdePackages.kdenlive
         timidity
-        vmpk
-        jellyfin-media-player
-        jftui
+      ];
+    }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        audacity
+        (dav1d.override {
+          withTools = true;
+          withExamples = true;
+        })
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
+        guvcview
         delfin
         haruna
+        jellyfin-media-player
+        jftui
+        kdePackages.kdenlive
+        mkvtoolnix
         smplayer
+        vlc
+        vmpk
       ];
       programs.mpv = {
         enable = true;
@@ -83,14 +88,14 @@ in {
         --ap-mso Spectrum
         --netrc
       '';
-    }
+    })
     # Multimedia - PipeWire
     {
       home.packages = with pkgs; [
         pulsemixer
       ];
     }
-    (lib.mkIf pkgs.stdenv.isLinux {
+    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
       home.packages = with pkgs; [
         lxqt.pavucontrol-qt
         ncpamixer
@@ -99,7 +104,7 @@ in {
       ];
     })
     # Multimedia - OBS
-    (lib.mkIf pkgs.stdenv.isLinux {
+    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
       home.packages = [(pkgs.wrapOBS {
         plugins = with pkgs.obs-studio-plugins; [
           droidcam-obs
@@ -129,13 +134,18 @@ in {
       })];
     })
     # Multimedia - Carla
-    (lib.mkIf (pkgs.stdenv.isLinux && (builtins.tryEval pkgs.carla.outPath).success) {
+    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical && (builtins.tryEval pkgs.carla.outPath).success) {
       home.packages = [
         pkgs.carla
       ];
     })
     # Multimedia - Audio
-    (lib.mkIf pkgs.stdenv.isLinux (let
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        scope-tui
+      ];
+    })
+    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) (let
       pluginPath = type: "${config.home.profileDirectory}/lib/${type}";
       sfDir = "${config.home.profileDirectory}/share/soundfonts";
       commas = list: lib.concatStringsSep ", " list;
@@ -197,7 +207,6 @@ in {
         # Utilities
         jaaa
         japa
-        scope-tui
         losslesscut-bin
         rsgain
 

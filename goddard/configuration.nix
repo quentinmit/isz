@@ -291,6 +291,9 @@
         "armv8l-linux"
       ];
       maxJobs = 4;
+      supportedFeatures = [
+        "big-parallel"
+      ];
     }
   ];
 }

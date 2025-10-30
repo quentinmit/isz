@@ -7,13 +7,19 @@ in {
     default = config.isz.quentin.enable;
   };
 
-  config = lib.mkIf config.isz.quentin.hardware.enable {
-    home.packages = with pkgs; [
-      sigrok-cli
-      pulseview
-      gtkwave
-      cutecom
-      lxi-tools-gui
+  config = lib.mkIf config.isz.quentin.hardware.enable (lib.mkMerge [
+    {
+      home.packages = with pkgs; [
+        sigrok-cli
+      ];
+    }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        pulseview
+        gtkwave
+        cutecom
+        lxi-tools-gui
     ] ++ (available qflipper);
-  };
+    })
+  ]);
 }

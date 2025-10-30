@@ -112,11 +112,18 @@ let
     cryptsetup
 
     # Other devices
-    alsa-utils
+    (alsa-utils.override (old: lib.optionalAttrs (!graphical) {
+      withPipewireLib = false;
+      alsa-plugins = old.alsa-plugins.override (old: {
+        ffmpeg = ffmpeg-headless;
+      });
+    }))
     drm_info
     usbutils
     input-utils
-    v4l-utils
+    (v4l-utils.override {
+      withGUI = graphical;
+    })
     lm_sensors
     i2c-tools
     libinput

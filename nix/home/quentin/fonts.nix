@@ -2,7 +2,7 @@
 {
   options.isz.quentin.fonts.enable = lib.mkOption {
     type = lib.types.bool;
-    default = config.isz.quentin.enable;
+    default = config.isz.quentin.enable && config.isz.graphical;
   };
 
   config = lib.mkIf config.isz.quentin.fonts.enable {

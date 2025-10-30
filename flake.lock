@@ -596,6 +596,26 @@
         "type": "github"
       }
     },
+    "nixos-avf": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1758048506,
+        "narHash": "sha256-I7cLckLwnppaqoUFvTrgGKDevNnIn3qV/3ELxetm6jk=",
+        "owner": "nix-community",
+        "repo": "nixos-avf",
+        "rev": "1b7bf91cef5e3aeada4bc81977eb12b71585b45c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixos-avf",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "locked": {
         "lastModified": 1760106635,
@@ -888,6 +908,7 @@
         "mosh-server-upnp": "mosh-server-upnp",
         "nix-index-database": "nix-index-database",
         "nixgl": "nixgl",
+        "nixos-avf": "nixos-avf",
         "nixos-hardware": "nixos-hardware",
         "nixos-inventree": "nixos-inventree",
         "nixos-meshtastic": "nixos-meshtastic",

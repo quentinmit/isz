@@ -21,6 +21,10 @@ in {
 
     programs.vim = {
       enable = true;
+      packageConfigurable = lib.mkIf (!config.isz.graphical) (pkgs.vim-full.override {
+        guiSupport = "none";
+        waylandSupport = false;
+      });
       plugins = [
         pkgs.vimPlugins.vim-nix
       ];

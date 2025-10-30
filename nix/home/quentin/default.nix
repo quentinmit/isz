@@ -8,6 +8,10 @@ in {
     isz.quentin.enable = lib.mkEnableOption "User environment for quentin";
     isz.quentin.vscode.install = lib.mkOption {
       type = lib.types.bool;
+      default = config.isz.quentin.enable && config.isz.graphical;
+    };
+    isz.quentin.texlive = lib.mkOption {
+      type = lib.types.bool;
       default = config.isz.quentin.enable;
     };
   };
@@ -32,7 +36,7 @@ in {
       ];
     }
     # 3D Modeling
-    {
+    (lib.mkIf config.isz.graphical {
       home.packages = with pkgs; [
         openscad-unstable
         gerbv
@@ -77,7 +81,7 @@ in {
         url = "https://files.printables.com/media/prints/136201/stls/2283997_49a84ad3-2b2a-4281-ae60-85db844003f4/library.scad";
         hash = "sha256-ez94OhQJM3jHH2gKZavu1uryR+LYqsy++ag0jlNTzms=";
       };
-    }
+    })
     # (D)VCS
     {
       home.packages = with pkgs; [
@@ -107,20 +111,23 @@ in {
         pkgsCross.avr.buildPackages.gcc
         pkgsCross.avr.avrlibc
         avrdude
-        bossa
         dfu-util
         esptool
-        openocd
       ] ++ lib.optionals (!isAarch64Darwin) [
         pkgsCross.arm-embedded.buildPackages.gdb
-      ] ++ lib.optionals stdenv.isLinux (
-        [
-          teensyduino
-          fritzing
-          platformio
-        ] ++ available arduino-ide
-      );
+      ] ++ lib.optionals stdenv.isLinux [
+        platformio
+      ];
     }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        bossa
+        openocd
+      ] ++ lib.optionals stdenv.isLinux [
+        fritzing
+        teensyduino
+      ] ++ available arduino-ide;
+    })
     # Rust development
     {
       home.packages = with pkgs; [
@@ -180,9 +187,13 @@ in {
         mariadb_114.client
         mdbtools
         postgresql
-        wxsqliteplus
       ];
     }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        wxsqliteplus
+      ];
+    })
     # Development
     {
       home.packages = with pkgs; [
@@ -200,15 +211,19 @@ in {
         gperftools
         upx
         loccount
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
-        heaptrack
-        kdePackages.kcachegrind
       ];
       home.file.".gdbinit".text = ''
         set history filename ~/.gdb_history
         set history save on
       '';
     }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        heaptrack
+        kdePackages.kcachegrind
+      ];
+    })
     # Visual Studio Code
     {
       home.packages = with pkgs; lib.mkIf config.isz.quentin.vscode.install [
@@ -281,20 +296,27 @@ in {
     # Emulation
     {
       home.packages = with pkgs; [
-        bochs
+        (bochs.override {
+          enableSDL2 = config.isz.graphical;
+          enableWx = !stdenv.hostPlatform.isDarwin && config.isz.graphical;
+          enableX11 = !stdenv.hostPlatform.isDarwin && config.isz.graphical;
+        })
+      ];
+    }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
         dosbox
         (lib.lowPrio qemu)  # contains libfdt which conflicts with dtc
         virt-manager
       ] ++ lib.optionals pkgs.stdenv.isLinux [
-        #broken virt-manager-qt
-        libguestfs-with-appliance
-        pcem
         _86Box-with-roms
+        (if pkgs.stdenv.isx86_64 then libguestfs-with-appliance else libguestfs)
+        pcem
         rpcemu
         wineWowPackages.full
         winetricks
       ];
-    }
+    })
     # Reverse engineering
     {
       home.packages = with pkgs; [
@@ -304,16 +326,23 @@ in {
         hexedit
         radare2
         rizin
+        (kaitai-struct-compiler.override (old: lib.optionalAttrs (!config.isz.graphical) {
+          openjdk8 = pkgs.openjdk8_headless;
+        }))
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        pahole
+      ];
+    }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
         (pkgs.writeShellScriptBin "cyberchef" "${open} ${pkgs.cyberchef}/share/cyberchef/index.html")
         (if ghidra-bin.meta.available then ghidra-bin else ghidra)
-        kaitai-struct-compiler
       ] ++ lib.optionals pkgs.stdenv.isLinux [
+        dwex
         elf-dissector
         imhex
         okteta
         iaito
-        pahole
-        dwex
       ];
 
       xdg.desktopEntries.cyberchef = lib.mkIf pkgs.stdenv.isLinux {
@@ -323,7 +352,7 @@ in {
         icon = "${pkgs.cyberchef}/share/cyberchef/images/cyberchef-128x128.png";
         categories = ["Utility"];
       };
-    }
+    })
     # Security
     {
       home.packages = with pkgs; [
@@ -331,7 +360,6 @@ in {
         oath-toolkit
         pass-git-helper
         sops
-        qtpass
       ];
       programs.gpg = {
         enable = true;
@@ -355,12 +383,17 @@ in {
           pass-checkup
         ]);
       };
+    }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        qtpass
+      ];
       programs.plasma.configFile."IJHack/QtPass.conf".General = {
         useGit = true;
         useOtp = true;
         useTemplate = true;
       };
-    }
+    })
     # Network - SSH
     {
       programs.ssh = {
@@ -416,7 +449,7 @@ in {
       '';
     }
     # Network - browsh
-    (lib.mkIf pkgs.stdenv.isLinux {
+    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
       programs.browsh = {
         enable = true;
         firefoxPackage = pkgs.unstable.firefox;
@@ -449,28 +482,21 @@ in {
         ncftp
         ngrok
         nmap
-        openconnect
+        (openconnect.override (old: lib.optionalAttrs (!config.isz.graphical) {
+          stoken = null;
+        }))
         openntpd
         perlPackages.WWWMechanize
         perlPackages.libwwwperl
         pssh
         rclone
-        rdesktop
         tintin
-        transmission_4
         websocat
         termshark
         mactelnet
-        bruno
       ] ++ lib.optionals pkgs.stdenv.isLinux [
-        netsurf.browser
-        qgis-ltr
-        remmina
         sockdump
-        kdePackages.krdc
-        kvirc
-      ] ++ (available mqtt-explorer)
-      ++ (available mqttx);
+      ];
       programs.tio = {
         enable = true;
         settings = {
@@ -482,13 +508,33 @@ in {
         };
       };
     }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        rdesktop
+        transmission_4
+        bruno
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        netsurf.browser
+        qgis-ltr
+        remmina
+        kdePackages.krdc
+        kvirc
+      ] ++ (available mqtt-explorer)
+      ++ (available mqttx);
+    })
     # Science
     {
-      home.packages = with pkgs; [
-        (feedgnuplot.override { gnuplot = gnuplot_gui; })
+      home.packages = with pkgs; let
+        gnuplot = if config.isz.graphical then gnuplot_gui else pkgs.gnuplot;
+      in [
+        (feedgnuplot.override { inherit gnuplot; })
         gdal
-        gnuplot_gui
+        gnuplot
         graphviz
+      ];
+    }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
         labplot
         xdot
       ] ++ lib.optionals pkgs.stdenv.isLinux [
@@ -501,26 +547,30 @@ in {
         kdePackages.kalzium
         kdePackages.step
       ];
-    }
+    })
     # Productivity
     {
       home.packages = with pkgs; [
         antiword
-        diff-pdf
         figlet
-        gspell
-        gv
         pandoc
         pdf2svg
-        pdftk
         poppler_utils
         pstoedit
         unrtf
         wordnet
-        zbar
         ghostscript
         wv
-      ] ++ lib.optionals pkgs.stdenv.isLinux ([
+      ];
+    }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        diff-pdf
+        gspell
+        gv
+        pdftk
+        zbar
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
         abiword
         #broken calligra
         kdePackages.ghostwriter
@@ -530,33 +580,34 @@ in {
         retext
         rnote
         xournalpp
-      ] ++ available onlyoffice-bin);
-    }
+      ] ++ available onlyoffice-bin;
+    })
     # Productivity - eBooks
-    {
+    (lib.mkIf config.isz.graphical {
       home.packages = with pkgs;
         lib.optionals pkgs.stdenv.isLinux [
         calibre
         foliate
         sigil
       ];
-    }
+    })
     # Productivity - TeX
-    {
+    (lib.mkIf config.isz.quentin.texlive {
       home.packages = with pkgs; [
         rubber
         texlive.combined.scheme-full
+      ] ++ lib.optionals config.isz.graphical [
         texstudio
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals (pkgs.stdenv.isLinux && config.isz.graphical) [
         apostrophe
         kile
         setzer
         texmaker
         texworks
       ];
-    }
+    })
     # Utilities - X11
-    {
+    (lib.mkIf config.isz.graphical {
       home.packages = (with pkgs; [
         xterm
       ] ++ lib.optionals pkgs.stdenv.isLinux [
@@ -572,7 +623,7 @@ in {
         xlsfonts
         xfontsel
       ]);
-    }
+    })
     # Kerberos
     {
       # kdo / krootssh
@@ -753,7 +804,7 @@ in {
           highlightingModeRegex = "^YAML$";
         };
       };
-    in lib.mkIf pkgs.stdenv.isLinux {
+    in lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
       programs.kate = {
         enable = true;
         package = pkgs.kdePackages.kate;

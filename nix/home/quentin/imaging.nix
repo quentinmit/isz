@@ -7,40 +7,45 @@ in {
     default = config.isz.quentin.enable;
   };
 
-  config = lib.mkIf config.isz.quentin.imaging.enable {
-    home.packages = with pkgs; [
-      exiftool
-      feh
-      graphicsmagick_q16
-      imagemagickBig
-      #makeicns
-      libicns
-      libjpeg
-      libjpeg_turbo
-      libraw # Replaces dcraw
-      nsxiv
-      opencv
-      rawtherapee-snapshot
-      #broken wxSVG
-      (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
-      libwmf
-      drawio
-    ] ++ lib.optionals pkgs.stdenv.isLinux [
-      darktable
-      digikam
-      inkscape-with-extensions
-      krita
-      scribus
-      boxy-svg
-      kdePackages.kolourpaint
-      swayimg
-    ]
-    ++ (available libresprite)
-    ++ (available yeetgif);
-    home.file.".ExifTool_config".text = ''
-      %Image::ExifTool::UserDefined::Options = (
-          LargeFileSupport => 1,
-      );
-    '';
-  };
+  config = lib.mkIf config.isz.quentin.imaging.enable (lib.mkMerge [
+    {
+      home.packages = with pkgs; [
+        exiftool
+        libjpeg
+        libjpeg_turbo
+      ];
+      home.file.".ExifTool_config".text = ''
+        %Image::ExifTool::UserDefined::Options = (
+            LargeFileSupport => 1,
+        );
+      '';
+    }
+    (lib.mkIf config.isz.graphical {
+      home.packages = with pkgs; [
+        feh
+        graphicsmagick_q16
+        imagemagickBig
+        #makeicns
+        libicns
+        libraw # Replaces dcraw
+        nsxiv
+        opencv
+        rawtherapee-snapshot
+        #broken wxSVG
+        (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
+        libwmf
+        drawio
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        darktable
+        digikam
+        inkscape-with-extensions
+        krita
+        scribus
+        boxy-svg
+        kdePackages.kolourpaint
+        swayimg
+      ] ++ (available libresprite)
+        ++ (available yeetgif);
+    })
+  ]);
 }

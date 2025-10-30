@@ -225,8 +225,6 @@
         #pyobjc
         pypdf2
         pyperclip
-        pyqt5
-        pyqtgraph
         pytest
         pyusb
         pywinrm
@@ -251,7 +249,6 @@
         snakeviz
         sniffio
         snowballstemmer
-        soapysdr-with-plugins
         sphinx
         sphinxcontrib-applehelp
         sphinxcontrib-devhelp
@@ -283,6 +280,11 @@
         xmldiff
         zipp
         zopfli
+      ] ++ lib.optionals config.isz.graphical [
+        pyqt5
+        pyqtgraph
+      ] ++ lib.optionals config.isz.quentin.radio.enable [
+        soapysdr-with-plugins
       ]); in pyenv)
   ];
 }

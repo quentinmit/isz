@@ -9,9 +9,7 @@
     home.packages = with pkgs; [
       dsd
       dsdcc
-      gnuradio
       #already gpsbabel
-      gpsbabel-gui
       #grig
       hamlib_4
       #already from soapysdr-with-plugins limesuite
@@ -22,18 +20,24 @@
         soapysdr = soapysdr-with-plugins;
       })
       soapyhackrf
-      xastir
       sdrpp
-      nanovna-saver
-    ] ++ lib.optionals pkgs.stdenv.isLinux [
+    ] ++ lib.optionals config.isz.graphical (
+      [
+        gnuradio
+        gpsbabel-gui
+        nanovna-saver
+        xastir
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
       csdr
       fldigi
       flrig
-      gpsd
       pothos
       sdrangel
-    ] ++ lib.optionals (!(pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64)) [
-      gqrx-portaudio
+      ] ++ lib.optionals (!(pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64)) [
+        gqrx-portaudio
+      ]
+    ) ++ lib.optionals pkgs.stdenv.isLinux [
+      gpsd
     ];
   };
 }
