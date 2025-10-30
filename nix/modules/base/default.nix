@@ -44,6 +44,10 @@
 
       programs.git.enable = true;
 
+      home-manager.sharedModules = [{
+        isz.graphical = config.hardware.graphics.enable;
+      }];
+
       home-manager.users.root = {
         home.stateVersion = "23.05";
 
