@@ -47,6 +47,7 @@
     netdevConfig.Name = "wg0";
     netdevConfig.Kind = "wireguard";
     netdevConfig.Description = "WireGuard tunnel to ISZ";
+    netdevConfig.MTUBytes = 1350; # Default 1420 doesn't work on 5G
     wireguardConfig = {
       PrivateKeyFile = config.sops.secrets."wg0/private_key".path;
       RouteTable = "main";
