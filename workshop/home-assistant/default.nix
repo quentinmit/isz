@@ -98,6 +98,7 @@ in {
       customComponents = with pkgs.unstable.home-assistant-custom-components; [
         pyscript
         bambu_lab
+        pirateweather
       ];
       extraPackages = lib.mkMerge [
         (lib.mkIf dbEnabled (python3Packages: with python3Packages; [
@@ -111,7 +112,6 @@ in {
         ])
       ];
       extraComponents = [
-        "accuweather"
         "androidtv"
         "androidtv_remote"
         "apple_tv"
@@ -263,10 +263,10 @@ in {
                 value_template = "{{ as_timestamp(states.sun.sun.attributes.next_setting) | timestamp_custom ('%H:%M') }}";
               };
               accuweather_temperature_min_0d = {
-                value_template = "{{ state_attr('weather.accuweather', 'forecast')[0].templow }}";
+                value_template = "{{ state_attr('sensor.hub_hb_00122953_weather', 'daily_forecast')[0].templow }}";
               };
               accuweather_temperature_max_0d = {
-                value_template = "{{ state_attr('weather.accuweather', 'forecast')[0].temperature }}";
+                value_template = "{{ state_attr('sensor.hub_hb_00122953_weather', 'daily_forecast')[0].temperature }}";
               };
             };
           }
