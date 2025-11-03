@@ -226,6 +226,8 @@
 
   programs.wireshark.package = pkgs.wireshark;
 
+  systemd.vmspawn.enable = true;
+
   virtualisation.libvirtd = {
     enable = true;
     qemu.runAsRoot = false;

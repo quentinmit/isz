@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 {
   imports = [
-    ./vmspawn.nix
+    ../../nix/modules/vmspawn/vmconfig.nix
   ];
 
   nixpkgs.hostPlatform = "x86_64-linux";
