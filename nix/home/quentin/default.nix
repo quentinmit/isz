@@ -470,6 +470,7 @@ in {
         influxdb2-cli
         iperf3
         ipmitool
+        knock
         irssi
         ldapvi
         libidn2
