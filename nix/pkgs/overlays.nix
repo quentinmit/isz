@@ -1,4 +1,6 @@
-final: prev: {
+final: prev: let
+  inherit (final) lib;
+in {
   lesspipe = prev.lesspipe.overrideAttrs (old: {
     postPatch = (old.postPatch or "") + ''
       sed -i -e '/html\\\|xml)/,+1d' lesspipe.sh
@@ -10,6 +12,12 @@ final: prev: {
         propagatedBuildInputs = old.propagatedBuildInputs ++ [
           python-final.numba
         ];
+      });
+      ecdsa = python-prev.ecdsa.overrideAttrs (old: {
+        meta = old.meta // {
+          # This library is not intended for production use.
+          knownVulnerabilities = [];
+        };
       });
     })
   ];
@@ -102,7 +110,7 @@ final: prev: {
   yeetgif = prev.yeetgif.overrideAttrs (old: {
     meta = old.meta // {
       # https://github.com/sgreben/yeetgif/tree/1.23.5?tab=readme-ov-file#licensing
-      license = with final.lib.licenses; [ mit asl20 cc-by-40 ];
+      license = with lib.licenses; [ mit asl20 cc-by-40 ];
     };
   });
   mplayer-unfree = let
@@ -214,4 +222,8 @@ final: prev: {
   nbd-static = prev.nbd.overrideAttrs {
     env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
   };
+  labplot = prev.labplot.override (old: lib.optionalAttrs (!lib.versionOlder "23.08.5" old.cantor.version) {
+    # cantor 23.08.5 no longer compiles with nixpkgs 25.05
+    cantor = null;
+  });
 }

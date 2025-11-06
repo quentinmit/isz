@@ -161,7 +161,6 @@
     framework-tool
     fw-ectool
     qmk_hid
-    openrgb-with-all-plugins
     wd-fw-update
 
     # Networking
@@ -181,7 +180,7 @@
     segger-systemview
     cynthion
     packetry
-  ];
+  ] ++ lib.optional mbedtls_2.meta.available openrgb-with-all-plugins;
 
   services.udev.packages = with pkgs; [
     platformio-core.udev
