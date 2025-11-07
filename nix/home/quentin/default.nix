@@ -142,7 +142,7 @@ in {
         cargo-hf2
         cargo-outdated
         cargo-ui
-        probe-rs
+        probe-rs-tools
       ];
       programs.rustup.enable = true;
       programs.rustup.extensions = [
@@ -556,7 +556,7 @@ in {
         figlet
         pandoc
         pdf2svg
-        poppler_utils
+        poppler-utils
         pstoedit
         unrtf
         wordnet

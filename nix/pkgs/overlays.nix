@@ -222,7 +222,7 @@ in {
   nbd-static = prev.nbd.overrideAttrs {
     env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
   };
-  labplot = prev.labplot.override (old: lib.optionalAttrs (!lib.versionOlder "23.08.5" old.cantor.version) {
+  labplot = prev.labplot.override (old: lib.optionalAttrs (old ? cantor && (!lib.versionOlder "23.08.5" old.cantor.version)) {
     # cantor 23.08.5 no longer compiles with nixpkgs 25.05
     cantor = null;
   });

@@ -255,7 +255,4 @@ in if prev.stdenv.isDarwin then {
     libselinux = null;
     libsepol = null;
   };
-  labplot = prev.labplot.override {
-    cantor = null;
-  };
 } else {}

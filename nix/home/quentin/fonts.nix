@@ -12,7 +12,7 @@
       fragment-mono
       helvetica-neue-lt-std
       bakoma_ttf
-      vistafonts
+      vista-fonts
       gyre-fonts
       libertinus
       (google-fonts.override {
