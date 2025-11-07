@@ -19,7 +19,7 @@ in {
         gtkwave
         cutecom
         lxi-tools-gui
-    ] ++ (available qflipper);
+    ] ++ (available qFlipper);
     })
   ]);
 }
