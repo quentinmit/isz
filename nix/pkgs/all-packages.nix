@@ -188,4 +188,5 @@ final: prev:
   orangepi-firmware = final.callPackage ./orangepi-firmware {};
   xgpro = final.callPackage ./xgpro {};
   ltchiptool = final.callPackage ./python/ltchiptool {};
+  dsd = final.callPackage ./dsd {};
 }

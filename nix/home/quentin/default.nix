@@ -581,7 +581,7 @@ in {
         retext
         rnote
         xournalpp
-      ] ++ available onlyoffice-bin;
+      ] ++ available onlyoffice-desktopeditors;
     })
     # Productivity - eBooks
     (lib.mkIf config.isz.graphical {
