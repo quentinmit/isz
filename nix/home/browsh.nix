@@ -20,7 +20,7 @@ in {
         description = "Final browsh package that bundles Firefox";
       };
       settings = mkOption {
-        type = tomlFormat.type;
+        inherit (tomlFormat) type;
         default = {};
         description = ''
           Configuration written to

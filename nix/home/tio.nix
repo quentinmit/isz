@@ -6,7 +6,7 @@ in {
   options.programs.tio = with lib; {
     enable = mkEnableOption "tio";
     settings = mkOption {
-      type = format.type;
+      inherit (format) type;
       default = {};
       example = {
         default = {

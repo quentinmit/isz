@@ -86,7 +86,7 @@ in {
             default = [];
           };
           annotations = mkOption {
-            type = (options.services.grafana.dashboards.type.getSubOptions []).annotations.list.type;
+            inherit ((options.services.grafana.dashboards.type.getSubOptions []).annotations.list) type;
             default = [];
           };
           panels = mkOption {

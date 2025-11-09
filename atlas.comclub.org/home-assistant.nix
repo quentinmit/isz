@@ -23,10 +23,10 @@ in {
   };
   services.home-assistant = {
     enable = true;
-    extraPackages = (python3Packages: with python3Packages; [
+    extraPackages = python3Packages: with python3Packages; [
       # postgresql support in recorder
       psycopg2
-    ]);
+    ];
 
     extraComponents = [
       "apcupsd"

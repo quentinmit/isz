@@ -153,6 +153,6 @@ in {
     # unix socket path is /run/redis-${name}/redis.sock thus
     # /run/redis-rspamd/redis.sock here.
     port = 0;
-    user = config.services.rspamd.user;
+    inherit (config.services.rspamd) user;
   };
 }

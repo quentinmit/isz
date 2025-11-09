@@ -120,6 +120,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = licenses.unfree;
     maintainers = with maintainers; [ quentin ];
-    platforms = wineWowPackages.stable.meta.platforms;
+    inherit (wineWowPackages.stable.meta) platforms;
   };
 })

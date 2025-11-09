@@ -44,7 +44,7 @@ in {
     # cargoDeps can't be partially overridden. See first comment at https://github.com/NixOS/nixpkgs/pull/382550
     cargoDeps = final.rustPlatform.fetchCargoVendor {
       inherit src;
-      name = prev.gobang.name;
+      inherit (prev.gobang) name;
       hash = "sha256-30WTTAnvdKpAOydjKeXIBeZ2qHKYgC2C69rQgTWbLI8=";
     };
   });

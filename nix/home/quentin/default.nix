@@ -218,8 +218,7 @@ in {
       '';
     }
     (lib.mkIf config.isz.graphical {
-      home.packages = with pkgs; [
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      home.packages = with pkgs; lib.optionals pkgs.stdenv.isLinux [
         heaptrack
         kdePackages.kcachegrind
       ];
