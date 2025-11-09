@@ -415,6 +415,9 @@ in {
           "sipb-isilon-*" = {
             extraOptions.HostKeyAlgorithms = "+ssh-?s?";
           };
+          "*-key.mit.edu" = {
+            extraOptions.HostKeyAlgorithms = "+ssh-?s?";
+          };
           "mattermost.mit.edu" = {
             hostname = "mattermost.mit.edu";
           };
