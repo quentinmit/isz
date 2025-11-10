@@ -29,7 +29,7 @@
       "datacenter": "Digital Realty ATL13 (56 Marietta)",
       "state": "GA",
       "exchanges": [
-        "Digital Realty Atlanta IX (Telx-TIE)",
+        "DRT Atlanta",
         "MegaIX Atlanta"
       ]
     },
@@ -50,7 +50,7 @@
       "datacenter": "Switch Data Foundry 01",
       "state": "TX",
       "exchanges": [
-        "FD-IX Texas"
+        "FD-IX Austin"
       ]
     },
     {
@@ -102,7 +102,7 @@
       "state": "NY"
     },
     {
-      "host": "core2.yyc1.he.net",
+      "host": "core1.yyc1.he.net",
       "country": "CA",
       "city": "Calgary, AB",
       "datacenter": "Datahive Calgary",
@@ -141,7 +141,8 @@
         "Equinix Chicago",
         "AMS-IX Chicago",
         "ChIX",
-        "MegaIX Chicago"
+        "MegaIX Chicago",
+        "DE-CIX Chicago"
       ]
     },
     {
@@ -154,7 +155,8 @@
         "Equinix Chicago",
         "AMS-IX Chicago",
         "ChIX",
-        "MegaIX Chicago"
+        "MegaIX Chicago",
+        "DE-CIX Chicago"
       ]
     },
     {
@@ -277,7 +279,7 @@
       ]
     },
     {
-      "host": "core2.det1.he.net",
+      "host": "core1.det1.he.net",
       "country": "US",
       "city": "Southfield",
       "datacenter": "123NET Detroit",
@@ -606,7 +608,7 @@
       "host": "core1.nyc1.he.net",
       "country": "US",
       "city": "Garden City",
-      "datacenter": "Webair NY1",
+      "datacenter": "Opti9 NY1 / Webair",
       "state": "NY"
     },
     {
@@ -645,7 +647,7 @@
       "datacenter": "Digital Realty JFK12 (60 Hudson)",
       "state": "NY",
       "exchanges": [
-        "Digital Realy New York IX (Telx-TIE)"
+        "DRT New York"
       ]
     },
     {
@@ -692,10 +694,7 @@
       "country": "US",
       "city": "North Kansas City",
       "datacenter": "NOCIX 1530 Swift",
-      "state": "MO",
-      "exchanges": [
-        "GPC Missouri"
-      ]
+      "state": "MO"
     },
     {
       "host": "core2.okc1.he.net",
@@ -779,7 +778,7 @@
       "datacenter": "Digital Realty PHX10 (120 East Van Buren)",
       "state": "AZ",
       "exchanges": [
-        "Digital Realty Phoenix Internet Exchange."
+        "DRT Phoenix"
       ]
     },
     {
@@ -821,9 +820,9 @@
       ]
     },
     {
-      "host": "core1.pdx3.he.net",
+      "host": "core2.pdx3.he.net",
       "country": "US",
-      "city": "Hillsboro,",
+      "city": "Hillsboro",
       "datacenter": "Flexential PDX02 Hillsboro 2",
       "state": "OR"
     },
@@ -848,9 +847,18 @@
       "host": "core1.yqb1.he.net",
       "country": "CA",
       "city": "Quebec City, QC",
-      "datacenter": "Vantage",
+      "datacenter": "Vantage QC2",
       "exchanges": [
         "QIX Quebec City"
+      ]
+    },
+    {
+      "host": "core1.qro1.he.net",
+      "country": "MX",
+      "city": "Queretaro",
+      "datacenter": "Equinix MX1",
+      "exchanges": [
+        "PIT MX"
       ]
     },
     {
@@ -871,7 +879,7 @@
       "state": "VA",
       "exchanges": [
         "Any2 East",
-        "LINX NoVA"
+        "CIX-NoVA"
       ]
     },
     {
@@ -947,7 +955,7 @@
       "host": "core3.sjc1.he.net",
       "country": "US",
       "city": "San Jose",
-      "datacenter": "CoreSite SV1 / Hurricane Electric San Jose 1",
+      "datacenter": "Hurricane Electric San Jose 1",
       "state": "CA",
       "exchanges": [
         "AMS-IX Bay Area"
@@ -1079,7 +1087,7 @@
       "datacenter": "Cologix Toronto"
     },
     {
-      "host": "core2.yvr1.he.net",
+      "host": "core1.yvr1.he.net",
       "country": "CA",
       "city": "Vancouver, BC",
       "datacenter": "Cologix Vancouver"
@@ -1122,8 +1130,7 @@
       "city": "Winnipeg, MB",
       "datacenter": "Global Server Center",
       "exchanges": [
-        "MBIX",
-        "WPGIX"
+        "MBIX"
       ]
     },
     {
@@ -1137,7 +1144,7 @@
         "Frys-IX",
         "LSIX",
         "SPEED-IX",
-        "ERA-IX",
+        "ERA-IX Amsterdam",
         "DATAIX EU"
       ]
     },
@@ -1409,8 +1416,7 @@
       "city": "Leeds",
       "datacenter": "aql Salem Church",
       "exchanges": [
-        "IX Leeds",
-        "IXBradford"
+        "IX Leeds"
       ]
     },
     {
@@ -1610,7 +1616,7 @@
       "city": "Roma",
       "datacenter": "NaMeX Rome",
       "exchanges": [
-        "NaMeX"
+        "NaMeX Rome"
       ]
     },
     {
@@ -1711,7 +1717,8 @@
       "city": "Vilnius",
       "datacenter": "Data Logistics Center",
       "exchanges": [
-        "BALT-IX"
+        "BALT-IX",
+        "LITIX"
       ]
     },
     {
@@ -1724,7 +1731,8 @@
         "POZIX",
         "THINX Warsaw",
         "TPIX Warsaw",
-        "IX.LODZ.PL"
+        "IX.LODZ.PL",
+        "1-IX EU"
       ]
     },
     {
@@ -1766,18 +1774,6 @@
       "country": "CH",
       "city": "R\u00fcmlang",
       "datacenter": "NTT ZRH1"
-    },
-    {
-      "host": "core1.akl1.he.net",
-      "country": "NZ",
-      "city": "Auckland",
-      "datacenter": "DataCentre220",
-      "exchanges": [
-        "AKL-IX",
-        "APE",
-        "MegaIX Auckland",
-        "EdgeIX Auckland"
-      ]
     },
     {
       "host": "core1.akl2.he.net",
@@ -1882,8 +1878,7 @@
       "city": "Hong Kong",
       "datacenter": "Equinix Hong Kong (HK1)",
       "exchanges": [
-        "Equinix Hong Kong",
-        "Megaport Hong Kong"
+        "Equinix Hong Kong"
       ]
     },
     {
@@ -1965,7 +1960,8 @@
         "Equinix Singapore",
         "MegaIX Singapore",
         "DE-CIX ASEAN/JBIX",
-        "SGIX"
+        "SGIX",
+        "DE-CIX Jakarta"
       ]
     },
     {
@@ -2055,7 +2051,18 @@
       "datacenter": "Equinix RJ2",
       "exchanges": [
         "IX.br (PTT.br) Rio de Janeiro",
-        "Equinix Rio de Janeiro"
+        "Equinix Rio de Janeiro",
+        "DE-CIX Rio de Janeiro"
+      ]
+    },
+    {
+      "host": "core1.scl1.he.net",
+      "country": "CL",
+      "city": "Santiago",
+      "datacenter": "Ascenty SCL2",
+      "exchanges": [
+        "PIT Chile",
+        "PIT.net - Santiago de Chile"
       ]
     },
     {
@@ -2134,7 +2141,7 @@
       ]
     },
     {
-      "host": "core1.nbo1.he.net",
+      "host": "core2.nbo1.he.net",
       "country": "KE",
       "city": "Nairobi",
       "datacenter": "Africa Data Centres NBO1",
