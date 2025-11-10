@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, affinity-nix, ... }:
 
 {
   home-manager.users.quentin = lib.mkMerge [
@@ -38,6 +38,7 @@
         home-assistant-cli
         zapzap
         xgpro
+        affinity-nix.packages.${pkgs.stdenv.system}.v3
       ];
 
       services.baloo.excludeFolders = [
