@@ -149,6 +149,8 @@ in {
         "switchbot"
         "bluemaestro"
         "oralb"
+        "xiaomi_ble"
+        "improv_ble"
       ];
       config = let
         cleanName = name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name);
