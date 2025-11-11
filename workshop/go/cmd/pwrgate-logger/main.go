@@ -44,7 +44,7 @@ func main() {
 	}
 }
 
-var valueRE = regexp.MustCompile(`([0-9.]+)([A-Za-z]*)`)
+var valueRE = regexp.MustCompile(`([0-9][0-9.]*)([A-Za-z]*)`)
 
 func logData(ctx context.Context, writeApi api.WriteAPI) error {
 	defer writeApi.Flush()
