@@ -168,6 +168,7 @@
 
     # Laptop
     powertop
+    amdgpu_top
 
     # Radio
     limesuiteWithGui
