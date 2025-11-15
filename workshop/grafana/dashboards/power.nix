@@ -254,6 +254,11 @@ in {
         integralField = "charge_coulombs";
         filter.channel = "total";
         filter.name_of_station = name_of_station;
+        influx = [{
+          filter._measurement = "epicpwrgate.status";
+          filter._field = ["Bat.A" "TargetI.A"];
+          fn = "mean";
+        }];
       } {
         panel.gridPos = { x = 2; y = 8; w = 10; h = 8; };
         panel.title = "Workshop Total Current";
