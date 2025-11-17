@@ -27,7 +27,7 @@ in {
 
   containers.rtorrent = {
     bindMounts."/var/run/postgresql" = {
-      hostPath = "/var/run/postgresql/";
+      hostPath = "/run/postgresql/";
       isReadOnly = false;
     };
     bindMounts."/var/lib/bitmagnet" = {
