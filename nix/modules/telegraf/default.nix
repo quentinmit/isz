@@ -159,6 +159,7 @@ in {
             logfile = ""; # stderr
             hostname = lib.mkIf (config.networking.hostName != null) "${config.networking.hostName}.${config.networking.domain}"; # defaults to os.Hostname()
             omit_hostname = false;
+            skip_processors_after_aggregators = false;
           };
           processors.starlark = [{
             alias = "dropnan";
@@ -198,10 +199,6 @@ in {
               report_active = false;
               #core_tags = true;
             }];
-            disk = [{
-              ignore_fs = ["tmpfs" "devtmpfs" "devfs" "overlay" "aufs" "squashfs"];
-            }];
-            diskio = [{}];
             mem = [{}];
             net = [{
               tagdrop.interface = ["veth*"];
