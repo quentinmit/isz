@@ -50,6 +50,9 @@ in {
         { name = "power-consumption"; oid = ".1.3.6.1.4.1.14988.1.1.3.12.0"; }
         { name = "psu1-state"; oid = ".1.3.6.1.4.1.14988.1.1.3.15.0"; }
         { name = "psu2-state"; oid = ".1.3.6.1.4.1.14988.1.1.3.16.0"; }
+        { name = "connection-tracking-total-entries"; oid = ".1.3.6.1.4.1.14988.1.1.22.1.1.0"; }
+        { name = "connection-tracking-total-ip4-entries"; oid = ".1.3.6.1.4.1.14988.1.1.22.1.2.0"; }
+        { name = "connection-tracking-total-ip6-entries"; oid = ".1.3.6.1.4.1.14988.1.1.22.1.3.0"; }
       ];
 
       table = [
