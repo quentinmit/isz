@@ -40,6 +40,44 @@ in {
         }));
         default = {};
       };
+      sinks.loki = mkOption {
+        type = types.attrsOf (types.submodule ({ config, options, name, ... }: {
+          options = {
+            encoding.codec = mkOption {
+              type = types.str;
+              default = "raw_message";
+            };
+            labels = mkOption {
+              type = types.attrsOf types.str;
+              default = {
+                "*" = "{{ labels }}";
+              };
+            };
+            remove_label_fields = mkOption {
+              type = types.bool;
+              default = config.labels == options.labels.default;
+            };
+            structured_metadata = mkOption {
+              type = types.attrsOf types.str;
+              default = {
+                "*" = "{{ structured_metadata }}";
+              };
+            };
+            remove_structured_metadata_fields = mkOption {
+              type = types.bool;
+              default = config.structured_metadata == options.structured_metadata.default;
+            };
+          };
+          freeformType = types.anything;
+          config = {
+            type = "loki";
+            endpoint = "https://loki.isz.wtf";
+            slugify_dynamic_fields = false;
+            auth.strategy = "bearer";
+            auth.token = "SECRET[systemd.loki_oauth_token]";
+          };
+        }));
+      };
     };
   };
   config = lib.mkIf cfg.enable {
@@ -174,23 +212,16 @@ in {
               condition = ''.structured_metadata.trusted_SYSTEMD_UNIT == "${name}.service"'';
             }) (lib.attrNames config.isz.vector.journald.services);
           };
-          sinks.loki_journald = {
-            type = "loki";
-            inputs = [
-              "journald_route._unmatched"
-            ] ++ lib.mapAttrsToList (_: config: config.outputName) cfg.journald.services;
-            endpoint = "https://loki.isz.wtf";
-            encoding.codec = "raw_message";
-            remove_label_fields = true;
-            labels."*" = "{{ labels }}";
-            remove_structured_metadata_fields = true;
-            structured_metadata."*" = "{{ structured_metadata }}";
-            slugify_dynamic_fields = false;
-            auth.strategy = "bearer";
-            auth.token = "SECRET[systemd.loki_oauth_token]";
-          };
+        }
+        {
+          sinks = lib.mapAttrs' (name: value: lib.nameValuePair "loki_${name}" value) cfg.sinks.loki;
         }
       ] ++ (lib.mapAttrsToList (_: config: config.settings) cfg.journald.services));
+    };
+    isz.vector.sinks.loki.journald = {
+      inputs = [
+        "journald_route._unmatched"
+      ] ++ lib.mapAttrsToList (_: config: config.outputName) cfg.journald.services;
     };
   };
 }

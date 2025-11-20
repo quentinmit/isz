@@ -27,7 +27,7 @@
       ./sdrtrunk
       ./speedtest.nix
       ./loki.nix
-      ./vector.nix
+      ./vector
       ./inventree.nix
       ./tang.nix
       nixos-hardware.nixosModules.common-cpu-amd
