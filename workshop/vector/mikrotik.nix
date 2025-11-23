@@ -106,6 +106,18 @@
           ]}
 
           del(.timestamp_end)
+
+          m, err = parse_regex(.message, r'(?P<macaddress>(?:[0-9A-F]{2}:){5}[0-9A-F]{2})')
+          if err == null {
+            .structured_metadata.macaddress = m.macaddress
+          }
+
+          if .labels.topic == "dns" {
+            m, err = parse_regex(.message, r'#(?P<queryid>\d+)')
+            if err == null {
+              .structured_metadata.queryid = m.queryid
+            }
+          }
         '';
       };
     };

@@ -81,6 +81,7 @@
           interval = "30s";
           method = "native";
           urls = map (t: t.host) pingTargets;
+          ipv4 = true;
           ipv6 = false;
         }];
         processors.starlark = [{
