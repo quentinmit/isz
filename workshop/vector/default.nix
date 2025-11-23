@@ -4,6 +4,7 @@
     ./syslog.nix
     ./mikrotik.nix
     ./netflow.nix
+    ./hitron.nix
   ];
   config = {
     isz.vector.enable = true;
