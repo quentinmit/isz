@@ -7,7 +7,9 @@
         mode = "udp";
         address = "0.0.0.0:9001";
         decoding.codec = "vrl";
-        # Packet format is topic,level[,subtopic] message
+        # remote-log-format=default is topic,level[,subtopic] message
+        # remote-log-format=cef is Nov 22 20:47:18 router.isz.wtf CEF:0|MikroTik|RB4011iGS+5HacQ2HnD|7.20.4 (stable)|44|radvd,debug|Low|dvchost=router.isz.wtf dvc=172.30.97.3 msg=  prefix: xxx\r\n
+        # remote-log-format=cef syslog-time-format=iso8601 is 2025-11-22T21:24:35.265-0500 router.isz.wtf CEF:0|MikroTik|RB4011iGS+5HacQ2HnD|7.20.4 (stable)|16|dhcp,debug,packet|Low|dvchost=router.isz.wtf dvc=172.30.97.3 msg=    Router \= 192.168.88.1\r\n
         decoding.vrl.source = ''
           LEVELS = {
               "critical": true,
@@ -18,27 +20,43 @@
               "raw": false,
               "packet": false,
           }
-          parts, err = parse_regex(.message, r'^(?P<topics>[^ ]+) (?P<message>.*)$')
+          cef, err = parse_cef(.message)
           if err == null {
-              .message = parts.message
-              .topics = split(string!(parts.topics), ",")
-              .topics = filter(.topics) -> |_index, value| {
-                  is_level = get!(LEVELS, [value])
-                  if is_level == true {
-                      .severity = value
-                      false
-                  } else if is_level == false {
-                      # flags
-                      . = set!(., [value], true)
-                      false
-                  } else {
-                      true
-                  }
+              ts = parse_timestamp(split(.message, " ") ?? "", "%Y-%m-%dT%H:%M:%S%.3f%:z") ?? .timestamp
+              . = {
+                  "timestamp": ts,
+                  "host": cef.dvchost,
+                  "ip": cef.dvc,
+                  "topics": cef.name,
+                  "message": replace(string!(cef.msg), r'\r\n$', ""),
+                  "vendor": cef.deviceVendor,
+                  "version": cef.deviceVersion,
+                  "product": cef.deviceProduct,
+                  "eventClassId": cef.deviceEventClassId,
               }
-              .topic = .topics[0]
-              .subtopic = .topics[1]
+          } else {
+              parts, err = parse_regex(.message, r'^(?P<topics>[^ ]+) (?P<message>.*)$')
+              if err == null {
+                  .message = parts.message
+                  .topics = parts.topics
+              }
           }
-          .source_type = "mikrotik"
+          .topics = split(.topics, ",") ?? []
+          .topics = filter(.topics) -> |_index, value| {
+              is_level = get!(LEVELS, [value])
+              if is_level == true {
+                  .level = value
+                  false
+              } else if is_level == false {
+                  # flags
+                  . = set!(., [value], true)
+                  false
+              } else {
+                  true
+              }
+          }
+          .topic = .topics[0]
+          .name = join!(.topics, ",")
         '';
       };
       transforms.mikrotik_reduce = {
@@ -49,19 +67,50 @@
         '';
         # Can't use group_by because it produces out-of-order logs.
         merge_strategies.message = "concat_newline";
-        merge_strategies.topics = "flat_unique";
+        merge_strategies."topics" = "flat_unique";
+        merge_strategies."port" = "discard";
+      };
+      transforms.mikrotik_remap = {
+        type = "remap";
+        inputs = ["mikrotik_reduce"];
+        source = ''
+          .source_type = "mikrotik"
+          .labels = {}
+          .structured_metadata = {}
+
+          ${lib.concatMapStringsSep "\n" (key: ''
+            if exists(.${key}) {
+              .labels.${key} = .${key}
+              del(.${key})
+            }
+          '') [
+            "host"
+            "ip"
+            "port"
+            "source_type"
+            "level"
+            "topic"
+            "name"
+          ]}
+
+          ${lib.concatMapStringsSep "\n" (key: ''
+            if exists(.${key}) {
+              .structured_metadata.${key} = .${key}
+              del(.${key})
+            }
+          '') [
+            "vendor"
+            "version"
+            "product"
+            "eventClassId"
+          ]}
+
+          del(.timestamp_end)
+        '';
       };
     };
   };
   isz.vector.sinks.loki.mikrotik = {
-    inputs = ["mikrotik_reduce"];
-    encoding.codec = "json";
-    labels = {
-      source_type = "{{ source_type }}";
-      host = "{{ host }}";
-      topic = "{{ topic }}";
-      subtopic = "{{ subtopic }}";
-      level = "{{ severity }}";
-    };
+    inputs = ["mikrotik_remap"];
   };
 }

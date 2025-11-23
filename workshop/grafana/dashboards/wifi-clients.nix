@@ -311,7 +311,7 @@
           type = "logs";
           targets = [{
             expr = ''
-              {source_type="mikrotik", topic="wireless"} | json message="message" | regexp `(?P<macaddress>(?:[0-9A-F]{2}:){5}[0-9A-F]{2})` | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}` | drop message,detected_level,service_name,subtopic="<null>",timestamp_end
+              {source_type="mikrotik", topic="wireless"} | json message="message" | regexp `(?P<macaddress>(?:[0-9A-F]{2}:){5}[0-9A-F]{2})` | line_format `{{if .name}}{{.name}}{{else}}{{.topic}}{{if and (ne .subtopic "<null>") (ne .subtopic "")}},{{.subtopic}}{{end}}{{end}} {{or .message __line__}}` | drop message,detected_level,service_name,subtopic="<null>",timestamp_end,__error__,__error_details__
             '';
             queryType = "range";
           }];
@@ -369,7 +369,7 @@
       };
       name = "Wireless logs";
       expr = ''
-        {source_type="mikrotik",topic="wireless",level!="debug"} |~ `(?i)''${macaddress}` | json | line_format `{{.message}}`
+        {source_type="mikrotik",topic="wireless",level!="debug"} |~ `(?i)''${macaddress}` | json | line_format `{{or .message __line__}}`
       '';
       enable = true;
       tagKeys = "host,level";
@@ -615,7 +615,7 @@
           type = "logs";
           targets = [{
             expr = ''
-              {source_type="mikrotik"} |~ `(?i)''${macaddress}` | json message="message" | line_format `{{.topic}}{{if ne .subtopic "<null>"}},{{.subtopic}}{{end}} {{.message}}` | drop message,detected_level,service_name,subtopic="<null>"
+              {source_type="mikrotik"} |~ `(?i)''${macaddress}` | json message="message" | line_format `{{if .name}}{{.name}}{{else}}{{.topic}}{{if and (ne .subtopic "<null>") (ne .subtopic "")}},{{.subtopic}}{{end}}{{end}} {{or .message __line__}}` | drop message,detected_level,service_name,subtopic="<null>",timestamp_end,__error__,__error_details__
             '';
             queryType = "range";
           }];
