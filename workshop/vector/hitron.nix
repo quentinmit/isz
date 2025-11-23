@@ -43,7 +43,7 @@
         rest = []
         for_each(split!(.event, ";")) -> |_index, part| {
           parsed, err = parse_key_value(part, key_value_delimiter: "=", field_delimiter: ";",whitespace: "strict", accept_standalone_key: false)
-          if err == null {
+          if err == null && _index > 0 {
             structured_metadata = merge(structured_metadata, parsed)
           } else {
             rest = append(rest, [part])
