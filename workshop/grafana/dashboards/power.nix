@@ -469,6 +469,20 @@ in {
         integralField = "energy_joules";
         filter.channel = "total";
         filter.name_of_station = name_of_station;
+        influx = [{
+          filter._measurement = "wago.status";
+          filter._field = ["PSUAmps" "BatteryOutAmps" "BatteryInAmps" "OutputVolts"];
+          fn = null;
+          pivot = true;
+          extra = ''
+            |> map(fn: (r) => ({ r with
+              LoadAmps: (r.PSUAmps-r.BatteryInAmps+r.BatteryOutAmps)
+            }))
+            |> map(fn: (r) => ({ r with LoadWatts: r.OutputVolts * r.LoadAmps }))
+            |> keep(columns: ["_time", "LoadWatts"])
+            |> aggregateWindow(every: v.windowPeriod, fn: mean, column: "LoadWatts", createEmpty: false)
+          '';
+        }];
       } {
         panel.gridPos = { x = 12; y = 8; w = 10; h = 8; };
         panel.title = "Bedroom Total Power";
@@ -499,6 +513,31 @@ in {
           unit = "watt";
         };
       })
+      # Status
+      {
+        panel.gridPos = { x = 2; y = 24; w = 20; h = 11; };
+        panel.title = "Wago Status";
+        panel.type = "state-timeline";
+        influx = {
+          imports = ["bitwise"];
+          filter._measurement = "wago.status";
+          filter._field = "Status";
+          fn = null;
+          extra = ''
+            |> duplicate(column: "_value", as: "diff")
+            |> difference(columns: ["diff"], keepFirst: true)
+            |> filter(fn: (r) => not exists r.diff or r.diff != 0)
+            |> map(fn: (r) => ({r with
+              ${lib.concatMapStringsSep "\n" (i: ''
+                "${lib.fixedWidthNumber 2 i}": bitwise.uand(a: r._value, b: uint(v: 2 ^ ${toString i})) != 0,
+              '') (lib.range 0 15)}
+            }))
+            |> drop(columns: ["_value", "diff", "_start", "_stop", "_field", "host"])
+          '';
+        };
+        fields."02".displayName = "Buffer mode";
+        fields."08".displayName = "Battery charge <85%";
+      }
       # Per-channel current and power
       (channelGraph {
         field = "current_amps";
@@ -506,7 +545,7 @@ in {
         filter.channel = "\${caparoc_channel}";
         filter.name_of_station = name_of_station;
       } {
-        panel.gridPos = { x = 2; y = 24; w = 10; h = 8; };
+        panel.gridPos = { x = 2; y = 35; w = 10; h = 8; };
         panel.title = "\${caparoc_channel} Current";
         panel.fieldConfig.defaults = {
           unit = "amp";
@@ -520,7 +559,7 @@ in {
         filter.channel = "\${caparoc_channel}";
         filter.name_of_station = name_of_station;
       } {
-        panel.gridPos = { x = 12; y = 24; w = 10; h = 8; };
+        panel.gridPos = { x = 12; y = 35; w = 10; h = 8; };
         panel.title = "\${caparoc_channel} Power";
         panel.fieldConfig.defaults = {
           unit = "watt";
