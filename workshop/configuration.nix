@@ -255,7 +255,7 @@
     };
     script = ''
       export INFLUX_TOKEN="$(cat ${lib.strings.escapeShellArg config.sops.secrets.linkzone-logger_influx_token.path})"
-      exec ${pkgs.callPackage ./go {}}/bin/linkzone-logger
+      exec ${pkgs.callPackage ./go {}}/bin/linkzone-logger -addr=192.168.5.1
     '';
   };
   users.extraUsers.linkzone-logger = {
