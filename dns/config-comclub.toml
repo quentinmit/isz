@@ -3,3 +3,8 @@ path="comclub.org.zone"
 
 [[input]]
 path="hb-rights.org.zone"
+
+[[server]]
+name="router.comclub.org"
+host="192.168.0.1"
+plaintext_login=true

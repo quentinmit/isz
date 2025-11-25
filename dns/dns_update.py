@@ -154,7 +154,7 @@ def netrc_lookup(server):
         return server["username"], server["password"]
     try:
         n = netrc.netrc()
-        for key in (server.get("host"), server.get("name"), "default"):
+        for key in (server.get("name"), server.get("host"), "default"):
             if not key:
                 continue
             if key in n.hosts:

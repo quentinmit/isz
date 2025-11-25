@@ -3,11 +3,10 @@ $TTL 86400
 
 router           A 192.168.0.1
 mac02            A 192.168.0.2
-                 HINFO 'Power-Macintosh' 'MACOS'
 maclap01         A 192.168.0.3
                  EUI48 00-0D-93-89-FE-7B
 maclap02         A 192.168.0.4
-                 EUI48 00-1B-63-BB-8C-64 ; Ethernet
+                 ;EUI48 00-1B-63-BB-8C-64 ; Ethernet
                  EUI48 00-1E-52-73-28-0E ; WiFi
 @                A 192.168.0.5
 hercules         A 192.168.0.5
@@ -15,10 +14,10 @@ hercules         A 192.168.0.5
 insteon          A 192.168.0.10
                  EUI48 00-0E-F3-31-0F-22
 printer          A 192.168.0.11
-                 EUI48 00-1B-A9-DE-5C-92 ; Ethernet
+                 ;EUI48 00-1B-A9-DE-5C-92 ; Ethernet
                  EUI48 A4-17-31-6D-15-28 ; WiFi
 tv               A 192.168.0.12
-                 EUI48 D0-66-7B-6D-BF-4C ; Ethernet
+                 ;EUI48 D0-66-7B-6D-BF-4C ; Ethernet
                  EUI48 E4-7C-F9-D5-7A-F8 ; WiFi
 openwrt          A 192.168.0.13
 travelae         A 192.168.0.14
@@ -31,9 +30,14 @@ basement.cam     A 192.168.0.179
                  EUI48 2C-AA-8E-77-C2-4D
 other.cam        A 192.168.0.180
                  EUI48 2C-AA-8E-77-BE-B7
+atlas-kvm        A 192.168.0.251
+                 EUI48 94-83-C4-AD-91-9F
+atlas-old        A 192.168.0.252
+                 EUI48 00-25-90-75-D0-46
 win01            A 192.168.0.253
                  EUI48 00-50-56-40-3F-9F
 atlas            A 192.168.0.254
+                 EUI48 0A-FF-BB-35-5E-AD
 linux            A 192.168.0.254
 
 chromecast       EUI48 6C-AD-F8-1B-D0-AD
