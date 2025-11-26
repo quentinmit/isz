@@ -81,7 +81,7 @@
     enable = true;
     # Don't use in VM builds
     devices.zpool = lib.mkIf config.boot.zfs.enabled {
-      secretFile = ./zpool.jwe;
+      secretFile = "${./zpool.jwe}";
     };
   };
 

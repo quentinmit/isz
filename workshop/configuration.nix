@@ -41,7 +41,7 @@
   boot.loader.efi.efiSysMountPoint = "/boot";
   boot.initrd.clevis = {
     enable = true;
-    devices.zpool.secretFile = ./zpool.jwe;
+    devices.zpool.secretFile = "${./zpool.jwe}";
   };
 
   environment.etc."lvm/lvm.conf".text = ''

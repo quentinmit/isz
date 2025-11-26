@@ -44,7 +44,7 @@
   isz.secureBoot.enable = true;
   boot.initrd.clevis = {
     enable = true;
-    devices.zpool.secretFile = ./zpool.jwe;
+    devices.zpool.secretFile = "${./zpool.jwe}";
   };
 
   isz.openssh = {
