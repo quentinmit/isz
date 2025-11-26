@@ -187,7 +187,7 @@
               self.nixosModules.base
               self.nixosModules.sshd-sops
               self.nixosModules.telegraf
-              ({
+              {
                 nixpkgs.overlays = [
                   overlay
                   self.overlays.new
@@ -195,7 +195,7 @@
                   self.overlays.unstable
                   self.overlays.mosh-server-upnp
                 ];
-              })
+              }
               ./uconsole/configuration.nix
             ];
           };
