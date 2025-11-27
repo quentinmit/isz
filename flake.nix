@@ -73,6 +73,7 @@
     nixos-avf.url = "github:nix-community/nixos-avf";
     nixos-avf.inputs.nixpkgs.follows = "nixpkgs";
     affinity-nix.url = "github:mrshmllow/affinity-nix";
+    dsd-fme.url = "github:lwvmobile/dsd-fme";
   };
   outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
     let

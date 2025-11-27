@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, dsd-fme, ... }:
 {
   options.isz.quentin.radio.enable = lib.mkOption {
     type = lib.types.bool;
@@ -7,7 +7,7 @@
 
   config = lib.mkIf config.isz.quentin.radio.enable {
     home.packages = with pkgs; [
-      dsd
+      dsd-fme.packages.${pkgs.stdenv.hostPlatform.system}.default
       dsdcc
       #already gpsbabel
       #grig
