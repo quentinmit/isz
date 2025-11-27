@@ -194,10 +194,11 @@ in {
     version = "0.22-PreRC1";
     src = old.src.override {
       rev = "3733457df9b0420cb90061bceae06adec5aa33c7";
+      tag = null;
       hash = "sha256-zGiqpr6/Mls2fa0vCo6rtd5ukL8K8X7u5erHsc6nCpQ=";
     };
   });
-  rawtherapee-snapshot = prev.rawtherapee.override {
+  rawtherapee-snapshot = final.rawtherapee.override {
     libraw = final.libraw-snapshot;
   };
   libsigrok = prev.libsigrok.overrideAttrs (old: {

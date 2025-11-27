@@ -32,7 +32,6 @@ in {
         opencv
         rawtherapee-snapshot
         #broken wxSVG
-        (if pkgs.stdenv.isDarwin then gimp else gimp-with-plugins)
         libwmf
         drawio
       ] ++ lib.optionals pkgs.stdenv.isLinux [
@@ -45,7 +44,8 @@ in {
         kdePackages.kolourpaint
         swayimg
       ] ++ (available libresprite)
-        ++ (available yeetgif);
+      ++ (available yeetgif)
+      ++ (available gimp-with-plugins);
     })
   ]);
 }

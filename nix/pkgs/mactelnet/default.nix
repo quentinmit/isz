@@ -4,7 +4,6 @@
 , autoconf
 , openssl
 , pkg-config
-, SystemConfiguration
 , fetchFromGitHub
 , lib
 }:
@@ -30,8 +29,6 @@ in stdenv.mkDerivation {
 
   buildInputs = [
     openssl
-  ] ++ lib.optionals stdenv.isDarwin [
-    SystemConfiguration
   ];
 
   prePatch = ''

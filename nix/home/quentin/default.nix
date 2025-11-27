@@ -14,6 +14,10 @@ in {
       type = lib.types.bool;
       default = config.isz.quentin.enable;
     };
+    isz.quentin.mercurial = lib.mkOption {
+      type = lib.types.bool;
+      default = config.isz.quentin.enable;
+    };
   };
   imports = builtins.map (name: ./${name}) (
     builtins.attrNames (
@@ -90,10 +94,9 @@ in {
         git-crypt
         git-fullstatus
         git-secret
-        mercurial
         rcs
         tig
-      ];
+      ] ++ lib.optional config.isz.quentin.mercurial mercurial;
       programs.git = {
         package = pkgs.gitFull;
         lfs.enable = true;
@@ -151,7 +154,7 @@ in {
         "rust-analysis"
       ];
       programs.rustup.targets = lib.unique [
-        pkgs.hostPlatform.config
+        pkgs.hostPlatform.rust.rustcTarget
         "thumbv6m-none-eabi"
         "thumbv7em-none-eabi"
         "thumbv7em-none-eabihf"
@@ -198,11 +201,11 @@ in {
     {
       home.packages = with pkgs; [
         pkgsCross.mingwW64.buildPackages.bintools
-        (lowPrio (pkgs.extend (self: super: {
+        (lib.lowPrio (pkgs.extend (self: super: {
           threadsCross.model = "win32";
           threadsCross.package = null;
         })).pkgsCross.mingw32.stdenv.cc)
-        (lowPrio pkgsCross.mingwW64.stdenv.cc)
+        (lib.lowPrio pkgsCross.mingwW64.stdenv.cc)
         #already binutils
         cdecl
         dtc

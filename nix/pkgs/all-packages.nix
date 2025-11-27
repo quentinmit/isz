@@ -7,12 +7,8 @@ final: prev:
   rtlamr-collect = final.callPackage ./rtlamr-collect {};
   speedtest-influxdb = final.callPackage ./speedtest-influxdb {};
   zwave-js-ui-bin = final.callPackage ./zwave-js-ui/bin.nix {};
-  avidemux = if final.stdenv.isDarwin then (final.libsForQt5.callPackage ./avidemux {
-    inherit (final.darwin.apple_sdk_11_0.frameworks) VideoToolbox CoreFoundation CoreMedia CoreVideo CoreAudio CoreServices QuartzCore;
-    stdenv = if final.stdenv.isDarwin then final.darwin.apple_sdk_11_0.stdenv else final.stdenv;
-  }) else prev.avidemux;
+  avidemux = if final.stdenv.isDarwin then (final.libsForQt5.callPackage ./avidemux {}) else prev.avidemux;
   macfuse = final.callPackage ./macfuse {
-    inherit (final.darwin.apple_sdk.frameworks) DiskArbitration;
     inherit (final.darwin) signingUtils;
   };
   macfuse-stubs = final.macfuse;
@@ -68,9 +64,7 @@ final: prev:
   knock = final.knockd.override {
     withKnockd = false;
   };
-  mactelnet = final.callPackage ./mactelnet {
-    inherit (final.darwin.apple_sdk.frameworks) SystemConfiguration;
-  };
+  mactelnet = final.callPackage ./mactelnet {};
   retrogram-rtlsdr = final.callPackage ./retrogram-rtlsdr {};
   sdrtrunk = final.callPackage ./sdrtrunk {};
   jmbe = final.callPackage ./sdrtrunk/jmbe {};
@@ -189,4 +183,5 @@ final: prev:
   xgpro = final.callPackage ./xgpro {};
   ltchiptool = final.callPackage ./python/ltchiptool {};
   dsd = final.callPackage ./dsd {};
+  itpp = final.callPackage ./itpp {};
 }

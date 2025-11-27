@@ -140,11 +140,6 @@ in {
       ];
     })
     # Multimedia - Audio
-    (lib.mkIf config.isz.graphical {
-      home.packages = with pkgs; [
-        scope-tui
-      ];
-    })
     (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) (let
       pluginPath = type: "${config.home.profileDirectory}/lib/${type}";
       sfDir = "${config.home.profileDirectory}/share/soundfonts";
@@ -209,6 +204,7 @@ in {
         japa
         losslesscut-bin
         rsgain
+        scope-tui
 
         # Plugins
         qsynth

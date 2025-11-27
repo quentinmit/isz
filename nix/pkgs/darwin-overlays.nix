@@ -32,10 +32,6 @@ in if prev.stdenv.isDarwin then {
     qt6 = final.qt5 // {
       qt5compat = null;
     };
-    stdenv = if final.stdenv.isDarwin then final.darwin.apple_sdk_11_0.stdenv else final.stdenv;
-    buildPackages = final.buildPackages // final.lib.optionalAttrs final.stdenv.isDarwin {
-      inherit (final.buildPackages.darwin.apple_sdk_11_0) stdenv;
-    };
   };
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (python-final: python-prev: with python-final; {
@@ -56,11 +52,9 @@ in if prev.stdenv.isDarwin then {
   alpine = prev.alpine.overrideAttrs (old: {
     src = old.src.override {
       rev = "3d6c5540c8c2f4d01331de13e52790e5d7b6ac49";
+      tag = null;
       hash = "sha256-Y4+SJ+OZw4t51fgF710ijjKt59Fui/SbyQzgNIjVAXU=";
     };
-    buildInputs = old.buildInputs ++ [
-      final.darwin.apple_sdk.frameworks.Carbon
-    ];
     configureFlags = prev.lib.lists.remove "--with-passfile=.pine-passfile" (prev.lib.lists.remove "--with-c-client-target=slx" old.configureFlags);
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
@@ -70,12 +64,6 @@ in if prev.stdenv.isDarwin then {
     libax25 = null;
   };
   net-snmp = prev.net-snmp.overrideAttrs (old: {
-    buildInputs = old.buildInputs ++ (with final.darwin.apple_sdk.frameworks; [
-      DiskArbitration
-      IOKit
-      CoreServices
-      ApplicationServices
-    ]);
     LIBS = "-framework CoreFoundation -framework CoreServices -framework DiskArbitration -framework IOKit";
     meta.platforms = old.meta.platforms ++ final.lib.platforms.darwin;
   });
@@ -127,11 +115,6 @@ in if prev.stdenv.isDarwin then {
   in prev.xqilla.overrideAttrs (old: {
     configureFlags = (old.configureFlags or []) ++ [
       "CXXFLAGS=-Wno-register"
-    ];
-    buildInputs = (old.buildInputs or []) ++ [
-      final.darwin.apple_sdk.frameworks.CoreFoundation
-      final.darwin.apple_sdk.frameworks.CoreServices
-      final.darwin.apple_sdk.frameworks.SystemConfiguration
     ];
   });
   ldapvi = let
@@ -223,9 +206,6 @@ in if prev.stdenv.isDarwin then {
   in prev.pidgin.overrideAttrs (old: {
     CFLAGS = (old.CFLAGS or "") + " -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion";
   });
-  clamav = prev.clamav.override {
-    inherit (final.darwin.apple_sdk.frameworks) Foundation;
-  };
   ncdu = final.ncdu_1;
   jellycli = (prev.jellycli.override {
     alsa-lib = null;
@@ -242,10 +222,6 @@ in if prev.stdenv.isDarwin then {
       "-skip"
       "TestInitEmptyConfig|TestAudio_SetVolume"
     ];
-    buildInputs = with final; old.buildInputs or [] ++ [
-      darwin.apple_sdk.frameworks.AudioToolbox
-      darwin.apple_sdk.frameworks.OpenAL
-    ];
   });
   volk =
     if lib.versionAtLeast prev.volk.version "3.0"
@@ -255,4 +231,12 @@ in if prev.stdenv.isDarwin then {
     libselinux = null;
     libsepol = null;
   };
+  gpgme = prev.gpgme.overrideAttrs (old: {
+    meta = old.meta // { broken = false; };
+  });
+  libsForQt5 = prev.libsForQt5.overrideScope (qfinal: qprev: {
+    qgpgme = qprev.qgpgme.overrideAttrs (old: {
+      meta = old.meta // { broken = false; };
+    });
+  });
 } else {}

@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchurl, cpio, xar, undmg, DiskArbitration, fixDarwinDylibNames, signingUtils }:
+{ lib, stdenv, fetchurl, cpio, xar, undmg, fixDarwinDylibNames, signingUtils }:
 
 stdenv.mkDerivation rec {
   pname = "macfuse";
@@ -10,7 +10,6 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cpio xar undmg signingUtils fixDarwinDylibNames ];
-  propagatedBuildInputs = [ DiskArbitration ];
 
   postUnpack = ''
     xar -xf 'Install macFUSE.pkg'

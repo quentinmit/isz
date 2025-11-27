@@ -7,7 +7,6 @@
 , flex
 , python3
 , wrapGAppsHook3
-, darwin
 , fetchFromGitHub
 , applyPatches
 , pkgs
@@ -43,7 +42,6 @@ let
       rev = "da20d8397df263db882e914405bb03b9792f4692";
       sha256 = "faJFRsL5dnezMvK70UthQYiosVh+on4SWCfxqsZwEew=";
     }) {
-      inherit (darwin.apple_sdk.frameworks) ApplicationServices Carbon Cocoa OpenGL;
       withDocs = false; # Don't build correctly
     }).overrideAttrs (old: {
       buildInputs = old.buildInputs ++ (with pkgs; [
