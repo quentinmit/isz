@@ -484,24 +484,6 @@
         "type": "github"
       }
     },
-    "flake-utils_3": {
-      "inputs": {
-        "systems": "systems_3"
-      },
-      "locked": {
-        "lastModified": 1681202837,
-        "narHash": "sha256-H+Rh19JDwRtpVPAWp64F+rlEtxUWBAQW28eAi3SRSzg=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "cfacdce06f30d2b68473a46042957675eebb3401",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "flakelib": {
       "inputs": {
         "fl-config": "fl-config",
@@ -810,14 +792,16 @@
         "nixpkgs": [
           "unstable"
         ],
-        "pip2nix": "pip2nix"
+        "pyproject-build-systems": "pyproject-build-systems_2",
+        "pyproject-nix": "pyproject-nix_2",
+        "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1743662909,
-        "narHash": "sha256-FU7F0w9dCvcUirg3HJ8IZxiNBRUhQyYArpCznSL/X5s=",
+        "lastModified": 1764231343,
+        "narHash": "sha256-k45vIV+uTwY9IlAg87t8aokSEQECCP9vAkpKqd5HhdA=",
         "owner": "quentinmit",
         "repo": "nixos-inventree",
-        "rev": "6d7f5e6cbcd6a3502a15172193bfeb3b701fa86f",
+        "rev": "c0c219f9587a5799b889392361ab729c098c4de5",
         "type": "github"
       },
       "original": {
@@ -993,22 +977,6 @@
     },
     "nixpkgs_5": {
       "locked": {
-        "lastModified": 1635350005,
-        "narHash": "sha256-tAMJnUwfaDEB2aa31jGcu7R7bzGELM9noc91L2PbVjg=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "1c1f5649bb9c1b0d98637c8c365228f57126f361",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-20.09",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_6": {
-      "locked": {
         "lastModified": 1764020296,
         "narHash": "sha256-6zddwDs2n+n01l+1TG6PlyokDdXzu/oBmEejcH5L5+A=",
         "owner": "NixOS",
@@ -1071,25 +1039,6 @@
         "owner": "robertjakub",
         "ref": "main",
         "repo": "oom-hardware",
-        "type": "github"
-      }
-    },
-    "pip2nix": {
-      "inputs": {
-        "flake-utils": "flake-utils_3",
-        "nixpkgs": "nixpkgs_5"
-      },
-      "locked": {
-        "lastModified": 1681921436,
-        "narHash": "sha256-jrUOMhpOFxrgCXNgMWz475nKZdMiSQb0+nbaIqQORSM=",
-        "owner": "nix-community",
-        "repo": "pip2nix",
-        "rev": "2ad8bd4c841116a1b9ab7853a53ed2d38e0ab93f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "pip2nix",
         "type": "github"
       }
     },
@@ -1181,6 +1130,35 @@
         "type": "github"
       }
     },
+    "pyproject-build-systems_2": {
+      "inputs": {
+        "nixpkgs": [
+          "nixos-inventree",
+          "nixpkgs"
+        ],
+        "pyproject-nix": [
+          "nixos-inventree",
+          "pyproject-nix"
+        ],
+        "uv2nix": [
+          "nixos-inventree",
+          "uv2nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1759113590,
+        "narHash": "sha256-fgxP2RCN4cg0jYiMYoETYc7TZ2JjgyvJa2y9l8oSUFE=",
+        "owner": "pyproject-nix",
+        "repo": "build-system-pkgs",
+        "rev": "dbfc0483b5952c6b86e36f8b3afeb9dde30ea4b5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pyproject-nix",
+        "repo": "build-system-pkgs",
+        "type": "github"
+      }
+    },
     "pyproject-nix": {
       "inputs": {
         "nixpkgs": [
@@ -1194,6 +1172,27 @@
         "owner": "pyproject-nix",
         "repo": "pyproject.nix",
         "rev": "7d3d8848358ccbd415afe2139f12b9e1508d3ace",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pyproject-nix",
+        "repo": "pyproject.nix",
+        "type": "github"
+      }
+    },
+    "pyproject-nix_2": {
+      "inputs": {
+        "nixpkgs": [
+          "nixos-inventree",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1760402624,
+        "narHash": "sha256-jF6UKLs2uGc2rtved8Vrt58oTWjTQoAssuYs/0578Z4=",
+        "owner": "pyproject-nix",
+        "repo": "pyproject.nix",
+        "rev": "84c4ea102127c77058ea1ed7be7300261fafc7d2",
         "type": "github"
       },
       "original": {
@@ -1226,7 +1225,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixos-inventree": "nixos-inventree",
         "nixos-meshtastic": "nixos-meshtastic",
-        "nixpkgs": "nixpkgs_6",
+        "nixpkgs": "nixpkgs_5",
         "nixpkgs-23_05": "nixpkgs-23_05",
         "nur-mweinelt": "nur-mweinelt",
         "oom-hardware": "oom-hardware",
@@ -1325,21 +1324,6 @@
         "type": "github"
       }
     },
-    "systems_3": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
     "treefmt-nix": {
       "inputs": {
         "nixpkgs": "nixpkgs_3"
@@ -1390,6 +1374,31 @@
         "owner": "pyproject-nix",
         "repo": "uv2nix",
         "rev": "c9752c6c5915eece99505612d8f7805185cff990",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pyproject-nix",
+        "repo": "uv2nix",
+        "type": "github"
+      }
+    },
+    "uv2nix_2": {
+      "inputs": {
+        "nixpkgs": [
+          "nixos-inventree",
+          "nixpkgs"
+        ],
+        "pyproject-nix": [
+          "nixos-inventree",
+          "pyproject-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1761527626,
+        "narHash": "sha256-neDfvbpFlzUQfH9C+hVRUX0/RXUbJBidw4pFcdMYhZA=",
+        "owner": "pyproject-nix",
+        "repo": "uv2nix",
+        "rev": "46a8e8bbb2d9e34b686329ac16e4a8861394f03a",
         "type": "github"
       },
       "original": {

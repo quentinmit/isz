@@ -14,6 +14,9 @@ buildPythonApplication rec {
     sha256 = "sha256-noA/1DwTdf1Sa8yLzILardmEMjcI4xupsfsQUdEuESA=";
   };
 
+  pyproject = true;
+  build-system = [ setuptools ];
+
   pythonRelaxDeps = true;
 
   nativeBuildInputs = [

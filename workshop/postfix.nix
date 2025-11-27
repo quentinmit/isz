@@ -4,13 +4,12 @@
   sops.secrets."smtp_sasl_password_maps" = {};
   services.postfix = {
     enable = true;
-    origin = "isz.wtf";
     rootAlias = "root@isz.wtf";
-    networks = ["127.0.0.0/8" "[::ffff:127.0.0.0]/104" "[::1]/128"];
-    relayHost = "mail.smtp2go.com";
-    relayPort = 2525;
     mapFiles.smtp_sasl_password_maps = config.sops.secrets."smtp_sasl_password_maps".path;
-    config = rec {
+    settings.main = rec {
+      myorigin = "isz.wtf";
+      mynetworks = ["127.0.0.0/8" "[::ffff:127.0.0.0]/104" "[::1]/128"];
+      relayhost = ["mail.smtp2go.com:2525"];
       # smtpd_banner = $myhostname ESMTP
       # UNNEEDED? biff = no
       # DEFAULT append_dot_mydomain = no
@@ -18,10 +17,7 @@
       # STOCK compatibility_level = 2
       # UNNEEDED? myhostname = workshop.isz.wtf
       # DONE? alias_maps = hash:/etc/aliases
-      # DONE myorigin = /etc/mailname
       # UNNEEDED mydestination = workshop.isz.wtf, localhost.isz.wtf, localhost
-      # DONE relayhost = [mail.smtp2go.com]:2525
-      # DONE mynetworks = 127.0.0.0/8, [::ffff:127.0.0.0]/104, [::1]/128
       mailbox_size_limit = "0";
       recipient_delimiter = "+";
       # DEFAULT inet_interfaces = all
@@ -65,7 +61,7 @@
       smtp_tls_note_starttls_offer = true;
 
       lmtp_tls_security_level = "may";
-      lmtp_tls_CAfile = config.services.postfix.tlsTrustedAuthorities;
+      lmtp_tls_CAfile = config.security.pki.caBundle;
       lmtp_tls_session_cache_database = "btree:\${data_directory}/lmtp_scache";
       lmtp_tls_loglevel = "1";
       lmtp_tls_protocols = smtp_tls_protocols;

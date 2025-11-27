@@ -7,6 +7,7 @@
 , mock
 , webtest
 , pillow
+, setuptools
 }:
 buildPythonPackage rec {
   pname = "Dozer";
@@ -18,6 +19,9 @@ buildPythonPackage rec {
     rev = "b968878c32be1381ce025d4e224db62fa47585ea";
     sha256 = "PsPISm9Fp2e3xft6DL0+a32R8tsd2X9n7O90D9gubdI=";
   };
+
+  pyproject = true;
+  build-system = [ setuptools ];
 
   propagatedBuildInputs = [
     mako
