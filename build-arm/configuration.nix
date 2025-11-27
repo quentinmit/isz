@@ -64,13 +64,12 @@
   # Use disk instead of tmpfs for builds.
   systemd.services.nix-daemon.environment.TMPDIR = "/var/tmp";
 
-  system.modulesTree = lib.mkAssert (!(pkgs.linux ? modules)) "no longer needed" (lib.mkForce ([ (lib.getOutput "modules" config.system.build.kernel) ] ++ config.boot.extraModulePackages));
   boot = {
     # TODO: Add config from https://github.com/armbian/build/blob/ca4dc8085a50e65158fc788800b1423cd7334fb5/config/kernel/linux-rockchip-rk3588-edge.config
 
-    # TODO: Remove zfs.package and system.modulesTree, and use linux_6_17 from nixos-stable, when zfs 2.4.0 is available in nixos-stable.
-    kernelPackages = pkgs.unstable.linuxKernel.packages.linux_6_17;
-    zfs.package = lib.mkAssert (!lib.versionAtLeast pkgs.zfs.version "2.4.0") "unstable zfs no longer needed" pkgs.unstable.zfs_unstable;
+    # TODO: Remove zfs.package and use linux_6_17 from nixos-stable, when zfs 2.4.0 is available in nixos-stable.
+    kernelPackages = pkgs.linuxKernel.packages.linux_6_17;
+    zfs.package = lib.mkAssert (!lib.versionAtLeast pkgs.zfs.version "2.4.0") "unstable zfs no longer needed" pkgs.zfs_unstable;
 
     loader.grub.enable = false;
     loader.systemd-boot.enable = true;
