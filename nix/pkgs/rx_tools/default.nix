@@ -16,6 +16,10 @@ stdenv.mkDerivation rec {
     sha256 = "WacMVC0rohyHnZexGj2Zby9aD4AYwJvljACbzQDAKGM=";
   };
 
+  cmakeFlags = [
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+  ];
+
   nativeBuildInputs = [
     cmake
   ];
