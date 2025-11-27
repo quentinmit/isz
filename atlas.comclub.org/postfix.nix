@@ -8,29 +8,6 @@ in {
   services.postfix = {
     enable = true;
 
-    hostname = "atlas.comclub.org";
-    domain = "comclub.org";
-    origin = "comclub.org";
-    destination = [
-      "$myhostname"
-      "localhost.$mydomain"
-      "localhost"
-      "$mydomain"
-      "mail.$mydomain"
-      "www.$mydomain"
-      "ftp.$mydomain"
-      "comclub.dyndns.org"
-      "linux.$mydomain"
-      "atlas.$mydomain"
-      "atlas"
-    ];
-    recipientDelimiter = "+";
-
-    sslCert = "${sslCertDir}/fullchain.pem";
-    sslKey = "${sslCertDir}/key.pem";
-    networks = ["127.0.0.0/8" "[::ffff:127.0.0.0]/104" "[::1]/128" "192.168.0.0/16"];
-    relayHost = "mail.smtp2go.com";
-    relayPort = 2525;
     mapFiles.smtp_sasl_password_maps = lib.mkIf (!isVM) config.sops.secrets."postfix/smtp_sasl_password_maps".path;
     mapFiles.virtual = pkgs.writeText "virtual" ''
       postmaster@hb-rights.org        postmaster
@@ -60,16 +37,47 @@ in {
       webmaster:          root
       www:                webmaster
     '';
-    config = {
+    settings.main = {
       biff = false;
+
+      recipient_delimiter = "+";
+
+      myhostname = "atlas.comclub.org";
+      mydomain = "comclub.org";
+      myorigin = "comclub.org";
+      mydestination = [
+        "$myhostname"
+        "localhost.$mydomain"
+        "localhost"
+        "$mydomain"
+        "mail.$mydomain"
+        "www.$mydomain"
+        "ftp.$mydomain"
+        "comclub.dyndns.org"
+        "linux.$mydomain"
+        "atlas.$mydomain"
+        "atlas"
+      ];
+
+      mynetworks = [
+        "127.0.0.0/8"
+        "[::ffff:127.0.0.0]/104"
+        "[::1]/128"
+        "192.168.0.0/16"
+      ];
 
       # appending .domain is the MUA's job.
       append_dot_mydomain = false;
 
       smtpd_tls_session_cache_database = "btree:\${data_directory}/smtpd_scache";
       smtp_tls_session_cache_database = "btree:\${data_directory}/smtp_scache";
+      smtpd_tls_chain_files = [
+        "${sslCertDir}/full.pem"
+      ];
 
       inet_interfaces = "all";
+
+      relayhost = ["mail.smtp2go.com:2525"];
 
       smtp_sasl_auth_enable = true;
       smtp_tls_security_level = "encrypt";
@@ -120,7 +128,7 @@ in {
       smtpd_sasl_type = "dovecot";
       smtpd_sasl_path = "private/auth";
     };
-    masterConfig.submission = {
+    settings.master.submission = {
       type = "inet";
       private = false;
       command = "smtpd";
