@@ -80,7 +80,7 @@
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
         unstable = import unstable {
-          system = final.system or final.stdenv.system;
+          inherit (final.stdenv.hostPlatform) system;
           inherit (final) config;
           overlays = [
             self.overlays.new
