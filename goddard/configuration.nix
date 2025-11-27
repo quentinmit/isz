@@ -46,14 +46,21 @@
 
   # Only use fingerprint for the kde-fingerprint PAM service.
   security.pam.services.kde.fprintAuth = false;
+  security.pam.services.sddm = lib.mkForce {
+    # lib.mkForce is needed to disable the default include of the `login` stack.
+    # Use password in SDDM so pam_kwallet can work.
+    fprintAuth = false;
+    # Defaults from security.pam.services.login
+    showMotd = true;
+    startSession = true;
+    updateWtmp = true;
+    inherit (config.security.pam.services.login) kwallet;
+  };
   security.pam.services.kde-fingerprint = {
     unixAuth = false;
     rules.auth.fprintd.settings = {
       max-tries = 10;
       debug = true;
-      # Work around https://bugs.kde.org/show_bug.cgi?id=499893
-      # The timeout starts running when the screen locks, so make sure it's long enough that a fingerprint will still be requested at unlock.
-      timeout = 7*24*60*60;
     };
   };
 
