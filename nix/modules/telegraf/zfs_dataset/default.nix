@@ -1,13 +1,13 @@
 { lib
 , stdenv
-, python3
+, python312
 , pkgs
 }:
 
-python3.pkgs.buildPythonApplication {
+python312.pkgs.buildPythonApplication {
   name = "zfs-influx";
 
-  propagatedBuildInputs = with python3.pkgs; [
+  propagatedBuildInputs = with python312.pkgs; [
     influxdb-client
     py-libzfs
   ];
