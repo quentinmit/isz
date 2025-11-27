@@ -86,7 +86,18 @@
     }
   ];
 
-  networking.networkmanager.enable = true;
+  networking.networkmanager = {
+    enable = true;
+    plugins = with pkgs; [
+      networkmanager-fortisslvpn
+      networkmanager-iodine
+      networkmanager-l2tp
+      networkmanager-openconnect
+      networkmanager-openvpn
+      networkmanager-vpnc
+      networkmanager-sstp
+    ];
+  };
 
   networking.nftables.enable = true;
   services.firewalld = {
