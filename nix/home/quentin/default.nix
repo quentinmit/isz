@@ -127,7 +127,7 @@ in {
         bossa
         openocd
       ] ++ lib.optionals stdenv.isLinux [
-        fritzing
+        unstable.fritzing
         teensyduino
       ] ++ available arduino-ide;
     })
@@ -551,7 +551,7 @@ in {
         stellarium
         kdePackages.kalgebra
         kdePackages.kalzium
-        kdePackages.step
+        unstable.kdePackages.step
       ];
     })
     # Productivity

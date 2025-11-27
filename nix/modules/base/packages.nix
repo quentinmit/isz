@@ -29,7 +29,6 @@ let
     bwm_ng
     curlFull
     host # already present
-    dig
     fping
     mosh
     mosh-server-upnp

@@ -39,16 +39,17 @@
             logo32 = null;
             logo64 = null;
           };
-          go = {
-            displayName = "Go";
-            argv = [
-              "${gophernotes}/bin/gophernotes"
-              "{connection_file}"
-            ];
-            language = "go";
-            logo32 = "${gophernotes.src}/kernel/logo-32x32.png";
-            logo64 = "${gophernotes.src}/kernel/logo-64x64.png";
-          };
+          # TODO: Switch to https://github.com/janpfeifer/gonb
+          # go = {
+          #   displayName = "Go";
+          #   argv = [
+          #     "${gophernotes}/bin/gophernotes" # broken
+          #     "{connection_file}"
+          #   ];
+          #   language = "go";
+          #   logo32 = "${gophernotes.src}/kernel/logo-32x32.png";
+          #   logo64 = "${gophernotes.src}/kernel/logo-64x64.png";
+          # };
           #sage = sage.kernelspec;
           #octave = octave-kernel.definition;
 #           pyscript = let
@@ -178,7 +179,7 @@
         jupyterlab-widgets
         ihaskell
         iruby
-        gophernotes
+        #broken gophernotes
         kaitaistruct
         keyring
         ldap3

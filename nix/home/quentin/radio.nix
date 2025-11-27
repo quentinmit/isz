@@ -32,7 +32,7 @@
       fldigi
       flrig
       pothos
-      sdrangel
+      unstable.sdrangel
       ] ++ lib.optionals (!(pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64)) [
         gqrx-portaudio
       ]
