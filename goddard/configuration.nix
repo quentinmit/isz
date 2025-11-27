@@ -15,7 +15,7 @@
   ];
   nixpkgs.config.permittedInsecurePackages = [
     "python3.11-youtube-dl-2021.12.17"
-    "segger-jlink-qt4-810"
+    "segger-jlink-qt4-874"
     "segger-systemview-qt4-352a"
     "olm-3.2.16"
   ];
@@ -92,10 +92,11 @@
 
   networking.networkmanager.enable = true;
 
+  networking.nftables.enable = true;
   services.firewalld = {
     enable = true;
     package = pkgs.firewalld-gui;
-    config = {
+    settings = {
       DefaultZone = "public";
       FirewallBackend = "nftables";
     };
@@ -195,7 +196,7 @@
     limesuiteWithGui
   ];
 
-  services.nixseparatedebuginfod.enable = true;
+  services.nixseparatedebuginfod2.enable = true;
 
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
@@ -246,7 +247,7 @@
     enable = true;
   };
   virtualisation.containers.containersConf.settings = {
-    network.firewall_driver = "none"; # firewalld
+    network.firewall_driver = lib.mkForce "none"; # firewalld
   };
 
   virtualisation.waydroid.enable = true;

@@ -14,7 +14,7 @@ in {
       targets = mkOption {
         type = types.listOf types.str;
         default = [
-          pkgs.hostPlatform.config
+          pkgs.stdenv.hostPlatform.rust.rustcTarget
         ];
       };
     };

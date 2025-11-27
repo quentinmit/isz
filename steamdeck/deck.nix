@@ -19,7 +19,7 @@
 
   home.packages = with pkgs; [
     # Network
-    netsurf.browser
+    netsurf-browser
     qgis-ltr
     remmina
     wireshark

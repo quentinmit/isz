@@ -109,7 +109,7 @@
   services.firewalld = {
     enable = true;
     package = pkgs.firewalld-gui;
-    config = {
+    settings = {
       DefaultZone = "public";
       FirewallBackend = "nftables";
     };

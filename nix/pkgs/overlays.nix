@@ -26,28 +26,9 @@ in {
     ln -s ${final.inetutils}/bin/telnet $out/bin/telnet
     ln -s ${final.inetutils}/share/man/man1/telnet.1.gz $out/share/man/man1/telnet.1.gz
   '';
-  bash-preexec = prev.bash-preexec.overrideAttrs (old: {
-    # Declare arrays as global variables, so bash-preexec works when loaded within a function.
-    installPhase = old.installPhase + ''
-      sed -i 's/declare -a/declare -ga/' $out/share/bash/bash-preexec.sh
-    '';
-  });
   bashdbInteractive = final.bashdb.overrideAttrs {
     buildInputs = (prev.buildInputs or []) ++ [ final.bashInteractive ];
   };
-  gobang = prev.gobang.overrideAttrs (old: rec {
-    src = old.src.override {
-      rev = "refs/pull/177/head";
-      hash = "sha256-zoCAl7s5QKNgc5/DChQIKewnFs5P1Y4hm8bakbH//fI=";
-    };
-    patches = [];
-    # cargoDeps can't be partially overridden. See first comment at https://github.com/NixOS/nixpkgs/pull/382550
-    cargoDeps = final.rustPlatform.fetchCargoVendor {
-      inherit src;
-      inherit (prev.gobang) name;
-      hash = "sha256-30WTTAnvdKpAOydjKeXIBeZ2qHKYgC2C69rQgTWbLI8=";
-    };
-  });
   gnuplot_gui = if final.stdenv.isDarwin then final.gnuplot else final.gnuplot_qt; # See darwin-overlays.nix
   firewalld = prev.firewalld.overrideAttrs (old: {
     # Patch /usr/lib
@@ -154,27 +135,6 @@ in {
       final.SDL
     ];
   });
-  igir = prev.igir.overrideAttrs (pfinal: old: let
-    version = "3.4.2";
-  in {
-    inherit version;
-    src = old.src.override {
-      rev = "v${version}";
-      hash = "sha256-UXrkBHybb/8U7aGIGYvlBEPJCWMejyFyMSMBEKGHZYA=";
-    };
-
-    buildInputs = old.buildInputs ++ [
-      final.SDL2
-      final.lz4
-      final.zlib
-      final.libuv
-    ];
-
-    npmDeps = final.fetchNpmDeps {
-      inherit (pfinal) src;
-      hash = "sha256-fqt/VvMoQsKDN50QO6bz6Di1CqA0NdY7FcEQ6Uo2irU=";
-    };
-  });
   pico-sdk-full = final.pico-sdk.override {
     withSubmodules = true;
   };
@@ -223,8 +183,4 @@ in {
   nbd-static = prev.nbd.overrideAttrs {
     env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
   };
-  labplot = prev.labplot.override (old: lib.optionalAttrs (old ? cantor && (!lib.versionOlder "23.08.5" old.cantor.version)) {
-    # cantor 23.08.5 no longer compiles with nixpkgs 25.05
-    cantor = null;
-  });
 }

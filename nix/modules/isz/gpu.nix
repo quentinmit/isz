@@ -11,7 +11,7 @@
       hardware.graphics.enable32Bit = true;
       environment.systemPackages = with pkgs; [
         clinfo
-        glxinfo
+        mesa-demos
         libva-utils
         vulkan-tools
       ];

@@ -139,8 +139,7 @@
         pep8-naming
         fonttools
         funcsigs
-        future
-        GitPython
+        gitpython
         gmpy2
         gnupg
         gnureadline
@@ -241,7 +240,7 @@
         rsa
         ruamel-yaml
         scapy
-        scikitimage
+        scikit-image
         scipy
         selenium
         semver

@@ -154,7 +154,7 @@ in {
         "rust-analysis"
       ];
       programs.rustup.targets = lib.unique [
-        pkgs.hostPlatform.rust.rustcTarget
+        pkgs.stdenv.hostPlatform.rust.rustcTarget
         "thumbv6m-none-eabi"
         "thumbv7em-none-eabi"
         "thumbv7em-none-eabihf"
@@ -520,7 +520,7 @@ in {
         transmission_4
         bruno
       ] ++ lib.optionals pkgs.stdenv.isLinux [
-        netsurf.browser
+        netsurf-browser
         qgis-ltr
         remmina
         kdePackages.krdc

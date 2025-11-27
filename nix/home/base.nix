@@ -53,16 +53,16 @@ in {
         "__pycache__"
         "*.kate-swp"
       ];
-      userName = "Quentin Smith";
-      userEmail = lib.mkDefault "quentin@mit.edu";
-      aliases = {
-        up = "pull --rebase";
-        k = "log --graph --abbrev-commit --pretty=oneline --decorate";
-        log-json = let
-          format = ''"%h": {%n  "commit": "%H",%n  "author": "%an <%ae>",%n  "date": "%ad",%n  "message": "%B"%n},'';
-        in lib.escapeShellArgs ["log" "--pretty=format:${format}"];
-      };
-      extraConfig = {
+      settings = {
+        user.name = "Quentin Smith";
+        user.email = lib.mkDefault "quentin@mit.edu";
+        alias = {
+          up = "pull --rebase";
+          k = "log --graph --abbrev-commit --pretty=oneline --decorate";
+          log-json = let
+            format = ''"%h": {%n  "commit": "%H",%n  "author": "%an <%ae>",%n  "date": "%ad",%n  "message": "%B"%n},'';
+          in lib.escapeShellArgs ["log" "--pretty=format:${format}"];
+        };
         init.defaultBranch = "main";
         core.pager = "less -F";
         color.ui = "auto";

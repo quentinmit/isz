@@ -5,11 +5,11 @@
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "nixpkgs/nixos-25.05";
+    nixpkgs.url = "nixpkgs/nixos-25.11";
     nixpkgs-23_05.url = "nixpkgs/nixos-23.05";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
-    home-manager.url = "github:nix-community/home-manager/release-25.05";
+    home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
@@ -61,7 +61,7 @@
     gradle2nix.url = "github:tadfisher/gradle2nix/v2";
     gradle2nix.inputs.nixpkgs.follows = "nixpkgs";
     gradle2nix.inputs.flake-utils.follows = "flake-utils";
-    oom-hardware.url = "github:robertjakub/oom-hardware";
+    oom-hardware.url = "github:robertjakub/oom-hardware/main";
     nixos-inventree.url = "github:quentinmit/nixos-inventree/isz";
     nixos-inventree.inputs.nixpkgs.follows = "unstable";
     nixos-inventree.inputs.flake-utils.follows = "flake-utils";
@@ -240,7 +240,7 @@
           in {
             sshUser = "root";
             hostname = cfg.config.networking.fqdn;
-            profiles.system.path = deploy-rs.lib.${cfg.pkgs.system}.activate.nixos cfg;
+            profiles.system.path = deploy-rs.lib.${cfg.pkgs.stdenv.hostPlatform.system}.activate.nixos cfg;
           })) // {
             steamdeck = {
               hostname = "steamdeck.isz.wtf";
@@ -252,7 +252,7 @@
               #};
               profiles.deck = {
                 sshUser = "deck";
-                path = deploy-rs.lib.${self.homeConfigurations.deck.pkgs.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
+                path = deploy-rs.lib.${self.homeConfigurations.deck.pkgs.stdenv.hostPlatform.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
               };
             };
           };

@@ -51,14 +51,13 @@ in {
         guvcview
         delfin
         haruna
-        jellyfin-media-player
         jftui
         kdePackages.kdenlive
         mkvtoolnix
         smplayer
         vlc
         vmpk
-      ];
+      ] ++ (lib.throwIf (lib.versionAtLeast jellyfin-media-player.version "1.12.1") "jellyfin-media-player <= 1.12.0 can't be used" []);
       programs.mpv = {
         enable = true;
         bindings = {

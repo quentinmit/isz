@@ -90,7 +90,7 @@
       xdg.dataFile."DaVinciResolve/configs/.soundlibrary".text = "${pkgs.fairlight-sound-library}";
     }
     {
-      programs.git.extraConfig.url = {
+      programs.git.settings.url = {
         "git@github.com:mitmh2025".insteadOf = [
           "https://github.com/mitmh2025"
         ];
