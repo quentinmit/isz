@@ -113,11 +113,11 @@
   ];
 
   services.xserver.enable = true;
-  services.xserver.displayManager.gdm = {
+  services.displayManager.gdm = {
     enable = true;
     autoSuspend = false;
   };
-  services.xserver.desktopManager.gnome.enable = true;
+  services.desktopManager.gnome.enable = true;
   services.xserver.windowManager.twm.enable = true;
   services.desktopManager.plasma6.enable = true;
   # Resolve conflict between GNOME and KDE
