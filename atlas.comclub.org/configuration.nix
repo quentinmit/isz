@@ -94,6 +94,16 @@
     #useSops = true;
   };
 
+  services.openssh = {
+    settings.PasswordAuthentication = false;
+    settings.KbdInteractiveAuthentication = false;
+    extraConfig = ''
+      Match Address 192.168.0.0/24
+        PasswordAuthentication yes
+        KbdInteractiveAuthentication yes
+    '';
+  };
+
   hardware.rasdaemon.enable = true;
 
   boot.swraid.mdadmConf = ''
