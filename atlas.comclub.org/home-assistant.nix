@@ -53,12 +53,19 @@ in {
       "websocket_api"
       "yamaha"
       "yamaha_musiccast"
+      "yardian"
       "zone"
       "zwave_js"
     ];
 
     config = {
       default_config = {};
+      homeassistant = {
+        unit_system = "us_customary";
+        temperature_unit = "F";
+        currency = "USD";
+        country = "US";
+      };
       http = {
         trusted_proxies = [ "::1" "127.0.0.1" ];
         use_x_forwarded_for = true;
@@ -86,6 +93,8 @@ in {
 
       media_player = [{
         platform = "yamaha";
+        name = "RX-V485 64CAB8";
+        host = "receiver.comclub.org";
       }];
 
       sensor = [
