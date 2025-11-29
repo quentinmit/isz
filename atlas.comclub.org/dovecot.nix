@@ -84,23 +84,23 @@ in {
         }
       }
       # Virtual domains
-      auth_username_format = %{if;%d;eq;comclub.org;%Ln;%Lu}
+      auth_username_format = %{if;%Ld;eq;comclub.org;%Ln;%Lu}
       # First try to look up the user in a virtual passwd file.
       passdb {
         driver = passwd-file
         # Each domain has a separate passwd-file:
-        args = scheme=plain-md5 username_format=%Ln /etc/dovecot/auth/%d/passwd
+        args = scheme=plain-md5 username_format=%Ln /etc/dovecot/auth/%Ld/passwd
       }
       userdb {
         driver = passwd-file
         # Each domain has a separate passwd-file:
-        args = username_format=%Ln /etc/dovecot/auth/%d/passwd
-        override_fields = home=/var/lib/mail/home/%d/%n uid=mail gid=mail
+        args = username_format=%Ln /etc/dovecot/auth/%Ld/passwd
+        override_fields = home=/var/lib/mail/home/%Ld/%Ln uid=mail gid=mail
       }
       # If that didn't work, maybe it's a local user.
       userdb {
         driver = passwd
-        override_fields = home=/var/lib/mail/home/comclub.org/%n
+        override_fields = home=/var/lib/mail/home/comclub.org/%Ln
       }
       passdb {
         driver = pam

@@ -77,7 +77,7 @@ in {
 
       inet_interfaces = "all";
 
-      relayhost = ["mail.smtp2go.com:2525"];
+      relayhost = ["[mail.smtp2go.com]:2525"];
 
       smtp_sasl_auth_enable = true;
       smtp_tls_security_level = "encrypt";

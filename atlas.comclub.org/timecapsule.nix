@@ -5,7 +5,9 @@
     settings = {
       Global."uam list" = "uams_dhx.so uams_dhx2.so uams_dhx2_password.so";
       Global."afp listen" = "192.168.0.254";
-      Homes = {};
+      Homes = {
+        "basedir regex" = "/home";
+      };
       TimeCapsule = {
         path = "/var/lib/timecapsule";
         "time machine" = "yes";
