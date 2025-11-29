@@ -32,13 +32,16 @@ in {
       "apcupsd"
       "androidtv"
       "androidtv_remote"
+      "apple_tv"
       "backup"
+      "brother"
       "cast"
       "default_config"
       "device_automation"
       "frontend"
       "http"
       "google_assistant"
+      "homekit_controller"
       "ipp"
       "lovelace"
       "met"
@@ -49,6 +52,7 @@ in {
       "samsungtv"
       "websocket_api"
       "yamaha"
+      "yamaha_musiccast"
       "zone"
       "zwave_js"
     ];
@@ -93,7 +97,7 @@ in {
               {% set n = states.media_player.rx_v485_64cab8.attributes.volume_level|float %}
               {{ '%.1f'%( (-1.0+n)*100.0|round(0.0) ) }}
               {% else %}
-              "-80.0"
+              -80.0
               {% endif %}'';
           friendly_name = "Receiver Volume Level";
           unit_of_measurement = "dB";
