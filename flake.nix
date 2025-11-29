@@ -182,6 +182,7 @@
             ./${name}/configuration.nix
           ];
         })) // {
+          atlas = self.nixosConfigurations."atlas.comclub.org";
           uconsole-unstable = unstable.lib.nixosSystem {
             inherit specialArgs;
             modules = [ #(builtins.attrValues self.nixosModules) ++ [
@@ -228,6 +229,7 @@
         darwinModules = builtins.listToAttrs (findModules ./nix/darwin);
         homeModules = builtins.listToAttrs (findModules ./nix/home);
         deploy.nodes = (nixpkgs.lib.genAttrs [
+          "atlas"
           "atlas.comclub.org"
           "bedroom-pi"
           "build-arm"
