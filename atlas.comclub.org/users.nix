@@ -23,6 +23,9 @@ let
     };
   };
 in {
+  imports = [
+    ./quentin.nix
+  ];
   disko.devices.zpool.zpool.datasets = lib.genAttrs' (builtins.attrNames users) (name: lib.nameValuePair "home/${name}" {
     type = "zfs_fs";
   });

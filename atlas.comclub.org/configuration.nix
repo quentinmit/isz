@@ -113,4 +113,8 @@
   system.stateVersion = "25.05";
 
   users.users.root = {};
+
+  environment.systemPackages = with pkgs; [
+    alpine
+  ];
 }
