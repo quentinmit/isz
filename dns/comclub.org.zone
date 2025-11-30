@@ -30,6 +30,8 @@ basement.cam     A 192.168.0.179
                  EUI48 2C-AA-8E-77-C2-4D
 other.cam        A 192.168.0.180
                  EUI48 2C-AA-8E-77-BE-B7
+yardian          A 192.168.0.181
+                 EUI48 9C-65-F9-48-D2-4A
 atlas-kvm        A 192.168.0.251
                  EUI48 94-83-C4-AD-91-9F
 atlas-old        A 192.168.0.252
@@ -41,7 +43,6 @@ atlas            A 192.168.0.254
 linux            A 192.168.0.254
 
 chromecast       EUI48 6C-AD-F8-1B-D0-AD
-yardian          EUI48 9C-65-F9-48-D2-4A
 
 localhost        A 127.0.0.1
 localhost        AAAA ::1
