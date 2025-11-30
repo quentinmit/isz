@@ -19,6 +19,7 @@
       locations."/" = {
         proxyPass = "http://hercules";
         extraConfig = ''
+          proxy_set_header Host $host;
           proxy_bind $remote_addr transparent;
         '';
       };

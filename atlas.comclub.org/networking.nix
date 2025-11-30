@@ -10,6 +10,7 @@
     br0 = {
       name = "br0";
       networkConfig.DHCP = "ipv4";
+      networkConfig.IPv4ReversePathFilter = "no";
       # TODO: networkConfig.Address = "192.168.0.254/24";
       routingPolicyRules = [{
         Family = "ipv4";
@@ -23,6 +24,7 @@
     };
     lo = {
       name = "lo";
+      networkConfig.IPv4ReversePathFilter = "no";
       routes = [{
         Destination = "0.0.0.0/0";
         Type = "local";
@@ -56,7 +58,11 @@
       content = ''
         chain output {
           type filter hook output priority filter;
-          ip daddr 192.168.0.5 tcp dport 80 skuid ${config.services.nginx.user} ct mark set 5
+          ip daddr 192.168.0.5 tcp dport 80 skuid ${config.services.nginx.user} counter ct mark set 5
+        }
+        chain setmark {
+          type filter hook prerouting priority mangle; policy accept;
+          ct mark 5 meta mark set ct mark counter accept
         }
       '';
     };
@@ -65,9 +71,10 @@
       content = ''
         chain prerouting {
           type filter hook prerouting priority -250; policy accept;
-          iifname "vnet*" ip saddr 192.168.0.5 tcp sport 80 meta broute set 1 accept
+          iifname "vnet*" ip saddr 192.168.0.5 tcp sport 80 counter meta broute set 1 accept
         }
       '';
     };
   };
+  systemd.network.config.networkConfig.IPv4Forwarding = true;
 }
