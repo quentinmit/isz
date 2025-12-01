@@ -11,6 +11,19 @@
             ../nix/pkgs/inventree/sso.patch
           ];
         });
+        workspace = it-prev.workspace // {
+          deps.default = it-prev.workspace.deps.default // {
+            psycopg2 = [ ];
+          };
+        };
+        packageOverrides = final.lib.composeManyExtensions [
+          it-prev.packageOverrides
+          (final: prev: {
+            psycopg2 = final.hacks.nixpkgsPrebuilt {
+              from = final.python.pkgs.psycopg2;
+            };
+          })
+        ];
       });
     })];
     services.inventree = {

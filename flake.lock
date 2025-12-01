@@ -797,11 +797,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1764231343,
-        "narHash": "sha256-k45vIV+uTwY9IlAg87t8aokSEQECCP9vAkpKqd5HhdA=",
+        "lastModified": 1764570977,
+        "narHash": "sha256-Oa0bgCn+mHHcT++JHaKtCN12VGKUNSUjvi6fFeLOyfE=",
         "owner": "quentinmit",
         "repo": "nixos-inventree",
-        "rev": "c0c219f9587a5799b889392361ab729c098c4de5",
+        "rev": "064848ccb5ff30674049a90228fd1cc04ef34560",
         "type": "github"
       },
       "original": {
