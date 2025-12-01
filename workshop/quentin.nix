@@ -12,5 +12,8 @@
 
       isz.base = true;
     }
+    {
+      home.packages = [ pkgs.alpine ];
+    }
   ];
 }
