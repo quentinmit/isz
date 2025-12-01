@@ -863,6 +863,21 @@
         "type": "indirect"
       }
     },
+    "nixpkgs-25_05": {
+      "locked": {
+        "lastModified": 1764316264,
+        "narHash": "sha256-82L+EJU+40+FIdeG4gmUlOF1jeSwlf2AwMarrpdHF6o=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "9a7b80b6f82a71ea04270d7ba11b48855681c4b0",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-25.05",
+        "type": "indirect"
+      }
+    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1761765539,
@@ -1227,6 +1242,7 @@
         "nixos-meshtastic": "nixos-meshtastic",
         "nixpkgs": "nixpkgs_5",
         "nixpkgs-23_05": "nixpkgs-23_05",
+        "nixpkgs-25_05": "nixpkgs-25_05",
         "nur-mweinelt": "nur-mweinelt",
         "oom-hardware": "oom-hardware",
         "plasma-manager": "plasma-manager",

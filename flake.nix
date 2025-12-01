@@ -7,6 +7,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-25.11";
     nixpkgs-23_05.url = "nixpkgs/nixos-23.05";
+    nixpkgs-25_05.url = "nixpkgs/nixos-25.05";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
     home-manager.url = "github:nix-community/home-manager/release-25.11";
@@ -75,7 +76,7 @@
     affinity-nix.url = "github:mrshmllow/affinity-nix";
     dsd-fme.url = "github:lwvmobile/dsd-fme";
   };
-  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
+  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, nixpkgs-25_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
     let
       overlay = final: prev: {
         pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
@@ -90,6 +91,13 @@
             Jovian-NixOS.overlays.default
             bluechips.overlays.default
           ];
+        };
+        nixpkgs-25_05 = import nixpkgs-25_05 {
+          inherit (final.stdenv.hostPlatform) system;
+          inherit (final) config;
+          overlays = [(final: prev: {
+            inherit (gradle2nix.packages.${final.system or "x86_64-linux"}) gradle2nix;
+          })];
         };
         inherit (gradle2nix.packages.${final.system or "x86_64-linux"}) gradle2nix;
       };

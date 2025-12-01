@@ -66,7 +66,8 @@ final: prev:
   };
   mactelnet = final.callPackage ./mactelnet {};
   retrogram-rtlsdr = final.callPackage ./retrogram-rtlsdr {};
-  sdrtrunk = final.callPackage ./sdrtrunk {};
+  # https://github.com/NixOS/nixpkgs/issues/412283#issuecomment-3325887652
+  sdrtrunk = final.nixpkgs-25_05.callPackage ./sdrtrunk {};
   jmbe = final.callPackage ./sdrtrunk/jmbe {};
   json2prefs = final.callPackage ../../software/json2prefs {};
   boxy-svg = final.callPackage ./boxy-svg {};
