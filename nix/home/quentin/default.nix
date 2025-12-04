@@ -551,7 +551,7 @@ in {
         stellarium
         kdePackages.kalgebra
         kdePackages.kalzium
-        unstable.kdePackages.step
+        #broken kdePackages.step
       ];
     })
     # Productivity
