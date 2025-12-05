@@ -578,7 +578,7 @@ in {
         zbar
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         abiword
-        #broken calligra
+        kdePackages.calligra
         kdePackages.ghostwriter
         kdePackages.skanlite
         kdePackages.skanpage
