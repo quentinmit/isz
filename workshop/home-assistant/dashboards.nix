@@ -351,7 +351,7 @@ in {
               } [
                 (a2button "MEDIA_PREVIOUS" "MEDIA_REWIND" { icon = "mdi:skip-previous"; })
                 (a2button "MEDIA_PLAY_PAUSE" "MEDIA_STOP" { icon = "mdi:play-pause"; })
-                (a2button "MEDIA_NEXT" "MEDIA_FAST_FORWARD" { icon = "mdi:play-pause"; })
+                (a2button "MEDIA_NEXT" "MEDIA_FAST_FORWARD" { icon = "mdi:skip-next"; })
                 (abutton "MUTE" { icon = "mdi:volume-off"; })
                 (abutton "VOLUME_DOWN" { icon = "mdi:volume-medium"; })
                 (abutton "VOLUME_UP" { icon = "mdi:volume-high"; })
