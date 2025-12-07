@@ -12,6 +12,7 @@
     ./jellyfin.nix
     ./containers.nix
     ./bitmagnet
+    ./backup.nix
     disko.nixosModules.disko
   ];
   nixpkgs.hostPlatform = "x86_64-linux";

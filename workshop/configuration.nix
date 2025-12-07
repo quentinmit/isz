@@ -10,6 +10,7 @@
       ./hardware-configuration.nix
       disko.nixosModules.disko
       ./disko.nix
+      ./backup.nix
       ./nginx.nix
       ./mail.nix
       ./postfix.nix
