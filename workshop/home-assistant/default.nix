@@ -252,26 +252,58 @@ in {
             "sensor.workshop_caparoc_*"
           ];
         };
-        sensor = [
+        template = let
+          expand = domain: lib.mapAttrsToList (name: attrs: {
+            default_entity_id = "${domain}.${name}";
+            inherit name;
+          } // attrs);
+        in [
           {
-            platform = "template";
-            sensors = {
+            sensor = expand "sensor" {
+              accuweather_temperature_min_0d = {
+                state = "{{ state_attr('sensor.hub_hb_00122953_weather', 'daily_forecast')[0].templow }}";
+              };
+              accuweather_temperature_max_0d = {
+                state = "{{ state_attr('sensor.hub_hb_00122953_weather', 'daily_forecast')[0].temperature }}";
+              };
               sun_rising_text = {
                 friendly_name = "Sun Rising Text";
-                value_template = "{{ as_timestamp(states.sun.sun.attributes.next_rising) | timestamp_custom ('%H:%M') }}";
+                state = "{{ as_timestamp(states.sun.sun.attributes.next_rising) | timestamp_custom ('%H:%M') }}";
               };
               sun_setting_text = {
                 friendly_name = "Sun Setting Text";
-                value_template = "{{ as_timestamp(states.sun.sun.attributes.next_setting) | timestamp_custom ('%H:%M') }}";
-              };
-              accuweather_temperature_min_0d = {
-                value_template = "{{ state_attr('sensor.hub_hb_00122953_weather', 'daily_forecast')[0].templow }}";
-              };
-              accuweather_temperature_max_0d = {
-                value_template = "{{ state_attr('sensor.hub_hb_00122953_weather', 'daily_forecast')[0].temperature }}";
+                state = "{{ as_timestamp(states.sun.sun.attributes.next_setting) | timestamp_custom ('%H:%M') }}";
               };
             };
           }
+          {
+            switch = let
+              power = name: let
+                turnFrom = state: [
+                  {
+                    condition = "state";
+                    entity_id = "switch.${cleanName name}_power";
+                    inherit state;
+                  }
+                  {
+                    service = "button.press";
+                    target.entity_id = "button.${cleanName name}_power";
+                  }
+                ];
+                in {
+                  name = "${name} Power";
+                  unique_id = "livingroom.${cleanName name}_power";
+                  state = "{{ (states('sensor.${cleanName name}_power_electric_consumed_w') | float ) > 10 }}";
+                  turn_on = turnFrom "off";
+                  turn_off = turnFrom "on";
+                };
+            in expand "switch" {
+              receiver_power = power "Receiver";
+              tv_power = power "TV";
+            };
+          }
+        ];
+        sensor = [
           {
             platform = "influxdb";
             api_version = 2;
@@ -326,35 +358,6 @@ in {
               (speed "Download")
               (speed "Upload")
             ];
-          }
-        ];
-        switch = [
-          {
-            platform = "template";
-            switches = let
-              power = name: let
-                turnFrom = state: [
-                  {
-                    condition = "state";
-                    entity_id = "switch.${cleanName name}_power";
-                    inherit state;
-                  }
-                  {
-                    service = "button.press";
-                    target.entity_id = "button.${cleanName name}_power";
-                  }
-                ];
-                in {
-                  friendly_name = "${name} Power";
-                  unique_id = "livingroom.${cleanName name}_power";
-                  value_template = "{{ (states('sensor.${cleanName name}_power_electric_consumed_w') | float ) > 10 }}";
-                  turn_on = turnFrom "off";
-                  turn_off = turnFrom "on";
-                };
-            in {
-              receiver_power = power "Receiver";
-              tv_power = power "TV";
-            };
           }
         ];
         media_player = [

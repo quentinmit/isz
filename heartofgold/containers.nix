@@ -66,7 +66,7 @@
           domain = "*";
           type = "-";
           item = "nofile";
-          value = "8192";
+          value = "32768";
         }
       ];
 

@@ -1,5 +1,5 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index a6267ba17a5..f1c30a46fd7 100644
+index b4a6a874769..f1c30a46fd7 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
 @@ -29,6 +29,7 @@ from homeassistant.helpers import (
@@ -10,6 +10,33 @@ index a6267ba17a5..f1c30a46fd7 100644
  
  from .const import DOMAIN
  
+@@ -90,7 +91,7 @@ def async_static_info_updated(
+ 
+         # Create new entity if it doesn't exist
+         if not old_info:
+-            entity = entity_type(entry_data, info, state_type)
++            entity = entity_type(entry_data, platform.domain, info, state_type)
+             add_entities.append(entity)
+             continue
+ 
+@@ -112,7 +113,7 @@ def async_static_info_updated(
+                 old_info.device_id,
+                 info.device_id,
+             )
+-            entity = entity_type(entry_data, info, state_type)
++            entity = entity_type(entry_data, platform.domain, info, state_type)
+             add_entities.append(entity)
+             continue
+ 
+@@ -162,7 +163,7 @@ def async_static_info_updated(
+         entry_data.async_signal_entity_removal(info_type, old_info.device_id, info.key)
+ 
+         # Create new entity with the new device_id
+-        add_entities.append(entity_type(entry_data, info, state_type))
++        add_entities.append(entity_type(entry_data, platform.domain, info, state_type))
+ 
+     # Anything still in current_infos is now gone
+     if current_infos:
 @@ -312,7 +313,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
  class EsphomeBaseEntity(Entity):
      """Define a base esphome entity."""
@@ -18,21 +45,36 @@ index a6267ba17a5..f1c30a46fd7 100644
      _attr_should_poll = False
      _device_info: EsphomeDeviceInfo
      device_entry: dr.DeviceEntry
-@@ -352,6 +352,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+@@ -329,6 +329,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+     def __init__(
+         self,
+         entry_data: RuntimeEntryData,
++        domain: str,
+         entity_info: EntityInfo,
+         state_type: type[_StateT],
+     ) -> None:
+@@ -342,6 +343,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+         self._state_type = state_type
+         self._on_static_info_update(entity_info)
+ 
++        device_name = device_info.name
+         # Determine the device connection based on whether this entity belongs to a sub device
+         if entity_info.device_id:
+             # Entity belongs to a sub device
+@@ -350,11 +352,46 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
                      (DOMAIN, f"{device_info.mac_address}_{entity_info.device_id}")
                  }
              )
 +            self._attr_has_entity_name = True
-             # Use the pre-computed device_id_to_name mapping for O(1) lookup
-             device_name = entry_data.device_id_to_name.get(
-                 entity_info.device_id, device_info.name
-@@ -361,9 +362,28 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
++            # Use the pre-computed device_id_to_name mapping for O(1) lookup
++            device_name = entry_data.device_id_to_name.get(
++                entity_info.device_id, device_info.name
++            )
+         else:
+             # Entity belongs to the main device
              self._attr_device_info = DeviceInfo(
                  connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)}
              )
--
--        if entity_info.name:
--            self.entity_id = f"{domain}.{device_name}_{entity_info.name}"
 +            if device_info.friendly_name:
 +                self._attr_has_entity_name = True
 +
@@ -55,10 +97,18 @@ index a6267ba17a5..f1c30a46fd7 100644
 +            self.entity_id = f"{domain}.{entity_info.object_id}"
 +        elif entity_info.name:
 +            self.entity_id = f"{domain}.{device_name}_{entity_info.object_id}"
-         else:
-             # https://github.com/home-assistant/core/issues/132532
-             # If name is not set, ESPHome will use the sanitized friendly name
-@@ -497,6 +517,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
++        else:
++            # https://github.com/home-assistant/core/issues/132532
++            # If name is not set, ESPHome will use the sanitized friendly name
++            # as the name, however we want to use the original object_id
++            # as the entity_id before it is sanitized since the sanitizer
++            # is not utf-8 aware. In this case, its always going to be
++            # an empty string so we drop the object_id.
++            self.entity_id = f"{domain}.{device_name}"
+ 
+     async def async_added_to_hass(self) -> None:
+         """Register callbacks."""
+@@ -480,6 +517,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
  class EsphomeAssistEntity(EsphomeBaseEntity):
      """Define a base entity for Assist Pipeline entities."""
  
@@ -68,10 +118,10 @@ index a6267ba17a5..f1c30a46fd7 100644
          """Initialize the binary sensor."""
          self._entry_data = entry_data
 diff --git a/homeassistant/components/esphome/manager.py b/homeassistant/components/esphome/manager.py
-index 239dfe5662a..b09c45b4805 100644
+index dee08e7ab00..827fc170c10 100644
 --- a/homeassistant/components/esphome/manager.py
 +++ b/homeassistant/components/esphome/manager.py
-@@ -515,15 +515,6 @@ class ESPHomeManager:
+@@ -639,15 +639,6 @@ class ESPHomeManager:
          if device_info.name:
              reconnect_logic.name = device_info.name
  
@@ -87,7 +137,7 @@ index 239dfe5662a..b09c45b4805 100644
          # Build device_id_to_name mapping for efficient lookup
          entry_data.device_id_to_name = {
              sub_device.device_id: sub_device.name or device_info.name
-@@ -910,7 +901,7 @@ def _async_setup_device_registry(
+@@ -1054,7 +1045,7 @@ def _async_setup_device_registry(
          config_entry_id=entry.entry_id,
          configuration_url=configuration_url,
          connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)},
@@ -402,10 +452,10 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == STATE_UNAVAILABLE
 diff --git a/tests/components/esphome/test_climate.py b/tests/components/esphome/test_climate.py
-index 216421cd8b0..ceb1d3dedab 100644
+index 2a2c232e2c4..192cf8d393a 100644
 --- a/tests/components/esphome/test_climate.py
 +++ b/tests/components/esphome/test_climate.py
-@@ -80,14 +80,14 @@ async def test_climate_entity(
+@@ -81,14 +81,14 @@ async def test_climate_entity(
          entity_info=entity_info,
          states=states,
      )
@@ -745,7 +795,7 @@ index 940fae5cfef..f752105e18b 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
 diff --git a/tests/components/esphome/test_entity.py b/tests/components/esphome/test_entity.py
-index 8f2d7c33575..329fc2becbc 100644
+index 7dad5ae9e7e..8d9884d4554 100644
 --- a/tests/components/esphome/test_entity.py
 +++ b/tests/components/esphome/test_entity.py
 @@ -70,10 +70,10 @@ async def test_entities_removed(
@@ -1029,11 +1079,13 @@ index 8f2d7c33575..329fc2becbc 100644
      assert state is not None
      assert state.state == STATE_ON
  
-@@ -875,7 +875,7 @@ async def test_entity_friendly_names_with_empty_device_names(
+@@ -874,8 +874,8 @@ async def test_entity_friendly_names_with_empty_device_names(
+     )
  
      # Check entity friendly name on sub-device with empty name
-     # Since sub device has empty name, it falls back to main device name "test"
--    state_1 = hass.states.get("binary_sensor.test_motion_detected")
+-    # Since sub device has empty name, it falls back to main device name "Main device"
+-    state_1 = hass.states.get("binary_sensor.main_device_motion_detected")
++    # Since sub device has empty name, it falls back to main device name "test"
 +    state_1 = hass.states.get("binary_sensor.test_motion")
      assert state_1 is not None
      # With has_entity_name, friendly name is "{device_name} {entity_name}"
@@ -1074,7 +1126,7 @@ index 8f2d7c33575..329fc2becbc 100644
      assert sensor_entity is not None
      assert sensor_entity.device_id == main_device.id
  
-@@ -1609,6 +1609,7 @@ async def test_entity_device_id_rename_in_yaml(
+@@ -1611,6 +1611,7 @@ async def test_entity_device_id_rename_in_yaml(
          ("τιμή αισθητήρα", "binary_sensor.test_time_aisthetera"),
      ],
  )
@@ -2067,10 +2119,10 @@ index 53639353f59..0b69826c181 100644
      )
      mock_client.lock_command.assert_has_calls([call(1, LockCommand.OPEN, device_id=0)])
 diff --git a/tests/components/esphome/test_manager.py b/tests/components/esphome/test_manager.py
-index 319d70b4e42..a43c248d135 100644
+index 034993a818e..7f51a420eae 100644
 --- a/tests/components/esphome/test_manager.py
 +++ b/tests/components/esphome/test_manager.py
-@@ -1551,10 +1551,6 @@ async def test_device_adds_friendly_name(
+@@ -1890,10 +1890,6 @@ async def test_device_adds_friendly_name(
          connections={(dr.CONNECTION_NETWORK_MAC, device.entry.unique_id)}
      )
      assert dev.name == "Nofriendlyname"
