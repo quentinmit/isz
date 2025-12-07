@@ -267,11 +267,11 @@ in {
                 state = "{{ state_attr('sensor.hub_hb_00122953_weather', 'daily_forecast')[0].temperature }}";
               };
               sun_rising_text = {
-                friendly_name = "Sun Rising Text";
+                name = "Sun Rising Text";
                 state = "{{ as_timestamp(states.sun.sun.attributes.next_rising) | timestamp_custom ('%H:%M') }}";
               };
               sun_setting_text = {
-                friendly_name = "Sun Setting Text";
+                name = "Sun Setting Text";
                 state = "{{ as_timestamp(states.sun.sun.attributes.next_setting) | timestamp_custom ('%H:%M') }}";
               };
             };

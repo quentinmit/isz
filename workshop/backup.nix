@@ -23,17 +23,18 @@
   };
   services.syncoid = {
     enable = true;
-    interval = [];
+    interval = "6:15"; # Daily at 6 AM
     commands."zpool-heartofgold" = {
       extraArgs = [
         "--no-sync-snap"
         "--use-hold"
         "--create-bookmark"
+        #"--force-delete"
       ];
       sendOptions = "Rw X zpool/nix";
-      recvOptions = "u";
+      recvOptions = "v u o canmount=off o secondarycache=none o mountpoint=/srv/backup/workshop/zpool o com.sun:auto-snapshot=false";
       source = "zpool";
-      target = "syncoid-workshop@heartofgold.mgmt.isz.wtf:zpool/backup/workshop";
+      target = "syncoid-workshop@heartofgold.mgmt.isz.wtf:zpool/backup/workshop/zpool";
       sshKey = config.sops.secrets."syncoid/ssh_keys/heartofgold".path;
     };
   };
