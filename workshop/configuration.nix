@@ -10,7 +10,6 @@
       ./hardware-configuration.nix
       disko.nixosModules.disko
       ./disko.nix
-      ./backup.nix
       ./nginx.nix
       ./mail.nix
       ./postfix.nix
@@ -50,6 +49,8 @@
   '';
   services.fstrim.enable = true;
   services.smartd.enable = true;
+
+  isz.syncoid.enable = true;
 
   networking.hostName = "workshop"; # Define your hostname.
   networking.hostId = "98071ba3";

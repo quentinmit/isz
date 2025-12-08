@@ -1,0 +1,58 @@
+commit 57ede7abb6bd1e2a3e600cd166e91cb6e95cb6eb
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Sun Dec 7 19:14:53 2025 -0500
+
+    Improve support for native ZFS recursion
+
+diff --git a/syncoid b/syncoid
+index 680afbe..e3bfe10 100755
+--- a/syncoid
++++ b/syncoid
+@@ -51,15 +51,17 @@ if (length $args{'sendoptions'}) {
+ 		exit 127;
+ 	}
+ 
+-	if (defined $args{'recursive'}) {
+-		foreach my $option(@sendoptions) {
+-			if ($option->{option} eq 'R') {
+-				writelog('WARN', "invalid argument combination, zfs send -R and --recursive aren't compatible!");
+-				pod2usage(2);
+-				exit 127;
+-			}
++	foreach my $option(@sendoptions) {
++		if ($option->{option} eq 'R') {
++			$args{'native-recursion'} = 1;
+ 		}
+ 	}
++
++	if (defined $args{'recursive'} && defined $args{'native-recursion'}) {
++		writelog('WARN', "invalid argument combination, zfs send -R and --recursive aren't compatible!");
++		pod2usage(2);
++		exit 127;
++	}
+ }
+ 
+ my @recvoptions = ();
+@@ -797,6 +799,9 @@ sub syncdataset {
+ 		my $hostid = hostname();
+ 		my $matchingsnapescaped = escapeshellparam($matchingsnap);
+ 		my $holdname = "syncoid\_$identifier$hostid";
++		if (defined $args{'native-recursion'}) {
++			$holdname = "-r $holdname";
++		}
+ 		if ($sourcehost ne '') {
+ 			$holdcmd = "$sshcmd $sourcehost " . escapeshellparam("$sourcesudocmd $zfscmd hold $holdname $sourcefsescaped\@$newsyncsnapescaped");
+ 			$holdreleasecmd = "$sshcmd $sourcehost " . escapeshellparam("$sourcesudocmd $zfscmd release $holdname $sourcefsescaped\@$matchingsnapescaped");
+@@ -1749,7 +1754,11 @@ sub newsyncsnap {
+ 	my $hostid = hostname();
+ 	my %date = getdate();
+ 	my $snapname = "syncoid\_$identifier$hostid\_$date{'stamp'}";
+-	my $snapcmd = "$rhost $mysudocmd $zfscmd snapshot $fsescaped\@$snapname\n";
++	my $snapcmd = "$rhost $mysudocmd $zfscmd snapshot";
++	if (defined $args{'native-recursion'}) {
++		$snapcmd .= " -r";
++	}
++	$snapcmd .= " $fsescaped\@$snapname\n";
+ 	writelog('DEBUG', "creating sync snapshot using \"$snapcmd\"...");
+ 	system($snapcmd) == 0 or do {
+ 		writelog('CRITICAL', "$snapcmd failed: $?");

@@ -183,4 +183,9 @@ in {
     ]);
     patches = [];
   });
+  sanoid = prev.sanoid.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      ./sanoid/native-recursion.patch
+    ];
+  });
 }
