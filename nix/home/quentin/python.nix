@@ -246,6 +246,7 @@
         selenium
         semver
         pyserial
+        shapely
         snakeviz
         sniffio
         snowballstemmer
