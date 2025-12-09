@@ -44,7 +44,7 @@ in {
           "--debug"
           "--no-sync-snap"
           "--use-hold"
-          "--create-bookmark"
+          #"--create-bookmark"
           #"--force-delete"
         ];
         sendOptions = "Rw X ${name}/nix";
