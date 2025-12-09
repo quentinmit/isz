@@ -19,8 +19,8 @@ in {
             description = "Title of dashboard.";
           };
           description = mkOption {
-            type = with types; nullOr str;
-            default = null;
+            type = types.str;
+            default = "";
             description = "Description of dashboard.";
           };
           tags = mkOption {

@@ -81,7 +81,7 @@
         server.protocol = "socket";
         server.root_url = "https://grafana.isz.wtf";
         security.allow_embedding = true;
-        feature_toggles.enable = "timeSeriesTable";
+        feature_toggles.enable = "timeSeriesTable,dashboardNewLayouts,kubernetesDashboards,dashboardScene,sqlExpressions";
         feature_toggles.preinstallAutoUpdate = false;
         dataproxy.timeout = 300;
         plugins.allow_loading_unsigned_plugins = "operato-windrose-panel";
