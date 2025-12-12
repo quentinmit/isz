@@ -193,6 +193,7 @@
         matplotlib
         basemap
         matplotlib-inline
+        mip
         more-itertools
         netaddr
         networkx
