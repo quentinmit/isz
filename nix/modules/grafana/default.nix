@@ -3,7 +3,14 @@ with import ./types.nix { inherit lib pkgs; };
 let
   cfg = config.services.grafana.dashboards;
 in {
+  imports = [
+    ./typesV2.nix
+  ];
   options = with lib; {
+    services.grafana.dashboardsV2 = mkOption {
+      type = with types; attrsOf config.services.grafana.kind.Dashboard;
+      default = {};
+    };
     services.grafana.dashboards = mkOption {
       description = "Predefined Grafana dashboards";
       type = with types; attrsOf (submodule {
@@ -105,5 +112,8 @@ in {
       options.updateIntervalSeconds = 10;
       options.foldersFromFilesStructure = true;
     }];
+
+    services.grafana.dashboardsV2.test = {
+    };
   };
 }
