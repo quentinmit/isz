@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 with import ./types.nix { inherit lib pkgs; };
 let
-  cfg = config.services.grafana.dashboards;
+  cfg = config.services.grafana;
 in {
   imports = [
     ./typesV2.nix
@@ -100,11 +100,13 @@ in {
       });
     };
   };
-  config = lib.mkIf (cfg != {}) {
+  config = let
+    dashboards = cfg.dashboards // cfg.dashboardsV2;
+  in lib.mkIf (dashboards != {}) {
     environment.etc."grafana/dashboards".source = pkgs.linkFarm "grafana-dashboards" (
       lib.mapAttrs' (name: d: lib.nameValuePair "${name}.json" (
         dashboardFormat.generate "${name}.json" d
-      )) cfg
+      )) dashboards
     );
     services.grafana.provision.enable = true;
     services.grafana.provision.dashboards.settings.providers = [{
@@ -112,8 +114,5 @@ in {
       options.updateIntervalSeconds = 10;
       options.foldersFromFilesStructure = true;
     }];
-
-    services.grafana.dashboardsV2.test = {
-    };
   };
 }

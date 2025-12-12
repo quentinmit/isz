@@ -1,84 +1,31 @@
 { lib, pkgs, config, ... }:
 with lib;
 let
+  inherit (config.services.grafana) kind;
   dashboardFormat = pkgs.formats.json {};
   freeformType = dashboardFormat.type;
   intervalType = types.either
     types.int
-    (types.strMatching "^(-?\d+(?:\.\d+)?)(ms|[Mwdhmsy])");
-  kindType = kind: let
-    finalType = config.services.grafana.kind.${kind};
-  in mkOptionType rec {
-    name = "kindType";
-    description = "${optionDescriptionPhrase (class: class == "noun") finalType} or ${kind}Kind";
-    check = {
-      __functor = _self: x:
-        if x ? kind || x ? spec then
-          ((builtins.attrNames x) == ["kind" "spec"] || (builtins.attrNames x) == ["spec"]) && finalType.check x.spec
-        else
-          finalType.check x;
-      isV2MergeCoherent = true;
-    };
-    merge = {
-      __functor =
-        self: loc: defs:
-        (self.v2 { inherit loc defs; }).value;
-      v2 =
-        { loc, defs }:
-        let
-          finalDefs = (
-            map (
-              def:
-              def
-              // {
-                value =
-                  if x ? kind || x ? spec then
-                    def.value.spec
-                  else
-                    def.value;
-              }
-            ) defs
-          );
-          loc' = loc + ["spec"];
-          in
-            if finalType.merge ? v2 then
-              checkV2MergeCoherence loc' finalType (
-                let
-                  merged = finalType.merge.v2 {
-                    loc = loc';
-                    defs = finalDefs;
-                  };
-                in
-                  merged // {
-                    value = {
-                      inherit kind;
-                      spec = merged.value;
-                    };
-                  }
-              )
-            else
-              {
-                value = {
-                  inherit kind;
-                  spec = finalType.merge loc' finalDefs;
-                };
-                valueMeta = { };
-                headError = checkDefsForError check loc' defs;
-              };
-    };
-    emptyValue = { };
-    getSubOptions = finalType.getSubOptions;
-    getSubModules = finalType.getSubModules;
-    typeMerge = t: null;
-    functor = defaultFunctor name;
-    nestedTypes.finalType = finalType;
-  };
-  DataQueryKind = types.submodule {
-    options = {
-      kind = mkOption {
-        type = types.enum ["DataQuery"];
-        default = "DataQuery";
+    (types.strMatching "^(-?[0-9]+(\.[0-9]+)?)(ms|[Mwdhmsy])");
+  kindSubmodule = kind: modules: types.submoduleWith {
+    shorthandOnlyDefinesConfig = true;
+    modules = [{
+      options.kind = mkOption {
+        type = types.uniq (types.enum [kind]);
+        default = kind;
       };
+    }] ++ toList modules;
+  };
+  kindType = type: config.services.grafana.kind.${type};
+  kindsType = types: lib.types.oneOf (lib.map (x: config.services.grafana.kind.${x}) types);
+  VariableOptionType = types.submodule {
+    text = mkOption {
+      type = types.str;
+      default = "";
+    };
+    value = mkOption {
+      type = types.str;
+      default = "";
     };
   };
 in {
@@ -87,11 +34,10 @@ in {
     default = {};
   };
   config.services.grafana.kind = {
-    AnnotationQuery = types.submodule {
-      options = {
+    AnnotationQuery = kindSubmodule "AnnotationQuery" {
+      options.spec = {
         query = mkOption {
-          # DataQuery doesn't behave like a normal kind/spec object.
-          type = DataQueryKind;
+          type = kindType "DataQuery";
         };
         enable = mkOption {
           type = types.bool;
@@ -115,25 +61,42 @@ in {
         };
       };
     };
+    DataQuery = kindSubmodule "DataQuery" {
+      options = {
+        datasource.name = mkOption {
+          type = types.str;
+        };
+        group = mkOption {
+          type = types.str;
+        };
+        version = mkOption {
+          type = types.str;
+          default = "v0";
+        };
+        spec = mkOption {
+          type = types.attrsOf types.anything;
+          default = {};
+        };
+      };
+    };
     Dashboard = types.submodule ({ name, ... }: {
       options = {
         annotations = mkOption {
           type = types.listOf (kindType "AnnotationQuery");
           default = [{
-            datasource.type = "grafana";
-            datasource.uid = "-- Grafana --";
-            enable = true;
-            hide = true;
-            iconColor = "rgba(0, 211, 255, 1)";
-            name = "Annotations & Alerts";
-            builtIn = true;
-            query = {
+            kind = "AnnotationQuery";
+            spec = {
+              builtIn = true;
+              enable = true;
+              hide = true;
+              iconColor = "rgba(0, 211, 255, 1)";
+              name = "Annotations & Alerts";
+              query = {
+                datasource.name = "-- Grafana --";
+                group = "grafana";
+                kind = "DataQuery";
+              };
             };
-            target.limit = 100;
-            target.matchAny = false;
-            target.tags = [];
-            target.type = "dashboard";
-            type = "dashboard";
           }];
         };
         cursorSync = mkOption {
@@ -145,17 +108,20 @@ in {
           default = true;
         };
         elements = mkOption {
-          type = types.attrsOf (kindTypes ["Panel" "LibraryPanel"]);
+          type = types.attrsOf (kindsType ["Panel" "LibraryPanel"]);
           default = {};
         };
         layout = mkOption {
-          type = layoutType;
-          default = {
-            GridLayout.items = [];
-          };
+          type = kindsType [
+            "GridLayout"
+            "RowsLayout"
+            "AutoGridLayout"
+            "TabsLayout"
+          ];
+          default.kind = "GridLayout";
         };
         links = mkOption {
-          type = listOf freeformType; # TODO
+          type = types.listOf freeformType; # TODO
           default = [];
         };
         liveNow = mkOption {
@@ -190,7 +156,7 @@ in {
             default = "now";
           };
           autoRefresh = mkOption {
-            type = intervalType;
+            type = types.either (types.enum [""]) intervalType;
             default = "";
           };
           autoRefreshIntervals = mkOption {
@@ -213,7 +179,7 @@ in {
             default = false;
           };
           fiscalYearStartMonth = mkOption {
-            type = types.intBetween 0 11;
+            type = types.ints.between 0 11;
             default = 0;
           };
         };
@@ -222,7 +188,7 @@ in {
           default = name;
         };
         variables = mkOption {
-          type = types.listOf (kindTypes [
+          type = types.listOf (kindsType [
             "QueryVariable"
             "CustomVariable"
           ]);
@@ -230,19 +196,114 @@ in {
         };
       };
     });
-    CustomVariable = let
-      VariableOptionType = types.submodule {
-        text = mkOption {
-          type = types.str;
-          default = "";
+    GridLayout = kindSubmodule "GridLayout" {
+      options.spec.items = mkOption {
+        type = types.listOf (kindType "GridLayoutItem");
+        default = [];
+      };
+    };
+    GridLayoutItem = kindSubmodule "GridLayoutItem" {
+      options.spec = {
+        x = mkOption {
+          type = types.int;
         };
-        value = mkOption {
-          type = types.str;
-          default = "";
+        y = mkOption {
+          type = types.int;
+        };
+        width = mkOption {
+          type = types.int;
+        };
+        height = mkOption {
+          type = types.int;
+        };
+        element = mkOption {
+          type = kindType "ElementReference";
         };
       };
-    in types.submodule {
-      options = {
+    };
+    ElementReference = kindSubmodule "ElementReference" {
+      options.name = mkOption {
+        type = types.str;
+      };
+    };
+    AutoGridLayout = kindSubmodule "AutoGridLayout" {
+      options.spec = {
+        maxColumnCount = mkOption {
+          type = types.int;
+          default = 3;
+        };
+        columnWidthMode = mkOption {
+          type = types.enum ["narrow" "standard" "wide" "custom"];
+          default = "standard";
+        };
+	      # columnWidth?: number
+	      rowHeightMode = mkOption {
+          type = types.enum ["short" "standard" "tall" "custom"];
+          defailt = "standard";
+        };
+	      # rowHeight?: number
+	      fillScreen = mkOption {
+          type = types.bool;
+          default = false;
+        };
+        items = mkOption {
+          type = types.listOf (kindType "AutoGridLayoutItem");
+          default = [];
+        };
+      };
+    };
+    QueryVariable = kindSubmodule "QueryVariable" {
+      options.spec = {
+        name = mkOption {
+          type = types.str;
+        };
+        current = mkOption {
+          type = VariableOptionType;
+          default = {};
+        };
+        label = mkOption {
+          type = types.str;
+          default = "";
+        };
+        hide = mkOption {
+          type = types.enum ["dontHide" "hideLabel" "hideVariable" "inControlsMenu"];
+          default = "dontHide";
+        };
+        refresh = mkOption {
+          type = types.enum ["never" "onDashboardLoad" "onTimeRangeChanged"];
+          default = "never";
+        };
+        skipUrlSync = mkOption {
+          type = types.bool;
+          default = false;
+        };
+        description = mkOption {
+          type = types.str;
+          default = "";
+        };
+        query = mkOption {
+          type = kindType "DataQuery";
+        };
+        regex = mkOption {
+          type = types.str;
+          default = "";
+        };
+        sort = mkOption {
+          type = types.enum ["disabled" "alphabeticalAsc" "alphabeticalDesc" "numericalAsc" "numericalDesc" "alphabeticalCaseInsensitiveAsc" "alphabeticalCaseInsensitiveDesc" "naturalAsc" "naturalDesc"];
+          default = "disabled";
+        };
+        multi = mkOption {
+          type = types.bool;
+          default = false;
+        };
+        includeAll = mkOption {
+          type = types.bool;
+          default = false;
+        };
+      };
+    };
+    CustomVariable = kindSubmodule "CustomVariable" {
+      options.spec = {
         name = mkOption {
           type = types.str;
         };
@@ -267,5 +328,77 @@ in {
         };
       };
     };
+    Panel = kindSubmodule "Panel" {
+      options.spec = {
+        id = mkOption {
+          type = types.int;
+        };
+        title = mkOption {
+          type = types.str;
+          default = "";
+        };
+        description = mkOption {
+          type = types.str;
+          default = "";
+        };
+        links = mkOption {
+          type = types.listOf (types.submodule {
+            options = {
+              title = mkOption {
+                type = types.str;
+              };
+              url = mkOption {
+                type = types.str;
+              };
+              targetBlank = mkOption {
+                type = types.bool;
+                default = false;
+              };
+            };
+          });
+          default = [];
+        };
+        data = mkOption {
+          type = kindType "QueryGroup";
+        };
+        vizConfig = mkOption {
+          type = kindType "VizConfig";
+        };
+        transparent = mkOption {
+          type = types.bool;
+          default = false;
+        };
+      };
+    };
+    QueryGroup = kindSubmodule "QueryGroup" {
+      options = {
+        queries = mkOption {
+          type = types.listOf (kindType "PanelQuery");
+          default = [];
+        };
+        transformations = mkOption {
+          type = types.listOf (kindType "Transformation");
+          default = [];
+        };
+        queryOptions = mkOption {
+          type = types.attrsOf types.anything; # TODO
+          default = {};
+        };
+      };
+    };
+    PanelQuery = kindSubmodule "PanelQuery" {
+      query = mkOption {
+        type = kindType "DataQuery";
+      };
+      refId = mkOption {
+        type = types.str;
+        default = "A";
+      };
+      hidden = mkOption {
+        type = types.bool;
+        default = false;
+      };
+    };
+    Transformation = types.anything; # TODO
   };
 }
