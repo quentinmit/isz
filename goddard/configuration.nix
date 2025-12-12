@@ -222,6 +222,10 @@
     corefonts
   ];
 
+  i18n.extraLocales = [
+    "en_US/ISO-8859-1"
+  ];
+
   environment.etc."xdg/Xwayland-session.d/10-nixos.sh".source = let
     fontDir = builtins.elemAt (lib.strings.split "\"" config.services.xserver.filesSection) 2;
   in pkgs.writeShellScript "xwayland-session-nixos" ''

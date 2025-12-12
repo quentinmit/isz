@@ -34,8 +34,23 @@
 
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
-    home-manager.extraSpecialArgs = options._module.specialArgs.value;
-    home-manager.sharedModules = builtins.attrValues self.homeModules;
+    home-manager.extraSpecialArgs = {
+      inherit (options._module.specialArgs.value)
+        chemacs2nix
+        deploy-rs
+        dsd-fme
+        plasma-manager;
+    };
+    home-manager.sharedModules = [({ lib, ... }: {
+      # Don't let home-manager set LOCALE_ARCHIVE_2_27, so apps will fall back to LOCALE_ARCHIVE from the OS.
+      disabledModules = [ "config/i18n.nix" ];
+      # The option needs to exist because it is always set. :(
+      options.i18n.glibcLocales = lib.mkOption {
+        type = lib.types.package;
+        default = config.i18n.glibcLocales;
+        readOnly = true;
+      };
+    })] ++ builtins.attrValues self.homeModules;
 
     environment.systemPackages = with pkgs; import ./packages.nix { inherit pkgs; graphical = config.hardware.graphics.enable or true; } ++ [
       # Editors
