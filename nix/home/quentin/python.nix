@@ -212,6 +212,7 @@
         pluggy
         plyvel
         psycopg2
+        pulp
         py
         pybind11
         #pybonjour
@@ -280,6 +281,7 @@
         wheel
         #broken build xdis
         xmldiff
+        z3-solver
         zipp
         zopfli
       ] ++ lib.optionals config.isz.graphical [
