@@ -400,5 +400,52 @@ in {
       };
     };
     Transformation = types.anything; # TODO
+    VizConfig = kindSubmodule "VizConfig" {
+      options.group = mkOption {
+        type = types.str;
+      };
+      options.version = mkOption {
+        type = types.str;
+      };
+      options.spec = {
+        options = mkOption {
+          type = types.attrsOf types.anything;
+          default = {};
+        };
+        fieldConfig.defaults = mkOption {
+          type = types.attrsOf types.anything; # TODO
+          default = {};
+        };
+        fieldConfig.overrides = mkOption {
+          type = types.listOf (types.submodule {
+            options = {
+              __systemRef = mkOption {
+                type = types.str;
+                default = "";
+              };
+              matcher.id = mkOption {
+                type = types.str;
+                default = "";
+              };
+              matcher.options = mkOption {
+                type = types.anything;
+              };
+              properties = mkOption {
+                type = types.listOf (types.submodule {
+                  options.id = mkOption {
+                    type = types.str;
+                    default = "";
+                  };
+                  options.value = mkOption {
+                    type = types.anything;
+                  };
+                });
+                default = [];
+              };
+            };
+          });
+        };
+      };
+    };
   };
 }
