@@ -46,6 +46,7 @@ in {
           withTools = true;
           withExamples = true;
         })
+        jellyfin-media-player
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
         guvcview
@@ -57,7 +58,7 @@ in {
         smplayer
         vlc
         vmpk
-      ] ++ (lib.throwIf (lib.versionAtLeast jellyfin-media-player.version "1.12.1") "jellyfin-media-player <= 1.12.0 can't be used" []);
+      ];
       programs.mpv = {
         enable = true;
         bindings = {

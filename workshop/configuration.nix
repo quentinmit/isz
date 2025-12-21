@@ -23,7 +23,7 @@
       #./containers.nix
       ./authentik
       ./bluechips.nix
-      ./paperless.nix
+      #broken ./paperless.nix
       ./sdrtrunk
       ./speedtest.nix
       ./loki.nix
