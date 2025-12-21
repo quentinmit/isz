@@ -3,6 +3,7 @@ let
   sslCertDir = config.security.acme.certs."mail.isz.wtf".directory;
   domainName = "isz.wtf";
 in {
+  services.nginx.virtualHosts."mail.isz.wtf".enableACME = true;
   sops.secrets."authentik/apps/dovecot/client_id" = {};
   sops.secrets."authentik/apps/dovecot/client_secret" = {};
   services.authentik.apps.dovecot = {
@@ -34,6 +35,10 @@ in {
   services.dovecot2 = {
     enable = true;
 
+    sslServerCert = "${sslCertDir}/cert.pem";
+    sslServerKey = "${sslCertDir}/key.pem";
+    sslCACert = "${sslCertDir}/chain.pem";
+
     enablePAM = false;
 
     mailLocation = "mdbox:/var/lib/dovecot/mdbox/%d/%n";
@@ -43,7 +48,23 @@ in {
       auth_debug = yes
       auth_verbose = yes
 
-      auth_mechanisms = oauthbearer xoauth2
+      auth_mechanisms = plain login oauthbearer xoauth2
+      auth_verbose = yes
+      auth_debug = yes
+
+      mdbox_rotate_size = 64M
+
+      default_vsz_limit = 8G
+
+      userdb {
+        driver = passwd-file
+        args = username_format=%Ln /etc/passwd
+      }
+
+      passdb {
+        driver = passwd-file
+        args = username_format=%Ln /etc/dovecot/auth/%Ld/passwd
+      }
 
       passdb {
         driver = oauth2
@@ -101,9 +122,28 @@ in {
       Inbox /home/quentin/Maildir/MIT/INBOX
       SubFolders Verbatim
 
-      Channel mit
+      IMAPAccount dovecot
+      Host mail.isz.wtf
+      Port 993
+      User quentin@isz.wtf
+      PassCmd "systemd-creds decrypt --user --name= ${./dovecot-quentin.creds}"
+      AuthMechs login plain
+      TLSType IMAPS
+
+      IMAPStore dovecot
+      Account dovecot
+
+      Channel mit2maildir
       Far :mit-remote:
       Near :mit-local:
+      Expunge none
+      CopyArrivalDate yes
+      Sync pull
+      Create near
+
+      Channel mit
+      Far :mit-remote:
+      Near :dovecot:MIT
       #Patterns Archive Drafts SentItems DeletedItems JunkEmail INBOX
       Expunge none
       #Expunge both
