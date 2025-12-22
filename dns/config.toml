@@ -4,6 +4,9 @@ path="isz.zone"
 [[input]]
 path="isz.wtf.zone"
 
+[[input]]
+path="guest.isz.wtf.zone"
+
 #[[server]]
 #name="quentin-ap-1.isz.wtf"
 #host="172.30.97.1"

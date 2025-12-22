@@ -4,6 +4,9 @@ path="comclub.org.zone"
 [[input]]
 path="hb-rights.org.zone"
 
+[[input]]
+path="isz.wtf.zone"
+
 [[server]]
 name="router.comclub.org"
 host="192.168.0.1"
