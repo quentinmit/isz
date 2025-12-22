@@ -2,7 +2,6 @@
 {
   services.zfs = {
     autoScrub.enable = true;
-    autoSnapshot.enable = true;
   };
   disko.devices = {
     disk = lib.genAttrs [
