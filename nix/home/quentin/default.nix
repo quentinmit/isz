@@ -389,6 +389,9 @@ in {
     (lib.mkIf config.isz.graphical {
       home.packages = with pkgs; [
         qtpass
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        kdePackages.kgpg
+        kdePackages.kleopatra
       ];
       programs.plasma.configFile."IJHack/QtPass.conf".General = {
         useGit = true;
@@ -527,6 +530,36 @@ in {
         kvirc
       ] ++ (available mqtt-explorer)
       ++ (available mqttx);
+    })
+    # KDE PIM
+    (lib.mkIf (config.isz.graphical && pkgs.stdenv.isLinux) {
+      home.packages = with pkgs; [
+        # Storage backend
+        kdePackages.akonadi
+        kdePackages.akonadiconsole
+        kdePackages.akonadi-import-wizard
+        kdePackages.akonadi-search
+        # Network providers
+        kdePackages.kaccounts-providers
+        # Contacts
+        kdePackages.kaddressbook
+        # Integrated PIM
+        kdePackages.kontact
+        # Calendar
+        kdePackages.korganizer
+        # Mail
+        kdePackages.kmail
+        kdePackages.kmail-account-wizard
+        # Calendar, contacts, mail
+        kdePackages.merkuro
+      ];
+      # https://kdepim-users.kde.narkive.com/fsgS9KWc/akonadi-dsaster
+      xdg.configFile."akonadi/mysql-local.conf".text = ''
+        innodb_buffer_pool_size = 1024M
+        innodb_log_buffer_size = 10M
+        query_cache_size = 256M
+        query_cache_type = 1
+      '';
     })
     # Science
     {
