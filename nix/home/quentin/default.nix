@@ -329,7 +329,7 @@ in {
         radare2
         rizin
         (kaitai-struct-compiler.override (old: lib.optionalAttrs (!config.isz.graphical) {
-          openjdk8 = pkgs.openjdk8_headless;
+          jre = pkgs.jre_headless;
         }))
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         pahole

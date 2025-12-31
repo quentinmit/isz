@@ -193,7 +193,6 @@
         matplotlib
         basemap
         matplotlib-inline
-        mip
         more-itertools
         netaddr
         networkx
@@ -289,6 +288,7 @@
         pyqtgraph
       ] ++ lib.optionals config.isz.quentin.radio.enable [
         soapysdr-with-plugins
-      ]); in pyenv)
+      ] ++ lib.optional mip.meta.available mip
+      ); in pyenv)
   ];
 }
