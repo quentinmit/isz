@@ -24,6 +24,8 @@
   networking.domain = "wg.isz.wtf";
 
   avf.defaultUser = "quentin";
+  # https://github.com/nix-community/nixos-avf/pull/22
+  avf.vmConfig.name = lib.mkForce "debian";
 
   nix.settings.trusted-users = [ "root" "quentin" ];
 
