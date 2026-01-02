@@ -86,7 +86,6 @@
   };
 
   isz.syncoid.enable = true;
-  services.syncoid.interval = lib.mkForce []; # TODO
 
   networking.hostName = "atlas";
   networking.domain = "comclub.org";
