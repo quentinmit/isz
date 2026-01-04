@@ -1,6 +1,8 @@
 tv_ir:
   d: 0
   s: 127
+  # Board: bd_cvt_pc757
+  # Service mode: MENU 1 1 4 7
   functions:
     # 0:
     1: playpause
