@@ -39,7 +39,8 @@
         chemacs2nix
         deploy-rs
         dsd-fme
-        plasma-manager;
+        plasma-manager
+        wrap;
     };
     home-manager.sharedModules = [({ lib, ... }: {
       # Don't let home-manager set LOCALE_ARCHIVE_2_27, so apps will fall back to LOCALE_ARCHIVE from the OS.

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, wrap, ... }:
 {
   options.isz.quentin.utilities.enable = lib.mkOption {
     type = lib.types.bool;
@@ -70,10 +70,12 @@
       }))
       yj
       yq
+    ] ++ lib.optionals pkgs.stdenv.isLinux [
+      wrap.packages.${stdenv.system}.wrap
     ] ++ lib.optionals (config.isz.graphical && pkgs.stdenv.isLinux) ([
       d-spy
       devtoolbox
       wl-clipboard
-    ] ++ lib.optional (config.isz.graphical && !bustle.meta.broken) bustle);
+    ] ++ lib.optional (!bustle.meta.broken) bustle);
   };
 }
