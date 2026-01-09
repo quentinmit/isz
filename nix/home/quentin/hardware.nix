@@ -11,6 +11,7 @@ in {
     {
       home.packages = with pkgs; [
         sigrok-cli
+        scopehal-apps
       ];
     }
     (lib.mkIf config.isz.graphical {
