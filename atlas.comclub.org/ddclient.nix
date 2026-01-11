@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 {
   sops.secrets."ddclient/login" = {};
   sops.secrets."ddclient/password" = {};
@@ -22,8 +22,19 @@
     enable = true;
     configFile = config.sops.templates."ddclient.conf".path;
   };
-  systemd.services.ddclient.path = [
-    # sendmail is in /run/wrappers/bin
-    "/run/wrappers"
-  ];
+  users.users.ddclient = {
+    isSystemUser = true;
+    group = "ddclient";
+  };
+  users.groups.ddclient = {};
+  systemd.services.ddclient = {
+    path = [
+      # sendmail is in /run/wrappers/bin
+      "/run/wrappers"
+    ];
+    serviceConfig.User = "ddclient";
+    serviceConfig.Group = "ddclient";
+    # DynamicUser breaks Postfix's sendmail because it implies NoNewPrivileges
+    serviceConfig.DynamicUser = lib.mkForce false;
+  };
 }
