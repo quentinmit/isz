@@ -32,7 +32,7 @@
 
       authentikComponents = let
         scope = (authentik.lib.mkAuthentikScope {
-          pkgs = pkgs.unstable;
+          pkgs = authentik.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.system};
         }).overrideScope (final: prev: {
           authentikComponents = prev.authentikComponents // {
             staticWorkdirDeps = prev.authentikComponents.staticWorkdirDeps.override (old: {

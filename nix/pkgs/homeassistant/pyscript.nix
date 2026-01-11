@@ -8,7 +8,7 @@
 let
   owner = "custom-components";
   domain = "pyscript";
-  version = "1.6.1";
+  version = "1.7.0";
 in
 buildHomeAssistantComponent {
   inherit owner domain version;
@@ -17,15 +17,13 @@ buildHomeAssistantComponent {
     owner = "custom-components";
     repo = domain;
     rev = version;
-    sha256 = "sha256-gGWub3mAhrW8T14EwUz4oSVnXcSSSIG2hRLewLWtcdI=";
+    sha256 = "sha256-AphcRk9NDrD9pJI89eS5JIQSQ9XBZowP5ujfletCqyc=";
   };
 
   propagatedBuildInputs = [
     croniter
     watchdog
   ];
-
-  dontCheckManifest = true; # Wants old versions of croniter and watchdog
 
   meta = with lib; {
     description = "Pyscript adds rich Python scripting to HASS";
