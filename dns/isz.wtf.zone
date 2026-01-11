@@ -22,6 +22,7 @@ loki             CNAME workshop.mgmt
 inventree        CNAME workshop.mgmt
 tang             CNAME workshop.mgmt
 mail             CNAME workshop.mgmt
+homebox          CNAME workshop.mgmt
 
 ; Linkzone hosts on VLAN 500 (192.168.5.0/24)
 linkzone         A 192.168.5.1

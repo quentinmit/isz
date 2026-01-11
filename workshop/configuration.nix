@@ -30,6 +30,7 @@
       ./vector
       ./inventree.nix
       ./tang.nix
+      ./homebox.nix
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];
