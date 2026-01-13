@@ -341,7 +341,7 @@ in {
         (if ghidra-bin.meta.available then ghidra-bin else ghidra)
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         dwex
-        elf-dissector
+        unstable.elf-dissector
         imhex
         okteta
         iaito

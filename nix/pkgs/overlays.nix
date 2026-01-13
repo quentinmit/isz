@@ -171,18 +171,6 @@ in {
   nbd-static = prev.nbd.overrideAttrs {
     env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
   };
-  elf-dissector = (prev.kdePackages.callPackage "${final.path}/pkgs/applications/misc/elf-dissector" {}).overrideAttrs (old: {
-    version = "unstable-2025-11-04";
-    src = old.src.override {
-      rev = "37aa18d16e0f1a4fca5a276473ae37b2b93f623d";
-      hash = "sha256-O9b6lgJt5SwTwIEohkYpwWxnN0R0w7oEZGrDgj3aGOs=";
-    };
-    buildInputs = old.buildInputs ++ (with final.qt6; [
-      qtbase
-      qttools
-    ]);
-    patches = [];
-  });
   sanoid = prev.sanoid.overrideAttrs (old: {
     patches = (old.patches or []) ++ [
       ./sanoid/native-recursion.patch
