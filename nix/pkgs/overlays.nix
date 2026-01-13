@@ -152,7 +152,7 @@ in {
   libsigrok = prev.libsigrok.overrideAttrs (old: {
     patches = (old.patches or []) ++ [(final.fetchpatch {
       url = "https://patch-diff.githubusercontent.com/raw/sigrokproject/libsigrok/pull/246.diff";
-      hash = "sha256-jIWg3/5woFp4GjXNNoZj6SIn+lWGYrZQXcYGgBqV6sI=";
+      hash = "sha256-J50N/GUUUNEt5UGTLUAAQMmTZaE1i1KVXPqguzzWtZs=";
     })];
   });
   ubootEnvtools = final.ubootTools.override {
