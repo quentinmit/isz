@@ -114,6 +114,10 @@
     drm = true;
   };
 
+  isz.vector = {
+    enable = true;
+  };
+
   boot.swraid.mdadmConf = ''
     MAILADDR root@comclub.org
   '';
