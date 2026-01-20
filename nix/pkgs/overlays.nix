@@ -132,7 +132,7 @@ in {
     ];
   });
   kdePackages = prev.kdePackages.overrideScope (kfinal: kprev: {
-    konsole = kprev.konsole.overrideAttrs (old: {
+    konsole = kprev.konsole.overrideAttrs (old: lib.optionalAttrs (!lib.versionAtLeast old.version "25.12") {
       patches = old.patches or [] ++ [
         ./konsole/no-accel.patch
       ];

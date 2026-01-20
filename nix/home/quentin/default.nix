@@ -550,6 +550,7 @@ in {
         # Mail
         kdePackages.kmail
         kdePackages.kmail-account-wizard
+      ] ++ lib.optionals pkgs.kdePackages.kdepim-runtime.meta.available [
         # Calendar, contacts, mail
         kdePackages.merkuro
       ];
