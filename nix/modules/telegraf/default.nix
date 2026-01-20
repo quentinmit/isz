@@ -187,7 +187,7 @@ in {
               bucket = "icestationzebra";
               bucket_tag = "influxdb_bucket";
               exclude_bucket_tag = true;
-              timeout = "30s"; # Default timeout of 5s is sometimes too slow
+              timeout = "60s"; # Default timeout of 5s is sometimes too slow
             }];
             # TODO: Add option for stdout
           };
