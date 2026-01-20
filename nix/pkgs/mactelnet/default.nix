@@ -8,7 +8,7 @@
 , lib
 }:
 let
-  version = "0.6.1";
+  version = "0.6.3";
 in stdenv.mkDerivation {
   pname = "mactelnet";
   inherit version;
@@ -17,7 +17,7 @@ in stdenv.mkDerivation {
     owner = "haakonnessjoen";
     repo = "MAC-Telnet";
     rev = "v${version}";
-    hash = "sha256-gKr3URYKuH4SxpU6DSCtmb7gGiEgO2agBEJOJFdy9q0=";
+    hash = "sha256-2vCzfAycrsr6oZkifp/fcs8Q8EixhfmcMttb8kMfn+k=";
   };
 
   nativeBuildInputs = [
