@@ -108,6 +108,12 @@
 
   hardware.rasdaemon.enable = true;
 
+  isz.telegraf = {
+    enable = true;
+    intelRapl = true;
+    drm = true;
+  };
+
   boot.swraid.mdadmConf = ''
     MAILADDR root@comclub.org
   '';

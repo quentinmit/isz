@@ -19,7 +19,12 @@ for line in sys.stdin:
         if "name" in result:
             tags += ",name=%s" % (result["name"])
             del result["name"]
-        result = {k: int(v) for k, v in result.items() if v != ""}
+        result = {
+            k: int(v)
+            for k, v in result.items()
+            if v != ""
+            and not k.startswith("constraint_")
+        }
         if "energy_uj" in result:
             energy_uj = result["energy_uj"]
             last_energy_uj = last_result.get("energy_uj", 0)
