@@ -144,6 +144,7 @@
         gmpy2
         gnupg
         gnureadline
+        gspread
         pygobject3
         google-api-python-client
         google-auth
@@ -231,6 +232,7 @@
         pywinrm
         pyx
         re2
+        reedsolo
         regex
         reportlab
         requests
