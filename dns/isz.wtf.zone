@@ -98,6 +98,7 @@ bedroom-caparoc  A 172.30.98.3
                  EUI48 A8-74-1D-10-21-E2
 bedroom-pi       A 172.30.98.33
 workshop         A 172.30.98.34
+plc-vm           A 172.30.98.35
 
 ; WireGuard hosts (172.30.98.64/26)
 $ORIGIN wg.isz.wtf.
