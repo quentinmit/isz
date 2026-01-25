@@ -84,3 +84,9 @@ www1             CNAME hercules
 www3             CNAME us3
 zm               CNAME hercules
 zope             CNAME hercules
+
+ginas-laptop-1   EUI48 5C-F9-38-A4-AD-18
+ginas-laptop-2   EUI48 22-48-F6-6A-A6-AC
+phillips-laptop  EUI48 50-ED-3C-38-FF-A7
+phillips-phone   EUI48 FA-4D-51-30-64-D6
+phillips-desktop EUI48 DC-97-BA-FE-B5-0A
