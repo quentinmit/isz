@@ -616,11 +616,11 @@ in {
         kdePackages.ghostwriter
         kdePackages.skanlite
         kdePackages.skanpage
-        marktext
         retext
         rnote
         xournalpp
-      ] ++ available onlyoffice-desktopeditors;
+      ] ++ available onlyoffice-desktopeditors
+      ++ available marktext;
     })
     # Productivity - eBooks
     (lib.mkIf config.isz.graphical {
