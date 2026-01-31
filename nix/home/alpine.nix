@@ -6,7 +6,7 @@ let
       if lib.isList v then
         lib.concatMapStringsSep ", " mkValueString v
       else
-        lib.escape [","] (lib.generators.mkValueStringDefault {} v);
+        lib.generators.mkValueStringDefault {} v;
   in pkgs.formats.keyValue {
     mkKeyValue = lib.generators.mkKeyValueDefault {
       inherit mkValueString;
@@ -23,6 +23,17 @@ in {
     extraConfig = mkOption {
       type = types.attrsOf (types.coercedTo types.str (s: [s]) (types.listOf types.str));
       default = {};
+      description = ''
+        Settings for .pinerc.
+
+        These settings are applied by passing -P to alpine, which means they
+        set default values that may still be overridden by ~/.pinerc.
+
+        Each setting may be a string or a list of strings. If a list of strings
+        is supplied, they will be separated with commas. Each Alpine option
+        has its own rules for quoting or escaping commas, so if your strings
+        contain commas, you should escape them yourself.
+      '';
     };
     features = mkOption {
       type = types.attrsOf types.bool;

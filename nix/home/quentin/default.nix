@@ -469,7 +469,6 @@ in {
     # Network
     {
       home.packages = with pkgs; [
-        alpine
         axel
         bmon
         geoip
