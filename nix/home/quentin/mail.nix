@@ -75,5 +75,30 @@
         };
       };
     }
+    {
+      programs.meli = {
+        enable = true;
+        package = pkgs.unstable.meli;
+        settings = {
+          accounts = {
+            isz = {
+              root_mailbox = "INBOX";
+              format = "imap";
+              server_hostname = "mail.isz.wtf";
+              server_username = "quentin@isz.wtf";
+              server_password_command = "systemd-ask-password mail.isz.wtf"; # TODO
+              server_port = "993";
+              search_backend = "none";
+              identity = "quentin@isz.wtf";
+              extra_identities = [
+                "quentin@mit.edu"
+              ];
+              display_name = "Quentin Smith";
+              send_mail = "false"; # TODO
+            };
+          };
+        };
+      };
+    }
   ]);
 }
