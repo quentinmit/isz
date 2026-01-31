@@ -151,6 +151,9 @@ in {
         "oralb"
         "xiaomi_ble"
         "improv_ble"
+        "airthings"
+        "airthings_ble"
+        "bthome"
       ];
       config = let
         cleanName = name: lib.strings.toLower (lib.strings.replaceStrings [" "] ["_"] name);
