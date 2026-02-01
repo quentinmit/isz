@@ -90,6 +90,7 @@ in {
               {
                 type = "entities";
                 entities = [
+                  "button.hdmi_switch_1"
                   "button.hdmi_switch_2"
                   "select.receiver_source"
                 ];
@@ -304,7 +305,7 @@ in {
                 show_name = false;
                 tap_action.action = "perform-action";
                 tap_action.perform_action = "remote.send_command";
-                tap_action.target.entity_id = "remote.google_home_hd";
+                tap_action.target.entity_id = "remote.google_tv_streamer";
                 tap_action.data = {
                   inherit command;
                 };
@@ -312,7 +313,7 @@ in {
               ahbutton = command: attrs: abutton command ({
                 hold_action.action = "perform-action";
                 hold_action.perform_action = "remote.send_command";
-                hold_action.target.entity_id = "remote.google_home_hd";
+                hold_action.target.entity_id = "remote.google_tv_streamer";
                 hold_action.data = {
                   inherit command;
                   hold_sec = 0.5;
@@ -321,7 +322,7 @@ in {
               a2button = command: command2: attrs: abutton command ({
                 hold_action.action = "perform-action";
                 hold_action.perform_action = "remote.send_command";
-                hold_action.target.entity_id = "remote.google_home_hd";
+                hold_action.target.entity_id = "remote.google_tv_streamer";
                 hold_action.data.command = command2;
               } // attrs);
             in [
@@ -358,12 +359,12 @@ in {
               ])
               {
                 type = "entity";
-                entity = "remote.google_home_hd";
+                entity = "remote.google_tv_streamer";
                 attribute = "current_activity";
               }
               {
                 type = "media-control";
-                entity = "media_player.google_home_hd";
+                entity = "media_player.google_tv_streamer";
               }
             ];
           }
