@@ -9,13 +9,13 @@
 
 let
   pname = "inventree";
-  version = "0.17.5";
+  version = "0.21.1";
 in buildPythonPackage {
   inherit pname version;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-4AbvQSDS9o0mUtM0/osCA6Vt5Pl5K+6SInThDJfirpI=";
+    hash = "sha256-+yxuUsTIXg8BYEwd8EYiaqNelgW7yTi91jgS2I39dvs=";
   };
 
   pyproject = true;
