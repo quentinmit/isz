@@ -1,0 +1,361 @@
+diff --git a/kintree/common/tools.py b/kintree/common/tools.py
+index eefba13..525f7e7 100644
+--- a/kintree/common/tools.py
++++ b/kintree/common/tools.py
+@@ -65,6 +65,8 @@ def get_image_with_retries(url, headers, retries=3, wait=5, silent=False):
+     import cloudscraper
+     import time
+     scraper = cloudscraper.create_scraper()
++    if url.startswith("//"):
++        url = "https:" + url
+     for attempt in range(retries):
+         try:
+             response = scraper.get(url, headers=headers, timeout=wait)
+diff --git a/kintree/gui/views/common.py b/kintree/gui/views/common.py
+index 2e1a71c..bdfdf66 100644
+--- a/kintree/gui/views/common.py
++++ b/kintree/gui/views/common.py
+@@ -67,9 +67,9 @@ def update_theme(page: ft.Page, mode='light', transition=False, compact=True):
+ 
+     # Make it more compact
+     if compact:
+-        page.theme.visual_density = ft.ThemeVisualDensity.COMPACT
++        page.theme.visual_density = ft.VisualDensity.COMPACT
+     else:
+-        page.theme.visual_density = ft.ThemeVisualDensity.STANDARD
++        page.theme.visual_density = ft.VisualDensity.STANDARD
+ 
+     # Disable transitions by default
+     handle_transition(page, transition=False)
+@@ -123,30 +123,30 @@ class CommonView(ft.View):
+     def build_snackbar(self, d_type: DialogType, message: str):
+         if d_type == DialogType.VALID:
+             self.dialog = ft.SnackBar(
+-                bgcolor=ft.colors.GREEN_100,
++                bgcolor=ft.Colors.GREEN_100,
+                 content=ft.Text(
+                     message,
+-                    color=ft.colors.GREEN_700,
++                    color=ft.Colors.GREEN_700,
+                     size=GUI_PARAMS['nav_rail_text_size'],
+                     weight=ft.FontWeight.BOLD,
+                 ),
+             )
+         elif d_type == DialogType.WARNING:
+             self.dialog = ft.SnackBar(
+-                bgcolor=ft.colors.AMBER_100,
++                bgcolor=ft.Colors.AMBER_100,
+                 content=ft.Text(
+                     message,
+-                    color=ft.colors.AMBER_800,
++                    color=ft.Colors.AMBER_800,
+                     size=GUI_PARAMS['nav_rail_text_size'],
+                     weight=ft.FontWeight.BOLD,
+                 ),
+             )
+         elif d_type == DialogType.ERROR:
+             self.dialog = ft.SnackBar(
+-                bgcolor=ft.colors.RED_100,
++                bgcolor=ft.Colors.RED_100,
+                 content=ft.Text(
+                     message,
+-                    color=ft.colors.RED_700,
++                    color=ft.Colors.RED_700,
+                     size=GUI_PARAMS['nav_rail_text_size'],
+                     weight=ft.FontWeight.BOLD,
+                 ),
+@@ -238,7 +238,7 @@ class SwitchWithRefs(ft.Switch):
+         )
+ 
+ 
+-class DropdownWithSearch(ft.UserControl):
++class DropdownWithSearch(ft.Container):
+     '''Implements a dropdown with search box'''
+ 
+     dropdown = None
+@@ -248,11 +248,14 @@ class DropdownWithSearch(ft.UserControl):
+     search_width = None
+     
+     def build(self):
+-        return ft.Row([
++        self.content = ft.Row([
+             self.dropdown,
+             self.search_box,
+             self.search_button,
+         ])
++
++    def is_isolated(self):
++        return True
+     
+     def __str__(self):
+         return f'dropdown_with_search {{dropdown: {self.dropdown}, search_field: {self.search_field}}}'
+diff --git a/kintree/gui/views/main.py b/kintree/gui/views/main.py
+index bd3834e..631281f 100644
+--- a/kintree/gui/views/main.py
++++ b/kintree/gui/views/main.py
+@@ -39,7 +39,7 @@ main_appbar = ft.AppBar(
+     title=ft.WindowDragArea(ft.Container(ft.Text(f'Ki-nTree | {__version__}'),
+                                          width=10000), maximizable=True),
+     center_title=False,
+-    bgcolor=ft.colors.SURFACE_VARIANT,
++    bgcolor=ft.Colors.ON_SURFACE_VARIANT,
+     actions=[],
+ )
+ 
+@@ -77,26 +77,26 @@ main_navrail = ft.NavigationRail(
+     group_alignment=-0.9,
+     destinations=[
+         ft.NavigationRailDestination(
+-            icon_content=ft.Icon(name=ft.icons.SCREEN_SEARCH_DESKTOP_OUTLINED, size=40),
+-            selected_icon_content=ft.Icon(name=ft.icons.SCREEN_SEARCH_DESKTOP_SHARP, size=40),
++            icon=ft.Icon(name=ft.Icons.SCREEN_SEARCH_DESKTOP_OUTLINED, size=40),
++            selected_icon=ft.Icon(name=ft.Icons.SCREEN_SEARCH_DESKTOP_SHARP, size=40),
+             label_content=ft.Text("Part Search", size=16),
+             padding=10,
+         ),
+         ft.NavigationRailDestination(
+-            icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=40),
+-            selected_icon_content=ft.Icon(name=ft.icons.INVENTORY_2, size=40),
++            icon=ft.Icon(name=ft.Icons.INVENTORY_2_OUTLINED, size=40),
++            selected_icon=ft.Icon(name=ft.Icons.INVENTORY_2, size=40),
+             label_content=ft.Text("InvenTree", size=16),
+             padding=10,
+         ),
+         ft.NavigationRailDestination(
+-            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=40),
+-            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=40),
++            icon=ft.Icon(name=ft.Icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=40),
++            selected_icon=ft.Icon(name=ft.Icons.SETTINGS_INPUT_COMPONENT, size=40),
+             label_content=ft.Text("KiCad", size=16),
+             padding=10,
+         ),
+         ft.NavigationRailDestination(
+-            icon_content=ft.Icon(name=ft.icons.BUILD_OUTLINED, size=40),
+-            selected_icon_content=ft.Icon(name=ft.icons.BUILD, size=40),
++            icon=ft.Icon(name=ft.Icons.BUILD_OUTLINED, size=40),
++            selected_icon=ft.Icon(name=ft.Icons.BUILD, size=40),
+             label_content=ft.Text("Create", size=16),
+             padding=10,
+         ),
+@@ -123,11 +123,11 @@ class MainView(CommonView):
+             self.appbar.actions.extend(
+                 [
+                     ft.IconButton(
+-                        ft.icons.SETTINGS,
++                        ft.Icons.SETTINGS,
+                         on_click=self.call_settings,
+                     ),
+                     ft.IconButton(
+-                        ft.icons.CLOSE,
++                        ft.Icons.CLOSE,
+                         on_click=lambda _: page.window.close(),
+                     ),
+                 ]
+@@ -147,7 +147,7 @@ class MainView(CommonView):
+ 
+         # Add floating button to reset view
+         self.floating_action_button = ft.FloatingActionButton(
+-            icon=ft.icons.REPLAY, on_click=self.reset_view,
++            icon=ft.Icons.REPLAY, on_click=self.reset_view,
+         )
+ 
+     def nav_rail_redirect(self, e):
+@@ -275,7 +275,7 @@ class PartSearchView(MainView):
+             width=250
+         ),
+         'search_button': ft.IconButton(
+-            icon=ft.icons.SEND,
++            icon=ft.Icons.SEND,
+             icon_color="blue900",
+             icon_size=32,
+             height=48,
+@@ -534,14 +534,14 @@ class InventreeView(MainView):
+             'Reload InvenTree Categories',
+             width=GUI_PARAMS['button_width'] * 2.6,
+             height=36,
+-            icon=ft.icons.REPLAY,
++            icon=ft.Icons.REPLAY,
+             disabled=False,
+         ),
+         'load_stock_locations': ft.ElevatedButton(
+             'Reload InvenTree Stock locations',
+             width=GUI_PARAMS['button_width'] * 2.8,
+             height=36,
+-            icon=ft.icons.REPLAY,
++            icon=ft.Icons.REPLAY,
+             disabled=False,
+         ),
+         'Category': DropdownWithSearch(
+@@ -1252,7 +1252,7 @@ class CreateView(MainView):
+             ),
+             height=GUI_PARAMS['button_height'],
+             width=GUI_PARAMS['button_width'] * 1.6,
+-            bgcolor=ft.colors.RED_50,
++            bgcolor=ft.Colors.RED_50,
+             disabled=True,
+         ),
+     }
+@@ -1261,6 +1261,7 @@ class CreateView(MainView):
+     create_continue = True
+ 
+     def show_dialog(self, type: DialogType, message: str):
++        print("Dialog:", message)
+         if 'create' in self.fields:
+             self.enable_create(True)
+         return super().show_dialog(type, message)
+@@ -1274,7 +1275,7 @@ class CreateView(MainView):
+     def enable_cancel(self, enable=True):
+         if enable:
+             for item in self.fields['cancel'].content.controls:
+-                item.color = ft.colors.RED_ACCENT_700
++                item.color = ft.Colors.RED_ACCENT_700
+         else:
+             for item in self.fields['cancel'].content.controls:
+                 item.color = None
+@@ -1615,7 +1616,7 @@ class CreateView(MainView):
+                 ft.Row(
+                     ref=self.inventree_progress_row,
+                     controls=[
+-                        ft.Icon(ft.icons.INVENTORY_2, size=32),
++                        ft.Icon(ft.Icons.INVENTORY_2, size=32),
+                         ft.Text('InvenTree', size=20, weight=ft.FontWeight.BOLD, width=120),
+                         self.fields['inventree_progress'],
+                     ],
+@@ -1625,7 +1626,7 @@ class CreateView(MainView):
+                 ft.Row(
+                     ref=self.kicad_progress_row,
+                     controls=[
+-                        ft.Icon(ft.icons.SETTINGS_INPUT_COMPONENT, size=32),
++                        ft.Icon(ft.Icons.SETTINGS_INPUT_COMPONENT, size=32),
+                         ft.Text('KiCad', size=20, weight=ft.FontWeight.BOLD, width=120),
+                         self.fields['kicad_progress'],
+                     ],
+diff --git a/kintree/gui/views/settings.py b/kintree/gui/views/settings.py
+index 9c75d5b..457b9ae 100644
+--- a/kintree/gui/views/settings.py
++++ b/kintree/gui/views/settings.py
+@@ -308,7 +308,7 @@ SETTINGS = {
+ settings_appbar = ft.AppBar(
+     title=ft.WindowDragArea(ft.Container(ft.Text('Ki-nTree Settings'),
+                                          width=10000), maximizable=True),
+-    bgcolor=ft.colors.SURFACE_VARIANT
++    bgcolor=ft.Colors.ON_SURFACE_VARIANT
+ )
+ 
+ # Settings NavRail
+@@ -320,27 +320,27 @@ settings_navrail = ft.NavigationRail(
+     group_alignment=GUI_PARAMS['nav_rail_alignment'],
+     destinations=[
+         ft.NavigationRailDestination(
+-            label_content=ft.Text("User", size=GUI_PARAMS['nav_rail_text_size']),
+-            icon_content=ft.Icon(name=ft.icons.SUPERVISED_USER_CIRCLE, size=GUI_PARAMS['nav_rail_icon_size']),
+-            selected_icon_content=ft.Icon(name=ft.icons.SUPERVISED_USER_CIRCLE_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
++            label=ft.Text("User", size=GUI_PARAMS['nav_rail_text_size']),
++            icon=ft.Icon(name=ft.Icons.SUPERVISED_USER_CIRCLE, size=GUI_PARAMS['nav_rail_icon_size']),
++            selected_icon=ft.Icon(name=ft.Icons.SUPERVISED_USER_CIRCLE_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
+             padding=GUI_PARAMS['nav_rail_padding'],
+         ),
+         ft.NavigationRailDestination(
+-            label_content=ft.Text("Supplier", size=GUI_PARAMS['nav_rail_text_size']),
+-            icon_content=ft.Icon(name=ft.icons.LOCAL_SHIPPING, size=GUI_PARAMS['nav_rail_icon_size']),
+-            selected_icon_content=ft.Icon(name=ft.icons.LOCAL_SHIPPING_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
++            label=ft.Text("Supplier", size=GUI_PARAMS['nav_rail_text_size']),
++            icon=ft.Icon(name=ft.Icons.LOCAL_SHIPPING, size=GUI_PARAMS['nav_rail_icon_size']),
++            selected_icon=ft.Icon(name=ft.Icons.LOCAL_SHIPPING_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
+             padding=GUI_PARAMS['nav_rail_padding'],
+         ),
+         ft.NavigationRailDestination(
+-            label_content=ft.Text("InvenTree", size=GUI_PARAMS['nav_rail_text_size']),
+-            icon_content=ft.Icon(name=ft.icons.INVENTORY_2, size=GUI_PARAMS['nav_rail_icon_size']),
+-            selected_icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
++            label=ft.Text("InvenTree", size=GUI_PARAMS['nav_rail_text_size']),
++            icon=ft.Icon(name=ft.Icons.INVENTORY_2, size=GUI_PARAMS['nav_rail_icon_size']),
++            selected_icon=ft.Icon(name=ft.Icons.INVENTORY_2_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
+             padding=GUI_PARAMS['nav_rail_padding'],
+         ),
+         ft.NavigationRailDestination(
+-            label_content=ft.Text("KiCad", size=GUI_PARAMS['nav_rail_text_size']),
+-            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=GUI_PARAMS['nav_rail_icon_size']),
+-            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
++            label=ft.Text("KiCad", size=GUI_PARAMS['nav_rail_text_size']),
++            icon=ft.Icon(name=ft.Icons.SETTINGS_INPUT_COMPONENT, size=GUI_PARAMS['nav_rail_icon_size']),
++            selected_icon=ft.Icon(name=ft.Icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
+             padding=GUI_PARAMS['nav_rail_padding'],
+         ),
+     ],
+@@ -379,7 +379,7 @@ class SettingsView(CommonView):
+             self.appbar.actions.extend(
+                 [
+                     ft.IconButton(
+-                        ft.icons.CLOSE,
++                        ft.Icons.CLOSE,
+                         on_click=lambda _: page.window.close(),
+                     ),
+                 ]
+@@ -490,7 +490,7 @@ class SettingsView(CommonView):
+                     name,
+                     width=GUI_PARAMS['button_width'] * 2,
+                     height=GUI_PARAMS['button_height'],
+-                    icon=ft.icons.CHECK_OUTLINED,
++                    icon=ft.Icons.CHECK_OUTLINED,
+                     on_click=lambda e, s=name: self.test_s(e, s=s)
+                 ),
+             )
+@@ -517,7 +517,7 @@ class SettingsView(CommonView):
+                     'Test',
+                     width=GUI_PARAMS['button_width'],
+                     height=GUI_PARAMS['button_height'],
+-                    icon=ft.icons.CHECK_OUTLINED,
++                    icon=ft.Icons.CHECK_OUTLINED,
+                     on_click=lambda _: self.test(),
+                 ),
+             )
+@@ -526,7 +526,7 @@ class SettingsView(CommonView):
+                 'Save',
+                 width=GUI_PARAMS['button_width'],
+                 height=GUI_PARAMS['button_height'],
+-                icon=ft.icons.SAVE_OUTLINED,
++                icon=ft.Icons.SAVE_OUTLINED,
+                 on_click=lambda _: self.save()
+             ),
+         )
+@@ -559,8 +559,8 @@ class PathSettingsView(SettingsView):
+ 
+     def build_dialog(self):
+         return ft.Banner(
+-            bgcolor=ft.colors.AMBER_100,
+-            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
++            bgcolor=ft.Colors.AMBER_100,
++            leading=ft.Icon(ft.Icons.WARNING_AMBER_ROUNDED, color=ft.Colors.AMBER, size=GUI_PARAMS['icon_size']),
+             content=ft.Text(f'Restart Ki-nTree to load the new {self.title}', weight=ft.FontWeight.BOLD),
+             actions=[
+                 ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
+@@ -628,9 +628,9 @@ class UserSettingsView(PathSettingsView):
+             ref=cache_row_ref,
+             controls=[
+                 ft.Text('Keep Cache Valid For (Days): '),
+-                ft.IconButton(ft.icons.REMOVE, on_click=lambda _: self.increment_cache_value(False)),
++                ft.IconButton(ft.Icons.REMOVE, on_click=lambda _: self.increment_cache_value(False)),
+                 SETTINGS[self.title]['CACHE_VALID_DAYS'][1],
+-                ft.IconButton(ft.icons.ADD, on_click=lambda _: self.increment_cache_value(True)),
++                ft.IconButton(ft.Icons.ADD, on_click=lambda _: self.increment_cache_value(True)),
+             ],
+         )
+         self.column.controls.append(cache_row)
+@@ -849,14 +849,14 @@ class SupplierSettingsView(SettingsView):
+                             'Test',
+                             width=GUI_PARAMS['button_width'],
+                             height=GUI_PARAMS['button_height'],
+-                            icon=ft.icons.CHECK_OUTLINED,
++                            icon=ft.Icons.CHECK_OUTLINED,
+                             on_click=lambda e, s=supplier: self.test_s(e, supplier=s),
+                         ),
+                         ft.ElevatedButton(
+                             'Save',
+                             width=GUI_PARAMS['button_width'],
+                             height=GUI_PARAMS['button_height'],
+-                            icon=ft.icons.SAVE_OUTLINED,
++                            icon=ft.Icons.SAVE_OUTLINED,
+                             on_click=lambda e, s=supplier: self.save_s(e, supplier=s),
+                         ),
+                     ]

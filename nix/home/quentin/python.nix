@@ -158,6 +158,7 @@
         imagesize
         importlib-metadata
         importmagic
+        inventree
         #removed ipaddress
         ipympl
         ipynbname
