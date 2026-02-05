@@ -20,12 +20,16 @@
     ];
   };
   services.inventree = {
-    config.social_backends = [
-      "allauth.socialaccount.providers.openid_connect"
-    ];
-    systemSettings.LOGIN_ENABLE_SSO = true;
-    systemSettings.LOGIN_ENABLE_SSO_REG = true;
-    systemSettings.LOGIN_ENABLE_PWD_FORGOT = false;
+    config = {
+      social_backends = [
+        "allauth.socialaccount.providers.openid_connect"
+      ];
+      global_settings = {
+        LOGIN_ENABLE_SSO = true;
+        LOGIN_ENABLE_SSO_REG = true;
+        LOGIN_ENABLE_PWD_FORGOT = false;
+      };
+    };
   };
   sops.templates."inventree.env".content = ''
     INVENTREE_SOCIAL_PROVIDERS=${lib.strings.toJSON (lib.strings.toJSON {

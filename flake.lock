@@ -792,14 +792,15 @@
         ],
         "pyproject-build-systems": "pyproject-build-systems_2",
         "pyproject-nix": "pyproject-nix_2",
+        "treefmt-nix": "treefmt-nix_2",
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1764570977,
-        "narHash": "sha256-Oa0bgCn+mHHcT++JHaKtCN12VGKUNSUjvi6fFeLOyfE=",
+        "lastModified": 1770259568,
+        "narHash": "sha256-NNR0J7l+8p7X+XnDWGKBy+7VZ3fNBlpbvr/XxN2UKYI=",
         "owner": "quentinmit",
         "repo": "nixos-inventree",
-        "rev": "064848ccb5ff30674049a90228fd1cc04ef34560",
+        "rev": "6934d76e2d860974529d4b852ff9394c562c6a80",
         "type": "github"
       },
       "original": {
@@ -1380,6 +1381,27 @@
         "owner": "numtide",
         "repo": "treefmt-nix",
         "rev": "778a1d691f1ef45dd68c661715c5bf8cbf131c80",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "treefmt-nix_2": {
+      "inputs": {
+        "nixpkgs": [
+          "nixos-inventree",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1766000401,
+        "narHash": "sha256-+cqN4PJz9y0JQXfAK5J1drd0U05D5fcAGhzhfVrDlsI=",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "rev": "42d96e75aa56a3f70cab7e7dc4a32868db28e8fd",
         "type": "github"
       },
       "original": {

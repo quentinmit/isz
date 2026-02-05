@@ -46,6 +46,10 @@
         use_x_forwarded_host = true;
         use_x_forwarded_port = true;
         use_x_forwarded_proto = true;
+
+        global_settings = {
+          INVENTREE_COMPANY_NAME = "Ice Station Zebra";
+        };
       };
     };
     services.postgresql = {
