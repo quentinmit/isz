@@ -39,6 +39,7 @@
         zapzap
         xgpro
         affinity-nix.packages.${pkgs.stdenv.system}.v3
+        mathematica
       ];
 
       services.baloo.excludeFolders = [
