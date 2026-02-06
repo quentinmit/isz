@@ -648,6 +648,7 @@ in {
     # Utilities - X11
     (lib.mkIf config.isz.graphical {
       home.packages = (with pkgs; [
+        libxkbcommon
         xterm
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         xdotool # broken on macOS
