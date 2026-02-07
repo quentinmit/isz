@@ -86,9 +86,12 @@
           home.packages = with pkgs; [
             pyrosimple
           ];
-          programs.rtorrent = {
+          programs.rtorrent = let
+            inherit (pkgs) rtorrent;
+          in {
             enable = true;
-            package = pkgs.unstable.rtorrent;
+            # rtorrent 0.16.6 crashes on startup: https://github.com/rakshasa/rtorrent/issues/1689
+            package = lib.mkAssert (rtorrent.version != "0.16.6") "rtorrent 0.16.6 is broken" rtorrent;
             extraConfig = ''
               upload_rate = 1000
               port_random = yes
