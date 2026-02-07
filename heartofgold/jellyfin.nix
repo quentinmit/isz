@@ -44,4 +44,11 @@
 #       NewPath = true;
 #     };
   };
+  systemd.services.jellyfin.serviceConfig = {
+    # Allow hardware acceleration
+    SupplementaryGroups = [
+      "video"
+      "render"
+    ];
+  };
 }
