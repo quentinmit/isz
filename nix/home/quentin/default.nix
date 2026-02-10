@@ -502,6 +502,11 @@ in {
         websocat
         termshark
         mactelnet
+        (writeShellScriptBin "pkb-client" ''
+          read -d "" PKB_API_KEY PKB_API_SECRET < <(${lib.getExe python3Packages.keyring} --mode creds get https://api.porkbun.com)
+          export PKB_API_KEY PKB_API_SECRET
+          exec "${lib.getExe pkb-client}" "$@"
+        '')
       ] ++ lib.optionals pkgs.stdenv.isLinux [
         sockdump
       ];

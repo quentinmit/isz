@@ -185,4 +185,5 @@ final: prev:
   ltchiptool = final.callPackage ./python/ltchiptool {};
   dsd = final.callPackage ./dsd {};
   itpp = final.callPackage ./itpp {};
+  pkb-client = final.python3.pkgs.callPackage ./python/pkb-client {};
 }
