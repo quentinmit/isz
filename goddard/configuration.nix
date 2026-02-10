@@ -94,6 +94,8 @@
     amdgpu = true;
     powerSupply = true;
     drm = true;
+    # Don't try to get SMART info from USB devices.
+    smart.excludes = ["/dev/sda" "/dev/sdb" "/dev/sdc"];
   };
 
   isz.vector = {

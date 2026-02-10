@@ -32,6 +32,10 @@ in {
         type = with types; nullOr path;
         default = null;
       };
+      smart.excludes = mkOption {
+        type = types.listOf types.str;
+        default = [];
+      };
       openweathermap = {
         appId = mkOption {
           type = with types; nullOr str;
@@ -210,6 +214,7 @@ in {
             smart = lib.mkIf cfg.smart.enable [{
               path_smartctl = lib.mkIf (cfg.smart.smartctl != null) cfg.smart.smartctl;
               path_nvme = lib.mkIf (cfg.smart.nvme != null) cfg.smart.nvme;
+              excludes = cfg.smart.excludes;
               attributes = true;
             }];
             swap = [{}];
