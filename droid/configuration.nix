@@ -36,6 +36,7 @@
     {
       home.stateVersion = "25.05";
       isz.quentin.enable = true;
+      isz.graphical = false;
       isz.quentin.texlive = false; # Massive
       isz.quentin.radio.enable = false; # No point without USB support
     }

@@ -45,7 +45,7 @@
       programs.git.enable = true;
 
       home-manager.sharedModules = [{
-        isz.graphical = config.hardware.graphics.enable;
+        isz.graphical = lib.mkDefault config.hardware.graphics.enable;
       }];
 
       home-manager.users.root = {
