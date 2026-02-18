@@ -132,7 +132,7 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "22.11"; # Did you read the comment?
 
-  # Configure udev for Zwave, Fluke45, PWRGate
+  # Configure udev for Fluke45, PWRGate
   services.udev.rules = [
     {
       SUBSYSTEM = "tty";
@@ -141,12 +141,6 @@
       OWNER = { op = "="; value = "pwrgate-logger"; };
       GROUP = { op = "="; value = "pwrgate-logger"; };
       "ENV{SYSTEMD_WANTS}" = { op = "+="; value = "pwrgate-logger"; };
-     }
-    {
-      SUBSYSTEM = "tty";
-      "ATTRS{idProduct}" = "0200";
-      "ATTRS{idVendor}" = "0658";
-      RUN = { op = "+="; value = "${pkgs.coreutils}/bin/ln -f $devnode /dev/ttyZwave"; };
     }
     {
       SUBSYSTEM = "tty";
@@ -276,26 +270,6 @@
     influxdb.tokenPath = config.sops.secrets.dashboard_influx_token.path;
   };
   # TODO: Configure esphome
-  # Configure home-assistant
-  # Configure zwave-js-ui
-  services.zwave-js-ui = {
-    enable = true;
-    package = pkgs.unstable.zwave-js-ui;
-    serialPort = "/dev/ttyZwave";
-    settings.HOME = "%t/zwave-js-ui";
-    settings.BACKUPS_DIR = "%S/zwave-js-ui/backups";
-    settings.TZ = config.time.timeZone;
-  };
-  systemd.services.zwave-js-ui = let
-    deps = ["modprobe@cdc_acm.service"];
-  in {
-    wants = deps;
-    after = deps;
-    serviceConfig.BindReadOnlyPaths = [
-      "/etc/resolv.conf"
-    ];
-    serviceConfig.RestrictAddressFamilies = lib.mkForce "AF_INET AF_INET6 AF_NETLINK";
-  };
   # TODO: Configure atuin
   # TODO: Configure freepbx-app
   sops.secrets."weatherflow2mqtt_station_token" = {

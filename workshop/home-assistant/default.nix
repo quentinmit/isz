@@ -10,6 +10,8 @@ in {
     ./dashboards.nix
     ./scenes.nix
     ./automations.nix
+    ./zwave.nix
+    ./matter.nix
   ];
   options = with lib; {
     services.home-assistant = {
@@ -138,7 +140,6 @@ in {
         "websocket_api"
         "wled"
         "zone"
-        "zwave_js"
         # Bluetooth dynamically loads integrations for every device that is seen.
         "bluetooth"
         "ibeacon"
