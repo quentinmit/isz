@@ -198,6 +198,7 @@ in {
             "sensor.tempest_st_00122016_current_conditions"
             "sensor.tv_power_strip_last_seen"
             "sensor.heat_last_seen"
+            "sensor.workshop_lights_uptime"
           ];
         };
         recorder = {
@@ -210,6 +211,7 @@ in {
             "sensor.tempest_st_00122016_current_conditions"
             "sensor.tv_power_strip_last_seen"
             "sensor.heat_last_seen"
+            "sensor.workshop_lights_uptime"
             # Rapid updates too frequently.
             # We'll still record the _avg versions that update every minute.
             "sensor.tempest_st_00122016_wind_speed"
