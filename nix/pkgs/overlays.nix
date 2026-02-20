@@ -184,4 +184,9 @@ in {
       })
     ];
   });
+  pyrosimple = prev.pyrosimple.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [
+      ./pyrosimple/rtorrent-0.16.patch
+    ];
+  });
 }
