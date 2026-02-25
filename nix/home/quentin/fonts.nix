@@ -71,16 +71,28 @@
       vista-fonts
       weather-icons
       xkcd-font
-    ] ++ lib.imap lib.setPrio [
-      # Bitmap fonts
-      # They need different priorities because they all provide a fonts.dir file.
-      # Really, home-manager should generate new fonts.dir files containing all the installed fonts.
-      clearlyU # Unicode font
-      spleen # 5x8 bitmap font
-      tamzen # bitmap font
-      tewi-font # Monaco clone
-      uni-vga
-      unscii # Computer graphics
     ];
+    fonts.fontconfig.configFile."quentin-bitmap-fonts" = {
+      enable = true;
+      priority = 50;
+      text = let fonts = with pkgs; [
+        # Bitmap fonts
+        # These fonts provide fonts.dir files, so they would conflict if placed in home.packages.
+        # Really, home-manager should generate new fonts.dir files containing all the installed fonts.
+        clearlyU # Unicode font
+        spleen # 5x8 bitmap font
+        tamzen # bitmap font
+        tewi-font # Monaco clone
+        uni-vga
+        unscii # Computer graphics
+      ]; in ''
+        <?xml version='1.0'?>
+        <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
+        <fontconfig>
+          <!-- Font directories -->
+          ${lib.concatStringsSep "\n" (map (font: "<dir>${font}</dir>") fonts)}
+        </fontconfig>
+      '';
+    };
   };
 }
