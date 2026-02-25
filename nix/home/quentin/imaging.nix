@@ -13,6 +13,7 @@ in {
         exiftool
         libjpeg
         libjpeg_turbo
+        shaperglot-cli
       ];
       home.file.".ExifTool_config".text = ''
         %Image::ExifTool::UserDefined::Options = (
