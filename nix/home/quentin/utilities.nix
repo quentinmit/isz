@@ -24,6 +24,7 @@
       file-rename
       fq
       gcab
+      gnumake
       gnutar
       units
       htmlq

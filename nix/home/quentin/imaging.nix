@@ -43,6 +43,9 @@ in {
         boxy-svg
         kdePackages.kolourpaint
         swayimg
+        fontfor
+        #broken fontmatrix
+        fontfinder
       ] ++ (available libresprite)
       ++ (available yeetgif)
       ++ (available gimp-with-plugins);

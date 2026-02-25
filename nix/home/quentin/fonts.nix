@@ -26,6 +26,33 @@
       apple-fonts.NY
       whatsapp-emoji-font
       source-code-pro
+      typodermic-public-domain
+      cardo # Large Unicode font for linguistics
+      carlito # Calibri clone
+      charis-sil # Broad multilingual use
+      clearlyU # Unicode font
+      comic-relief # Comic Sans clone
+      comic-mono
+      cooper # Classis serif font
+      dinish # DIN roadway signs
+      dotcolon-fonts
+      edukai # Chinese
+      eduli # Chinese
+      #broken edusong # Chinese
+      encode-sans
+      excalifont # Handwriting
+      fira-code
+      fira-go
+      fira-math
+      fira-sans
+      fixedsys-excelsior
+      garamond-libre
+      geist-font
+      gelasio # Georgia clone
+      glasstty-ttf # VT220 font
+      goudy-bookletter-1911
+      intel-one-mono
+      league-of-moveable-type
     ];
   };
 }
