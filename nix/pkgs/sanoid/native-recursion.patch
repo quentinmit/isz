@@ -1,11 +1,5 @@
-commit 57ede7abb6bd1e2a3e600cd166e91cb6e95cb6eb
-Author: Quentin Smith <quentin@mit.edu>
-Date:   Sun Dec 7 19:14:53 2025 -0500
-
-    Improve support for native ZFS recursion
-
 diff --git a/syncoid b/syncoid
-index 680afbe..e3bfe10 100755
+index 680afbe..0ee9aa7 100755
 --- a/syncoid
 +++ b/syncoid
 @@ -51,15 +51,17 @@ if (length $args{'sendoptions'}) {
@@ -33,17 +27,122 @@ index 680afbe..e3bfe10 100755
  }
  
  my @recvoptions = ();
-@@ -797,6 +799,9 @@ sub syncdataset {
- 		my $hostid = hostname();
- 		my $matchingsnapescaped = escapeshellparam($matchingsnap);
- 		my $holdname = "syncoid\_$identifier$hostid";
-+		if (defined $args{'native-recursion'}) {
-+			$holdname = "-r $holdname";
-+		}
- 		if ($sourcehost ne '') {
- 			$holdcmd = "$sshcmd $sourcehost " . escapeshellparam("$sourcesudocmd $zfscmd hold $holdname $sourcefsescaped\@$newsyncsnapescaped");
- 			$holdreleasecmd = "$sshcmd $sourcehost " . escapeshellparam("$sourcesudocmd $zfscmd release $holdname $sourcefsescaped\@$matchingsnapescaped");
-@@ -1749,7 +1754,11 @@ sub newsyncsnap {
+@@ -342,7 +344,6 @@ sub syncdataset {
+ 	my $stdout;
+ 	my $exit;
+ 
+-	my $sourcefsescaped = escapeshellparam($sourcefs);
+ 	my $targetfsescaped = escapeshellparam($targetfs);
+ 
+ 	# if no rollbacks are allowed, disable forced receive
+@@ -411,6 +412,12 @@ sub syncdataset {
+ 	my $newsyncsnap;
+ 	my $matchingsnap;
+ 
++	my $hostid = hostname();
++	my $holdname = "syncoid\_$identifier$hostid";
++	if (defined $args{'native-recursion'}) {
++		$holdname = "-r $holdname";
++	}
++
+ 	# skip snapshot checking/creation in case of resumed receive
+ 	if (!defined($receivetoken)) {
+ 		# build hashes of the snaps on the source and target filesystems.
+@@ -455,7 +462,12 @@ sub syncdataset {
+ 			}
+ 		}
+ 	}
+-	my $newsyncsnapescaped = escapeshellparam($newsyncsnap);
++
++	if ($newsyncsnap && defined $args{'use-hold'}) {
++		# Hold the new snapshot before we start syncing, to ensure it's not deleted
++		# before we have a chance to hold it.
++		runholdcmd($sourcehost, $sourcesudocmd, $sourcefs, $newsyncsnap, "hold", $holdname);
++	}
+ 
+ 	# there is currently (2014-09-01) a bug in ZFS on Linux
+ 	# that causes readonly to always show on if it's EVER
+@@ -665,8 +677,6 @@ sub syncdataset {
+ 			writelog('INFO', "no snapshots on source newer than $newsyncsnap on target. Nothing to do, not syncing.");
+ 			return 0;
+ 		} else {
+-			my $matchingsnapescaped = escapeshellparam($matchingsnap);
+-
+ 			my $nextsnapshot = 0;
+ 
+ 			if ($bookmark) {
+@@ -703,7 +713,6 @@ sub syncdataset {
+ 					};
+ 
+ 					$matchingsnap = $nextsnapshot;
+-					$matchingsnapescaped = escapeshellparam($matchingsnap);
+ 				} else {
+ 					($exit, $stdout) = syncbookmark($sourcehost, $sourcefs, $targethost, $targetfs, $bookmark, $newsyncsnap);
+ 
+@@ -792,37 +801,14 @@ sub syncdataset {
+ 	# if "--use-hold" parameter is used set hold on newsync snapshot and remove hold on matching snapshot both on source and target
+ 	# hold name: "syncoid" + identifier + hostname -> in case of replication to multiple targets separate holds can be set for each target by assinging different identifiers to each target. Only if all targets have been replicated all syncoid holds are removed from the matching snapshot and it can be removed
+ 	if (defined $args{'use-hold'}) {
+-		my $holdcmd;
+-		my $holdreleasecmd;
+-		my $hostid = hostname();
+-		my $matchingsnapescaped = escapeshellparam($matchingsnap);
+-		my $holdname = "syncoid\_$identifier$hostid";
+-		if ($sourcehost ne '') {
+-			$holdcmd = "$sshcmd $sourcehost " . escapeshellparam("$sourcesudocmd $zfscmd hold $holdname $sourcefsescaped\@$newsyncsnapescaped");
+-			$holdreleasecmd = "$sshcmd $sourcehost " . escapeshellparam("$sourcesudocmd $zfscmd release $holdname $sourcefsescaped\@$matchingsnapescaped");
+-		} else {
+-			$holdcmd = "$sourcesudocmd $zfscmd hold $holdname $sourcefsescaped\@$newsyncsnapescaped";
+-			$holdreleasecmd = "$sourcesudocmd $zfscmd release $holdname $sourcefsescaped\@$matchingsnapescaped";
+-		}
+-		writelog('DEBUG', "Set new hold on source: $holdcmd");
+-		system($holdcmd) == 0 or warn "WARNING: $holdcmd failed: $?";
+ 		# Do hold release only if matchingsnap exists
+ 		if ($matchingsnap) {
+-			writelog('DEBUG', "Release old hold on source: $holdreleasecmd");
+-			system($holdreleasecmd) == 0 or warn "WARNING: $holdreleasecmd failed: $?";
++			runholdcmd($sourcehost, $sourcesudocmd, $sourcefs, $matchingsnap, "release", $holdname);
+ 		}
+-		if ($targethost ne '') {
+-			$holdcmd = "$sshcmd $targethost " . escapeshellparam("$targetsudocmd $zfscmd hold $holdname $targetfsescaped\@$newsyncsnapescaped");
+-			$holdreleasecmd = "$sshcmd $targethost " . escapeshellparam("$targetsudocmd $zfscmd release $holdname $targetfsescaped\@$matchingsnapescaped");
+-		} else {
+-			$holdcmd = "$targetsudocmd $zfscmd hold $holdname $targetfsescaped\@$newsyncsnapescaped";				$holdreleasecmd = "$targetsudocmd $zfscmd release $holdname $targetfsescaped\@$matchingsnapescaped";
+-		}
+-		writelog('DEBUG', "Set new hold on target: $holdcmd");
+-		system($holdcmd) == 0 or warn "WARNING: $holdcmd failed: $?";
++		runholdcmd($targethost, $targetsudocmd, $targetfs, $newsyncsnap, "hold", $holdname);
+ 		# Do hold release only if matchingsnap exists
+ 		if ($matchingsnap) {
+-			writelog('DEBUG', "Release old hold on target: $holdreleasecmd");
+-			system($holdreleasecmd) == 0 or warn "WARNING: $holdreleasecmd failed: $?";
++			runholdcmd($targethost, $targetsudocmd, $targetfs, $matchingsnap, "release", $holdname);
+ 		}
+ 	}
+ 	if (defined $args{'no-sync-snap'}) {
+@@ -885,6 +871,21 @@ sub syncdataset {
+ 
+ } # end syncdataset()
+ 
++sub runholdcmd {
++	my ($host, $sudocmd, $fs, $snap, $action, $holdname) = @_;
++
++	my $fsescaped = escapeshellparam($fs);
++	my $snapescaped = escapeshellparam($snap);
++
++	my $holdcmd = "$sudocmd $zfscmd $action $holdname $fsescaped\@$snapescaped";
++
++	if ($host ne '') {
++		$holdcmd = "$sshcmd $sourcehost " . escapeshellparam($holdcmd);
++	}
++	writelog('DEBUG', "Modify hold: $holdcmd");
++	system($holdcmd) == 0 or warn "WARNING: $holdcmd failed: $?";
++}
++
+ # Return codes:
+ #  0 - ZFS send/receive completed without errors
+ #  1 - ZFS target is currently in receive
+@@ -1749,7 +1750,11 @@ sub newsyncsnap {
  	my $hostid = hostname();
  	my %date = getdate();
  	my $snapname = "syncoid\_$identifier$hostid\_$date{'stamp'}";

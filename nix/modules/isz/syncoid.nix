@@ -47,7 +47,7 @@ in {
           #"--create-bookmark"
           #"--force-delete"
         ];
-        sendOptions = "Rw X ${name}/nix";
+        sendOptions = "Rwh X ${name}/nix";
         recvOptions = "v u o canmount=off o secondarycache=none o mountpoint=/srv/backup/${config.networking.hostName}/${name} o com.sun:auto-snapshot=false o readonly=on";
         source = name;
         target = "syncoid-${config.networking.hostName}@heartofgold.mgmt.isz.wtf:zpool/backup/${config.networking.hostName}/${name}";
