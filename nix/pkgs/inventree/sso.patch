@@ -1,27 +1,27 @@
-commit ffb24b3675d460afa58702205518195681b3422c
+commit 8a3aba84d90fc0adc13899a96c422940bd1693e9
 Author: Quentin Smith <quentin@mit.edu>
 Date:   Thu Apr 3 01:27:28 2025 -0400
 
     Support config.yaml SSO apps
 
 diff --git a/inventree-src/src/backend/InvenTree/InvenTree/auth_overrides.py b/inventree-src/src/backend/InvenTree/InvenTree/auth_overrides.py
-index 9b2387983..dea294e74 100644
+index 9a223dd2f..2d01e15e3 100644
 --- a/inventree-src/src/backend/InvenTree/InvenTree/auth_overrides.py
 +++ b/inventree-src/src/backend/InvenTree/InvenTree/auth_overrides.py
-@@ -91,7 +91,7 @@ def registration_enabled():
-         get_global_setting('LOGIN_ENABLE_REG')
-         or InvenTree.sso.sso_registration_enabled()
-     ):
+@@ -93,7 +93,7 @@ RegistrationKeys = Literal['LOGIN_ENABLE_REG', 'LOGIN_ENABLE_SSO_REG']
+ def registration_enabled(setting_name: RegistrationKeys = 'LOGIN_ENABLE_REG'):
+     """Determine whether user registration is enabled."""
+     if str2bool(get_global_setting(setting_name)):
 -        if is_email_configured():
 +        if is_email_configured() or not get_global_setting('LOGIN_ENABLE_PWD_FORGOT'):
              return True
          else:
              logger.warning(
 diff --git a/inventree-src/src/backend/InvenTree/InvenTree/sso.py b/inventree-src/src/backend/InvenTree/InvenTree/sso.py
-index c1842d70d..6c74afc6a 100644
+index 05bacaf38..0740952a6 100644
 --- a/inventree-src/src/backend/InvenTree/InvenTree/sso.py
 +++ b/inventree-src/src/backend/InvenTree/InvenTree/sso.py
-@@ -18,20 +18,19 @@ logger = structlog.get_logger('inventree')
+@@ -17,20 +17,19 @@ logger = structlog.get_logger('inventree')
  def get_provider_app(provider):
      """Return the SocialApp object for the given provider."""
      from allauth.socialaccount.models import SocialApp

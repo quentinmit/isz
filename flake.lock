@@ -449,6 +449,24 @@
         "type": "github"
       }
     },
+    "flake-parts_5": {
+      "inputs": {
+        "nixpkgs-lib": "nixpkgs-lib_4"
+      },
+      "locked": {
+        "lastModified": 1769996383,
+        "narHash": "sha256-AnYjnFWgS49RlqX7LrC4uA+sCCDBj0Ry/WOJ5XWAsa0=",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "rev": "57928607ea566b5db3ad13af0e57e921e6b12381",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1667395993,
@@ -585,6 +603,21 @@
         "owner": "nix-community",
         "ref": "release-25.11",
         "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "import-tree": {
+      "locked": {
+        "lastModified": 1771045967,
+        "narHash": "sha256-oYO4poyw0Sb/db2PigqugMlDwsvwLg6CSpFrMUWxA3Q=",
+        "owner": "vic",
+        "repo": "import-tree",
+        "rev": "c968d3b54d12cf5d9c13f16f7c545a06c9d1fde6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "vic",
+        "repo": "import-tree",
         "type": "github"
       }
     },
@@ -784,9 +817,8 @@
     },
     "nixos-inventree": {
       "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
+        "flake-parts": "flake-parts_5",
+        "import-tree": "import-tree",
         "nixpkgs": [
           "unstable"
         ],
@@ -796,16 +828,16 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1770259676,
-        "narHash": "sha256-NNR0J7l+8p7X+XnDWGKBy+7VZ3fNBlpbvr/XxN2UKYI=",
+        "lastModified": 1772099540,
+        "narHash": "sha256-YS39vt+Vfwn+I/BVIneBm4XSDlgnaKHe0ubY/1yHjTA=",
         "owner": "quentinmit",
         "repo": "nixos-inventree",
-        "rev": "944488fb107cac5e101c105a5e3cf2ac8d59bd32",
+        "rev": "df23c3180f6568eb60e9d73d74ebd69e0c1a689f",
         "type": "github"
       },
       "original": {
         "owner": "quentinmit",
-        "ref": "isz",
+        "ref": "overlay",
         "repo": "nixos-inventree",
         "type": "github"
       }
@@ -922,6 +954,21 @@
         "owner": "NixOS",
         "ref": "nixos-unstable",
         "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-lib_4": {
+      "locked": {
+        "lastModified": 1769909678,
+        "narHash": "sha256-cBEymOf4/o3FD5AZnzC3J9hLbiZ+QDT/KDuyHXVJOpM=",
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "rev": "72716169fe93074c333e8d0173151350670b824c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
         "type": "github"
       }
     },

@@ -4,30 +4,34 @@
     nixos-inventree.nixosModules.default
   ];
   config = {
-    nixpkgs.overlays = [(final: prev: {
-      inventree = prev.inventree.overrideScope (it-final: it-prev: {
-        src = it-prev.src.overrideAttrs (old: {
-          patches = (old.patches or []) ++ [
-            ../nix/pkgs/inventree/sso.patch
+    nixpkgs.overlays = [
+      nixos-inventree.overlays.default
+      (final: prev: {
+        inventree = prev.inventree.overrideScope (it-final: it-prev: {
+          src = it-prev.src.overrideAttrs (old: {
+            patches = (old.patches or []) ++ [
+              ../nix/pkgs/inventree/sso.patch
+            ];
+          });
+          workspace = it-prev.workspace // {
+            deps.default = it-prev.workspace.deps.default // {
+              psycopg2 = [ ];
+            };
+          };
+          packageOverrides = final.lib.composeManyExtensions [
+            it-prev.packageOverrides
+            (final: prev: {
+              psycopg2 = final.hacks.nixpkgsPrebuilt {
+                from = final.python.pkgs.psycopg2;
+              };
+            })
           ];
         });
-        workspace = it-prev.workspace // {
-          deps.default = it-prev.workspace.deps.default // {
-            psycopg2 = [ ];
-          };
-        };
-        packageOverrides = final.lib.composeManyExtensions [
-          it-prev.packageOverrides
-          (final: prev: {
-            psycopg2 = final.hacks.nixpkgsPrebuilt {
-              from = final.python.pkgs.psycopg2;
-            };
-          })
-        ];
-      });
-    })];
+      })
+    ];
     services.inventree = {
       enable = true;
+      packages = pkgs.inventree;
       serverBind = "unix:/run/inventree/inventree.sock";
       config = {
         database = {
