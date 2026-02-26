@@ -1,5 +1,5 @@
 diff --git a/syncoid b/syncoid
-index 680afbe..0ee9aa7 100755
+index 680afbe..dcfc40a 100755
 --- a/syncoid
 +++ b/syncoid
 @@ -51,15 +51,17 @@ if (length $args{'sendoptions'}) {
@@ -133,7 +133,7 @@ index 680afbe..0ee9aa7 100755
 +	my $holdcmd = "$sudocmd $zfscmd $action $holdname $fsescaped\@$snapescaped";
 +
 +	if ($host ne '') {
-+		$holdcmd = "$sshcmd $sourcehost " . escapeshellparam($holdcmd);
++		$holdcmd = "$sshcmd $host " . escapeshellparam($holdcmd);
 +	}
 +	writelog('DEBUG', "Modify hold: $holdcmd");
 +	system($holdcmd) == 0 or warn "WARNING: $holdcmd failed: $?";
