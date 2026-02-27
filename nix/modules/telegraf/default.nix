@@ -214,7 +214,7 @@ in {
             smart = lib.mkIf cfg.smart.enable [{
               path_smartctl = lib.mkIf (cfg.smart.smartctl != null) cfg.smart.smartctl;
               path_nvme = lib.mkIf (cfg.smart.nvme != null) cfg.smart.nvme;
-              excludes = cfg.smart.excludes;
+              inherit (cfg.smart) excludes;
               attributes = true;
             }];
             swap = [{}];
