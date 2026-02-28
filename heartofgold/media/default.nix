@@ -1,8 +1,9 @@
 {
   imports = [
-    ./container.nix
     ./bitmagnet.nix
-    ./transmission.nix
+    ./container.nix
+    ./nginx.nix
     ./sonarr.nix
+    ./transmission.nix
   ];
 }

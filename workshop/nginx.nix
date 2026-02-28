@@ -21,6 +21,7 @@
       upstreams.zwave.servers."127.0.0.1:8091" = {};
       upstreams.dashboard.servers."127.0.0.1:8080" = {};
       upstreams.jellyfin.servers."172.30.96.${toString self.nixosConfigurations.heartofgold.config.isz.networking.lastOctet}:8096" = {};
+      upstreams.arr.servers."172.30.96.${toString self.nixosConfigurations.heartofgold.config.isz.networking.lastOctet}:443" = {};
       virtualHosts = {
         "workshop.isz.wtf" = {
           serverAliases = [
@@ -112,6 +113,20 @@
             proxyWebsockets = true;
             extraConfig = ''
               proxy_buffering off;
+            '';
+          };
+        };
+        "arr.isz.wtf" = {
+          forceSSL = true;
+          enableACME = true;
+          acmeFallbackHost = "heartofgold.isz.wtf";
+          locations."/" = {
+            proxyPass = "https://arr";
+            proxyWebsockets = true;
+            extraConfig = ''
+              proxy_buffering off;
+              proxy_ssl_server_name on;
+              proxy_ssl_name $ssl_server_name;
             '';
           };
         };
