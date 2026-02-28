@@ -10,8 +10,7 @@
     ./quentin.nix
     ./openvpn
     ./jellyfin.nix
-    ./containers.nix
-    ./bitmagnet
+    ./media
     ./backup.nix
     disko.nixosModules.disko
   ];
