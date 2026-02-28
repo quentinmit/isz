@@ -15,6 +15,7 @@ in {
         group = "users";
         settings = {
           rpc-bind-address = "unix:/var/lib/transmission/rpc.sock";
+          rpc-socket-mode = "0770";
           umask = "002";
           download-dir = "/srv/media/media1e/Torrents";
           incomplete-dir = "/srv/media/media1e/Torrents/.incomplete";
@@ -52,4 +53,14 @@ in {
       PrivateNetwork = "yes";
     };
   };
+  services.nginx = {
+    upstreams.transmission.servers."unix:/var/lib/nixos-containers/rtorrent/var/lib/transmission/rpc.sock" = {};
+    virtualHosts."arr.isz.wtf".locations."/transmission" = {
+      proxyPass = "http://transmission";
+      proxyWebsockets = true;
+      extraConfig = config.services.nginx.virtualHosts."arr.isz.wtf".locations."/".extraConfig;
+    };
+  };
+  # Give nginx permission to talk to the socket
+  systemd.services.nginx.serviceConfig.SupplementaryGroups = ["users"];
 }
