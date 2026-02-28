@@ -58,7 +58,10 @@
     vlan88 = true;
   };
 
-  networking.firewall.enable = false;
+  networking = {
+    nftables.enable = true;
+    firewall.enable = false;
+  };
   networking.networkmanager.enable = false;
 
   services.smartd.enable = true;

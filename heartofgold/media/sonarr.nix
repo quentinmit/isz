@@ -8,6 +8,7 @@
       postgres.maindb = "sonarr";
       log.dbenabled = false;
       server.urlbase = "/sonarr";
+      auth.method = "External";
     };
   };
   services.postgresql = {
@@ -24,4 +25,5 @@
       extraConfig = config.services.nginx.virtualHosts."arr.isz.wtf".locations."/".extraConfig;
     };
   };
+  systemd.services.sonarr.serviceConfig.NFTSet = ["cgroup:inet:arr:cg_arr"];
 }
