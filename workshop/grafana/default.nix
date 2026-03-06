@@ -11,6 +11,9 @@
     sops.secrets."grafana/influxql_password" = {
       owner = config.systemd.services.grafana.serviceConfig.User;
     };
+    sops.secrets."grafana/secret_key" = {
+      owner = config.systemd.services.grafana.serviceConfig.User;
+    };
 
     isz.grafana.datasources = {
       workshop = {
@@ -86,6 +89,7 @@
         dataproxy.timeout = 300;
         plugins.allow_loading_unsigned_plugins = "operato-windrose-panel";
         news.news_feed_enabled = false;
+        security.secret_key = "$__file{${config.sops.secrets."grafana/secret_key".path}}";
       };
       declarativePlugins = with pkgs.grafanaPlugins; [
         fetzerch-sunandmoon-datasource
