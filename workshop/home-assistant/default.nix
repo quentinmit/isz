@@ -176,6 +176,7 @@ in {
           use_x_forwarded_for = true;
         };
         lovelace = {
+          resource_mode = "yaml";
           dashboards = lib.mapAttrs (name: content: {
             mode = "yaml";
             title = content.sidebar_title;
@@ -183,7 +184,16 @@ in {
             filename = dashboardFormat.generate "${name}.yaml" {
               inherit (content) title views;
             };
-          }) config.services.home-assistant.dashboards;
+          }) config.services.home-assistant.dashboards //
+          {
+            lovelace = {
+              mode = "yaml";
+              filename = "ui-lovelace.yaml";
+              title = "Overview";
+              icon = "mdi:view-dashboard";
+              show_in_sidebar = true;
+            };
+          };
         };
         pyscript = {
           allow_all_imports = true;

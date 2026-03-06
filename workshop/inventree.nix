@@ -1,13 +1,12 @@
-{ config, lib, pkgs, nixos-inventree, ... }:
+{ config, options, lib, pkgs, nixos-inventree, ... }:
 {
   imports = [
     nixos-inventree.nixosModules.default
   ];
   config = {
-    nixpkgs.overlays = [
-      nixos-inventree.overlays.default
-      (final: prev: {
-        inventree = prev.inventree.overrideScope (it-final: it-prev: {
+    services.inventree = {
+      enable = true;
+      packages = options.services.inventree.packages.default.overrideScope (it-final: it-prev: {
           src = it-prev.src.overrideAttrs (old: {
             patches = (old.patches or []) ++ [
               ../nix/pkgs/inventree/sso.patch
@@ -18,20 +17,20 @@
               psycopg2 = [ ];
             };
           };
-          packageOverrides = final.lib.composeManyExtensions [
+          packageOverrides = lib.composeManyExtensions [
             it-prev.packageOverrides
             (final: prev: {
               psycopg2 = final.hacks.nixpkgsPrebuilt {
                 from = final.python.pkgs.psycopg2;
               };
+              # nixos-inventree uses weasyprint from nixpkgs, but that now requires a newer tinycss2.
+              # Until nixos-inventree has been updated, we inject a nixpkgs tinycss2 to match.
+              tinycss2 = final.hacks.nixpkgsPrebuilt {
+                from = final.python.pkgs.tinycss2;
+              };
             })
           ];
         });
-      })
-    ];
-    services.inventree = {
-      enable = true;
-      packages = pkgs.inventree;
       serverBind = "unix:/run/inventree/inventree.sock";
       config = {
         database = {

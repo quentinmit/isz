@@ -62,7 +62,7 @@
     gradle2nix.inputs.nixpkgs.follows = "nixpkgs";
     gradle2nix.inputs.flake-utils.follows = "flake-utils";
     oom-hardware.url = "github:robertjakub/oom-hardware/main";
-    nixos-inventree.url = "github:quentinmit/nixos-inventree/overlay";
+    nixos-inventree.url = "github:Gigahawk/nixos-inventree";
     nixos-inventree.inputs.nixpkgs.follows = "unstable";
     chemacs2nix.url = "github:league/chemacs2nix";
     chemacs2nix.inputs.home-manager.follows = "home-manager";

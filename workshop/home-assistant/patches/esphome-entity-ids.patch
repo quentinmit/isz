@@ -1,5 +1,5 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index b4a6a874769..f1c30a46fd7 100644
+index b4a6a874769..330da7fe5b3 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
 @@ -29,6 +29,7 @@ from homeassistant.helpers import (
@@ -94,9 +94,9 @@ index b4a6a874769..f1c30a46fd7 100644
 +            # - Device name is not prepended to entity ids
 +            # - Entity id is constructed from entity name
 +            #
-+            self.entity_id = f"{domain}.{entity_info.object_id}"
++            self.entity_id = f"{domain}.{slugify(entity_info.object_id)}"
 +        elif entity_info.name:
-+            self.entity_id = f"{domain}.{device_name}_{entity_info.object_id}"
++            self.entity_id = f"{domain}.{slugify(device_name)}_{slugify(entity_info.object_id)}"
 +        else:
 +            # https://github.com/home-assistant/core/issues/132532
 +            # If name is not set, ESPHome will use the sanitized friendly name
@@ -104,7 +104,7 @@ index b4a6a874769..f1c30a46fd7 100644
 +            # as the entity_id before it is sanitized since the sanitizer
 +            # is not utf-8 aware. In this case, its always going to be
 +            # an empty string so we drop the object_id.
-+            self.entity_id = f"{domain}.{device_name}"
++            self.entity_id = f"{domain}.{slugify(device_name)}"
  
      async def async_added_to_hass(self) -> None:
          """Register callbacks."""
@@ -118,10 +118,10 @@ index b4a6a874769..f1c30a46fd7 100644
          """Initialize the binary sensor."""
          self._entry_data = entry_data
 diff --git a/homeassistant/components/esphome/manager.py b/homeassistant/components/esphome/manager.py
-index dee08e7ab00..827fc170c10 100644
+index 87b7ec3361e..c70f1396051 100644
 --- a/homeassistant/components/esphome/manager.py
 +++ b/homeassistant/components/esphome/manager.py
-@@ -639,15 +639,6 @@ class ESPHomeManager:
+@@ -645,15 +645,6 @@ class ESPHomeManager:
          if device_info.name:
              reconnect_logic.name = device_info.name
  
@@ -137,7 +137,7 @@ index dee08e7ab00..827fc170c10 100644
          # Build device_id_to_name mapping for efficient lookup
          entry_data.device_id_to_name = {
              sub_device.device_id: sub_device.name or device_info.name
-@@ -1054,7 +1045,7 @@ def _async_setup_device_registry(
+@@ -1060,7 +1051,7 @@ def _async_setup_device_registry(
          config_entry_id=entry.entry_id,
          configuration_url=configuration_url,
          connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)},
@@ -2119,10 +2119,10 @@ index 53639353f59..0b69826c181 100644
      )
      mock_client.lock_command.assert_has_calls([call(1, LockCommand.OPEN, device_id=0)])
 diff --git a/tests/components/esphome/test_manager.py b/tests/components/esphome/test_manager.py
-index 034993a818e..7f51a420eae 100644
+index ef22b018d64..2a1350bd81c 100644
 --- a/tests/components/esphome/test_manager.py
 +++ b/tests/components/esphome/test_manager.py
-@@ -1890,10 +1890,6 @@ async def test_device_adds_friendly_name(
+@@ -1892,10 +1892,6 @@ async def test_device_adds_friendly_name(
          connections={(dr.CONNECTION_NETWORK_MAC, device.entry.unique_id)}
      )
      assert dev.name == "Nofriendlyname"
@@ -2330,10 +2330,10 @@ index 02b58649fec..b0ef353086c 100644
          )
      mock_client.number_command.reset_mock()
 diff --git a/tests/components/esphome/test_repairs.py b/tests/components/esphome/test_repairs.py
-index f64cb806950..4c62d46b50e 100644
+index 7b83ed894bb..8997d713af0 100644
 --- a/tests/components/esphome/test_repairs.py
 +++ b/tests/components/esphome/test_repairs.py
-@@ -150,12 +150,12 @@ async def test_device_conflict_migration(
+@@ -136,12 +136,12 @@ async def test_device_conflict_migration(
          user_service=user_service,
          states=states,
      )
@@ -2348,7 +2348,7 @@ index f64cb806950..4c62d46b50e 100644
      assert ent_reg_entry
      assert ent_reg_entry.unique_id == "11:22:33:44:55:AA-binary_sensor-mybinary_sensor"
      entries = er.async_entries_for_config_entry(
-@@ -232,7 +232,7 @@ async def test_device_conflict_migration(
+@@ -204,7 +204,7 @@ async def test_device_conflict_migration(
      assert issue_registry.async_get_issue(DOMAIN, issue_id) is None
  
      assert mock_config_entry.unique_id == "11:22:33:44:55:ab"
@@ -2379,7 +2379,7 @@ index 7de4dcd6aca..ec56c033f23 100644
      )
      mock_client.select_command.assert_has_calls([call(1, "b", device_id=0)])
 diff --git a/tests/components/esphome/test_sensor.py b/tests/components/esphome/test_sensor.py
-index 6d3d59b9b4a..91981cff362 100644
+index 31d7bb30abb..dc6cdb8eac6 100644
 --- a/tests/components/esphome/test_sensor.py
 +++ b/tests/components/esphome/test_sensor.py
 @@ -64,35 +64,35 @@ async def test_generic_numeric_sensor(
@@ -2437,7 +2437,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert entry is not None
      # Note that ESPHome includes the EntityInfo type in the unique id
      # as this is not a 1:1 mapping to the entity platform (ie. text_sensor)
-@@ -158,11 +158,11 @@ async def test_generic_numeric_sensor_state_class_measurement(
+@@ -158,13 +158,13 @@ async def test_generic_numeric_sensor_state_class_measurement(
          user_service=user_service,
          states=states,
      )
@@ -2446,12 +2446,29 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == "50"
      assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.POWER
+     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfPower.WATT
 -    entry = entity_registry.async_get("sensor.test_my_sensor")
 +    entry = entity_registry.async_get("sensor.test_mysensor")
      assert entry is not None
      # Note that ESPHome includes the EntityInfo type in the unique id
      # as this is not a 1:1 mapping to the entity platform (ie. text_sensor)
-@@ -192,7 +192,7 @@ async def test_generic_numeric_sensor_device_class_timestamp(
+@@ -196,12 +196,12 @@ async def test_generic_numeric_sensor_state_class_measurement_angle(
+         user_service=user_service,
+         states=states,
+     )
+-    state = hass.states.get("sensor.test_my_sensor")
++    state = hass.states.get("sensor.test_mysensor")
+     assert state is not None
+     assert state.state == "50"
+     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT_ANGLE
+     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == "°"
+-    entry = entity_registry.async_get("sensor.test_my_sensor")
++    entry = entity_registry.async_get("sensor.test_mysensor")
+     assert entry is not None
+     # Note that ESPHome includes the EntityInfo type in the unique id
+     # as this is not a 1:1 mapping to the entity platform (ie. text_sensor)
+@@ -231,7 +231,7 @@ async def test_generic_numeric_sensor_device_class_timestamp(
          user_service=user_service,
          states=states,
      )
@@ -2460,7 +2477,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == "2023-06-22T18:43:52+00:00"
  
-@@ -220,7 +220,7 @@ async def test_generic_numeric_sensor_legacy_last_reset_convert(
+@@ -259,7 +259,7 @@ async def test_generic_numeric_sensor_legacy_last_reset_convert(
          user_service=user_service,
          states=states,
      )
@@ -2469,7 +2486,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == "50"
      assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL_INCREASING
-@@ -247,7 +247,7 @@ async def test_generic_numeric_sensor_no_state(
+@@ -286,7 +286,7 @@ async def test_generic_numeric_sensor_no_state(
          user_service=user_service,
          states=states,
      )
@@ -2478,7 +2495,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -273,7 +273,7 @@ async def test_generic_numeric_sensor_nan_state(
+@@ -312,7 +312,7 @@ async def test_generic_numeric_sensor_nan_state(
          user_service=user_service,
          states=states,
      )
@@ -2487,7 +2504,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -299,7 +299,7 @@ async def test_generic_numeric_sensor_missing_state(
+@@ -338,7 +338,7 @@ async def test_generic_numeric_sensor_missing_state(
          user_service=user_service,
          states=states,
      )
@@ -2496,7 +2513,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -325,7 +325,7 @@ async def test_generic_text_sensor(
+@@ -364,7 +364,7 @@ async def test_generic_text_sensor(
          user_service=user_service,
          states=states,
      )
@@ -2505,7 +2522,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == "i am a teapot"
  
-@@ -351,7 +351,7 @@ async def test_generic_text_sensor_missing_state(
+@@ -390,7 +390,7 @@ async def test_generic_text_sensor_missing_state(
          user_service=user_service,
          states=states,
      )
@@ -2514,7 +2531,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -378,7 +378,7 @@ async def test_generic_text_sensor_device_class_timestamp(
+@@ -417,7 +417,7 @@ async def test_generic_text_sensor_device_class_timestamp(
          user_service=user_service,
          states=states,
      )
@@ -2523,7 +2540,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == "2023-06-22T18:43:52+00:00"
      assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TIMESTAMP
-@@ -406,7 +406,7 @@ async def test_generic_text_sensor_device_class_date(
+@@ -445,7 +445,7 @@ async def test_generic_text_sensor_device_class_date(
          user_service=user_service,
          states=states,
      )
@@ -2532,7 +2549,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == "2023-06-22"
      assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.DATE
-@@ -434,7 +434,7 @@ async def test_generic_numeric_sensor_empty_string_uom(
+@@ -473,7 +473,7 @@ async def test_generic_numeric_sensor_empty_string_uom(
          user_service=user_service,
          states=states,
      )
@@ -2541,7 +2558,7 @@ index 6d3d59b9b4a..91981cff362 100644
      assert state is not None
      assert state.state == "123"
      assert ATTR_UNIT_OF_MEASUREMENT not in state.attributes
-@@ -492,8 +492,8 @@ async def test_suggested_display_precision_by_device_class(
+@@ -531,8 +531,8 @@ async def test_suggested_display_precision_by_device_class(
          states=states,
      )
  
