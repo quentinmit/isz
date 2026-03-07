@@ -7,7 +7,7 @@
 }:
 let
   owner = "Pirate-Weather";
-  version = "1.7.7";
+  version = "1.8.4";
 in buildHomeAssistantComponent {
   inherit owner version;
   domain = "pirateweather";
@@ -16,7 +16,7 @@ in buildHomeAssistantComponent {
     inherit owner;
     repo = "pirate-weather-ha";
     tag = "v${version}";
-    hash = "sha256-okP2mtYB1IZqzG4sJR1nDu/H0XlkVd52iasrdrcAYWU=";
+    hash = "sha256-rGjpjO4Jnm1SuQBiqhzb80lNonUKmX0tkAL+DhLxMnw=";
   };
 
   dependencies = [
