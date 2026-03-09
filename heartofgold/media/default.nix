@@ -42,6 +42,7 @@ in {
     ./nftables.nix
     ./nginx.nix
     ./transmission.nix
+    (mkArr "radarr")
     (mkArr "sonarr")
     (mkArr "prowlarr")
   ];
