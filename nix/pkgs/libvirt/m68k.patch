@@ -1,0 +1,191 @@
+diff --git a/src/conf/domain_conf.c b/src/conf/domain_conf.c
+index 8090becdcf..a30a4f6aa4 100644
+--- a/src/conf/domain_conf.c
++++ b/src/conf/domain_conf.c
+@@ -901,6 +901,7 @@ VIR_ENUM_IMPL(virDomainVideo,
+               "none",
+               "bochs",
+               "ramfb",
++              "nubus-macfb",
+ );
+ 
+ VIR_ENUM_IMPL(virDomainVideoVGAConf,
+@@ -13701,6 +13702,7 @@ virDomainVideoDefaultRAM(const virDomainDef *def,
+     case VIR_DOMAIN_VIDEO_TYPE_GOP:
+     case VIR_DOMAIN_VIDEO_TYPE_NONE:
+     case VIR_DOMAIN_VIDEO_TYPE_RAMFB:
++    case VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB:
+     case VIR_DOMAIN_VIDEO_TYPE_LAST:
+     default:
+         return 0;
+diff --git a/src/conf/domain_conf.h b/src/conf/domain_conf.h
+index e63230beec..defb692e8c 100644
+--- a/src/conf/domain_conf.h
++++ b/src/conf/domain_conf.h
+@@ -1864,6 +1864,7 @@ typedef enum {
+     VIR_DOMAIN_VIDEO_TYPE_NONE,
+     VIR_DOMAIN_VIDEO_TYPE_BOCHS,
+     VIR_DOMAIN_VIDEO_TYPE_RAMFB,
++    VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB,
+ 
+     VIR_DOMAIN_VIDEO_TYPE_LAST
+ } virDomainVideoType;
+diff --git a/src/libxl/libxl_conf.c b/src/libxl/libxl_conf.c
+index 2b988157fa..212f237835 100644
+--- a/src/libxl/libxl_conf.c
++++ b/src/libxl/libxl_conf.c
+@@ -2472,6 +2472,7 @@ libxlMakeVideo(virDomainDef *def, libxl_domain_config *d_config)
+         case VIR_DOMAIN_VIDEO_TYPE_NONE:
+         case VIR_DOMAIN_VIDEO_TYPE_BOCHS:
+         case VIR_DOMAIN_VIDEO_TYPE_RAMFB:
++        case VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB:
+         case VIR_DOMAIN_VIDEO_TYPE_LAST:
+         default:
+             virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+diff --git a/src/libxl/libxl_domain.c b/src/libxl/libxl_domain.c
+index c6717e31cf..86977006f1 100644
+--- a/src/libxl/libxl_domain.c
++++ b/src/libxl/libxl_domain.c
+@@ -216,6 +216,7 @@ libxlDomainDeviceDefPostParse(virDomainDeviceDef *dev,
+                 case VIR_DOMAIN_VIDEO_TYPE_NONE:
+                 case VIR_DOMAIN_VIDEO_TYPE_BOCHS:
+                 case VIR_DOMAIN_VIDEO_TYPE_RAMFB:
++                case VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB:
+                 case VIR_DOMAIN_VIDEO_TYPE_LAST:
+                     break;
+             }
+diff --git a/src/qemu/qemu_capabilities.c b/src/qemu/qemu_capabilities.c
+index 5d75c23072..3bd939fe20 100644
+--- a/src/qemu/qemu_capabilities.c
++++ b/src/qemu/qemu_capabilities.c
+@@ -762,6 +762,9 @@ VIR_ENUM_IMPL(virQEMUCaps,
+               "scsi-block.migrate-pr", /* QEMU_CAPS_DEVICE_SCSI_BLOCK_MIGRATE_PR */
+               "iommufd", /* QEMU_CAPS_OBJECT_IOMMUFD */
+               "uefi-vars", /* QEMU_CAPS_DEVICE_UEFI_VARS */
++
++              /* 495 */
++              "nubus-macfb", /* QEMU_CAPS_DEVICE_NUBUS_MACFB */
+     );
+ 
+ 
+@@ -1472,6 +1475,7 @@ struct virQEMUCapsStringFlags virQEMUCapsObjectTypes[] = {
+     { "iommufd", QEMU_CAPS_OBJECT_IOMMUFD },
+     { "uefi-vars-x64", QEMU_CAPS_DEVICE_UEFI_VARS },
+     { "uefi-vars-sysbus", QEMU_CAPS_DEVICE_UEFI_VARS },
++    { "nubus-macfb", QEMU_CAPS_DEVICE_NUBUS_MACFB },
+ };
+ 
+ 
+@@ -6808,6 +6812,8 @@ virQEMUCapsFillDomainDeviceVideoCaps(virQEMUCaps *qemuCaps,
+         VIR_DOMAIN_CAPS_ENUM_SET(dev->modelType, VIR_DOMAIN_VIDEO_TYPE_BOCHS);
+     if (virQEMUCapsGet(qemuCaps, QEMU_CAPS_DEVICE_RAMFB))
+         VIR_DOMAIN_CAPS_ENUM_SET(dev->modelType, VIR_DOMAIN_VIDEO_TYPE_RAMFB);
++    if (virQEMUCapsGet(qemuCaps, QEMU_CAPS_DEVICE_NUBUS_MACFB))
++        VIR_DOMAIN_CAPS_ENUM_SET(dev->modelType, VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB);
+ }
+ 
+ 
+diff --git a/src/qemu/qemu_capabilities.h b/src/qemu/qemu_capabilities.h
+index a48e1d0367..fa03c65e93 100644
+--- a/src/qemu/qemu_capabilities.h
++++ b/src/qemu/qemu_capabilities.h
+@@ -737,6 +737,9 @@ typedef enum { /* virQEMUCapsFlags grouping marker for syntax-check */
+     QEMU_CAPS_OBJECT_IOMMUFD, /* -object iommufd */
+     QEMU_CAPS_DEVICE_UEFI_VARS, /* -device uefi-vars-{x64,sysbus} */
+ 
++    /* 495 */
++    QEMU_CAPS_DEVICE_NUBUS_MACFB, /* -device nubus-macfb */
++
+     QEMU_CAPS_LAST /* this must always be the last item */
+ } virQEMUCapsFlags;
+ 
+diff --git a/src/qemu/qemu_command.c b/src/qemu/qemu_command.c
+index ba300f3551..eb27c2bdce 100644
+--- a/src/qemu/qemu_command.c
++++ b/src/qemu/qemu_command.c
+@@ -89,6 +89,7 @@ VIR_ENUM_IMPL(qemuVideo,
+               "" /* 'none' doesn't make sense here */,
+               "bochs-display",
+               "", /* ramfb can't be used with -vga */
++              "", /* nubus-macfb can't be used with -vga */
+ );
+ 
+ VIR_ENUM_IMPL(qemuSoundCodec,
+@@ -775,6 +776,9 @@ qemuDeviceVideoGetModel(virQEMUCaps *qemuCaps,
+             case VIR_DOMAIN_VIDEO_TYPE_RAMFB:
+                 model = "ramfb";
+                 break;
++            case VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB:
++                model = "nubus-macfb";
++                break;
+             case VIR_DOMAIN_VIDEO_TYPE_DEFAULT:
+             case VIR_DOMAIN_VIDEO_TYPE_XEN:
+             case VIR_DOMAIN_VIDEO_TYPE_VBOX:
+@@ -810,6 +814,7 @@ qemuDeviceVideoGetModel(virQEMUCaps *qemuCaps,
+             case VIR_DOMAIN_VIDEO_TYPE_NONE:
+             case VIR_DOMAIN_VIDEO_TYPE_BOCHS:
+             case VIR_DOMAIN_VIDEO_TYPE_RAMFB:
++            case VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB:
+             case VIR_DOMAIN_VIDEO_TYPE_LAST:
+                 break;
+             }
+diff --git a/src/qemu/qemu_domain.c b/src/qemu/qemu_domain.c
+index ccbfc8bac7..883ade748a 100644
+--- a/src/qemu/qemu_domain.c
++++ b/src/qemu/qemu_domain.c
+@@ -7904,6 +7904,9 @@ qemuDomainSupportsPCI(const virDomainDef *def)
+     if (def->os.arch == VIR_ARCH_SPARC)
+         return false;
+ 
++    if (def->os.arch == VIR_ARCH_M68K)
++        return false;
++
+     /* On all other architectures, PCI support is assumed to
+      * be present */
+     return true;
+@@ -8866,6 +8869,10 @@ qemuDomainSupportsNicdev(virDomainDef *def,
+         net->info.type != VIR_DOMAIN_DEVICE_ADDRESS_TYPE_PCI)
+         return false;
+ 
++    /* m68k nics require legacy -net nic */
++    if (def->os.arch == VIR_ARCH_M68K)
++        return false;
++
+     return true;
+ }
+ 
+diff --git a/src/qemu/qemu_domain_address.c b/src/qemu/qemu_domain_address.c
+index 9957f927f5..32f50a3842 100644
+--- a/src/qemu/qemu_domain_address.c
++++ b/src/qemu/qemu_domain_address.c
+@@ -931,6 +931,7 @@ qemuDomainDeviceCalculatePCIConnectFlags(virDomainDeviceDef *dev,
+         case VIR_DOMAIN_VIDEO_TYPE_GOP:
+         case VIR_DOMAIN_VIDEO_TYPE_NONE:
+         case VIR_DOMAIN_VIDEO_TYPE_RAMFB:
++        case VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB:
+         case VIR_DOMAIN_VIDEO_TYPE_LAST:
+             return 0;
+         }
+@@ -2350,7 +2351,8 @@ qemuDomainAssignDevicePCISlots(virDomainDef *def,
+     /* Video devices */
+     for (i = 0; i < def->nvideos; i++) {
+         if (def->videos[i]->type == VIR_DOMAIN_VIDEO_TYPE_NONE ||
+-            def->videos[i]->type == VIR_DOMAIN_VIDEO_TYPE_RAMFB)
++            def->videos[i]->type == VIR_DOMAIN_VIDEO_TYPE_RAMFB ||
++            def->videos[i]->type == VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB)
+             continue;
+ 
+         if (!virDeviceInfoPCIAddressIsWanted(&def->videos[i]->info))
+diff --git a/src/qemu/qemu_postparse.c b/src/qemu/qemu_postparse.c
+index 8940cb09b3..fbf1d364b6 100644
+--- a/src/qemu/qemu_postparse.c
++++ b/src/qemu/qemu_postparse.c
+@@ -301,6 +301,8 @@ qemuDomainDefaultVideoDevice(const virDomainDef *def,
+         return VIR_DOMAIN_VIDEO_TYPE_CIRRUS;
+     if (virQEMUCapsGet(qemuCaps, QEMU_CAPS_DEVICE_VGA))
+         return VIR_DOMAIN_VIDEO_TYPE_VGA;
++    if (virQEMUCapsGet(qemuCaps, QEMU_CAPS_DEVICE_NUBUS_MACFB))
++        return VIR_DOMAIN_VIDEO_TYPE_NUBUS_MACFB;
+     return VIR_DOMAIN_VIDEO_TYPE_DEFAULT;
+ }
+ 

@@ -111,3 +111,8 @@ uconsole         A 172.30.98.69
 pixel-9-pro-xl-linux A 172.30.98.70
 droid            CNAME pixel-9-pro-xl-linux
 tunnel-comclub   A 172.30.98.71
+
+; AppleTalk hosts on vlan 983 (172.30.98.128/26)
+$ORIGIN appletalk.isz.wtf.
+router           A 172.30.98.128
+globaltalk       A 172.30.98.129

@@ -31,6 +31,7 @@
       ./inventree.nix
       ./tang.nix
       ./homebox.nix
+      ./libvirtd.nix
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];
@@ -287,30 +288,6 @@
 
   services.nix-serve.enable = true;
   services.nix-serve.package = pkgs.nix-serve-ng;
-
-  virtualisation.libvirtd.enable = true;
-
-  isz.networking.vlans = [981];
-  systemd.network.networks.vm-plc-guest = {
-    matchConfig = {
-      MACAddress = "fe:54:00:81:73:d3";
-    };
-    networkConfig = {
-      Bridge = "br0";
-      LinkLocalAddressing = "no";
-    };
-    bridgeVLANs = [{ PVID = 88; EgressUntagged = 88; }];
-  };
-  systemd.network.networks.vm-plc-profinet = {
-    matchConfig = {
-      MACAddress = "fe:54:00:df:c3:9a";
-    };
-    networkConfig = {
-      Bridge = "br0";
-      LinkLocalAddressing = "no";
-    };
-    bridgeVLANs = [{ PVID = 981; EgressUntagged = 981; }];
-  };
 
   services.bsproxy = {
     enable = true;
