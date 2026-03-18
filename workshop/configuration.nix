@@ -32,6 +32,7 @@
       ./tang.nix
       ./homebox.nix
       ./libvirtd.nix
+      ./globaltalk
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];

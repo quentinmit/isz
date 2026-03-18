@@ -116,3 +116,4 @@ tunnel-comclub   A 172.30.98.71
 $ORIGIN appletalk.isz.wtf.
 router           A 172.30.98.128
 globaltalk       A 172.30.98.129
+workshop         A 172.30.98.130

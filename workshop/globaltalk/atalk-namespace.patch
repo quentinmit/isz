@@ -1,0 +1,213 @@
+diff --git a/include/linux/atalk.h b/include/linux/atalk.h
+index a55bfc6567d0..c6c4b10a30bf 100644
+--- a/include/linux/atalk.h
++++ b/include/linux/atalk.h
+@@ -134,6 +134,39 @@ extern void		 aarp_proxy_remove(struct net_device *dev,
+ 
+ extern void		aarp_cleanup_module(void);
+ 
++extern const struct net* atalk_net __read_mostly;
++extern struct mutex atalk_net_mutex;
++
++static inline bool atalk_net_eq(struct net* net) {
++	bool matched = false;
++	rcu_read_lock();
++	struct net* our_net = rcu_dereference(atalk_net);
++	if (our_net != NULL) {
++		matched = net_eq(net, our_net);
++	}
++	rcu_read_unlock();
++	return matched;
++}
++
++static inline bool atalk_net_eq_or_set(struct net* net) {
++	rcu_read_lock();
++	struct net* our_net = rcu_dereference(atalk_net);
++	if (our_net != NULL) {
++		bool matched = net_eq(net, our_net);
++		rcu_read_unlock();
++		return matched;
++	}
++	rcu_read_unlock();
++	// Fast path failed, now try slow path
++	mutex_lock(&atalk_net_mutex);
++	if (atalk_net == NULL) {
++		rcu_assign_pointer(atalk_net, net);
++	}
++	bool matched = net_eq(net, atalk_net);
++	mutex_unlock(&atalk_net_mutex);
++	return matched;
++}
++
+ extern struct hlist_head atalk_sockets;
+ extern rwlock_t atalk_sockets_lock;
+ 
+diff --git a/net/appletalk/aarp.c b/net/appletalk/aarp.c
+index e7315c01a299..4ed6780720a6 100644
+--- a/net/appletalk/aarp.c
++++ b/net/appletalk/aarp.c
+@@ -344,7 +344,7 @@ static int aarp_device_event(struct notifier_block *this, unsigned long event,
+ 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+ 	int ct;
+ 
+-	if (!net_eq(dev_net(dev), &init_net))
++	if (!atalk_net_eq(dev_net(dev)))
+ 		return NOTIFY_DONE;
+ 
+ 	if (event == NETDEV_DOWN) {
+@@ -707,7 +707,7 @@ static int aarp_rcv(struct sk_buff *skb, struct net_device *dev,
+ 	struct atalk_addr sa, *ma, da;
+ 	struct atalk_iface *ifa;
+ 
+-	if (!net_eq(dev_net(dev), &init_net))
++	if (!atalk_net_eq(dev_net(dev)))
+ 		goto out0;
+ 
+ 	/* We only do Ethernet SNAP AARP. */
+diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
+index 30a6dc06291c..d733bb2b9605 100644
+--- a/net/appletalk/ddp.c
++++ b/net/appletalk/ddp.c
+@@ -73,6 +73,9 @@ static const struct proto_ops atalk_dgram_ops;
+ HLIST_HEAD(atalk_sockets);
+ DEFINE_RWLOCK(atalk_sockets_lock);
+ 
++const struct net* atalk_net __read_mostly;
++DEFINE_MUTEX(atalk_net_mutex);
++
+ static inline void __atalk_insert_socket(struct sock *sk)
+ {
+ 	sk_add_node(sk, &atalk_sockets);
+@@ -655,7 +658,7 @@ static int ddp_device_event(struct notifier_block *this, unsigned long event,
+ {
+ 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+ 
+-	if (!net_eq(dev_net(dev), &init_net))
++	if (!atalk_net_eq(dev_net(dev)))
+ 		return NOTIFY_DONE;
+ 
+ 	if (event == NETDEV_DOWN)
+@@ -667,7 +670,7 @@ static int ddp_device_event(struct notifier_block *this, unsigned long event,
+ 
+ /* ioctl calls. Shouldn't even need touching */
+ /* Device configuration ioctl calls */
+-static int atif_ioctl(int cmd, void __user *arg)
++static int atif_ioctl(struct net* net, int cmd, void __user *arg)
+ {
+ 	static char aarp_mcast[6] = { 0x09, 0x00, 0x00, 0xFF, 0xFF, 0xFF };
+ 	struct ifreq atreq;
+@@ -683,7 +686,7 @@ static int atif_ioctl(int cmd, void __user *arg)
+ 	if (get_user_ifreq(&atreq, NULL, arg))
+ 		return -EFAULT;
+ 
+-	dev = __dev_get_by_name(&init_net, atreq.ifr_name);
++	dev = __dev_get_by_name(net, atreq.ifr_name);
+ 	if (!dev)
+ 		return -ENODEV;
+ 
+@@ -882,7 +885,7 @@ static int atif_ioctl(int cmd, void __user *arg)
+ 	return put_user_ifreq(&atreq, arg);
+ }
+ 
+-static int atrtr_ioctl_addrt(struct rtentry *rt)
++static int atrtr_ioctl_addrt(struct net* net, struct rtentry *rt)
+ {
+ 	struct net_device *dev = NULL;
+ 
+@@ -893,7 +896,7 @@ static int atrtr_ioctl_addrt(struct rtentry *rt)
+ 			return -EFAULT;
+ 		name[IFNAMSIZ-1] = '\0';
+ 
+-		dev = __dev_get_by_name(&init_net, name);
++		dev = __dev_get_by_name(net, name);
+ 		if (!dev)
+ 			return -ENODEV;
+ 	}
+@@ -901,7 +904,7 @@ static int atrtr_ioctl_addrt(struct rtentry *rt)
+ }
+ 
+ /* Routing ioctl() calls */
+-static int atrtr_ioctl(unsigned int cmd, void __user *arg)
++static int atrtr_ioctl(struct net* net, unsigned int cmd, void __user *arg)
+ {
+ 	struct rtentry rt;
+ 
+@@ -916,7 +919,7 @@ static int atrtr_ioctl(unsigned int cmd, void __user *arg)
+ 				      &rt.rt_dst)->sat_addr);
+ 
+ 	case SIOCADDRT:
+-		return atrtr_ioctl_addrt(&rt);
++		return atrtr_ioctl_addrt(net, &rt);
+ 	}
+ 	return -EINVAL;
+ }
+@@ -1036,7 +1039,7 @@ static int atalk_create(struct net *net, struct socket *sock, int protocol,
+ 	struct sock *sk;
+ 	int rc = -ESOCKTNOSUPPORT;
+ 
+-	if (!net_eq(net, &init_net))
++	if (!atalk_net_eq_or_set(net))
+ 		return -EAFNOSUPPORT;
+ 
+ 	/*
+@@ -1409,7 +1412,7 @@ static int atalk_rcv(struct sk_buff *skb, struct net_device *dev,
+ 	int origlen;
+ 	__u16 len_hops;
+ 
+-	if (!net_eq(dev_net(dev), &init_net))
++	if (!atalk_net_eq(dev_net(dev)))
+ 		goto drop;
+ 
+ 	/* Don't mangle buffer if shared */
+@@ -1494,7 +1497,7 @@ static int atalk_rcv(struct sk_buff *skb, struct net_device *dev,
+ static int ltalk_rcv(struct sk_buff *skb, struct net_device *dev,
+ 		     struct packet_type *pt, struct net_device *orig_dev)
+ {
+-	if (!net_eq(dev_net(dev), &init_net))
++	if (!atalk_net_eq(dev_net(dev)))
+ 		goto freeit;
+ 
+ 	/* Expand any short form frames */
+@@ -1776,6 +1779,7 @@ static int atalk_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+ {
+ 	int rc = -ENOIOCTLCMD;
+ 	struct sock *sk = sock->sk;
++	struct net *net = sock_net(sk);
+ 	void __user *argp = (void __user *)arg;
+ 
+ 	switch (cmd) {
+@@ -1805,7 +1809,7 @@ static int atalk_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+ 	case SIOCDELRT:
+ 		rc = -EPERM;
+ 		if (capable(CAP_NET_ADMIN))
+-			rc = atrtr_ioctl(cmd, argp);
++			rc = atrtr_ioctl(net, cmd, argp);
+ 		break;
+ 	/* Interface */
+ 	case SIOCGIFADDR:
+@@ -1816,7 +1820,7 @@ static int atalk_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+ 	case SIOCSARP:		/* proxy AARP */
+ 	case SIOCDARP:		/* proxy AARP */
+ 		rtnl_lock();
+-		rc = atif_ioctl(cmd, argp);
++		rc = atif_ioctl(net, cmd, argp);
+ 		rtnl_unlock();
+ 		break;
+ 	}
+@@ -1831,6 +1835,7 @@ static int atalk_compat_routing_ioctl(struct sock *sk, unsigned int cmd,
+ {
+ 	compat_uptr_t rtdev;
+ 	struct rtentry rt;
++	struct net *net = sock_net(sk);
+ 
+ 	if (copy_from_user(&rt.rt_dst, &ur->rt_dst,
+ 			3 * sizeof(struct sockaddr)) ||
+@@ -1851,7 +1856,7 @@ static int atalk_compat_routing_ioctl(struct sock *sk, unsigned int cmd,
+ 
+ 	case SIOCADDRT:
+ 		rt.rt_dev = compat_ptr(rtdev);
+-		return atrtr_ioctl_addrt(&rt);
++		return atrtr_ioctl_addrt(net, &rt);
+ 	default:
+ 		return -EINVAL;
+ 	}
