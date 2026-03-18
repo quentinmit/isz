@@ -1,5 +1,6 @@
 { lib
 , linux-pam
+, setuptools
 , buildPythonPackage
 , fetchPypi
 }:
@@ -12,6 +13,10 @@ buildPythonPackage rec {
     inherit pname version;
     hash = "sha256-m03VDaQaBN1q//kyuLfjPAFa8FvrOz5bzTI7ZMI5Cl8=";
   };
+
+  pyproject = true;
+
+  build-system = [ setuptools ];
 
   postPatch = ''
     substituteInPlace simplepam.py \

@@ -50,7 +50,7 @@ buildPythonPackage {
     setuptools
   ];
   preConfigure = ''
-    protoc -I=../../cpp --python_out=./src piscsi_interface.proto
+    protoc -I=../../proto --python_out=./src piscsi_interface.proto
   '';
 
   propagatedBuildInputs = [

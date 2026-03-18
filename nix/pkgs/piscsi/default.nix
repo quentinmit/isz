@@ -7,7 +7,7 @@
 , callPackage
 }: let
   pname = "piscsi";
-  version = "24.04.01";
+  version = "25.12.01";
 in stdenv.mkDerivation {
   inherit pname version;
 
@@ -15,7 +15,7 @@ in stdenv.mkDerivation {
     owner = "PiSCSI";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-6KiL+ExtiHMjO/bEIBIui4y1pOE1yvepB8ti2mt7EzQ=";
+    hash = "sha256-Qa7Jw9ov6UepFF21y5GbGqsoucTy5o8S1N8Bx3ogYYQ=";
   };
   sourceRoot = "source/cpp";
 

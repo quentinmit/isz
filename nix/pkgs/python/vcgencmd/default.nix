@@ -19,7 +19,9 @@ buildPythonPackage rec {
       --replace-fail '"vcgencmd"' '"${lib.getBin libraspberrypi}/bin/vcgencmd"'
   '';
 
-  nativeBuildInputs = [
+  pyproject = true;
+
+  build-system = [
     setuptools
   ];
 }

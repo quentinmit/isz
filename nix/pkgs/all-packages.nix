@@ -31,6 +31,7 @@ final: prev:
       lib_detect_testenv = callPackage ./python/lib_detect_testenv {};
       ionit = callPackage ./python/ionit {};
       ymodem = callPackage ./python/ymodem {};
+      bjoern = callPackage ./python/bjoern {};
     })
   ];
   systemd-metrics = final.callPackage ../modules/telegraf/systemd-metrics {};
