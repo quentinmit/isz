@@ -2,6 +2,10 @@
 {
   isz.networking.vlans = [983];
 
+  isz.telegraf.macsnmp.targets = [{
+    ip = "172.30.98.129";
+  }];
+
   systemd.network.networks.vm-globaltalk = {
     matchConfig = {
       MACAddress = "fe:00:07:9c:c5:e6";

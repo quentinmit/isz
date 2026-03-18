@@ -1,0 +1,772 @@
+Apple-Macintosh-System-MIB DEFINITIONS ::= BEGIN
+
+-- Apple Computer, Inc - version 1.1
+--		Corrects the code of the trap userInTRouble.
+--		Now is 1 as implemented by MacSNMP (was 0)
+
+IMPORTS
+	TRAP-TYPE
+		FROM RFC-1215
+	DisplayString
+		FROM RFC1213-MIB
+	OBJECT-TYPE
+		FROM RFC-1212
+	TimeTicks, enterprises, Counter
+		FROM RFC1155-SMI;
+
+	MacOSType ::= INTEGER
+	MacDate ::= INTEGER
+	MacintoshDisplayString ::= OCTET STRING
+
+apple		 OBJECT IDENTIFIER ::= { enterprises 63 }
+macintosh	 OBJECT IDENTIFIER ::= { apple 1 }
+experimental OBJECT IDENTIFIER ::= { apple 2 }
+ 
+userInTrouble  TRAP-TYPE
+ENTERPRISE  apple
+VARIABLES   { snmpZone, snmpName, helpMsg }
+DESCRIPTION
+"A userInTrouble trap signifies that the sending SNMP 
+application's user is having some trouble using the network and 
+wishes to receive help from a knowledgeable network manager."
+::= 1
+
+
+-- The Groups
+
+system			OBJECT IDENTIFIER ::= { macintosh 1 }
+software		OBJECT IDENTIFIER ::= { macintosh 2 }
+hardware		OBJECT IDENTIFIER ::= { macintosh 3 }
+
+
+-- The System Group
+	
+snmpName OBJECT-TYPE
+SYNTAX MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name advertised over NBP with type 'SNMP Agent.' The 
+default is the same as the machine name set in the Sharing 
+Setup Control Panel. If there is no machine name, a random 
+unique name will be chosen." 
+REFERENCE
+"See 'Inside Macintosh' Vol. VI, Ch. 7." 
+::= { system 1 }
+
+snmpZone OBJECT-TYPE
+SYNTAX	MacintoshDisplayString (SIZE (1..32))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"A text string that contains the zone name used to advertise 
+over NBP with type 'SNMP Agent.' The default is the local zone 
+name of the node."
+REFERENCE
+"See 'Inside Macintosh' Vol. VI, Ch. 7." 
+::= { system 2 }
+
+machineIcon  OBJECT-TYPE
+SYNTAX	OCTET STRING (SIZE (128))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"A 32 x 32 pixel image of the Macintosh computer. The bits of 
+the first four octets are the pixels in right to left order as 
+the top row of the image. Ensuing four-octet groups are 
+interpreted as descending rows."
+REFERENCE
+"See 'Inside Macintosh' Vol. VI, Ch. 3."
+::= { system 3 }
+
+snmpPhone OBJECT-TYPE
+SYNTAX	MacintoshDisplayString (SIZE (1..32 ))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"A text string that contains the phone number of a phone near 
+the Macintosh computer." 
+::= { system 4 }
+
+helpMessage  OBJECT-TYPE
+SYNTAX	MacintoshDisplayString (SIZE (1..255))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"A text string that contains the message that the user wished 
+to send to a network manager." 
+::= { system 5 }
+
+
+-- GroupIndex is a unique number assigned to each group registered 
+
+	GroupIndex ::= INTEGER
+
+-- AgentIndex is a unique number assigned to each agent registered 
+
+	AgentIndex ::= INTEGER
+
+
+contentsTable  OBJECT-TYPE
+SYNTAX 	SEQUENCE OF ContentsEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Contains information about agents and groups of variables 
+registered at this node."
+::= { system 6 }
+
+contentsEntry  OBJECT-TYPE
+SYNTAX 	ContentsEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Each entry contains information about an agent or group that 
+has been registered at this node. The indexes are the 
+AgentIndex and GroupIndex, which are unique integers assigned 
+to each agent and group registered."
+INDEX { AgentIndex, GroupIndex }
+::= { contentsTable  1 }
+
+ContentsEntry 		::= SEQUENCE {
+contentsAgent		MacintoshDisplayString,
+contentsGroup		MacintoshDisplayString,
+contentsObjectID	OBJECT IDENTIFIER
+}
+
+contentsAgent  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the agent owning this group." 
+::= { contentsEntry 1 }
+
+contentsGroup  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the group." 
+::= { contentsEntry 2 }
+
+contentsObjectID 	OBJECT-TYPE
+SYNTAX 	OBJECT IDENTIFIER
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The object ID of the group."
+::= { contentsEntry 3 }
+
+trapTable   OBJECT-TYPE
+SYNTAX  SEQUENCE OF TrapRequestEntry
+ACCESS  not-accessible
+STATUS  mandatory
+DESCRIPTION
+"Contains a list of all the consoles that traps will be sent 
+to."
+::= { system 7 }
+
+trapRequestEntry 	OBJECT-TYPE
+SYNTAX  TrapRequestEntry
+ACCESS  not-accessible
+STATUS  mandatory
+DESCRIPTION
+"Each entry contains a complete description of a trap's 
+destination." 
+INDEX { trapIndex }
+::= { trapTable 1 }
+ 
+TrapRequestEntry 	::= SEQUENCE {
+trapIndex		INTEGER,
+trapCommunity	MacintoshDisplayString,
+trapProtocol	MacintoshDisplayString,
+trapDestination	OCTET STRING,
+trapValidity	INTEGER
+}
+ 
+trapIndex  OBJECT-TYPE
+SYNTAX  INTEGER
+ACCESS  read-only
+STATUS  mandatory
+DESCRIPTION
+"The index into the trapTable."
+::= { trapRequestEntry 1 }
+ 
+trapCommunity  OBJECT-TYPE
+SYNTAX  MacintoshDisplayString
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+"The community that must be associated with the trap."
+::= { trapRequestEntry 2 }
+ 
+trapProtocol  OBJECT-TYPE
+SYNTAX  MacintoshDisplayString
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+"The identifier of the protocol that the trap must use. For IP 
+this is 'UDP ', for AppleTalk this is 'DDP ', etc." 
+REFERENCE
+"See 'MacSNMP Programmer's Guide.'" 
+::= { trapRequestEntry 3 }
+
+trapDestination  OBJECT-TYPE
+SYNTAX  OCTET STRING
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+"Where to send a trap. This information is different for each 
+protocol. For TCP/IP the IP address in dotted decimal notation 
+is used; for AppleTalk the NBP name of the console is used."
+REFERENCE
+"See 'MacSNMP Administrator's Guide.'" 
+::= { trapRequestEntry 4 }
+ 
+trapValidity  OBJECT-TYPE
+SYNTAX  INTEGER {
+valid(1),
+invalid(2)
+}
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+"This entry defines whether the row is still active and valid."
+::= { trapRequestEntry 5 }
+ 
+
+-- The Software Group
+	
+	
+gestaltTable  OBJECT-TYPE
+SYNTAX 	SEQUENCE OF GestaltEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Contains the results from the Gestalt call. Some interesting 
+Gestalt selectors are 'ram ' for bytes of physical RAM, 'romv' 
+for ROM version, 'sysv' for system version, and 'atlk' for 
+AppleTalk version."
+REFERENCE
+"See 'Inside Macintosh' Vol. VI, Ch. 3."
+::= { software 1 }
+
+gestaltEntry  OBJECT-TYPE
+SYNTAX 	GestaltEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Each entry contains the Gestalt selector, the response, and 
+the response type." 
+INDEX { gestaltSelector }
+::= { gestaltTable 1 }
+
+GestaltEntry 		::= SEQUENCE {
+gestaltSelector		MacOSType,
+gestaltResponseType	INTEGER,
+gestaltResponse		OCTET STRING (SIZE (4))
+}
+
+gestaltSelector  OBJECT-TYPE
+SYNTAX 	MacOSType
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"A four-octet string that determines what information you want. 
+It usually consists of ASCII characters."
+::= { gestaltEntry 1 }
+
+gestaltResponseType 	OBJECT-TYPE
+SYNTAX 	INTEGER {
+		other(1),
+		unknown(2),
+		attr(3),
+		count(4),
+		size(5),
+		table(6),
+		type(7),
+		version(8)
+}
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"How to interpret the Gestalt response: Attr is a bit field; 
+Count is how many of the type exist; Size is usually in bytes; 
+Table is the memory address of a table; Version is in binary-
+coded decimal."
+REFERENCE
+"See 'Inside Macintosh' Vol. VI, Ch. 3."
+::= { gestaltEntry 2 }
+
+gestaltResponse  OBJECT-TYPE
+SYNTAX 	OCTET STRING (SIZE (4))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The information you requested. Its interpretation depends on 
+the corresponding Gestalt type."
+::= { gestaltEntry 3 }
+
+printerName  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString  (SIZE (0..31))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the printer currently chosen."
+::= { software 2 }
+
+printerZone  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString (SIZE (0..31))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The zone of the printer currently chosen."
+::= { software 3 }
+
+printerType  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString (SIZE (0..31))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the printer driver currently chosen."
+::= { software 4 }
+
+systemFilesTable  	OBJECT-TYPE
+SYNTAX 	SEQUENCE OF FileEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Contains a list of all the files in the active System Folder 
+and its subfolders."
+::= { software 5 }
+
+fileEntry  OBJECT-TYPE
+SYNTAX 	FileEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Each entry contains a complete description of a file and its 
+location. The index starts at one and increments by one for 
+each file." 
+INDEX { INTEGER }
+::= { systemFilesTable 1 }
+
+FileEntry 		::= SEQUENCE {
+fileName		MacintoshDisplayString,
+fileCreator		MacOSType,
+fileSize		INTEGER,
+fileCreateDate 	MacDate,
+fileModDate		MacDate,
+fileVersion		MacintoshDisplayString,
+fileDirName		MacintoshDisplayString,
+fileType		MacOSType
+}
+
+fileName  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the file. The ASCII character for the colon (:) is 
+not allowed."
+::= { fileEntry 1 }
+
+fileCreator  OBJECT-TYPE
+SYNTAX 	MacOSType
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The creator of the file. A four-character string that is 
+usually in ASCII."
+::= { fileEntry 2  }
+
+fileSize  OBJECT-TYPE
+SYNTAX 	INTEGER
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The size of the file in bytes."
+::= { fileEntry 3  }
+
+fileCreateDate  OBJECT-TYPE
+SYNTAX 	MacDate
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The creation date of the file in seconds from midnight, 
+January 1, 1904."
+::= { fileEntry 4  }
+
+fileModDate  OBJECT-TYPE
+SYNTAX 	MacDate
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The modification date of the file in seconds from midnight, 
+January 1, 1904."
+::= { fileEntry 5  }
+
+fileVersion  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The version of the application."
+REFERENCE
+"See 'Inside Macintosh' Vol. III, Ch. 1." 
+::= { fileEntry 6  }
+
+fileDirName  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the directory the file is in. The ASCII character 
+for the colon (:) is not allowed."
+::= { fileEntry 7 }
+
+fileType  OBJECT-TYPE
+SYNTAX 	MacOSType
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The type of the file. A four-character string that is usually 
+in ASCII."
+::= { fileEntry 8 }
+
+applicationFilesTable 	   OBJECT-TYPE
+SYNTAX 	SEQUENCE OF ApplEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Contains a list of all the applications on the local volumes."
+::= { software 6 }
+
+applEntry  OBJECT-TYPE
+SYNTAX	ApplEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Each entry contains a complete description of a file and where 
+it is. The second index starts at one and is incremented by one 
+for each file. The VolRefNum is from the volumeTable."
+INDEX { volRefNum, INTEGER }
+::= { applicationFilesTable 1 }
+
+ApplEntry 		::= SEQUENCE {
+applName		MacintoshDisplayString,
+applCreator		MacOSType,
+applSize		INTEGER,
+applCreateDate 	MacDate,
+applModDate		MacDate,
+applVersion		MacintoshDisplayString
+}
+
+applName  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the application."
+::= { applEntry 1 }
+
+applCreator  OBJECT-TYPE
+SYNTAX 	MacOSType
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The creator of the application. A four-character string that 
+is usually in ASCII."
+::= { applEntry 2  }
+
+applSize  OBJECT-TYPE
+SYNTAX 	INTEGER
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The size of the application in bytes."
+::= { applEntry 3  }
+
+applCreateDate  OBJECT-TYPE
+SYNTAX 	MacDate
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The creation date of the application in seconds from midnight, 
+January 1, 1904."
+::= { applEntry 4  }
+
+applModDate  OBJECT-TYPE
+SYNTAX 	MacDate
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The modification date of the application in seconds from 
+midnight, January 1, 1904."
+::= { applEntry 5  }
+
+applVersion  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The version of the application." 
+REFERENCE
+"See 'Inside Macintosh' Vol. III, Ch.1." 
+::= { applEntry 6  }
+
+
+-- The Hardware Group
+
+nuBusTable  OBJECT-TYPE
+SYNTAX 	SEQUENCE OF NuBusEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Contains a list of all the NuBus cards contained in the 
+Macintosh." 
+REFERENCE
+"NuBus is a trademark of Texas Instruments."
+::= { hardware 1 }
+
+nuBusEntry  OBJECT-TYPE
+SYNTAX 	NuBusEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Each entry contains a complete description of a NuBus card." 
+REFERENCE
+"See 'Designing Cards and Drivers for the Macintosh II and the 
+Macintosh SE,' Chapter 8, Addison-Wesley Publishing Company, 
+Inc., 1987."
+INDEX { nuBusSlot}
+::= { nuBusTable 1 }
+
+NuBusEntry 		::= SEQUENCE {
+nuBusSlot			INTEGER,
+nuBusType			INTEGER,
+nuBusBoardID		INTEGER,
+nuBusBoardName		MacintoshDisplayString,
+nuBusVendorName		MacintoshDisplayString,
+nuBusPartNumber		MacintoshDisplayString,
+nuBusSerialNumber	MacintoshDisplayString,
+nuBusRevNumber		MacintoshDisplayString,	
+nuBusRevDate		MacintoshDisplayString
+}
+
+nuBusSlot  OBJECT-TYPE
+SYNTAX 	INTEGER
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The slot number of the board."
+::= { nuBusEntry 1  }
+
+nuBusType  OBJECT-TYPE
+SYNTAX 	INTEGER
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The category and cType of the board."
+::= { nuBusEntry 2  }
+
+nuBusBoardID 	OBJECT-TYPE
+SYNTAX 	INTEGER
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The ID of the board."
+::= { nuBusEntry 3  }
+
+nuBusBoardName 	OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the board."
+::= { nuBusEntry 4  }
+
+nuBusVendorName 	OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the vendor."
+::= { nuBusEntry 5  }
+
+nuBusPartNumber 	OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The part number of the board."
+::= { nuBusEntry 6  }
+
+nuBusSerialNumber 	OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The serial number of the board."
+::= { nuBusEntry 7  }
+
+nuBusRevNumber 	OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The revision number of the board."
+::= { nuBusEntry 8  }
+
+nuBusRevDate 	OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The revision date of the board."
+::= { nuBusEntry 9  }
+
+scsiTable  OBJECT-TYPE
+SYNTAX 	SEQUENCE OF SCSIEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Contains a list of all the SCSI devices in the Macintosh."
+::= { hardware 2 }
+
+scsiEntry   OBJECT-TYPE
+SYNTAX 	SCSIEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Each entry contains a complete description of a SCSI device. 
+The index is equal to the scsiID + 1." 
+INDEX { INTEGER }
+::= { scsiTable 1 }
+
+SCSIEntry 		::= SEQUENCE {
+scsiID			INTEGER,
+scsiType		MacintoshDisplayString,
+scsiVendor		MacintoshDisplayString,
+scsiProduct		MacintoshDisplayString,
+scsiVersion		MacintoshDisplayString
+}
+
+scsiID OBJECT-TYPE
+SYNTAX 	INTEGER
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The bus ID of the SCSI device."
+::= { scsiEntry 1  }
+
+scsiType OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The type of the SCSI device."
+::= { scsiEntry 2  }
+
+scsiVendor  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The vendor of the SCSI device."
+::= { scsiEntry 3  }
+
+scsiProduct  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The product name of the SCSI device."
+::= { scsiEntry 4  }
+
+scsiVersion  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The version of the SCSI device."
+::= { scsiEntry 5  }
+
+volumeTable   OBJECT-TYPE
+SYNTAX 	SEQUENCE OF VolumeEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Contains a list of all the volumes directly connected to the 
+Macintosh."
+::= { hardware 3 }
+
+volumeEntry  OBJECT-TYPE
+SYNTAX 	VolumeEntry
+ACCESS	not-accessible
+STATUS	mandatory
+DESCRIPTION
+"Each entry contains a complete description of a volume." 
+INDEX { volRefNum }
+::= { volumeTable 1 }
+
+VolumeEntry 		::= SEQUENCE {
+volRefNum		INTEGER,
+volName			MacintoshDisplayString,
+volKind			MacintoshDisplayString,
+volLocation		MacintoshDisplayString,
+volBytesUsed	Counter,
+volBytesFree	Counter
+}
+
+volRefNum  OBJECT-TYPE
+SYNTAX 	INTEGER
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The reference number of the volume. Usually a negative 
+number."
+::= { volumeEntry 1  }
+
+volName  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The name of the volume."
+::= { volumeEntry 2  }
+
+volKind  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The kind of volume."
+::= { volumeEntry 3  }
+
+volLocation  OBJECT-TYPE
+SYNTAX 	MacintoshDisplayString
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The location of the volume."
+::= { volumeEntry 4  }
+
+volBytesUsed  OBJECT-TYPE
+SYNTAX 	Counter
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The number of bytes used on the volume."
+::= { volumeEntry 5  }
+
+volBytesFree  OBJECT-TYPE
+SYNTAX 	Counter
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION
+"The number of bytes free on the volume."
+::= { volumeEntry 6  }
+
+END
