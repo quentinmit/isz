@@ -1,0 +1,68 @@
+diff --git a/python/web/src/settings.py b/python/web/src/settings.py
+index 5994c71..03bf3e0 100644
+--- a/python/web/src/settings.py
++++ b/python/web/src/settings.py
+@@ -3,19 +3,17 @@ Constant definitions used by other modules
+ """
+ 
+ from os import getenv, getcwd
++from pathlib import Path
+ import piscsi.common_settings
+ 
+-WEB_DIR = getcwd()
+-HOME_DIR = "/".join(WEB_DIR.split("/")[0:3])
+-
+-FILE_SERVER_DIR = f"{HOME_DIR}/shared_files"
++FILE_SERVER_DIR = getenv("PISCSI_SHARED_FILES", f"/home/pi/piscsi/shared_files")
+ 
+ MAX_FILE_SIZE = getenv("MAX_FILE_SIZE", str(1024 * 1024 * 1024 * 4))  # 4gb
+ 
+ # The file name of the default config file that loads when piscsi-web starts
+ DEFAULT_CONFIG = f"default.{piscsi.common_settings.CONFIG_FILE_SUFFIX}"
+ # File containing canonical drive properties
+-DRIVE_PROPERTIES_FILE = WEB_DIR + "/drive_properties.json"
++DRIVE_PROPERTIES_FILE = Path(__file__).parent / "data/drive_properties.json"
+ 
+ # The user group that is used for webapp authentication
+ AUTH_GROUP = "piscsi"
+diff --git a/python/web/src/web.py b/python/web/src/web.py
+index 47a08a1..830feeb 100644
+--- a/python/web/src/web.py
++++ b/python/web/src/web.py
+@@ -61,7 +61,6 @@ from web_utils import (
+     browser_supports_modern_themes,
+ )
+ from settings import (
+-    WEB_DIR,
+     FILE_SERVER_DIR,
+     MAX_FILE_SIZE,
+     DEFAULT_CONFIG,
+@@ -576,7 +575,7 @@ def show_manpage():
+     if app not in app_allowlist:
+         return response(error=True, message=_("%(app)s is not a recognized PiSCSI app", app=app))
+ 
+-    file_path = f"{WEB_DIR}/../../../doc/{app}.1"
++    file_path = f"__PISCSI__/share/man/man1/{app}.1"
+     html_to_strip = [
+         "Content-type",
+         "!DOCTYPE",
+@@ -901,9 +900,7 @@ def download_to_iso():
+     if iso_type == "HFS":
+         # The file genisoimage_hfs_resource_fork_map.txt is part of the piscsi
+         # repository tree, so it should be present in the parent folder; trust but verify:
+-        genisoimage_hfs_resource_fork_map_file_path = Path(
+-            f"{WEB_DIR}/../genisoimage_hfs_resource_fork_map.txt"
+-        )
++        genisoimage_hfs_resource_fork_map_file_path = Path(__file__).parent / "data/genisoimage_hfs_resource_fork_map.txt"
+         if genisoimage_hfs_resource_fork_map_file_path.exists():
+             # genisoimage will look up the file extension in this map file to
+             # derive the file's CREATOR and TYPE resource fork attributes.
+@@ -1191,7 +1188,7 @@ def create_file():
+                 return response(error=True, message=process["msg"])
+ 
+         else:
+-            driver_base_path = Path(f"{WEB_DIR}/../../../mac-hard-disk-drivers")
++            driver_base_path = Path("__MAC_HARD_DISK_DRIVERS__")
+             process = file_cmd.partition_disk(full_file_name, volume_name, "HFS")
+             if not process["status"]:
+                 return response(error=True, message=process["msg"])

@@ -64,13 +64,14 @@ in stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru = let
-    piscsi = finalAttrs;
+    piscsi = finalAttrs.finalPackage;
   in {
     oled = callPackage ./oled.nix {
       inherit piscsi;
     };
     web = callPackage ./web.nix {
       inherit piscsi;
+      drivers = callPackage ./drivers.nix {};
     };
   };
 })

@@ -40,13 +40,16 @@ in {
       ];
       requires = [
         "network-online.target"
+        "piscsi.service"
       ];
       wantedBy = [ "multi-user.target" ];
+      environment.PISCSI_SHARED_FILES = "/var/lib/piscsi/shared_files";
       serviceConfig = {
         Type = "simple";
         Restart = "always";
         ExecStart = lib.getExe cfg.package.web;
         SyslogIdentifier = "PISCSIWEB";
+        WorkingDirectory = "/var/lib/piscsi";
       };
     };
   };
