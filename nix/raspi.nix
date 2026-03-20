@@ -129,10 +129,6 @@ in
       "start_cd.elf"
       "start_db.elf"
       "start_x.elf"
-      "bcm2711-rpi-4-b.dtb"
-      "bcm2711-rpi-400.dtb"
-      "bcm2711-rpi-cm4.dtb"
-      "bcm2711-rpi-cm4s.dtb"
     ];
     populateFirmwareCommands = ''
       if [ -n "''${img:+present}" ] || ${pkgs.util-linux}/bin/findmnt /boot/firmware > /dev/null; then
@@ -243,6 +239,8 @@ in
     system.boot.loader.id = "isz-raspi";
 
     sdImage = {
+      # Leave room for UKIs
+      firmwareSize = 512;
       inherit populateFirmwareCommands;
       populateRootCommands = ''
         mkdir -p ./files/boot
