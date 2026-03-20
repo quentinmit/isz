@@ -1,0 +1,18 @@
+diff --git a/python/common/src/piscsi/common_settings.py b/python/common/src/piscsi/common_settings.py
+index e2fadcc..56d86d4 100644
+--- a/python/common/src/piscsi/common_settings.py
++++ b/python/common/src/piscsi/common_settings.py
+@@ -2,11 +2,11 @@
+ Module for general settings used in the piscsi module
+ """
+ 
+-from os import getcwd
++from os import getenv, getcwd
+ 
+ # There may be a more elegant way to get the HOME dir of the user that installed PiSCSI
+ HOME_DIR = "/".join(getcwd().split("/")[0:3])
+-CFG_DIR = f"{HOME_DIR}/.config/piscsi"
++CFG_DIR = getenv("PISCSI_CONFIG_DIR", f"{HOME_DIR}/.config/piscsi")
+ CONFIG_FILE_SUFFIX = "json"
+ 
+ # File ending used for drive properties files

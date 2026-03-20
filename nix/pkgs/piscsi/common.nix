@@ -25,6 +25,10 @@ buildPythonPackage {
 
   # Upstream doesn't ship a proper pyproject.toml.
   format = "pyproject";
+  patches = [
+    ./0003-common-paths.patch
+  ];
+  patchFlags = "-p3";
   postPatch = ''
     cat >>pyproject.toml <<EOF
 
