@@ -4,11 +4,12 @@
 , libpcap
 , protobuf
 , fetchFromGitHub
+, python3Packages
 , callPackage
 }: let
   pname = "piscsi";
   version = "25.12.01";
-in stdenv.mkDerivation {
+in stdenv.mkDerivation (finalAttrs: {
   inherit pname version;
 
   src = fetchFromGitHub {
@@ -18,6 +19,11 @@ in stdenv.mkDerivation {
     hash = "sha256-Qa7Jw9ov6UepFF21y5GbGqsoucTy5o8S1N8Bx3ogYYQ=";
   };
   sourceRoot = "source/cpp";
+
+  patches = [
+    ./0001-trusted-default-folder.patch
+  ];
+  patchFlags = "-p2";
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -57,7 +63,14 @@ in stdenv.mkDerivation {
 
   enableParallelBuilding = true;
 
-  passthru = {
-    web = callPackage ./web.nix {};
+  passthru = let
+    piscsi = finalAttrs;
+  in {
+    oled = callPackage ./oled.nix {
+      inherit piscsi;
+    };
+    web = callPackage ./web.nix {
+      inherit piscsi;
+    };
   };
-}
+})

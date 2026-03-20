@@ -1,0 +1,48 @@
+diff --git a/cpp/piscsi/piscsi_core.cpp b/cpp/piscsi/piscsi_core.cpp
+index 218ad39..d45b8d5 100644
+--- a/cpp/piscsi/piscsi_core.cpp
++++ b/cpp/piscsi/piscsi_core.cpp
+@@ -170,7 +170,7 @@ string Piscsi::ParseArguments(span<char *> args, PbCommand& command, int& port,
+ 				continue;
+ 
+ 			case 'F':
+-				if (const string error = piscsi_image.SetDefaultFolder(optarg); !error.empty()) {
++				if (const string error = piscsi_image.SetDefaultFolder(optarg, true); !error.empty()) {
+ 					throw parser_exception(error);
+ 				}
+ 				continue;
+diff --git a/cpp/piscsi/piscsi_image.cpp b/cpp/piscsi/piscsi_image.cpp
+index 8e569e0..2684a32 100644
+--- a/cpp/piscsi/piscsi_image.cpp
++++ b/cpp/piscsi/piscsi_image.cpp
+@@ -53,7 +53,7 @@ bool PiscsiImage::CreateImageFolder(const CommandContext& context, string_view f
+ 	return true;
+ }
+ 
+-string PiscsiImage::SetDefaultFolder(string_view f)
++string PiscsiImage::SetDefaultFolder(string_view f, bool trusted)
+ {
+ 	if (f.empty()) {
+ 		return "Can't set default image folder: Missing folder name";
+@@ -65,7 +65,7 @@ string PiscsiImage::SetDefaultFolder(string_view f)
+ 		folder = path(GetHomeDir() + "/" + folder.string());
+ 	}
+ 
+-	if (path home_root = path(GetHomeDir()).parent_path(); !folder.string().starts_with(home_root.string())) {
++	if (path home_root = path(GetHomeDir()).parent_path(); !trusted && !folder.string().starts_with(home_root.string())) {
+ 		return "Default image folder must be located in '" + home_root.string() + "'";
+ 	}
+ 
+diff --git a/cpp/piscsi/piscsi_image.h b/cpp/piscsi/piscsi_image.h
+index f53e894..c357dd3 100644
+--- a/cpp/piscsi/piscsi_image.h
++++ b/cpp/piscsi/piscsi_image.h
+@@ -28,7 +28,7 @@ public:
+ 	void SetDepth(int d) { depth = d; }
+ 	int GetDepth() const { return depth; }
+ 	string GetDefaultFolder() const { return default_folder; }
+-	string SetDefaultFolder(string_view);
++	string SetDefaultFolder(string_view f, bool trusted = false);
+ 	bool CreateImage(const CommandContext&) const;
+ 	bool DeleteImage(const CommandContext&) const;
+ 	bool RenameImage(const CommandContext&) const;

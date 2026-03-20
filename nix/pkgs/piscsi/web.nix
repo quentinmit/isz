@@ -1,7 +1,8 @@
-{ python3
-, piscsi
+{
+  piscsi,
+  python3Packages,
 }:
-python3.pkgs.buildPythonApplication {
+python3Packages.buildPythonApplication {
   pname = "piscsi-web";
   inherit (piscsi) src version;
   sourceRoot = "source/python/web";
@@ -22,28 +23,37 @@ python3.pkgs.buildPythonApplication {
       "click",
       "Flask",
       "flask-babel",
+      "idna",
       "itsdangerous",
       "Jinja2",
       "MarkupSafe",
       "piscsi-common",
       "protobuf",
+      "python-pam",
       "pytz",
       "requests",
-      "simplepam",
       "ua-parser",
       "vcgencmd",
       "Werkzeug",
     ]
-    [project.scripts]
-    piscsi-web = "web:main"
+    [tool.setuptools]
+    script-files = ["src/web.py"]
     EOF
 
+    cat >MANIFEST.in <<EOF
+    graft src
+    EOF
+
+    sed -i '1i#!/usr/bin/env python3' src/web.py
     substituteInPlace src/web.py \
-      --replace-fail 'if __name__ == "__main__"' 'def main()'
+      --replace-fail "Flask(__name__)" 'Flask("web_utils")'
   '';
 
-  propagatedBuildInputs = with python3.pkgs; [
+  build-system = with python3Packages; [
     setuptools
+  ];
+
+  propagatedBuildInputs = with python3Packages; [
     babel
     bjoern
     blinker
@@ -51,14 +61,18 @@ python3.pkgs.buildPythonApplication {
     click
     flask
     flask-babel
+    idna
     itsdangerous
     jinja2
+    markupsafe
     piscsi-common
     protobuf
+    python-pam
     pytz
     requests
-    simplepam
     ua-parser
     vcgencmd
   ];
+
+  meta.mainProgram = "web.py";
 }

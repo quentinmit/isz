@@ -4,15 +4,19 @@
 , setuptools
 , piscsi
 , lib
+, bridge-utils
 , coreutils
 , hfsutils
 , multipath-tools
 , dosfstools
 , hfdisk
+, hxtools
 , util-linux
 , unzip
+, unixtools
 , cdrkit
 , unar
+, pkgs
 }:
 buildPythonPackage {
   pname = "piscsi-common";
@@ -41,6 +45,13 @@ buildPythonPackage {
       --replace-fail '"fdisk"' '"${lib.getBin util-linux}/bin/fdisk"' \
       --replace-fail '"unzip"' '"${lib.getBin unzip}/bin/unzip"' \
       --replace-fail '"genisoimage"' '"${lib.getBin cdrkit}/bin/genisoimage"'
+    substituteInPlace src/piscsi/sys_cmds.py \
+      --replace-fail '"ps"' '"${lib.getExe unixtools.ps}"' \
+      --replace-fail '"brctl"' '"${lib.getExe' bridge-utils "brctl"}"' \
+      --replace-fail '"hostnamectl"' '"${lib.getExe' pkgs.systemd "hostnamectl"}"' \
+      --replace-fail '"journalctl"' '"${lib.getExe' pkgs.systemd "journalctl"}"' \
+      --replace-fail '"disktype"' '"${lib.getExe' util-linux "partx"}", "--show", "-v", "--output-all"' \
+      --replace-fail '"man2html"' '"${lib.getExe' hxtools "man2html"}"'
     substituteInPlace src/util/unarchiver.py \
       --replace-fail '"unar"' '"${lib.getBin unar}/bin/unar"' \
       --replace-fail '"lsar"' '"${lib.getBin unar}/bin/lsar"'
