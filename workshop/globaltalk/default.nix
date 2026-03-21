@@ -65,9 +65,9 @@
           Virtualization = "container";
         };
         networkConfig = {
-          Address = "172.30.98.130/26";
-          Gateway = "172.30.98.128";
-          DNS = "172.30.98.128";
+          Address = "172.30.98.131/26";
+          Gateway = "172.30.98.129";
+          DNS = "172.30.98.129";
         };
       };
 

@@ -38,9 +38,6 @@ bedroom-pi       A 172.30.96.33
 workshop         A 172.30.96.34
                  EUI48 04-42-1A-C9-93-8B
 
-rascsi           A 172.30.96.35
-                 EUI48 DC-A6-32-75-54-DC ; rascsi.isz
-macIIsi          A 172.30.96.36
 raspad           A 172.30.96.37
                  EUI48 DC-A6-32-D3-47-EA
 build-arm        A 172.30.96.39
@@ -114,6 +111,9 @@ tunnel-comclub   A 172.30.98.71
 
 ; AppleTalk hosts on vlan 983 (172.30.98.128/26)
 $ORIGIN appletalk.isz.wtf.
-router           A 172.30.98.128
-globaltalk       A 172.30.98.129
-workshop         A 172.30.98.130
+router           A 172.30.98.129
+globaltalk       A 172.30.98.130
+workshop         A 172.30.98.131
+rascsi           A 172.30.98.132
+                 EUI48 DC-A6-32-75-54-DC
+macIIsi          A 172.30.98.133
