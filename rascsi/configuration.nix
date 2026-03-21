@@ -21,12 +21,42 @@
   };
 
   networking.hostName = "rascsi";
+  networking.domain = "appletalk.isz.wtf";
 
-  isz.networking = {
-    lastOctet = 35;
-    macAddress = "dc:a6:32:75:54:dc";
-  };
+  networking.useDHCP = false;
+  networking.useNetworkd = true;
   networking.firewall.enable = false;
+
+  systemd.network.netdevs.piscsi_bridge = {
+    enable = true;
+    netdevConfig = {
+      Name = "piscsi_bridge";
+      Kind = "bridge";
+      MACAddress = "dc:a6:32:75:54:dc";
+    };
+    bridgeConfig = {
+      STP = "no";
+    };
+  };
+  systemd.network.networks = {
+    piscsi_bridge = {
+      name = "piscsi_bridge";
+      networkConfig = {
+        DHCP = "ipv4";
+      };
+    };
+    eth = {
+      matchConfig = {
+        Name = "e*";
+      };
+      networkConfig = {
+        Bridge = "piscsi_bridge";
+        LinkLocalAddressing = "no";
+        LLDP = true;
+        EmitLLDP = true;
+      };
+    };
+  };
 
   isz.openssh = {
     hostKeyTypes = ["ecdsa" "ed25519" "rsa"];
