@@ -60,11 +60,13 @@ in {
         hash = "sha256-FHHZ5MnOWbWnLIL2+d5VJoYAto4/GshK8S0DU3Bx7O8=";
         meta.license = lib.licenses.bsd2;
       };
-      xdg.dataFile."OpenSCAD/libraries/BOSL2".source = pkgs.fetchFromGitHub {
+      xdg.dataFile."OpenSCAD/libraries/BOSL2".source = let
+        version = "2.0.727";
+      in pkgs.fetchFromGitHub {
         owner = "BelfrySCAD";
         repo = "BOSL2";
-        rev = "ec929bb4e7366a6892c38ad9ba876978894dbdef";
-        hash = "sha256-BdQGYwWsroNaAP9AEojQ6qWbrKutG6U3yMzlBcUPkXQ=";
+        rev = "v${version}";
+        hash = "sha256-AvTeHpk92eHE39qGD9u0VGj9c+u2idljsrIo1HekP18=";
         meta.license = lib.licenses.bsd2;
       };
       xdg.dataFile."OpenSCAD/libraries/GoPro".source = pkgs.fetchFromGitHub {
