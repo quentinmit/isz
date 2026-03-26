@@ -23,6 +23,7 @@ let
         { name = name; ensureDBOwnership = true; }
       ];
     };
+    services.postgresqlBackup.databases = [ name ];
     services.nginx = {
       upstreams.${name}.servers."127.0.0.1:${toString config.services.${name}.settings.server.port}" = {};
       virtualHosts."arr.isz.wtf".locations."/${name}" = {

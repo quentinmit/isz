@@ -143,7 +143,7 @@
     nssmdns4 = true;
   };
 
-  services.postgresql.settings.full_page_writes = false;
+  isz.postgresql.enable = true;
 
   isz.krb5.enable = true;
 
