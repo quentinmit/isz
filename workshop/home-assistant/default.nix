@@ -243,6 +243,7 @@ in {
             "sensor.tempest_st_00122016_wind_direction"
           ];
           exclude.entity_globs = [
+            "sensor.bedroom_caparoc_*"
             "sensor.workshop_caparoc_*"
           ];
           db_url = lib.mkIf dbEnabled "postgresql://@/${dbName}";
