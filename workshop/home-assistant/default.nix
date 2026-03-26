@@ -55,18 +55,32 @@ in {
     dbUser = user;
     dbEnabled = config.services.postgresql.enable;
   in {
-    nixpkgs.overlays = [
-      (self: super: {
-        inherit (pkgs.unstable.extend (final: prev: {
-          home-assistant = prev.home-assistant.overrideAttrs (old: {
-            patches = (old.patches or []) ++ [
-              ./patches/hass-mikrotik-comment.patch
-              ./patches/esphome-entity-ids.patch
-            ];
-          });
-        })) home-assistant;
-      })
-    ];
+    services.home-assistant.package = (pkgs.unstable.home-assistant.override (old: {
+      packageOverrides = self: super: {
+        reactivex = let
+          version = "5.0.0a2";
+        in super.reactivex.overridePythonAttrs (old: {
+          # Bump reactivex to a version that supports Python 3.14
+          # https://github.com/ReactiveX/RxPY/issues/737
+          inherit version;
+          src = pkgs.fetchFromGitHub {
+            owner = "ReactiveX";
+            repo = "RxPY";
+            tag = "v${version}";
+            hash = "sha256-91pPWYXPuGR0++AzpglMFWMPKtY5jFa7YGwU8GPVJ1U=";
+          };
+          build-system = old.build-system or [] ++ [
+            self.hatchling
+          ];
+          disabled = false;
+        });
+      };
+    })).overrideAttrs (old: {
+      patches = (old.patches or []) ++ [
+        ./patches/hass-mikrotik-comment.patch
+        ./patches/esphome-entity-ids.patch
+      ];
+    });
     nixpkgs.config.permittedInsecurePackages = [
       "openssl-1.1.1w"
     ];
