@@ -127,6 +127,8 @@
           mountpoint = "/var";
           options."com.sun:auto-snapshot" = "true";
         };
+        "var/backup".type = "zfs_fs";
+        "var/backup/postgresql".type = "zfs_fs";
         "var/cache".type = "zfs_fs";
         "var/lib" = {
           type = "zfs_fs";
