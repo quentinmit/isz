@@ -216,6 +216,7 @@ in {
         gperftools
         upx
         loccount
+        golangci-lint
       ];
       home.file.".gdbinit".text = ''
         set history filename ~/.gdb_history
