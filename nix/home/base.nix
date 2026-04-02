@@ -53,6 +53,7 @@ in {
         "__pycache__"
         "*.kate-swp"
       ];
+      signing.format = "openpgp";
       settings = {
         user.name = "Quentin Smith";
         user.email = lib.mkDefault "quentin@mit.edu";

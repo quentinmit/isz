@@ -7,6 +7,7 @@ in {
   options = with lib; {
     programs.cargo = lib.optionalAttrs needed {
       enable = mkEnableOption "cargo";
+      package = mkPackageOption pkgs "cargo" { nullable = true; };
       settings = mkOption {
         inherit (tomlFormat) type;
         default = {};

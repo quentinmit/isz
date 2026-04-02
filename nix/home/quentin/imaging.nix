@@ -46,7 +46,6 @@ in {
         swayimg
         fontfor
         #broken fontmatrix
-        fontfinder
       ] ++ (available libresprite)
       ++ (available yeetgif)
       ++ (available gimp-with-plugins);

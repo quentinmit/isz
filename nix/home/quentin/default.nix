@@ -387,6 +387,7 @@ in {
           pass-genphrase
           pass-checkup
         ]);
+        settings.PASSWORD_STORE_DIR = "$XDG_DATA_HOME/password-store";
       };
     }
     (lib.mkIf config.isz.graphical {

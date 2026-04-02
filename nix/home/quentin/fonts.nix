@@ -1,5 +1,7 @@
 { config, lib, pkgs, ... }:
-{
+let
+  available = pkg: lib.optional pkg.meta.available pkg;
+in {
   options.isz.quentin.fonts.enable = lib.mkOption {
     type = lib.types.bool;
     default = config.isz.quentin.enable && config.isz.graphical;
@@ -30,7 +32,7 @@
       typodermic-public-domain
       cardo # Large Unicode font for linguistics
       carlito # Calibri clone
-      charis-sil # Broad multilingual use
+      (pkgs.charis or pkgs.charis-sil) # Broad multilingual use
       comic-relief # Comic Sans clone
       comic-mono
       cooper # Classis serif font
@@ -70,8 +72,7 @@
       unifont
       vista-fonts
       weather-icons
-      xkcd-font
-    ];
+    ] ++ (available xkcd-font);
     fonts.fontconfig.configFile."quentin-bitmap-fonts" = {
       enable = true;
       priority = 50;
@@ -85,7 +86,8 @@
         tewi-font # Monaco clone
         uni-vga
         unscii # Computer graphics
-      ]; in ''
+      ] ++ (available tewi-font); in # Monaco clone
+      ''
         <?xml version='1.0'?>
         <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
         <fontconfig>

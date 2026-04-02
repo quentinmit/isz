@@ -36,6 +36,7 @@ in {
       pkgs.rustup
     ];
     programs.cargo.enable = true;
+    programs.cargo.package = null; # Just the config, no binaries.
     programs.cargo.settings.target = lib.mkIf (!pkgs.stdenv.isLinux) {
       "x86_64-unknown-linux-gnu".linker = "${pkgs.pkgsCross.gnu64.stdenv.cc}/bin/x86_64-unknown-linux-gnu-cc";
     };

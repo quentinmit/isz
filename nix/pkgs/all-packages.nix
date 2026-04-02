@@ -187,4 +187,5 @@ final: prev:
   dsd = final.callPackage ./dsd {};
   itpp = final.callPackage ./itpp {};
   pkb-client = final.python3.pkgs.callPackage ./python/pkb-client {};
+  tewi-font = final.callPackage ./tewi-font {};
 }
