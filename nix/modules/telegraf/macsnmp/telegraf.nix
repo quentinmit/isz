@@ -166,7 +166,43 @@ in {
             { name = "bytesFree"; oid = "Apple-Macintosh-System-MIB::volBytesFree"; }
           ];
         }
+        { # RTMP
+          name = "snmp-appletalk-routes";
+          inherit_tags = ["hostname"];
+          field = [
+            { name = "rangeStart"; oid = "RFC1243-MIB::rtmpRangeStart"; conversion = "hextoint:BigEndian:uint16"; is_tag = true; }
+            { name = "rangeEnd"; oid = "RFC1243-MIB::rtmpRangeEnd"; conversion = "hextoint:BigEndian:uint16"; is_tag = true; }
+            { name = "type"; oid = "RFC1243-MIB::rtmpType"; is_tag = true; }
+            { name = "zone"; oid = "RFC1243-MIB::zipZoneName"; oid_index_length = 2; is_tag = true; }
+            { name = "nextHop"; conversion = "hex"; oid = "RFC1243-MIB::rtmpNextHop"; }
+            { name = "port"; oid = "RFC1243-MIB::rtmpPort"; }
+            { name = "hops"; oid = "RFC1243-MIB::rtmpHops"; }
+            { name = "state"; oid = "RFC1243-MIB::rtmpState"; }
+          ];
+        }
       ];
     }) cfg.targets;
+    processors.starlark = [
+      {
+        namepass = ["macsnmp-appletalk-routes"];
+
+        source = ''
+          def apply(metric):
+            if "rangeEnd" in metric.tags and "rangeStart" in metric.tags and metric.tags["rangeEnd"] == "0":
+              metric.tags["rangeEnd"] = metric.tags["rangeStart"]
+            if "type" in metric.tags and "nextHop" in metric.fields:
+              h = metric.fields["nextHop"]
+              t = metric.tags["type"]
+              if t == "2":
+                # AppleTalk
+                h = "%s.%s" % (h[:4], h[4:])
+              elif t == "1":
+                # Other (IP)
+                h = "%d.%d.%d.%d" % tuple([int(h[i:i+2], 16) for i in range(0, 8, 2)])
+              metric.fields["nextHop"] = h
+            return [metric]
+        '';
+      }
+    ];
   };
 }
