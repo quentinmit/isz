@@ -136,6 +136,7 @@
         ecdsa
         epc
         ephem
+        euporie
         flake8
         pep8-naming
         fonttools
