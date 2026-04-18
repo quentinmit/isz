@@ -227,7 +227,7 @@
         pykerberos
         pylint
         #pyobjc
-        pypdf2
+        pypdf
         pyperclip
         pytest
         pyusb
