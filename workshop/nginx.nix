@@ -119,7 +119,7 @@
         "arr.isz.wtf" = {
           forceSSL = true;
           enableACME = true;
-          acmeFallbackHost = "heartofgold.isz.wtf";
+          acmeFallbackHost = "172.30.96.${toString self.nixosConfigurations.heartofgold.config.isz.networking.lastOctet}";
           locations."/" = {
             proxyPass = "https://arr";
             proxyWebsockets = true;
