@@ -93,12 +93,13 @@
       };
     in {
       accounts.email.accounts.isz = { options, config, ... }: {
-        config = if options ? meli.settings then {
+        config = {
           enable = true;
           primary = true;
+        } // lib.optionalAttrs (options ? meli.settings) {
           meli.enable = true;
           meli.settings = iszSettings;
-        } else {};
+        };
       };
       programs.meli = {
         enable = true;
