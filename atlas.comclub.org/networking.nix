@@ -6,6 +6,14 @@
     netdevConfig.Name = "br0";
     netdevConfig.Kind = "bridge";
   };
+  # /etc/sysctl.d/50-default.conf sets rp_filter to 2
+  # If systemd-sysctl is (re)started after systemd-networkd, it will re-enable rp_filter.
+  boot.kernel.sysctl = {
+    "net.ipv4.conf.default.rp_filter" = 0;
+    "net.ipv4.conf.*.rp_filter" = 0;
+    "net.ipv4.conf.br0.rp_filter" = 0;
+    "net.ipv4.conf.lo.rp_filter" = 0;
+  };
   systemd.network.networks = {
     br0 = {
       name = "br0";
