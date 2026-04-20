@@ -6,7 +6,7 @@
 , pkg-config
 , perl
 , file
-, vde2
+, vdeplug4
 , SDL2
 , gtk2
 }:
@@ -35,7 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     SDL2
     gtk2
-    vde2
+    vdeplug4
   ];
   preConfigure = ''
     NO_CONFIGURE=1 ./autogen.sh

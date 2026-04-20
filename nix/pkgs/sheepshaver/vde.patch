@@ -1,14 +1,26 @@
-commit dad725af5aa6f1d7f9af37785be1c05144927039
+commit bbc30a98a2be599ddee9b200a7824dcef3350ebb
 Author: Quentin Smith <quentin@mit.edu>
 Date:   Sun Apr 19 19:56:21 2026 -0400
 
     Add support for VDE to SheepShaver
 
 diff --git a/BasiliskII/src/Unix/ether_unix.cpp b/BasiliskII/src/Unix/ether_unix.cpp
-index a0c6cafd..c19c0522 100644
+index a0c6cafd..af0817a3 100644
 --- a/BasiliskII/src/Unix/ether_unix.cpp
 +++ b/BasiliskII/src/Unix/ether_unix.cpp
-@@ -898,7 +898,7 @@ static int16 ether_do_write(uint32 arg)
+@@ -313,6 +313,11 @@ bool ether_init(void)
+ 		net_if_type = NET_IF_VDE;
+ 		printf("selected Ethernet device type VDE\n");
+ 	}
++  else if (strncmp(name, "vde:", 4) == 0) {
++    net_if_type = NET_IF_VDE;
++    vde_sock = strdup(name+4);
++    printf("selected Ethernet device type VDE\n");
++  }
+ #endif
+ #ifdef ENABLE_MACOSX_ETHERHELPER
+ 	else if (strncmp(name, "etherhelper", 10) == 0)
+@@ -898,7 +903,7 @@ static int16 ether_do_write(uint32 arg)
  		}
  
  		do {
