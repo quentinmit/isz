@@ -1,0 +1,84 @@
+commit c02576a3a77d1c38ce3bf302185729de8e9ef31d
+Author: Quentin Smith <quentin@mit.edu>
+Date:   Sun Apr 19 19:56:21 2026 -0400
+
+    Add support for VDE to SheepShaver
+
+diff --git a/SheepShaver/src/Unix/configure.ac b/SheepShaver/src/Unix/configure.ac
+index 830fbcdf..c51a463d 100644
+--- a/SheepShaver/src/Unix/configure.ac
++++ b/SheepShaver/src/Unix/configure.ac
+@@ -747,6 +747,11 @@ AS_IF([test  "x$have_libvhd" = "xyes" ], [
+ ])
+ 
+ 
++AC_ARG_WITH(vdeplug,
++AS_HELP_STRING([--with-vdeplug], [Enable VDE virtual network support]),
++[],
++[with_vdeplug=yes])
++
+ 
+ 
+ dnl Is the slirp library supported?
+@@ -768,6 +773,13 @@ if [[ -n "$CAN_SLIRP" ]]; then
+ fi
+ AC_SUBST(SLIRP_SRCS)
+ 
++dnl Is libvdeplug available?
++have_vdeplug=no
++AS_IF([test "x$with_vdeplug" = "xyes"], [
++have_vdeplug=yes
++AC_CHECK_LIB(vdeplug, vde_close, [], [have_vdeplug=no])
++])
++
+ dnl SDL overrides
+ if [[ "x$WANT_SDL" = "xyes" ]]; then
+   AC_DEFINE(USE_SDL, 1, [Define to enble SDL support.])
+@@ -1761,6 +1773,7 @@ echo SDL support ...................... : $SDL_SUPPORT
+ echo SDL major-version ................ : $WANT_SDL_VERSION_MAJOR
+ echo BINCUE support ................... : $have_bincue
+ echo LIBVHD support ................... : $have_libvhd
++echo VDE support ...................... : $have_vdeplug
+ echo FBDev DGA support ................ : $WANT_FBDEV_DGA
+ echo XFree86 DGA support .............. : $WANT_XF86_DGA
+ echo XFree86 VidMode support .......... : $WANT_XF86_VIDMODE
+diff --git a/SheepShaver/src/Unix/main_unix.cpp b/SheepShaver/src/Unix/main_unix.cpp
+index 9e526799..0d707c2b 100755
+--- a/SheepShaver/src/Unix/main_unix.cpp
++++ b/SheepShaver/src/Unix/main_unix.cpp
+@@ -207,6 +207,8 @@ int64 TimebaseSpeed;	// Timebase clock speed (Hz)
+ uint8 *RAMBaseHost;		// Base address of Mac RAM (host address space)
+ uint8 *ROMBaseHost;		// Base address of Mac ROM (host address space)
+ uint32 ROMEnd;
++// vde switch variable
++char* vde_sock;
+ 
+ #if defined(__APPLE__) && defined(__x86_64__) || defined(MEM_BULK)
+ uint8 gZeroPage[0x3000], gKernelData[0x2000];
+@@ -860,6 +862,14 @@ int main(int argc, char **argv)
+ 				UserPrefsPath = argv[i];
+ 				argv[i] = NULL;
+ 			}
++    } else if (strcmp(argv[i], "--switch") == 0) {
++      argv[i] = NULL;
++      if (argv[++i] == NULL) {
++        printf("switch address not defined\n");
++        usage(argv[0]);
++      }
++      vde_sock = argv[i];
++      argv[i] = NULL;
+ 		} else if (strcmp(argv[i], "--nogui") == 0) {
+ 			// We intercept the --nogui commandline so that the settings
+ 			// window can change the setting from the prefs file
+diff --git a/SheepShaver/src/include/main.h b/SheepShaver/src/include/main.h
+index 787832da..8f14e26d 100644
+--- a/SheepShaver/src/include/main.h
++++ b/SheepShaver/src/include/main.h
+@@ -30,6 +30,7 @@ extern uint32 PVR;				// Theoretical PVR
+ extern int64 CPUClockSpeed;		// Processor clock speed (Hz)
+ extern int64 BusClockSpeed;		// Bus clock speed (Hz)
+ extern int64 TimebaseSpeed;		// Timebase clock speed (Hz)
++extern char* vde_sock;        // vde switch variable
+ 
+ #ifdef __BEOS__
+ extern system_info SysInfo;		// System information

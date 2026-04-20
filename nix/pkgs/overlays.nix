@@ -189,4 +189,13 @@ in {
       ./pyrosimple/rtorrent-0.16.patch
     ];
   });
+  vde2-vxlan = prev.vde2.overrideAttrs (old: {
+    postPatch = old.postPatch or "" + ''
+      cat >>src/Makefile.am <<EOF
+      SUBDIRS += vde_vxlan
+      EOF
+      substituteInPlace configure.ac \
+        --replace-fail "[src/Makefile]" "[src/Makefile] [src/vde_vxlan/Makefile]"
+    '';
+  });
 }
