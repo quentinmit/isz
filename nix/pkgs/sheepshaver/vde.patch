@@ -1,9 +1,22 @@
-commit c02576a3a77d1c38ce3bf302185729de8e9ef31d
+commit dad725af5aa6f1d7f9af37785be1c05144927039
 Author: Quentin Smith <quentin@mit.edu>
 Date:   Sun Apr 19 19:56:21 2026 -0400
 
     Add support for VDE to SheepShaver
 
+diff --git a/BasiliskII/src/Unix/ether_unix.cpp b/BasiliskII/src/Unix/ether_unix.cpp
+index a0c6cafd..c19c0522 100644
+--- a/BasiliskII/src/Unix/ether_unix.cpp
++++ b/BasiliskII/src/Unix/ether_unix.cpp
+@@ -898,7 +898,7 @@ static int16 ether_do_write(uint32 arg)
+ 		}
+ 
+ 		do {
+-			len = vde_send(vde_conn, packet, sizeof(packet), 0);
++			len = vde_send(vde_conn, packet, len, 0);
+ 		} while (len < 0);
+ 
+ 		return noErr;
 diff --git a/SheepShaver/src/Unix/configure.ac b/SheepShaver/src/Unix/configure.ac
 index 830fbcdf..c51a463d 100644
 --- a/SheepShaver/src/Unix/configure.ac

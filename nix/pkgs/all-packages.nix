@@ -188,4 +188,6 @@ final: prev:
   itpp = final.callPackage ./itpp {};
   pkb-client = final.python3.pkgs.callPackage ./python/pkb-client {};
   tewi-font = final.callPackage ./tewi-font {};
+  vdeplug4 = final.callPackage ./vdeplug4 {};
+  libexecs = final.callPackage ./libexecs {};
 }

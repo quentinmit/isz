@@ -110,6 +110,7 @@ droid            CNAME pixel-9-pro-xl-linux
 tunnel-comclub   A 172.30.98.71
 
 ; AppleTalk hosts on vlan 983 (172.30.98.128/26)
+; VXLAN on vlan3096/239.0.98.128
 $ORIGIN appletalk.isz.wtf.
 router           A 172.30.98.129
 globaltalk       A 172.30.98.130
