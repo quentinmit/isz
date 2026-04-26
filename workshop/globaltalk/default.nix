@@ -14,6 +14,16 @@
   })];
 
 
+  systemd.network.networks."20-atalk" = {
+    name = "atalk-*";
+    networkConfig = {
+      Bridge = "br0";
+    };
+    bridgeVLANs = [
+      { PVID = 983; EgressUntagged = 983; }
+    ];
+  };
+
   systemd.network.networks."20-ve-globaltalk" = {
     name = "ve-globaltalk";
     networkConfig = {
