@@ -215,6 +215,9 @@ in
       loader.grub.enable = false;
     };
 
+    # Work around https://github.com/NixOS/nixpkgs/issues/513512
+    boot.kernel.sysctl."vm.mmap_rnd_bits" = 24;
+
     virtualisation.vmVariant = {
       boot.initrd.kernelModules = [
         "pci-host-generic"
