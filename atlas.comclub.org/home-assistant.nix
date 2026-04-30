@@ -85,6 +85,14 @@ in {
       script = "!include scripts.yaml";
       "scene ui" = "!include scenes.yaml";
 
+      notify = [{
+        name = "smtp";
+        platform = "smtp";
+        encryption = "none";
+        sender = "homeassistant@comclub.org";
+        recipient = "quentin@comclub.org";
+      }];
+
       light = [{
         platform = "switch";
         name = "Upstairs Hall Lights";
