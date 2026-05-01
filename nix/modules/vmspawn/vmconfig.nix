@@ -34,12 +34,13 @@
 
   boot.initrd.systemd.enable = true;
   boot.initrd.systemd.root = "gpt-auto";
+  boot.initrd.systemd.emergencyAccess = lib.mkDefault true;
 
-  fileSystems."/nix/store" = {
-    device = "mnt0";
-    fsType = "virtiofs";
-    neededForBoot = true;
-  };
+  boot.postBootCommands = lib.mkIf config.nix.enable ''
+    if [[ "$(cat /proc/cmdline)" =~ regInfo=([^ ]*) ]]; then
+      ${config.nix.package.out}/bin/nix-store --load-db < ''${BASH_REMATCH[1]}
+    fi
+  '';
 
   networking = {
     useDHCP = true;

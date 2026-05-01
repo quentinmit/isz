@@ -52,6 +52,27 @@ in {
                                   '';
                                   }
                                 ];
+                                fileSystems."/nix/store" =
+                                  if config.writableStore then
+                                    {
+                                      overlay = {
+                                        lowerdir = [ "/nix/.ro-store" ];
+                                        upperdir = "/nix/.rw-store/upper";
+                                        workdir = "/nix/.rw-store/work";
+                                      };
+                                      options = [ "userxattr" ];
+                                    }
+                                  else
+                                    {
+                                      device = "/nix/.ro-store";
+                                      options = [ "bind" ];
+                                    };
+
+                                fileSystems."/nix/.ro-store" = {
+                                  device = "mnt0";
+                                  fsType = "virtiofs";
+                                  neededForBoot = true;
+                                };
                               };
                             };
                         in
@@ -91,6 +112,15 @@ in {
                   the NixOS configurations.
                 '';
               };
+              writableStore = mkOption {
+                type = types.bool;
+                default = true;
+                description = ''
+                  If enabled, the Nix store in the VM is made writable by
+                  layering an overlay filesystem on top of the host's Nix
+                  store.
+                '';
+              };
             };
           }
         )
@@ -128,7 +158,7 @@ in {
           StateDirectory = "machines/%i";
           ExecStart = [
             ""
-            "${lib.getExe' pkgs.systemd "systemd-vmspawn"} --directory=/var/lib/machines/%i --register=yes --keep-unit --network-tap --machine=%i --bind-ro=/nix/store --linux=${root}/kernel --initrd=${root}/initrd ${root}/kernel-params init=${root}/init"
+            "${lib.getExe' pkgs.systemd "systemd-vmspawn"} --directory=/var/lib/machines/%i --register=yes --keep-unit --network-tap --machine=%i --bind-ro=/nix/store:/nix/.ro-store --linux=${root}/kernel --initrd=${root}/initrd ${root}/kernel-params init=${root}/init regInfo=${pkgs.closureInfo { rootPaths = [ cfg.config.system.build.toplevel ]; }}/registration"
           ];
         };
       }) config.vms;
