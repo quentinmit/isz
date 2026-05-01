@@ -54,4 +54,11 @@
   systemd.services."sshd@".serviceConfig = {
     ExecSearchPath = "${config.services.openssh.package}/bin";
   };
+  systemd.services."sshd-vsock@" = {
+    overrideStrategy = "asDropin";
+    serviceConfig.ExecStart = [
+      ""
+      "-sshd -i -o 'AuthorizedKeysFile=%d/ssh.ephemeral-authorized_keys-all %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u' -D -f /etc/ssh/sshd_config"
+    ];
+  };
 }
