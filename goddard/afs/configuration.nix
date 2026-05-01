@@ -19,11 +19,11 @@
     cellName = "athena.mit.edu";
   };
   nix.settings.trusted-users = [ "root" "quentin" ];
+  services.locate.enable = lib.mkForce false;
   virtualisation.vmVariant = {
     users.users.root.hashedPassword = "";
     users.users.quentin.hashedPassword = "";
     boot.initrd.systemd.emergencyAccess = true;
-    services.locate.enable = lib.mkForce false;
   };
   users.users.quentin = {
     isNormalUser = true;
