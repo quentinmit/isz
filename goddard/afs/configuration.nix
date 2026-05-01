@@ -4,7 +4,7 @@
     ../../nix/modules/vmspawn/vmconfig.nix
   ];
 
-  nixpkgs.hostPlatform = "x86_64-linux";
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   nixpkgs.overlays = lib.mkAfter [
     (final: prev: {
       openssh = final.openssh_gssapi;

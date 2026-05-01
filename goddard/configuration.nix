@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nixpkgs, disko, nixos-hardware, ... }:
+{ config, pkgs, lib, nixpkgs, disko, nixos-hardware, self, specialArgs, ... }:
 {
   imports = [
     nixos-hardware.nixosModules.framework-16-7040-amd
@@ -238,6 +238,21 @@
   programs.wireshark.package = pkgs.wireshark;
 
   systemd.vmspawn.enable = true;
+  # Enable systemd-networkd to manage container/VM interfaces.
+  systemd.network.enable = true;
+  # Disable systemd-networkd-wait-online and resolved, since NetworkManager handles them.
+  systemd.network.wait-online.enable = false;
+  services.resolved.enable = false;
+
+  vms.goddard-afs = {
+    config = {
+      imports = (builtins.attrValues self.nixosModules) ++ [
+        self.overlayModule
+        ./afs/configuration.nix
+      ];
+    };
+    inherit specialArgs;
+  };
 
   virtualisation.libvirtd = {
     enable = true;

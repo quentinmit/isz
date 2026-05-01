@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, ... } @ host:
 let
   cfg = config.systemd.vmspawn;
 in {
@@ -73,14 +73,23 @@ in {
                 default = pkgs.path;
                 defaultText = literalExpression "pkgs.path";
                 description = ''
-                A path to the nixpkgs that provide the modules, pkgs and lib for evaluating the container.
+                  A path to the nixpkgs that provide the modules, pkgs and lib for evaluating the container.
 
-                To only change the `pkgs` argument used inside the container modules,
-                set the `nixpkgs.*` options in the container {option}`config`.
-                Setting `config.nixpkgs.pkgs = pkgs` speeds up the container evaluation
-                by reusing the system pkgs, but the `nixpkgs.config` option in the
-                container config is ignored in this case.
-              '';
+                  To only change the `pkgs` argument used inside the container modules,
+                  set the `nixpkgs.*` options in the container {option}`config`.
+                  Setting `config.nixpkgs.pkgs = pkgs` speeds up the container evaluation
+                  by reusing the system pkgs, but the `nixpkgs.config` option in the
+                  container config is ignored in this case.
+                '';
+              };
+              specialArgs = mkOption {
+                type = types.attrsOf types.unspecified;
+                default = { };
+                description = ''
+                  A set of special arguments to be passed to NixOS modules.
+                  This will be merged into the `specialArgs` used to evaluate
+                  the NixOS configurations.
+                '';
               };
             };
           }
@@ -106,6 +115,23 @@ in {
       systemd.additionalUpstreamUserUnits = lib.mkIf (lib.versionAtLeast config.systemd.package.version "258") [
         "systemd-vmspawn@.service"
       ];
+      systemd.services = lib.mapAttrs' (name: cfg: let
+        root = cfg.config.system.build.toplevel;
+      in lib.nameValuePair "systemd-vmspawn@${name}" {
+        overrideStrategy = "asDropin";
+        path = with pkgs; [
+          qemu
+          virtiofsd
+          openssh
+        ];
+        serviceConfig = {
+          StateDirectory = "machines/%i";
+          ExecStart = [
+            ""
+            "${lib.getExe' pkgs.systemd "systemd-vmspawn"} --directory=/var/lib/machines/%i --register=yes --keep-unit --network-tap --machine=%i --bind-ro=/nix/store --linux=${root}/kernel --initrd=${root}/initrd ${root}/kernel-params init=${root}/init"
+          ];
+        };
+      }) config.vms;
     })
   ];
 }

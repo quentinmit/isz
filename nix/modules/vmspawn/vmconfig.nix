@@ -2,6 +2,7 @@
 {
   # Support for running as a systemd-vmspawn VM
   # Based on https://blog.awoo.systems/posts/2025-06-23-lightweight-virtual-machines-nixos
+  # and https://github.com/NixOS/nixpkgs/blob/master/nixos/tests/systemd-machinectl.nix
 
   # we don't need to load CPU firmware in a VM
   hardware.enableRedistributableFirmware = false;
@@ -32,6 +33,13 @@
   boot.loader.supportsInitrdSecrets = true;
 
   boot.initrd.systemd.enable = true;
+  boot.initrd.systemd.root = "gpt-auto";
+
+  fileSystems."/nix/store" = {
+    device = "mnt0";
+    fsType = "virtiofs";
+    neededForBoot = true;
+  };
 
   networking = {
     useDHCP = true;
