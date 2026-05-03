@@ -213,6 +213,7 @@
   fonts.packages = with pkgs; [
     corefonts
   ];
+  fonts.enableGhostscriptFonts = true;
 
   i18n.extraLocales = [
     "en_US/ISO-8859-1"
