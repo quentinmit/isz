@@ -116,6 +116,90 @@
           };
         };
       };
+
+      systemd.tmpfiles.settings."10-pdf" = {
+        "/var/spool/pdf".d = {
+          user = "cups";
+          group = "root";
+          mode = "0755";
+        };
+      };
+
+      fonts = {
+        enableDefaultFonts = true;
+        enableGhostscriptFonts = true;
+      };
+
+      services.printing = let
+        pdfBackend = pkgs.writeShellApplication {
+          name = "../lib/cups/backend/pdf";
+          # Based on https://wiki.alienbase.nl/doku.php?id=slackware:cups
+          runtimeInputs = with pkgs; [
+            ghostscript
+            coreutils
+          ];
+          text = ''
+            set -x
+            PDFBIN="ps2pdf"
+            # filename of the PDF File
+            PRINTTIME=$(date +%Y-%m-%d_%H.%M.%S)
+            # no argument, prints available URIs
+            if [ $# -eq 0 ]; then
+              echo "direct pdf \"Unknown\" \"PDF Creator\""
+              exit 0
+            fi
+            # case of wrong number of arguments
+            if [ $# -ne 5 ] && [ $# -ne 6 ]; then
+              echo "Usage: pdf job-id user title copies options [file]"
+              exit 1
+            fi
+            # get PDF directory from device URI, and check write status
+            PDFDIR=''${DEVICE_URI#pdf:}
+            if [ ! -d "$PDFDIR" ] || [ ! -w "$PDFDIR" ]; then
+              echo "ERROR: directory $PDFDIR not writable"
+              exit 1
+            fi
+            # generate output filename
+            OUTPUTFILENAME=
+            if [ "$3" = "" ]; then
+              OUTPUTFILENAME="$PDFDIR/unknown.pdf"
+            else
+              if [ "$2" != "" ]; then
+                OUTPUTFILENAME="$PDFDIR/$2-$PRINTTIME.pdf"
+              else
+                OUTPUTFILENAME="$PDFDIR/$PRINTTIME.pdf"
+              fi
+            fi
+            # run ghostscript
+            if [ $# -eq 6 ]; then
+              $PDFBIN "$6" "$OUTPUTFILENAME" >& /dev/null
+            else
+              $PDFBIN - "$OUTPUTFILENAME" >& /dev/null
+            fi
+
+            # Make the file visible (but read-only except for owner);
+            # This is only needed when the username ($2) is not set,
+            # for instance when printing a test page from the web interface.
+            chmod 644 "$OUTPUTFILENAME"
+
+            exit 0
+          '';
+        };
+      in {
+        enable = true;
+        drivers = with pkgs; [
+          gutenprint
+          foomatic-db-ppds
+          cups-pdf-to-pdf
+          pdfBackend
+        ];
+      };
+      hardware.printers.ensurePrinters = [{
+        name = "PDF";
+        deviceUri = "pdf:/var/spool/pdf/";
+        model = "CUPS-PDF_noopt.ppd";
+        ppdOptions.job-sheets-default = "standard";
+      }];
     };
   };
 }
