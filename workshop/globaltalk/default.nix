@@ -63,6 +63,7 @@
       imports = [
         self.overlayModule
         self.nixosModules.base
+        self.nixosModules.papd
       ];
       networking.useHostResolvConf = false;
       networking.useNetworkd = true;
@@ -124,6 +125,15 @@
           mode = "0755";
         };
       };
+
+      nixpkgs.overlays = [(final: prev: {
+        netatalk = prev.netatalk.overrideAttrs (old: {
+          postPatch = old.postPatch or "" + ''
+            substituteInPlace etc/papd/meson.build \
+              --replace-fail "' + spooldir" "/' + spooldir"
+          '';
+        });
+      })];
 
       fonts = {
         enableDefaultFonts = true;
@@ -200,6 +210,13 @@
         model = "CUPS-PDF_noopt.ppd";
         ppdOptions.job-sheets-default = "standard";
       }];
+      services.papd = {
+        enable = true;
+        printers."GlobalTalk PDF Printer" = {
+          operator = "afpguest";
+          printer = "PDF";
+        };
+      };
     };
   };
 }
