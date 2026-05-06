@@ -1,5 +1,6 @@
 { config, pkgs, lib, ... }:
 let
+  inherit (config.security.pki) caBundle;
   sslCertDir = config.security.acme.certs."mail.isz.wtf".directory;
   domainName = "isz.wtf";
 in {
@@ -92,6 +93,7 @@ in {
       ];
     };
   };
+  isz.krb5.enable = true;
   home-manager.users.quentin = let
     isync = pkgs.isync.override {
         withCyrusSaslXoauth2 = true;
@@ -154,6 +156,28 @@ in {
     services.mbsync = {
       enable = false;
       package = isync;
+    };
+    programs.msmtp = {
+      enable = true;
+    };
+    programs.alpine.extraConfig.sendmail-path = "${lib.getExe pkgs.msmtp} --read-envelope-from --read-recipients";
+    accounts.email.accounts.mit = {
+      realName = "Quentin Smith";
+      address = "quentin@mit.edu";
+      userName = "quentin@mit.edu";
+      smtp.host = "outgoing.mit.edu";
+      smtp.port = 587;
+      smtp.tls.enable = true;
+      smtp.tls.useStartTls = true;
+      smtp.tls.certificatesFile = caBundle;
+      msmtp.enable = true;
+      msmtp.extraConfig.auth = "gssapi";
+      # passwordCommand = lib.getExe pkgs.oauth2ms;
+      # smtp.host = "smtp.office365.com";
+      # msmtp.extraConfig = {
+      #   tls_certcheck = "on";
+      #   auth = "xoauth2";
+      # };
     };
   };
 }

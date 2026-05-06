@@ -41,7 +41,9 @@
           address-book = "AB .addressbook";
           # TODO: sendmail-path
           # TODO: printer
-          # TODO: patterns-roles
+          patterns-roles = [
+            ''LIT:pattern="/NICK=MIT/FLDTYPE=SPEC/FOLDER={mail.isz.wtf}MIT" action="/ROLE=1/FROM=Quentin Smith <quentin@mit.edu>/RTYPE=YES/FTYPE=YES/CTYPE=NO"''
+          ];
         };
         features = {
           alternate-compose-menu = true;
