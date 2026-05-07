@@ -31,6 +31,7 @@ in {
         libraw # Replaces dcraw
         nsxiv
         opencv
+        ptouch-print
         rawtherapee-snapshot
         #broken wxSVG
         libwmf
