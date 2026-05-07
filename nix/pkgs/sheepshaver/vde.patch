@@ -1,34 +1,50 @@
-commit bbc30a98a2be599ddee9b200a7824dcef3350ebb
+commit 06d8bc02631b14a023ca29b1bd85bb1c129755db
 Author: Quentin Smith <quentin@mit.edu>
 Date:   Sun Apr 19 19:56:21 2026 -0400
 
     Add support for VDE to SheepShaver
+    
+    This commit fixes and extends the existing support for VDE with:
+    
+    - packets now have the correct length, instead of having trailing garbage
+    - support in SheepShaver's configure script
+    - The destination VDE link can be configured as part of the ether pref, which means it can be saved with the other prefs
+    
+    With this PR and linking against vdeplug4, it's now possible to launch SheepShaver as
+    
+    sheepshaver --ether 'vde:cmd://ssh root@server vde_plug tap://tap0'
+    
+    to establish a remote TAP device over ssh.
 
 diff --git a/BasiliskII/src/Unix/ether_unix.cpp b/BasiliskII/src/Unix/ether_unix.cpp
-index a0c6cafd..af0817a3 100644
+index a0c6cafd..5f14cdfd 100644
 --- a/BasiliskII/src/Unix/ether_unix.cpp
 +++ b/BasiliskII/src/Unix/ether_unix.cpp
 @@ -313,6 +313,11 @@ bool ether_init(void)
  		net_if_type = NET_IF_VDE;
  		printf("selected Ethernet device type VDE\n");
  	}
-+  else if (strncmp(name, "vde:", 4) == 0) {
-+    net_if_type = NET_IF_VDE;
-+    vde_sock = strdup(name+4);
-+    printf("selected Ethernet device type VDE\n");
-+  }
++	else if (strncmp(name, "vde:", 4) == 0) {
++		net_if_type = NET_IF_VDE;
++		vde_sock = strdup(name+4);
++		printf("selected Ethernet device type VDE\n");
++	}
  #endif
  #ifdef ENABLE_MACOSX_ETHERHELPER
  	else if (strncmp(name, "etherhelper", 10) == 0)
-@@ -898,7 +903,7 @@ static int16 ether_do_write(uint32 arg)
+@@ -897,9 +902,9 @@ static int16 ether_do_write(uint32 arg)
+ 			return -1;
  		}
  
- 		do {
+-		do {
 -			len = vde_send(vde_conn, packet, sizeof(packet), 0);
-+			len = vde_send(vde_conn, packet, len, 0);
- 		} while (len < 0);
+-		} while (len < 0);
++		if (vde_send(vde_conn, packet, len, 0) < 0) {
++			return excessCollsns;
++		}
  
  		return noErr;
+ 	} else
 diff --git a/SheepShaver/src/Unix/configure.ac b/SheepShaver/src/Unix/configure.ac
 index 830fbcdf..c51a463d 100644
 --- a/SheepShaver/src/Unix/configure.ac
@@ -68,7 +84,7 @@ index 830fbcdf..c51a463d 100644
  echo XFree86 DGA support .............. : $WANT_XF86_DGA
  echo XFree86 VidMode support .......... : $WANT_XF86_VIDMODE
 diff --git a/SheepShaver/src/Unix/main_unix.cpp b/SheepShaver/src/Unix/main_unix.cpp
-index 9e526799..0d707c2b 100755
+index 9e526799..52c7c427 100755
 --- a/SheepShaver/src/Unix/main_unix.cpp
 +++ b/SheepShaver/src/Unix/main_unix.cpp
 @@ -207,6 +207,8 @@ int64 TimebaseSpeed;	// Timebase clock speed (Hz)
@@ -80,30 +96,15 @@ index 9e526799..0d707c2b 100755
  
  #if defined(__APPLE__) && defined(__x86_64__) || defined(MEM_BULK)
  uint8 gZeroPage[0x3000], gKernelData[0x2000];
-@@ -860,6 +862,14 @@ int main(int argc, char **argv)
- 				UserPrefsPath = argv[i];
- 				argv[i] = NULL;
- 			}
-+    } else if (strcmp(argv[i], "--switch") == 0) {
-+      argv[i] = NULL;
-+      if (argv[++i] == NULL) {
-+        printf("switch address not defined\n");
-+        usage(argv[0]);
-+      }
-+      vde_sock = argv[i];
-+      argv[i] = NULL;
- 		} else if (strcmp(argv[i], "--nogui") == 0) {
- 			// We intercept the --nogui commandline so that the settings
- 			// window can change the setting from the prefs file
 diff --git a/SheepShaver/src/include/main.h b/SheepShaver/src/include/main.h
-index 787832da..8f14e26d 100644
+index 787832da..8ec57305 100644
 --- a/SheepShaver/src/include/main.h
 +++ b/SheepShaver/src/include/main.h
 @@ -30,6 +30,7 @@ extern uint32 PVR;				// Theoretical PVR
  extern int64 CPUClockSpeed;		// Processor clock speed (Hz)
  extern int64 BusClockSpeed;		// Bus clock speed (Hz)
  extern int64 TimebaseSpeed;		// Timebase clock speed (Hz)
-+extern char* vde_sock;        // vde switch variable
++extern char* vde_sock;					// vde switch variable
  
  #ifdef __BEOS__
  extern system_info SysInfo;		// System information
