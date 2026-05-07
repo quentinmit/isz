@@ -13,6 +13,9 @@
     ];
   })];
 
+  environment.systemPackages = with pkgs; [
+    vdeplug4
+  ];
 
   systemd.network.networks."20-atalk" = {
     name = "atalk-*";
