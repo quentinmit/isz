@@ -42,7 +42,7 @@
           # TODO: sendmail-path
           # TODO: printer
           patterns-roles = [
-            ''LIT:pattern="/NICK=MIT/FLDTYPE=SPEC/FOLDER={mail.isz.wtf}MIT" action="/ROLE=1/FROM=Quentin Smith <quentin@mit.edu>/RTYPE=YES/FTYPE=YES/CTYPE=NO"''
+            ''LIT:pattern="/NICK=MIT/FLDTYPE=SPEC/FOLDER=MIT,{mail.isz.wtf\/user=quentin@isz.wtf}MIT,{mail.isz.wtf}MIT" action="/ROLE=1/FROM=Quentin Smith <quentin@mit.edu>/RTYPE=NC/FTYPE=YES/CTYPE=NC"''
           ];
         };
         features = {
