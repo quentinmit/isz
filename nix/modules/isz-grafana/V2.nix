@@ -2,6 +2,7 @@
 with import ./lib.nix { inherit config pkgs lib; };
 let
   cfg = config.isz.grafana;
+  inherit (config.services.grafana) kind;
 in {
   options = with lib; {
     isz.grafana.dashboardsV2 = mkOption {
@@ -59,7 +60,7 @@ in {
             default = [];
           };
           annotations = mkOption {
-            inherit ((options.services.grafana.dashboardsV2.type.getSubOptions []).annotations.list) type;
+            inherit ((options.services.grafana.dashboardsV2.type.getSubOptions []).spec.annotations) type;
             default = [];
           };
           panels = mkOption {
@@ -76,7 +77,15 @@ in {
             default = [];
           };
           layout = mkOption {
-            inherit ((options.services.grafana.kind.Dashboard.getSubOptions []).layout) type;
+            inherit ((kind.Dashboard.getSubOptions []).spec.layout) type;
+            default = {
+              kind = "AutoGridLayout";
+              spec.items = lib.mapAttrsToList (name: _: {
+                spec.element = {
+                  inherit name;
+                };
+              }) config.panels;
+            };
           };
         };
       }));
@@ -88,23 +97,25 @@ in {
         inherit (cfg.datasources.${dashboard.defaultDatasourceName}) uid type;
       };
       in {
-        inherit (dashboard) title tags links layout;
-        panels = map (p: (if p.panel.targets != [] then {inherit (lib.elemAt p.panel.targets 0) datasource; } else {}) // p.panel) dashboard.panels;
-        variables = lib.mapAttrsToList (name: args: {
-          kind = "QueryVariable";
-          spec = lib.recursiveUpdate rec {
-            name = args.tag;
-            query = {
-              group = "influxdb";
-              spec = {
-                inherit (args) query;
+        spec = {
+          inherit (dashboard) title tags links layout;
+          elements = lib.mapAttrs (_: p: p.panel) dashboard.panels;
+          variables = lib.mapAttrsToList (name: args: {
+            kind = "QueryVariable";
+            spec = lib.recursiveUpdate rec {
+              name = args.tag;
+              query = {
+                group = "influxdb";
+                spec = {
+                  inherit (args) query;
+                };
               };
-            };
-            includeAll = true;
-            label = name;
-          } args.extra;
-        }) dashboard.variables;
-        annotations = (options.services.grafana.dashboardsV2.type.getSubOptions []).annotations.default ++ dashboard.annotations;
+              includeAll = true;
+              label = name;
+            } args.extra;
+          }) dashboard.variables;
+          annotations = (options.services.grafana.dashboardsV2.type.getSubOptions []).spec.annotations.default ++ dashboard.annotations;
+        };
       }) cfg.dashboardsV2;
   };
 }

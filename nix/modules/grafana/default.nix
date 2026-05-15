@@ -111,7 +111,7 @@ in {
     services.grafana.provision.enable = true;
     services.grafana.provision.dashboards.settings.providers = [{
       options.path = "/etc/grafana/dashboards";
-      options.updateIntervalSeconds = 10;
+      options.updateIntervalSeconds = 15;
       options.foldersFromFilesStructure = true;
     }];
   };

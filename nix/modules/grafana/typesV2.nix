@@ -7,6 +7,70 @@ let
   intervalType = types.either
     types.int
     (types.strMatching "^(-?[0-9]+(\.[0-9]+)?)(ms|[Mwdhmsy])");
+  byKind =
+    kinds:
+    let
+      choicesStr = concatMapStringsSep ", " lib.strings.escapeNixIdentifier (attrNames kinds);
+      inherit (lib)
+        map
+        mapAttrsToList
+      ;
+      inherit (lib.options)
+        getFiles
+        showFiles
+      ;
+    in
+      lib.mkOptionType {
+        name = "byKind";
+        description = "attrset with kind one of: ${choicesStr}";
+        descriptionClass = "noun";
+        check = lib.isAttrs;
+        merge =
+          loc: defs:
+          let
+            choice = (head (lib.filter (def: def.value ? kind) defs)).value.kind;
+            checkedValueDefs = map (
+              def:
+              if (def.value.kind or choice) != choice then
+                throw "The option `${showOption loc}` is defined both as `${choice}` and `${def.value.kind}`, in ${showFiles (getFiles defs)}."
+              else
+                def
+            ) defs;
+          in
+        if kinds ? ${choice} then
+          (lib.modules.evalOptionValue loc kinds.${choice} checkedValueDefs).value
+        else
+          throw "The option `${showOption loc}` is defined as ${lib.strings.escapeNixString choice}, but ${lib.strings.escapeNixString choice} is not among the valid choices (${choicesStr}). Value ${choice} was defined in ${showFiles (getFiles defs)}.";
+        nestedTypes = kinds;
+        functor = {
+          name = "byKind";
+          type = { kinds, ... }: byKind kinds;
+          wrapped = null;
+          payload = { inherit kinds; };
+          binOp = let
+            wrapOptionDecl = option: {
+              options = option;
+              _file = "<byKind {...}>";
+              pos = null;
+            };
+          in a: b: {
+            kinds = a.kinds // b.kinds // mapAttrs (
+              kindName: bOpt:
+              lib.mergeOptionDecls
+                [ kindName ]
+                [
+                  (wrapOptionDecl a.kinds.${kindName})
+                  (wrapOptionDecl bOpt)
+                ]
+              // {
+                # mergeOptionDecls is not idempotent in these attrs:
+                declarations = a.kinds.${kindName}.declarations ++ bOpt.declarations;
+                declarationPositions = a.kinds.${kindName}.declarationPositions ++ bOpt.declarationPositions;
+              }
+            ) (builtins.intersectAttrs a.tags b.tags);
+          };
+        };
+      };
   kindSubmodule = kind: modules: types.submoduleWith {
     shorthandOnlyDefinesConfig = true;
     modules = [{
@@ -17,7 +81,7 @@ let
     }] ++ toList modules;
   };
   kindType = type: config.services.grafana.kind.${type};
-  kindsType = types: lib.types.oneOf (lib.map (x: config.services.grafana.kind.${x}) types);
+  kindsType = types: byKind (lib.genAttrs types (x: mkOption { type = config.services.grafana.kind.${x}; default = {}; }));
   VariableOptionType = types.submodule {
     text = mkOption {
       type = types.str;
@@ -79,8 +143,18 @@ in {
         };
       };
     };
-    Dashboard = types.submodule ({ name, ... }: {
-      options = {
+    Dashboard = kindSubmodule "Dashboard" ({ name, ... }: {
+      options.apiVersion = mkOption {
+        type = types.uniq (types.enum ["dashboard.grafana.app/v2"]);
+        default = "dashboard.grafana.app/v2";
+      };
+      options.metadata = {
+        name = mkOption {
+          type = types.str;
+          default = name;
+        };
+      };
+      options.spec = {
         annotations = mkOption {
           type = types.listOf (kindType "AnnotationQuery");
           default = [{
@@ -221,6 +295,92 @@ in {
         };
       };
     };
+    RowsLayout = kindSubmodule "RowsLayout" {
+      options.spec.rows = mkOption {
+        type = types.listOf (kindType "RowsLayoutRow");
+        default = [];
+      };
+    };
+    RowsLayoutRow = kindSubmodule "RowsLayoutRow" {
+      options.spec = {
+        collapse = mkOption {
+          type = types.bool;
+          default = false;
+        };
+        # conditionalRendering?
+	      fillScreen = mkOption {
+          type = types.bool;
+          default = false;
+        };
+	      hideHeader = mkOption {
+          type = types.bool;
+          default = false;
+        };
+        layout = mkOption {
+          type = kindsType [
+            "AutoGridLayout"
+            "GridLayout"
+            "RowsLayout"
+            "TabsLayout"
+          ];
+        };
+        # repeat?
+        title = mkOption {
+          type = types.str;
+        };
+        # variables?
+        variables = mkOption {
+          type = types.listOf (kindsType [
+            "QueryVariable"
+            "TextVariable"
+            "ConstantVariable"
+            "DatasourceVariable"
+            "IntervalVariable"
+            "CustomVariable"
+            "GroupByVariable"
+            "AdhocVariable"
+            "SwitchVariableKind"
+          ]);
+          default = [];
+        };
+      };
+    };
+    TabsLayout = kindSubmodule "TabsLayout" {
+      options.spec.tabs = mkOption {
+        type = types.listOf (kindType "TabsLayoutTab");
+      };
+    };
+    TabsLayoutTab = kindSubmodule "TabsLayoutTab" {
+      options.spec = {
+        # conditionalRendering?
+        layout = mkOption {
+          type = kindsType [
+            "AutoGridLayout"
+            "GridLayout"
+            "RowsLayout"
+            "TabsLayout"
+          ];
+        };
+        # repeat?
+        title = mkOption {
+          type = types.str;
+        };
+        # variables?
+        variables = mkOption {
+          type = types.listOf (kindsType [
+            "QueryVariable"
+            "TextVariable"
+            "ConstantVariable"
+            "DatasourceVariable"
+            "IntervalVariable"
+            "CustomVariable"
+            "GroupByVariable"
+            "AdhocVariable"
+            "SwitchVariableKind"
+          ]);
+        };
+      };
+    };
     ElementReference = kindSubmodule "ElementReference" {
       options.name = mkOption {
         type = types.str;
@@ -239,7 +399,7 @@ in {
 	      # columnWidth?: number
 	      rowHeightMode = mkOption {
           type = types.enum ["short" "standard" "tall" "custom"];
-          defailt = "standard";
+          default = "standard";
         };
 	      # rowHeight?: number
 	      fillScreen = mkOption {
@@ -249,6 +409,13 @@ in {
         items = mkOption {
           type = types.listOf (kindType "AutoGridLayoutItem");
           default = [];
+        };
+      };
+    };
+    AutoGridLayoutItem = kindSubmodule "AutoGridLayoutItem" {
+      options.spec = {
+        element = mkOption {
+          type = kindType "ElementReference";
         };
       };
     };
@@ -332,6 +499,7 @@ in {
       options.spec = {
         id = mkOption {
           type = types.int;
+          default = 0; # FIXME
         };
         title = mkOption {
           type = types.str;
@@ -371,7 +539,7 @@ in {
       };
     };
     QueryGroup = kindSubmodule "QueryGroup" {
-      options = {
+      options.spec = {
         queries = mkOption {
           type = types.listOf (kindType "PanelQuery");
           default = [];
@@ -387,16 +555,18 @@ in {
       };
     };
     PanelQuery = kindSubmodule "PanelQuery" {
-      query = mkOption {
-        type = kindType "DataQuery";
-      };
-      refId = mkOption {
-        type = types.str;
-        default = "A";
-      };
-      hidden = mkOption {
-        type = types.bool;
-        default = false;
+      options.spec = {
+        query = mkOption {
+          type = kindType "DataQuery";
+        };
+        refId = mkOption {
+          type = types.str;
+          default = "A";
+        };
+        hidden = mkOption {
+          type = types.bool;
+          default = false;
+        };
       };
     };
     Transformation = types.anything; # TODO
@@ -406,6 +576,7 @@ in {
       };
       options.version = mkOption {
         type = types.str;
+        default = "13.0.0";
       };
       options.spec = {
         options = mkOption {
