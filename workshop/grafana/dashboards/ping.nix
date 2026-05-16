@@ -3,6 +3,10 @@
   config.isz.grafana.dashboardsV2.ping-times = {
     title = "Ping Times";
     defaultDatasourceName = "workshop";
+    variables.country = {
+      predicate = ''r._measurement == "ping"'';
+      extra.multi = false;
+    };
     panels.by-target = {
       influx.filter = {
         _measurement = "ping";

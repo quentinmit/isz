@@ -83,13 +83,15 @@ let
   kindType = type: config.services.grafana.kind.${type};
   kindsType = types: byKind (lib.genAttrs types (x: mkOption { type = config.services.grafana.kind.${x}; default = {}; }));
   VariableOptionType = types.submodule {
-    text = mkOption {
-      type = types.str;
-      default = "";
-    };
-    value = mkOption {
-      type = types.str;
-      default = "";
+    options = {
+      text = mkOption {
+        type = types.str;
+        default = "";
+      };
+      value = mkOption {
+        type = types.str;
+        default = "";
+      };
     };
   };
 in {

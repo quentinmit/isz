@@ -105,6 +105,7 @@ in {
             spec = lib.recursiveUpdate rec {
               name = args.tag;
               query = {
+                datasource.name = dashboard.defaultDatasourceName;
                 group = "influxdb";
                 spec = {
                   inherit (args) query;
