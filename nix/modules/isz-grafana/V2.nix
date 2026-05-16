@@ -67,10 +67,13 @@ in {
             type = types.attrsOf (types.submoduleWith {
               modules = [ ./panelV2.nix ];
               shorthandOnlyDefinesConfig = true;
-              specialArgs = {
+              specialArgs = let
+                panelNames = builtins.attrNames config.panels;
+                panelIndexes = lib.listToAttrs (lib.imap1 (i: n: lib.nameValuePair n i) panelNames);
+              in {
                 inherit (cfg) datasources;
                 inherit (config) defaultDatasourceName;
-                inherit pkgs;
+                inherit pkgs panelIndexes;
                 extraInfluxFilter = {};
               };
             });

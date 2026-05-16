@@ -1,6 +1,8 @@
 { config, pkgs, lib
+, name
 , datasources
 , defaultDatasourceName
+, panelIndexes
 , extraInfluxFilter ? {}
 , ... }:
 with import ./lib.nix { inherit config pkgs lib; };
@@ -17,6 +19,7 @@ in {
     g = config;
   in lib.mkMerge [
     {
+      id = lib.mkDefault panelIndexes.${name};
       vizConfig.spec.fieldConfig.overrides = lib.mapAttrsToList
         (field: options: {
           matcher.id = if lib.hasPrefix "/" field then "byRegexp" else "byName";
