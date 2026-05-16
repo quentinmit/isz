@@ -99,7 +99,10 @@ in {
       in {
         spec = {
           inherit (dashboard) title tags links layout;
-          elements = lib.mapAttrs (_: p: p.panel) dashboard.panels;
+          elements = lib.mapAttrs (_: p: {
+            kind = "Panel";
+            inherit (p) spec;
+          }) dashboard.panels;
           variables = lib.mapAttrsToList (name: args: {
             kind = "QueryVariable";
             spec = lib.recursiveUpdate rec {

@@ -1,11 +1,12 @@
 { config, ... }:
 {
-  config.isz.grafana.dashboardsV2.ping-times = {
+  config.isz.grafana.dashboardsV2."Experimental/ping-times" = {
     title = "Ping Times";
     defaultDatasourceName = "workshop";
     variables.country = {
       predicate = ''r._measurement == "ping"'';
       extra.multi = false;
+      extra.includeAll = false;
     };
     panels.by-target = {
       influx.filter = {
@@ -25,6 +26,11 @@
         ];
       };
       influx.fn = "max";
+      spec.title = "Max Ping Time by Target";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        displayName = "\${__field.labels.url} - \${__field.labels.city}, \${__field.labels.country} - \${__field.labels.datacenter}";
+        unit = "ms";
+      };
     };
   };
 }

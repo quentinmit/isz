@@ -153,7 +153,7 @@ in {
       options.metadata = {
         name = mkOption {
           type = types.str;
-          default = name;
+          default = lib.last (lib.splitString "/" name);
         };
       };
       options.spec = {

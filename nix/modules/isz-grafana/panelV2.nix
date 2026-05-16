@@ -13,11 +13,11 @@ let
     group = datasources.${config.datasourceName}.type;
   };
 in {
-  config.panel = let
+  config.spec = let
     g = config;
   in lib.mkMerge [
     {
-      spec.vizConfig.spec.fieldConfig.overrides = lib.mapAttrsToList
+      vizConfig.spec.fieldConfig.overrides = lib.mapAttrsToList
         (field: options: {
           matcher.id = if lib.hasPrefix "/" field then "byRegexp" else "byName";
           matcher.options = field;
@@ -45,16 +45,13 @@ in {
           } else null;
         }) (lib.toList g.influx);
     in {
-      kind = "Panel";
-      spec = {
-        vizConfig.group = lib.mkDefault "timeseries";
-        data.spec.queryOptions.interval = lib.mkDefault "10s";
-        data.spec.queries = map (q: q.panelQuery) queries;
-        vizConfig.spec.fieldConfig.overrides = builtins.filter (o: o != null) (map (q: q.override) queries);
-      };
+      vizConfig.group = lib.mkDefault "timeseries";
+      data.spec.queryOptions.interval = lib.mkDefault "10s";
+      data.spec.queries = map (q: q.panelQuery) queries;
+      vizConfig.spec.fieldConfig.overrides = builtins.filter (o: o != null) (map (q: q.override) queries);
     }))
     (lib.mkIf (g.fieldOrder != null) {
-      spec.data.spec.transformations = [{
+      data.spec.transformations = [{
         group = "organize";
         spec.options.indexByName = builtins.listToAttrs (lib.imap0 (i: key: lib.nameValuePair key i) g.fieldOrder);
       }];
@@ -205,11 +202,11 @@ in {
       type = types.str;
       default = defaultDatasourceName;
     };
-    panel = mkOption {
+    spec = mkOption {
       type = types.submodule ({ config, ... }: {
         freeformType = dashboardFormat.type;
         options = {
-          spec.data.spec.queries = mkOption {
+          data.spec.queries = mkOption {
             default = [];
             type = types.listOf (types.submodule {
               freeformType = dashboardFormat.type;
