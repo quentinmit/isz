@@ -251,8 +251,13 @@
         self.overlayModule
         ./afs/configuration.nix
       ];
+      fileSystems."/var/cache/openafs" = {
+        device = "/dev/sda";
+        fsType = "ext4";
+      };
     };
     inherit specialArgs;
+    extraFlags = ["--extra-drive=/var/lib/machines/goddard-afs.cache.img"];
   };
 
   virtualisation.libvirtd = {

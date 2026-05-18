@@ -121,6 +121,13 @@ in {
                   store.
                 '';
               };
+              extraFlags = mkOption {
+                type = types.listOf types.str;
+                default = [];
+                description = ''
+                  Extra flags to passed to the systemd-vmspawn command.
+                '';
+              };
             };
           }
         )
@@ -158,7 +165,7 @@ in {
           StateDirectory = "machines/%i";
           ExecStart = [
             ""
-            "${lib.getExe' pkgs.systemd "systemd-vmspawn"} --directory=/var/lib/machines/%i --register=yes --keep-unit --network-tap --machine=%i --bind-ro=/nix/store:/nix/.ro-store --linux=${root}/kernel --initrd=${root}/initrd ${root}/kernel-params init=${root}/init regInfo=${pkgs.closureInfo { rootPaths = [ cfg.config.system.build.toplevel ]; }}/registration"
+            "${lib.getExe' pkgs.systemd "systemd-vmspawn"} --directory=/var/lib/machines/%i --register=yes --keep-unit --network-tap --machine=%i --bind-ro=/nix/store:/nix/.ro-store ${lib.escapeShellArgs cfg.extraFlags} --linux=${root}/kernel --initrd=${root}/initrd ${root}/kernel-params init=${root}/init regInfo=${pkgs.closureInfo { rootPaths = [ cfg.config.system.build.toplevel ]; }}/registration"
           ];
         };
       }) config.vms;
