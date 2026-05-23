@@ -20,12 +20,19 @@
     escapeUdev = arg: ''"${replaceStrings [''"''] [''\\"''] arg}"'';
   in
     lib.mkIf (cfg.rules != []) {
-      services.udev.extraRules = concatMapStringsSep "\n" (
-        rule: concatStringsSep ", " (
-          lib.mapAttrsToList
-            (name: v: "${name}${v.op}${escapeUdev v.value}")
-            (lib.mapAttrs (name: v: if isString v then { op = "=="; value = v; } else v) rule)
-        )
-      ) cfg.rules;
+      services.udev.packages = [(pkgs.writeTextFile {
+        name = "70-local.rules";
+        destination = "/etc/udev/rules.d/70-local.rules";
+        text = concatMapStringsSep "\n" (
+          rule: concatStringsSep ", " (
+            lib.mapAttrsToList
+              (name: v: "${name}${v.op}${escapeUdev v.value}")
+              (lib.mapAttrs (name: v: if isString v then { op = "=="; value = v; } else v) rule)
+          )
+        ) cfg.rules;
+        checkPhase = ''
+          ${config.systemd.package}/bin/udevadm verify --resolve-names=late $out/etc/udev/rules.d/70-local.rules
+        '';
+      })];
     };
 }
