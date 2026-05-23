@@ -197,6 +197,8 @@
 
   services.nixseparatedebuginfod2.enable = true;
 
+  hardware.sensor.iio.enable = true;
+
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
   services.xserver.windowManager.twm.enable = true;
