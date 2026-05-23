@@ -198,4 +198,10 @@ in {
         --replace-fail "[src/Makefile]" "[src/Makefile] [src/vde_vxlan/Makefile]"
     '';
   });
+  ptouch-driver = prev.ptouch-driver.overrideAttrs (old: {
+    postPatch = old.postPatch or "" + ''
+      substituteInPlace Makefile.am \
+        --replace-fail noinst_PROGRAMS bin_PROGRAMS
+    '';
+  });
 }
