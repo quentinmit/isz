@@ -265,6 +265,7 @@
   virtualisation.libvirtd = {
     enable = true;
     qemu.runAsRoot = false;
+    qemu.vhostUserPackages = with pkgs; [ virtiofsd ];
   };
 
   virtualisation.spiceUSBRedirection.enable = true;
