@@ -35,15 +35,6 @@
           pkgs = authentik.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.system};
         }).overrideScope (final: prev: {
           authentikComponents = prev.authentikComponents // {
-            staticWorkdirDeps = prev.authentikComponents.staticWorkdirDeps.override (old: {
-              authentik-src = pkgs.applyPatches {
-                src = old.authentik-src;
-                name = "isz-patched-authentik-source";
-                patches = [
-                  ./proxy-scopes.patch
-                ];
-              };
-            });
             manage = prev.authentikComponents.manage.override (old: {
               authentikComponents = old.authentikComponents // {
                 staticWorkdirDeps = "${./lib}:${old.authentikComponents.staticWorkdirDeps}";

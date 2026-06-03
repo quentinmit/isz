@@ -20,7 +20,7 @@ in {
     fonts.fontDir.enable = true;
     fonts.enableDefaultPackages = true;
     fonts.packages = with pkgs; [
-      xorg.fontmiscmisc
+      font-misc-misc
     ];
 
     programs.dconf.enable = true;
@@ -44,6 +44,7 @@ in {
     systemd.services.sdrtrunk = {
       description = "SDRTrunk";
       wantedBy = [ "multi-user.target" ];
+      environment.XDG_SESSION_CLASS = "background";
       serviceConfig = {
         User = "sdrtrunk";
         Group = "sdrtrunk";

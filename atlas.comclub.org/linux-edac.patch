@@ -1,4 +1,4 @@
-commit da9f98cea0590e6abb964470ba931bdb887eddd7
+commit c341f203c614b4da23f32011d90c7eeaec3541d6
 Author: Quentin Smith <quentin@mit.edu>
 Date:   Fri Oct 17 11:12:46 2025 -0400
 
@@ -19,10 +19,10 @@ Date:   Fri Oct 17 11:12:46 2025 -0400
         * https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/xeon-e-2100-datasheet-vol-2.pdf
 
 diff --git a/drivers/edac/ie31200_edac.c b/drivers/edac/ie31200_edac.c
-index e3635fba63b4..20b4b32deb14 100644
+index 5a080ab65476..3a2239c70f76 100644
 --- a/drivers/edac/ie31200_edac.c
 +++ b/drivers/edac/ie31200_edac.c
-@@ -31,6 +31,7 @@
+@@ -32,6 +32,7 @@
   * https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/xeon-e3-1200v6-vol-2-datasheet.pdf
   * https://www.intel.com/content/www/us/en/processors/core/7th-gen-core-family-mobile-h-processor-lines-datasheet-vol-2.html
   * https://www.intel.com/content/www/us/en/products/docs/processors/core/8th-gen-core-family-datasheet-vol-2.html
@@ -30,7 +30,7 @@ index e3635fba63b4..20b4b32deb14 100644
   *
   * According to the above datasheet (p.16):
   * "
-@@ -72,15 +73,17 @@
+@@ -76,15 +77,17 @@
  /* Coffee Lake-S */
  #define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_MASK 0x3e00
  #define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_1    0x3e0f
@@ -55,14 +55,14 @@ index e3635fba63b4..20b4b32deb14 100644
 +#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_11   0x3ec6
 +#define PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_12   0x3eca
  
- /* Test if HB is for Skylake or later. */
- #define DEVICE_ID_SKYLAKE_OR_LATER(did)                                        \
-@@ -594,6 +597,8 @@ static const struct pci_device_id ie31200_pci_tbl[] = {
- 	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_8),  PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
- 	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_9),  PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
- 	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_10), PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
-+	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_11), PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
-+	{ PCI_VEND_DEV(INTEL, IE31200_HB_CFL_12), PCI_ANY_ID, PCI_ANY_ID, 0, 0, IE31200 },
- 	{ 0, } /* 0 terminated list. */
- };
- MODULE_DEVICE_TABLE(pci, ie31200_pci_tbl);
+ /* Raptor Lake-S */
+ #define PCI_DEVICE_ID_INTEL_IE31200_RPL_S_1	0xa703 /* 8P+8E,  e.g. i7-13700 */
+@@ -755,6 +758,8 @@ static const struct pci_device_id ie31200_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_8), (kernel_ulong_t)&skl_cfg },
+ 	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_9), (kernel_ulong_t)&skl_cfg },
+ 	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_10), (kernel_ulong_t)&skl_cfg },
++	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_11), (kernel_ulong_t)&skl_cfg },
++	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IE31200_HB_CFL_12), (kernel_ulong_t)&skl_cfg },
+ 	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IE31200_RPL_S_1), (kernel_ulong_t)&rpl_s_cfg},
+ 	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IE31200_RPL_S_2), (kernel_ulong_t)&rpl_s_cfg},
+ 	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IE31200_RPL_S_3), (kernel_ulong_t)&rpl_s_cfg},

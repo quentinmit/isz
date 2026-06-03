@@ -176,7 +176,7 @@ in {
       ./sanoid/native-recursion.patch
     ];
   });
-  alpine = prev.alpine.overrideAttrs (old: {
+  alpine = prev.alpine.overrideAttrs (old: lib.optionalAttrs (old.version == "2.26") {
     patches = (old.patches or []) ++ [
       (final.fetchurl {
         url = "https://alpineapp.email/alpine/patches/alpine-2.26/maildir.patch.gz";
@@ -203,5 +203,11 @@ in {
       substituteInPlace Makefile.am \
         --replace-fail noinst_PROGRAMS bin_PROGRAMS
     '';
+  });
+  # https://github.com/NixOS/nixpkgs/issues/500713
+  glances = prev.glances.overrideAttrs (old: lib.optionalAttrs final.stdenv.isAarch64 {
+    disabledTests = old.disabledTests ++ [
+      "test_phys_core_returns_int"
+    ];
   });
 }

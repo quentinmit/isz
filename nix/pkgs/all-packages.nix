@@ -49,9 +49,9 @@ final: prev:
     hui-element = final.callPackage ./homeassistant/hui-element.nix {};
   };
   home-assistant-custom-components = prev.home-assistant-custom-components // {
-    pyscript = final.home-assistant.python.pkgs.callPackage ./homeassistant/pyscript.nix {};
-    bambu_lab = final.home-assistant.python.pkgs.callPackage ./homeassistant/bambu_lab.nix {};
-    pirateweather = final.home-assistant.python.pkgs.callPackage ./homeassistant/pirateweather.nix {};
+    pyscript = final.home-assistant.python3Packages.callPackage ./homeassistant/pyscript.nix {};
+    bambu_lab = final.home-assistant.python3Packages.callPackage ./homeassistant/bambu_lab.nix {};
+    pirateweather = final.home-assistant.python3Packages.callPackage ./homeassistant/pirateweather.nix {};
   };
   cisco-mibs = final.fetchFromGitHub {
     owner = "cisco";

@@ -5,6 +5,8 @@ let
   format = pkgs.formats.yaml {};
   blueprintFile = (format.generate "blueprint.yaml" cfg.blueprint).overrideAttrs {
     buildCommand = ''
+      valuePath="$TMPDIR/value"
+      printf "%s" "$value" > "$valuePath"
       json2yaml --yaml-width inf "$valuePath" | sed -e "
         s/'\!\([A-Za-z_]\+\) \(.*\)'/\!\1 \2/
         s/^\!\!/\!/

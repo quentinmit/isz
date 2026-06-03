@@ -36,43 +36,44 @@ in {
   services.dovecot2 = {
     enable = true;
 
-    sslServerCert = "${sslCertDir}/cert.pem";
-    sslServerKey = "${sslCertDir}/key.pem";
-    sslCACert = "${sslCertDir}/chain.pem";
-
     enablePAM = false;
 
-    mailLocation = "mdbox:/var/lib/dovecot/mdbox/%d/%n";
-
     # https://integrations.goauthentik.io/chat-communication-collaboration/roundcube/
-    extraConfig = ''
-      auth_debug = yes
-      auth_verbose = yes
+    settings = {
+      ssl_cert = "<${sslCertDir}/cert.pem";
+      ssl_key = "<${sslCertDir}/key.pem";
+      ssl_ca = "<${sslCertDir}/chain.pem";
 
-      auth_mechanisms = plain login oauthbearer xoauth2
-      auth_verbose = yes
-      auth_debug = yes
+      auth_debug = true;
+      auth_verbose = true;
 
-      mdbox_rotate_size = 64M
+      auth_mechanisms = ["plain" "login" "oauthbearer" "xoauth2"];
 
-      default_vsz_limit = 8G
+      mdbox_rotate_size = "64M";
 
-      userdb {
-        driver = passwd-file
-        args = username_format=%Ln /etc/passwd
-      }
+      default_vsz_limit = "8G";
 
-      passdb {
-        driver = passwd-file
-        args = username_format=%Ln /etc/dovecot/auth/%Ld/passwd
-      }
+      mail_location = "mdbox:/var/lib/dovecot/mdbox/%d/%n";
 
-      passdb {
-        driver = oauth2
-        mechanisms = xoauth2 oauthbearer
-        args = ${config.sops.templates."dovecot-oauth.conf.ext".path}
-      }
-    '';
+      userdb = [
+        {
+          driver = "passwd-file";
+          args = "username_format=%Ln /etc/passwd";
+        }
+      ];
+
+      passdb = [
+        {
+          driver = "passwd-file";
+          args = "username_format=%Ln /etc/dovecot/auth/%Ld/passwd";
+        }
+        {
+          driver = "oauth2";
+          mechanisms = ["xoauth2" "oauthbearer"];
+          args = config.sops.templates."dovecot-oauth.conf.ext".path;
+        }
+      ];
+    };
   };
 
   sops.secrets."xoauth2/o365/tenant_id" = {};

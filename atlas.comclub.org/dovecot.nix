@@ -11,14 +11,7 @@ in {
   services.dovecot2 = {
     enable = true;
 
-    sslServerCert = "${sslCertDir}/cert.pem";
-    sslServerKey = "${sslCertDir}/key.pem";
-    sslCACert = "${sslCertDir}/chain.pem";
-
-    enableLmtp = true;
     enablePAM = false; # Handled below
-
-    mailLocation = "mdbox:~/mdbox";
 
     mailPlugins.globally.enable = [
       "acl"
@@ -28,88 +21,98 @@ in {
       "sieve"
     ];
 
-    extraConfig = ''
-      auth_mechanisms = plain login
-      auth_verbose = yes
-      auth_debug = yes
-      #mail_debug = yes
+    settings = {
+      ssl_cert = "<${sslCertDir}/cert.pem";
+      ssl_key = "<${sslCertDir}/key.pem";
+      ssl_ca = "<${sslCertDir}/chain.pem";
 
-      mdbox_rotate_size = 64M
+      protocols = ["imap" "lmtp"];
 
-      namespace inbox {
-        inbox = yes
-      }
-      namespace {
-        type = shared
-        separator = /
-        prefix = shared/%%n/
-        location = mdbox:%%h/mdbox
-        subscriptions = no
-        list = children
-      }
-      namespace {
-        separator = /
-        prefix = mail/
-        hidden = yes
-        list = no
-        alias_for =
-      }
-      namespace {
-        separator = /
-        prefix = ~/mail/
-        hidden = yes
-        list = no
-        alias_for =
-      }
-      namespace {
-        separator = /
-        prefix = ~%u/mail/
-        hidden = yes
-        list = no
-        alias_for =
-      }
-      mail_privileged_group = mail
-      service lmtp {
-        unix_listener /var/lib/postfix/queue/private/dovecot-lmtp {
-          mode = 0660
-          user = postfix
-          group = postfix
+      auth_mechanisms = ["plain" "login"];
+      auth_verbose = true;
+      auth_debug = true;
+      #mail_debug = true;
+
+      mdbox_rotate_size = "64M";
+
+      mail_location = "mdbox:~/mdbox";
+      mail_privileged_group = "mail";
+
+      "namespace inbox" = {
+        inbox = true;
+      };
+      namespace = [
+        {
+          type = "shared";
+          separator = "/";
+          prefix = "shared/%%n/";
+          location = "mdbox:%%h/mdbox";
+          subscriptions = false;
+          list = "children";
         }
-      }
-      service auth {
-        unix_listener /var/lib/postfix/queue/private/auth {
-          mode = 0660
-          user = postfix
-          group = postfix
+        {
+          separator = "/";
+          prefix = "mail/";
+          hidden = true;
+          list = false;
+          alias_for = "";
         }
-      }
+        {
+          separator = "/";
+          prefix = "~/mail/";
+          hidden = true;
+          list = false;
+          alias_for = "";
+        }
+        {
+          separator = "/";
+          prefix = "~%u/mail/";
+          hidden = true;
+          list = false;
+          alias_for = "";
+        }
+      ];
+
+      "service lmtp"."unix_listener /var/lib/postfix/queue/private/dovecot-lmtp" = {
+        mode = "0660";
+        user = "postfix";
+        group = "postfix";
+      };
+      "service auth"."unix_listener /var/lib/postfix/queue/private/auth" = {
+        mode = "0660";
+        user = "postfix";
+        group = "postfix";
+      };
       # Virtual domains
-      auth_username_format = %{if;%Ld;eq;comclub.org;%Ln;%Lu}
-      # First try to look up the user in a virtual passwd file.
-      passdb {
-        driver = passwd-file
-        # Each domain has a separate passwd-file:
-        args = scheme=plain-md5 username_format=%Ln /etc/dovecot/auth/%Ld/passwd
-      }
-      userdb {
-        driver = passwd-file
-        # Each domain has a separate passwd-file:
-        args = username_format=%Ln /etc/dovecot/auth/%Ld/passwd
-        override_fields = home=/var/lib/mail/home/%Ld/%Ln uid=mail gid=mail
-      }
-      # If that didn't work, maybe it's a local user.
-      userdb {
-        driver = passwd
-        override_fields = home=/var/lib/mail/home/comclub.org/%Ln
-      }
-      passdb {
-        driver = pam
-        args = dovecot2
-      }
-    '';
-    pluginSettings = {
-      acl = "vfile:/etc/dovecot/global-acls:cache_secs=300";
-      sieve = "file:~/sieve;active=~/.dovecot.sieve";
+      auth_username_format = "%{if;%Ld;eq;comclub.org;%Ln;%Lu}";
+      passdb = [
+        {
+          driver = "passwd-file";
+          # Each domain has a separate passwd-file:
+          args = ["scheme=plain-md5" "username_format=%Ln" "/etc/dovecot/auth/%Ld/passwd"];
+        }
+        {
+          driver = "pam";
+          args = "dovecot2";
+        }
+      ];
+      userdb = [
+        # First try to look up the user in a virtual passwd file.
+        {
+          driver = "passwd-file";
+          # Each domain has a separate passwd-file:
+          args = ["username_format=%Ln" "/etc/dovecot/auth/%Ld/passwd"];
+          override_fields = ["home=/var/lib/mail/home/%Ld/%Ln" "uid=mail" "gid=mail"];
+        }
+        # If that didn't work, maybe it's a local user.
+        {
+          driver = "passwd";
+          override_fields = ["home=/var/lib/mail/home/comclub.org/%Ln"];
+        }
+      ];
+
+      plugin.acl = "vfile:/etc/dovecot/global-acls:cache_secs=300";
+      plugin.sieve = "file:~/sieve;active=~/.dovecot.sieve";
     };
   };
   security.pam.services.dovecot2 = {};

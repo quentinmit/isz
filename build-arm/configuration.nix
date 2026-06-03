@@ -43,8 +43,6 @@
 
   hardware.graphics = {
     enable = true;
-    # Mesa 25.3.0 adds the rocket driver.
-    package = lib.mkAssert (!lib.versionAtLeast pkgs.mesa.version "25.3.0") "unstable mesa no longer needed" pkgs.unstable.mesa;
   };
 
   # TODO: Install pkgs.unstable.ubootOrangePi5Max
@@ -73,11 +71,11 @@
   boot = {
     # TODO: Add config from https://github.com/armbian/build/blob/ca4dc8085a50e65158fc788800b1423cd7334fb5/config/kernel/linux-rockchip-rk3588-edge.config
 
-    kernelPackages = pkgs.linuxKernel.packages.linux_6_18;
-    zfs.package = lib.mkAssert (!lib.versionAtLeast pkgs.zfs.version "2.4.0") "zfs_2_4 no longer needed" pkgs.zfs_2_4;
+    kernelPackages = pkgs.linuxKernel.packages.linux_7_0;
 
     loader.grub.enable = false;
     loader.systemd-boot.enable = true;
+    loader.systemd-boot.graceful = true;
 
     tmp.useTmpfs = true;
     initrd.systemd.enable = true;

@@ -139,7 +139,7 @@
       })];
 
       fonts = {
-        enableDefaultFonts = true;
+        enableDefaultPackages = true;
         enableGhostscriptFonts = true;
       };
 

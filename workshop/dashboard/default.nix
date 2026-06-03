@@ -1,6 +1,16 @@
 { lib
 , python3Packages
-, xorg
+, font-adobe-100dpi
+, font-adobe-utopia-100dpi
+, font-bh-100dpi
+, font-bh-lucidatypewriter-100dpi
+, font-bitstream-100dpi
+, font-cursor-misc
+, font-misc-misc
+, font-dec-misc
+, font-micro-misc
+, font-sony-misc
+, font-sun-misc
 , material-design-icons
 }:
 with python3Packages;
@@ -11,6 +21,10 @@ in buildPythonApplication rec {
   pname = "dashboard";
   version = "0.0.1";
   format = "pyproject";
+
+  build-system = [
+    setuptools
+  ];
 
   propagatedBuildInputs = [
     pillow
@@ -25,17 +39,17 @@ in buildPythonApplication rec {
   ];
 
   bitmapFonts = [
-    xorg.fontadobe100dpi
-    xorg.fontadobeutopia100dpi
-    xorg.fontbh100dpi
-    xorg.fontbhlucidatypewriter100dpi
-    xorg.fontbitstream100dpi
-    xorg.fontcursormisc
-    xorg.fontmiscmisc
-    xorg.fontdecmisc
-    xorg.fontmicromisc
-    xorg.fontsonymisc
-    xorg.fontsunmisc
+    font-adobe-100dpi
+    font-adobe-utopia-100dpi
+    font-bh-100dpi
+    font-bh-lucidatypewriter-100dpi
+    font-bitstream-100dpi
+    font-cursor-misc
+    font-misc-misc
+    font-dec-misc
+    font-micro-misc
+    font-sony-misc
+    font-sun-misc
   ];
 
   makeWrapperArgs = [

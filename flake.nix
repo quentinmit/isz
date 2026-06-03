@@ -5,12 +5,12 @@
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "nixpkgs/nixos-25.11";
+    nixpkgs.url = "nixpkgs/nixos-26.05";
     nixpkgs-23_05.url = "nixpkgs/nixos-23.05";
     nixpkgs-25_05.url = "nixpkgs/nixos-25.05";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
@@ -96,7 +96,6 @@
         };
         nixpkgs-25_05 = import nixpkgs-25_05 {
           inherit (final.stdenv.hostPlatform) system;
-          inherit (final) config;
           overlays = [(final: prev: {
             inherit (gradle2nix.packages.${final.system or "x86_64-linux"}) gradle2nix;
           })];
