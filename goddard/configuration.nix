@@ -195,6 +195,14 @@
     limesuiteWithGui
   ];
 
+  services.udev.rules = [{
+    SUBSYSTEM = "usb";
+    "ATTRS{idVendor}" = "04f9";
+    "ATTRS{idProduct}" = "2074";
+    MODE = { op = "="; value = "0660"; };
+    TAG = { op = "+="; value = "uaccess"; };
+  }];
+
   services.nixseparatedebuginfod2.enable = true;
 
   hardware.sensor.iio.enable = true;
