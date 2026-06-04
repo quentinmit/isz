@@ -24,7 +24,7 @@
     ] ++ lib.optionals config.isz.graphical (
       [
         gnuradio
-        (lib.mkAssert (gpsbabel-gui.version == "1.8.0") "newer gpsbabel can use mapPreview" (gpsbabel-gui.override { withMapPreview = false; }))
+        gpsbabel-gui
         nanovna-saver
         xastir
       ] ++ lib.optionals pkgs.stdenv.isLinux [

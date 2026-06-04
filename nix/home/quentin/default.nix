@@ -175,7 +175,7 @@ in {
     # Node.js development
     {
       home.packages = with pkgs; [
-        nodePackages.npm
+        nodejs_22
         #nodejs15
         #nodejs17
         #why npm6
@@ -188,10 +188,11 @@ in {
     # Database development
     {
       home.packages = with pkgs; [
-        gobang
+        lazysql
         mariadb_114.client
         mdbtools
         postgresql
+        rainfrog
       ];
     }
     (lib.mkIf config.isz.graphical {
@@ -586,7 +587,7 @@ in {
         labplot
         xdot
       ] ++ lib.optionals pkgs.stdenv.isLinux [
-        kgraphviewer
+        #broken kgraphviewer
         (if kdePackages.kig.meta.available then kdePackages.kig else libsForQt5.kig) # KDE 6 version is currently broken
         kstars
         kdePackages.marble
@@ -659,9 +660,6 @@ in {
       home.packages = (with pkgs; [
         libxkbcommon
         xterm
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
-        xdotool # broken on macOS
-      ]) ++ (with pkgs.xorg; [
         xdpyinfo
         xeyes
         xhost
@@ -671,6 +669,8 @@ in {
         xwininfo
         xlsfonts
         xfontsel
+      ] ++ lib.optionals pkgs.stdenv.isLinux [
+        xdotool # broken on macOS
       ]);
     })
     # Kerberos

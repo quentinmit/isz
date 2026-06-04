@@ -5,7 +5,12 @@
 , segger-jlink
 , config
 , fontconfig
-, xorg
+, libxrandr
+, libxfixes
+, libxcursor
+, libsm
+, libice
+, libx11
 , makeDesktopItem
 , copyDesktopItems
 }:
@@ -44,12 +49,12 @@ let
     buildInputs = [
       stdenv.cc.cc.lib
       fontconfig
-      xorg.libXrandr
-      xorg.libXfixes
-      xorg.libXcursor
-      xorg.libSM
-      xorg.libICE
-      xorg.libX11
+      libxrandr
+      libxfixes
+      libxcursor
+      libsm
+      libice
+      libx11
     ];
 
     dontConfigure = true;

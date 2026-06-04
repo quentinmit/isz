@@ -4,7 +4,8 @@
   fetchFromGitHub,
   python3,
   bdftopcf,
-  xorg,
+  mkfontscale,
+  fonttosfnt,
   libfaketime,
 }:
 
@@ -22,9 +23,9 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     python3
     bdftopcf
-    xorg.mkfontscale
+    mkfontscale
     libfaketime
-    xorg.fonttosfnt
+    fonttosfnt
   ];
 
   postPatch = ''

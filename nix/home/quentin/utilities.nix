@@ -66,9 +66,7 @@
       xmlstarlet
       xqilla
       (pkgs.xan or pkgs.xsv)
-      (yazi.override (old: {
-        ffmpeg = if config.isz.graphical then old.ffmpeg else ffmpeg-headless;
-      }))
+      yazi
       yj
       yq
     ] ++ lib.optionals pkgs.stdenv.isLinux [

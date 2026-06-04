@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkgsCross.mingw32.buildPackages.gcc
   ];
   #NIX_DEBUG = 7;
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
   preBuild = ''
     make clean
   '';

@@ -27,18 +27,7 @@
 
   isz.secureBoot.enable = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest.extend (
-    lfinal: lprev: {
-      opensnitch-ebpf = lprev.opensnitch-ebpf.overrideAttrs (old:
-        # Fixed in 1.7.3: https://github.com/evilsocket/opensnitch/pull/1554
-        assert lib.versionOlder old.version "1.7.3";
-        {
-          preBuild = old.preBuild or "" + ''
-            makeFlagsArray+=(EXTRA_FLAGS="-Wno-microsoft-anon-tag -fms-extensions")
-          '';
-        }
-      );
-    });
+  boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''];
 
   environment.etc."lvm/lvm.conf".text = ''
@@ -159,7 +148,7 @@
     kdePackages.plasma-firewall
     kdePackages.plasma-thunderbolt
     kdePackages.partitionmanager
-    kio-fuse
+    kdePackages.kio-fuse
 
     # Thunderbolt
     thunderbolt
@@ -188,7 +177,7 @@
     segger-systemview
     cynthion
     packetry
-  ] ++ lib.optional mbedtls_2.meta.available openrgb-with-all-plugins;
+  ] ++ lib.optional mbedtls.meta.available openrgb-with-all-plugins;
 
   services.udev.packages = with pkgs; [
     platformio-core.udev
@@ -232,7 +221,7 @@
   environment.etc."xdg/Xwayland-session.d/10-nixos.sh".source = let
     fontDir = builtins.elemAt (lib.strings.split "\"" config.services.xserver.filesSection) 2;
   in pkgs.writeShellScript "xwayland-session-nixos" ''
-    ${pkgs.xorg.xset}/bin/xset +fp ${fontDir},${pkgs.xorg.fontadobe100dpi}/lib/X11/fonts/100dpi
+    ${pkgs.xset}/bin/xset +fp ${fontDir},${pkgs.font-adobe-100dpi}/lib/X11/fonts/100dpi
   '';
 
   xdg.portal.enable = true;

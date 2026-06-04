@@ -61,7 +61,7 @@ in {
       wayland
       wayland-protocols
 
-      xorg.libXdmcp
+      libXdmcp
 
       # To make fluidsynth happy
       libevdev
@@ -119,7 +119,7 @@ in {
   });
   povray = prev.povray.overrideAttrs (old: {
     buildInputs = old.buildInputs ++ [
-      final.xorg.libXpm
+      final.libXpm
       final.SDL
     ];
   });

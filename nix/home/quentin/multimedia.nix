@@ -97,9 +97,9 @@ in {
     }
     (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
       home.packages = with pkgs; [
+        crosspipe
         lxqt.pavucontrol-qt
         ncpamixer
-        helvum
         qpwgraph
       ];
     })
