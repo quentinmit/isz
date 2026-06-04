@@ -5,7 +5,7 @@
   runtimeShell,
   copyDesktopItems,
   makeDesktopItem,
-  wineWowPackages,
+  wineWow64Packages,
   icoutils,
   unrar,
   glibcLocales,
@@ -72,7 +72,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   launcher = ''
     #!${runtimeShell}
-    wine=${wineWowPackages.stable}/bin/wine
+    wine=${wineWow64Packages.stable}/bin/wine
     export WINEARCH=win64
     export WINEPREFIX="''${XGPRO_HOME:-"''${XDG_DATA_HOME:-"''${HOME}/.local/share"}/xgpro"}/wine"
     if [ ! -d "$WINEPREFIX" ] ; then
@@ -87,8 +87,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     start_broker() {
       echo "Starting usb-broker: $BROKER --port $PORT"
-      "$BROKER" --port "$PORT" --quiet &
-      local bpid=$!
+      "$BROKER" --port "$PORT" --no-exit &
+      bpid=$!
       echo "usb-broker PID=$bpid"
     }
 
@@ -98,6 +98,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     start_broker
     run_app "$@"
+    kill $bpid
+    wait
   '';
 
   installPhase = ''
@@ -120,6 +122,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = licenses.unfree;
     maintainers = with maintainers; [ quentin ];
-    inherit (wineWowPackages.stable.meta) platforms;
+    inherit (wineWow64Packages.stable.meta) platforms;
   };
 })

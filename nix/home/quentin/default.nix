@@ -315,11 +315,11 @@ in {
         (lib.lowPrio qemu)  # contains libfdt which conflicts with dtc
         virt-manager
       ] ++ lib.optionals pkgs.stdenv.isLinux [
-        _86Box-with-roms
+        _86box-with-roms
         (if pkgs.stdenv.isx86_64 then libguestfs-with-appliance else libguestfs)
         pcem
         rpcemu
-        wineWowPackages.full
+        wineWow64Packages.full
         winetricks
       ];
     })
@@ -408,43 +408,43 @@ in {
     {
       programs.ssh = {
         enable = true;
+        enableDefaultConfig = false;
         extraOptionOverrides = {
           IgnoreUnknown = "GSSAPI*";
         };
-        extraConfig = ''
-          GSSAPIAuthentication yes
-          GSSAPIKeyExchange yes
-          # Use a wildcard so this works on non-DSA ssh as well
-          PubkeyAcceptedKeyTypes +ssh-?s?
-        '';
-        matchBlocks = {
+        settings = {
+          "*" = {
+            GSSAPIAuthentication = "yes";
+            GSSAPIKeyExchange = "yes";
+            # Use a wildcard so this works on non-DSA ssh as well
+            PubkeyAcceptedKeyTypes = "+ssh-?s?";
+          };
           "hercules.comclub.org" = {
-            user = "quentins";
-            proxyJump = "atlas.comclub.org";
+            User = "quentins";
+            ProxyJump = "atlas.comclub.org";
           };
           "sipb-isilon-*" = {
-            extraOptions.HostKeyAlgorithms = "+ssh-?s?";
+            HostKeyAlgorithms = "+ssh-?s?";
           };
           "*-key.mit.edu" = {
-            extraOptions.HostKeyAlgorithms = "+ssh-?s?";
+            HostKeyAlgorithms = "+ssh-?s?";
           };
           "mattermost.mit.edu" = {
-            hostname = "mattermost.mit.edu";
+            Hostname = "mattermost.mit.edu";
           };
-          "*.isz.wtf" = {
-            match = ''originalhost *.isz.wtf'';
+          "Match originalhost *.isz.wtf" = {
             # no IPv6
-            extraOptions.AddressFamily = "inet";
+            AddressFamily = "inet";
           };
           "mac.isz.wtf" = {
-            match = ''originalhost mac.isz.wtf !localnetwork 172.30.96.0/22 exec "${pkgs.knock}/bin/knock icestationzebra.isz.wtf 1337:udp 26678:udp"'';
-            hostname = "icestationzebra.isz.wtf";
-            port = 2222;
+            header = ''Match originalhost mac.isz.wtf !localnetwork 172.30.96.0/22 exec "${pkgs.knock}/bin/knock icestationzebra.isz.wtf 1337:udp 26678:udp"'';
+            Hostname = "icestationzebra.isz.wtf";
+            Port = 2222;
           };
           "heartofgold.isz.wtf" = {
-            match = ''originalhost heartofgold.isz.wtf !localnetwork 172.30.96.0/22 exec "${pkgs.knock}/bin/knock icestationzebra.isz.wtf 1337:udp 26678:udp"'';
-            hostname = "icestationzebra.isz.wtf";
-            port = 10122;
+            header = ''Match originalhost heartofgold.isz.wtf !localnetwork 172.30.96.0/22 exec "${pkgs.knock}/bin/knock icestationzebra.isz.wtf 1337:udp 26678:udp"'';
+            Hostname = "icestationzebra.isz.wtf";
+            Port = 10122;
           };
         };
       };
