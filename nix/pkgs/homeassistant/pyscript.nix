@@ -8,7 +8,7 @@
 let
   owner = "custom-components";
   domain = "pyscript";
-  version = "1.7.0";
+  version = "2.0.1";
 in
 buildHomeAssistantComponent {
   inherit owner domain version;
@@ -17,7 +17,7 @@ buildHomeAssistantComponent {
     owner = "custom-components";
     repo = domain;
     rev = version;
-    sha256 = "sha256-AphcRk9NDrD9pJI89eS5JIQSQ9XBZowP5ujfletCqyc=";
+    sha256 = "sha256-5jQUQit0luGAxbfGKETvqWmo8mBdFQarEuAevVZ67nM=";
   };
 
   propagatedBuildInputs = [
