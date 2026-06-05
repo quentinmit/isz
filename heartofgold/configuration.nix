@@ -147,17 +147,6 @@
 
   isz.krb5.enable = true;
 
-  nixpkgs.overlays = [(final: prev: {
-    libblurayFull = prev.libbluray.override {
-      withAACS = true;
-      withBDplus = true;
-      withJava = true;
-    };
-    vlc = prev.vlc.override {
-      libbluray = final.libblurayFull;
-    };
-  })];
-
   systemd.user.services.kde-baloo = {
     # With a 20 GB index, the default memory limit of 512 MiB is just too small.
     overrideStrategy = "asDropin";
