@@ -210,6 +210,12 @@ in {
       "test_phys_core_returns_int"
     ];
   });
+  xpra = prev.xpra.overrideAttrs (old: {
+    postPatch = old.postPatch or "" + ''
+      substituteInPlace xpra/server/subsystem/pulseaudio.py \
+        --replace-fail '"pulseaudio", "--start"' '"${lib.getExe' final.pulseaudioFull "pulseaudio"}", "--start"'
+    '';
+  });
   xpra-html5 = prev.xpra-html5.overrideAttrs (old:
     assert lib.versionOlder old.version "19";
     {

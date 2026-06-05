@@ -45,6 +45,12 @@ in {
       description = "SDRTrunk";
       wantedBy = [ "multi-user.target" ];
       environment.XDG_SESSION_CLASS = "background";
+      path = with pkgs; [
+        xauth
+        xhost
+        xpra
+        pulseaudio
+      ];
       serviceConfig = {
         User = "sdrtrunk";
         Group = "sdrtrunk";
@@ -81,10 +87,23 @@ in {
       home.packages = with pkgs; [
         sdrtrunk
         xterm
-        xorg.xev
+        xev
         pavucontrol
         adwaita-icon-theme
-      ];
+
+        xauth
+        xhost
+        xpra
+        pulseaudio
+      ] ++ (with gst_all_1; [
+        gst-libav
+        gst-vaapi
+        gst-plugins-ugly
+        gst-plugins-bad
+        gst-plugins-base
+        gst-plugins-good
+        gstreamer
+      ]);
 
       java.userPrefs.io.github.dsheirer.preference = {
         decoder."path.jmbe.library.1.0.0" = "${jmbe}/jmbe-${jmbe.version}.jar";
