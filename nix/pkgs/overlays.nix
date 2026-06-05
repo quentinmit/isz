@@ -210,4 +210,13 @@ in {
       "test_phys_core_returns_int"
     ];
   });
+  xpra-html5 = prev.xpra-html5.overrideAttrs (old:
+    assert lib.versionOlder old.version "19";
+    {
+      version = "19";
+      src = old.src.overrideAttrs {
+        hash = "sha256-uKETEYzEPEVSSek9DEeKzaUa0GoCWAn4/CkYxhAKHXw=";
+      };
+    }
+  );
 }
