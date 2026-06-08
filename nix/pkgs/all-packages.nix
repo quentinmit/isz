@@ -191,4 +191,5 @@ final: prev:
   vdeplug4 = final.callPackage ./vdeplug4 {};
   libexecs = final.callPackage ./libexecs {};
   typodermic-public-domain = final.callPackage ./typodermic-public-domain {};
+  xfed = final.callPackage ./xfed {};
 }
