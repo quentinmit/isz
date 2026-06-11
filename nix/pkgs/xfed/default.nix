@@ -21,7 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uc+ht9lNEkVWpq8hfkoO7s4En0AmVQzfWsk83vGW0aA=";
   };
 
-  sourceRoot = "contrib/programs/xfed";
+  sourceRoot = "contrib/programs/${finalAttrs.pname}";
 
   nativeBuildInputs = [
     imake
