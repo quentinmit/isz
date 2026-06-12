@@ -106,64 +106,78 @@ in {
           extra.multi = true;
         };
       };
-      layout.kind = "RowsLayout";
-      layout.spec.rows = [
+      layout.kind = "TabsLayout";
+      layout.spec.tabs = [
         {
-          spec.layout.kind = "GridLayout";
-          spec.title = "";
-          spec.hideHeader = true;
-          spec.layout.spec.items = [
-            { spec = {
-              element.name = "pool-activity";
-              x = 0; y = 0; width = 9; height = 8;
-            }; }
-            { spec = {
-              element.name = "pool-usage";
-              x = 0; y = 8; width = 9; height = 6;
-            }; }
-            { spec = {
-              element.name = "pool-status";
-              x = 9; y = 0; width = 5; height = 2;
-            }; }
-            { spec = {
-              element.name = "zpool-errors";
-              x = 9; y = 2; width = 5; height = 5;
-            }; }
-            { spec = {
-              element.name = "zpool-usage-stat";
-              x = 9; y = 7; width = 5; height = 7;
-            }; }
-            { spec = {
-              element.name = "vdev-queue-active";
-              x = 14; y = 0; width = 10; height = 7;
-            }; }
-            { spec = {
-              element.name = "vdev-queue-pend";
-              x = 14; y = 7; width = 10; height = 7;
-            }; }
+          spec.title = "Overview";
+          spec.layout.kind = "RowsLayout";
+          spec.layout.spec.rows = [
+            {
+              spec.layout.kind = "GridLayout";
+              spec.title = "";
+              spec.hideHeader = true;
+              spec.layout.spec.items = [
+                { spec = {
+                    element.name = "pool-activity";
+                    x = 0; y = 0; width = 9; height = 8;
+                  }; }
+                { spec = {
+                    element.name = "pool-usage";
+                    x = 0; y = 8; width = 9; height = 6;
+                  }; }
+                { spec = {
+                    element.name = "pool-status";
+                    x = 9; y = 0; width = 5; height = 2;
+                  }; }
+                { spec = {
+                    element.name = "zpool-errors";
+                    x = 9; y = 2; width = 5; height = 5;
+                  }; }
+                { spec = {
+                    element.name = "zpool-usage-stat";
+                    x = 9; y = 7; width = 5; height = 7;
+                  }; }
+                { spec = {
+                    element.name = "vdev-queue-active";
+                    x = 14; y = 0; width = 10; height = 7;
+                  }; }
+                { spec = {
+                    element.name = "vdev-queue-pend";
+                    x = 14; y = 7; width = 10; height = 7;
+                  }; }
+              ];
+            }
+            {
+              spec.title = "Latencies";
+              spec.layout.kind = "GridLayout";
+              spec.layout.spec.items = [
+                { spec = {
+                    element.name = "total_read";
+                    x = 0; y = 0; width = 12; height = 8;
+                  }; }
+                { spec = {
+                    element.name = "total_write";
+                    x = 12; y = 0; width = 12; height = 8;
+                  }; }
+                { spec = {
+                    element.name = "latency-per-queue";
+                    x = 0; y = 8; width = 24; height = 8;
+                    repeat = {
+                      direction = "h";
+                      mode = "variable";
+                      value = "latencyparam";
+                    };
+                  }; }
+              ];
+            }
           ];
         }
         {
-          spec.title = "Latencies";
-          spec.layout.kind = "GridLayout";
+          spec.title = "vdevs";
+          spec.layout.kind = "AutoGridLayout";
+          spec.layout.spec.fillScreen = true;
           spec.layout.spec.items = [
-            { spec = {
-              element.name = "total_read";
-              x = 0; y = 0; width = 12; height = 8;
-            }; }
-            { spec = {
-              element.name = "total_write";
-              x = 12; y = 0; width = 12; height = 8;
-            }; }
-            { spec = {
-              element.name = "latency-per-queue";
-              x = 0; y = 8; width = 24; height = 8;
-              repeat = {
-                direction = "h";
-                mode = "variable";
-                value = "latencyparam";
-              };
-            }; }
+            { spec.element.name = "vdev-list"; }
           ];
         }
       ];
@@ -277,6 +291,31 @@ in {
         config = {
           _field = "$latencyparam";
           spec.title = "Latency for $latencyparam queue";
+        };
+      };
+      panels.vdev-list = {
+        spec.title = "vdevs";
+        influx.filter._measurement = "zpool_stats";
+        influx.filter._field = ["read_errors" "write_errors" "fragmentation" "checksum_errors"];
+        influx.fn = "last1";
+        influx.groupBy = {
+          fields = [
+            "_measurement"
+            "_field"
+            "host"
+            "name"
+            "path"
+            "vdev"
+          ];
+          fn = "last1";
+        };
+        influx.pivot = true;
+        influx.extra = ''
+          |> drop(columns: ["_measurement", "host"])
+          |> group()
+        '';
+        spec.vizConfig = {
+          group = "table";
         };
       };
     };
