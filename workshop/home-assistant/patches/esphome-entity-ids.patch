@@ -1,8 +1,8 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index b4a6a874769..330da7fe5b3 100644
+index 20d44aa7cbf..79d24de67a3 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
-@@ -29,6 +29,7 @@ from homeassistant.helpers import (
+@@ -27,6 +27,7 @@ from homeassistant.helpers import (
  from homeassistant.helpers.device_registry import DeviceInfo
  from homeassistant.helpers.entity import Entity
  from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -10,7 +10,7 @@ index b4a6a874769..330da7fe5b3 100644
  
  from .const import DOMAIN
  
-@@ -90,7 +91,7 @@ def async_static_info_updated(
+@@ -88,7 +89,7 @@ def async_static_info_updated(
  
          # Create new entity if it doesn't exist
          if not old_info:
@@ -19,7 +19,7 @@ index b4a6a874769..330da7fe5b3 100644
              add_entities.append(entity)
              continue
  
-@@ -112,7 +113,7 @@ def async_static_info_updated(
+@@ -111,7 +112,7 @@ def async_static_info_updated(
                  old_info.device_id,
                  info.device_id,
              )
@@ -28,7 +28,7 @@ index b4a6a874769..330da7fe5b3 100644
              add_entities.append(entity)
              continue
  
-@@ -162,7 +163,7 @@ def async_static_info_updated(
+@@ -163,7 +164,7 @@ def async_static_info_updated(
          entry_data.async_signal_entity_removal(info_type, old_info.device_id, info.key)
  
          # Create new entity with the new device_id
@@ -37,7 +37,7 @@ index b4a6a874769..330da7fe5b3 100644
  
      # Anything still in current_infos is now gone
      if current_infos:
-@@ -312,7 +313,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
+@@ -331,7 +332,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
  class EsphomeBaseEntity(Entity):
      """Define a base esphome entity."""
  
@@ -45,7 +45,7 @@ index b4a6a874769..330da7fe5b3 100644
      _attr_should_poll = False
      _device_info: EsphomeDeviceInfo
      device_entry: dr.DeviceEntry
-@@ -329,6 +329,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+@@ -348,6 +348,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
      def __init__(
          self,
          entry_data: RuntimeEntryData,
@@ -53,15 +53,15 @@ index b4a6a874769..330da7fe5b3 100644
          entity_info: EntityInfo,
          state_type: type[_StateT],
      ) -> None:
-@@ -342,6 +343,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+@@ -361,6 +362,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
          self._state_type = state_type
          self._on_static_info_update(entity_info)
  
 +        device_name = device_info.name
-         # Determine the device connection based on whether this entity belongs to a sub device
+         # Determine the device connection based on whether this
+         # entity belongs to a sub device
          if entity_info.device_id:
-             # Entity belongs to a sub device
-@@ -350,11 +352,46 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+@@ -370,11 +372,46 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
                      (DOMAIN, f"{device_info.mac_address}_{entity_info.device_id}")
                  }
              )
@@ -108,7 +108,7 @@ index b4a6a874769..330da7fe5b3 100644
  
      async def async_added_to_hass(self) -> None:
          """Register callbacks."""
-@@ -480,6 +517,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):
+@@ -500,6 +537,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
  class EsphomeAssistEntity(EsphomeBaseEntity):
      """Define a base entity for Assist Pipeline entities."""
  
@@ -118,10 +118,10 @@ index b4a6a874769..330da7fe5b3 100644
          """Initialize the binary sensor."""
          self._entry_data = entry_data
 diff --git a/homeassistant/components/esphome/manager.py b/homeassistant/components/esphome/manager.py
-index 87b7ec3361e..c70f1396051 100644
+index 2a6d3847172..751490e0415 100644
 --- a/homeassistant/components/esphome/manager.py
 +++ b/homeassistant/components/esphome/manager.py
-@@ -645,15 +645,6 @@ class ESPHomeManager:
+@@ -644,15 +644,6 @@ class ESPHomeManager:
          if device_info.name:
              reconnect_logic.name = device_info.name
  
@@ -137,7 +137,7 @@ index 87b7ec3361e..c70f1396051 100644
          # Build device_id_to_name mapping for efficient lookup
          entry_data.device_id_to_name = {
              sub_device.device_id: sub_device.name or device_info.name
-@@ -1060,7 +1051,7 @@ def _async_setup_device_registry(
+@@ -1059,7 +1050,7 @@ def _async_setup_device_registry(
          config_entry_id=entry.entry_id,
          configuration_url=configuration_url,
          connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)},
@@ -147,7 +147,7 @@ index 87b7ec3361e..c70f1396051 100644
          model=model,
          sw_version=sw_version,
 diff --git a/tests/components/esphome/test_alarm_control_panel.py b/tests/components/esphome/test_alarm_control_panel.py
-index ff16731b44e..13d9feec9fc 100644
+index 9804999997a..2a7d3534d91 100644
 --- a/tests/components/esphome/test_alarm_control_panel.py
 +++ b/tests/components/esphome/test_alarm_control_panel.py
 @@ -58,7 +58,7 @@ async def test_generic_alarm_control_panel_requires_code(
@@ -452,7 +452,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == STATE_UNAVAILABLE
 diff --git a/tests/components/esphome/test_climate.py b/tests/components/esphome/test_climate.py
-index 2a2c232e2c4..192cf8d393a 100644
+index eb62cdc0e89..4bd36714efb 100644
 --- a/tests/components/esphome/test_climate.py
 +++ b/tests/components/esphome/test_climate.py
 @@ -81,14 +81,14 @@ async def test_climate_entity(
@@ -795,7 +795,7 @@ index 940fae5cfef..f752105e18b 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
 diff --git a/tests/components/esphome/test_entity.py b/tests/components/esphome/test_entity.py
-index 7dad5ae9e7e..8d9884d4554 100644
+index 36bf8636622..51ded2733bc 100644
 --- a/tests/components/esphome/test_entity.py
 +++ b/tests/components/esphome/test_entity.py
 @@ -70,10 +70,10 @@ async def test_entities_removed(
@@ -1373,7 +1373,7 @@ index 763e95d3e6f..b2aff4d45d7 100644
      )
      mock_client.fan_command.assert_has_calls([call(key=1, state=False, device_id=0)])
 diff --git a/tests/components/esphome/test_light.py b/tests/components/esphome/test_light.py
-index bf602a6fa84..f48f5181128 100644
+index 824d1e99391..8a7924a00bc 100644
 --- a/tests/components/esphome/test_light.py
 +++ b/tests/components/esphome/test_light.py
 @@ -69,14 +69,14 @@ async def test_light_on_off(
@@ -1578,7 +1578,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -616,14 +616,14 @@ async def test_rgb_color_temp_light(
+@@ -614,14 +614,14 @@ async def test_rgb_color_temp_light(
          user_service=user_service,
          states=states,
      )
@@ -1595,7 +1595,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -641,7 +641,7 @@ async def test_rgb_color_temp_light(
+@@ -639,7 +639,7 @@ async def test_rgb_color_temp_light(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1604,7 +1604,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -660,7 +660,7 @@ async def test_rgb_color_temp_light(
+@@ -658,7 +658,7 @@ async def test_rgb_color_temp_light(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1613,7 +1613,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -704,14 +704,14 @@ async def test_light_rgb(
+@@ -702,14 +702,14 @@ async def test_light_rgb(
          user_service=user_service,
          states=states,
      )
@@ -1630,7 +1630,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -731,7 +731,7 @@ async def test_light_rgb(
+@@ -729,7 +729,7 @@ async def test_light_rgb(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1639,7 +1639,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -753,7 +753,7 @@ async def test_light_rgb(
+@@ -751,7 +751,7 @@ async def test_light_rgb(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
          {
@@ -1648,7 +1648,7 @@ index bf602a6fa84..f48f5181128 100644
              ATTR_BRIGHTNESS: 127,
              ATTR_HS_COLOR: (100, 100),
          },
-@@ -779,7 +779,7 @@ async def test_light_rgb(
+@@ -777,7 +777,7 @@ async def test_light_rgb(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1657,7 +1657,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -841,7 +841,7 @@ async def test_light_rgbw(
+@@ -839,7 +839,7 @@ async def test_light_rgbw(
          user_service=user_service,
          states=states,
      )
@@ -1666,7 +1666,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [ColorMode.RGBW]
-@@ -850,7 +850,7 @@ async def test_light_rgbw(
+@@ -848,7 +848,7 @@ async def test_light_rgbw(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1675,7 +1675,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -871,7 +871,7 @@ async def test_light_rgbw(
+@@ -869,7 +869,7 @@ async def test_light_rgbw(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1684,7 +1684,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -894,7 +894,7 @@ async def test_light_rgbw(
+@@ -892,7 +892,7 @@ async def test_light_rgbw(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
          {
@@ -1693,7 +1693,7 @@ index bf602a6fa84..f48f5181128 100644
              ATTR_BRIGHTNESS: 127,
              ATTR_HS_COLOR: (100, 100),
          },
-@@ -922,7 +922,7 @@ async def test_light_rgbw(
+@@ -920,7 +920,7 @@ async def test_light_rgbw(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1702,7 +1702,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -946,7 +946,7 @@ async def test_light_rgbw(
+@@ -944,7 +944,7 @@ async def test_light_rgbw(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1711,7 +1711,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1015,7 +1015,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+@@ -1013,7 +1013,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
          user_service=user_service,
          states=states,
      )
@@ -1720,7 +1720,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [
-@@ -1031,7 +1031,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+@@ -1029,7 +1029,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1729,7 +1729,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1049,7 +1049,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+@@ -1047,7 +1047,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1738,7 +1738,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1069,7 +1069,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+@@ -1067,7 +1067,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
          {
@@ -1747,7 +1747,7 @@ index bf602a6fa84..f48f5181128 100644
              ATTR_BRIGHTNESS: 127,
              ATTR_HS_COLOR: (100, 100),
          },
-@@ -1093,7 +1093,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+@@ -1091,7 +1091,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1756,7 +1756,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1113,7 +1113,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+@@ -1111,7 +1111,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1765,7 +1765,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1135,7 +1135,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+@@ -1133,7 +1133,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
          {
@@ -1774,7 +1774,7 @@ index bf602a6fa84..f48f5181128 100644
              ATTR_RGBWW_COLOR: (255, 255, 255, 255, 255),
          },
          blocking=True,
-@@ -1159,7 +1159,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
+@@ -1157,7 +1157,7 @@ async def test_light_rgbww_with_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1783,7 +1783,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1223,7 +1223,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+@@ -1221,7 +1221,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
          user_service=user_service,
          states=states,
      )
@@ -1792,7 +1792,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [ColorMode.RGBWW]
-@@ -1233,7 +1233,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+@@ -1231,7 +1231,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1801,7 +1801,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1255,7 +1255,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+@@ -1253,7 +1253,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1810,7 +1810,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1279,7 +1279,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+@@ -1277,7 +1277,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
          {
@@ -1819,7 +1819,7 @@ index bf602a6fa84..f48f5181128 100644
              ATTR_BRIGHTNESS: 127,
              ATTR_HS_COLOR: (100, 100),
          },
-@@ -1309,7 +1309,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+@@ -1307,7 +1307,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1828,7 +1828,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1335,7 +1335,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+@@ -1333,7 +1333,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1837,7 +1837,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1362,7 +1362,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+@@ -1360,7 +1360,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
          {
@@ -1846,7 +1846,7 @@ index bf602a6fa84..f48f5181128 100644
              ATTR_RGBWW_COLOR: (255, 255, 255, 255, 255),
          },
          blocking=True,
-@@ -1390,7 +1390,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
+@@ -1388,7 +1388,7 @@ async def test_light_rgbww_without_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1855,7 +1855,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1451,7 +1451,7 @@ async def test_light_color_temp(
+@@ -1449,7 +1449,7 @@ async def test_light_color_temp(
          user_service=user_service,
          states=states,
      )
@@ -1864,7 +1864,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      attributes = state.attributes
-@@ -1461,7 +1461,7 @@ async def test_light_color_temp(
+@@ -1459,7 +1459,7 @@ async def test_light_color_temp(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1873,7 +1873,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1481,7 +1481,7 @@ async def test_light_color_temp(
+@@ -1479,7 +1479,7 @@ async def test_light_color_temp(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_OFF,
@@ -1882,7 +1882,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls([call(key=1, state=False, device_id=0)])
-@@ -1525,7 +1525,7 @@ async def test_light_color_temp_no_mireds_set(
+@@ -1523,7 +1523,7 @@ async def test_light_color_temp_no_mireds_set(
          user_service=user_service,
          states=states,
      )
@@ -1891,7 +1891,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      attributes = state.attributes
-@@ -1535,7 +1535,7 @@ async def test_light_color_temp_no_mireds_set(
+@@ -1533,7 +1533,7 @@ async def test_light_color_temp_no_mireds_set(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1900,7 +1900,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1555,7 +1555,7 @@ async def test_light_color_temp_no_mireds_set(
+@@ -1553,7 +1553,7 @@ async def test_light_color_temp_no_mireds_set(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1909,7 +1909,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1576,7 +1576,7 @@ async def test_light_color_temp_no_mireds_set(
+@@ -1574,7 +1574,7 @@ async def test_light_color_temp_no_mireds_set(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_OFF,
@@ -1918,7 +1918,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls([call(key=1, state=False, device_id=0)])
-@@ -1627,7 +1627,7 @@ async def test_light_color_temp_legacy(
+@@ -1625,7 +1625,7 @@ async def test_light_color_temp_legacy(
          user_service=user_service,
          states=states,
      )
@@ -1927,7 +1927,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      attributes = state.attributes
-@@ -1640,7 +1640,7 @@ async def test_light_color_temp_legacy(
+@@ -1638,7 +1638,7 @@ async def test_light_color_temp_legacy(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1936,7 +1936,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1660,7 +1660,7 @@ async def test_light_color_temp_legacy(
+@@ -1658,7 +1658,7 @@ async def test_light_color_temp_legacy(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_OFF,
@@ -1945,7 +1945,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls([call(key=1, state=False, device_id=0)])
-@@ -1713,7 +1713,7 @@ async def test_light_rgb_legacy(
+@@ -1711,7 +1711,7 @@ async def test_light_rgb_legacy(
          user_service=user_service,
          states=states,
      )
@@ -1954,7 +1954,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      attributes = state.attributes
-@@ -1723,7 +1723,7 @@ async def test_light_rgb_legacy(
+@@ -1721,7 +1721,7 @@ async def test_light_rgb_legacy(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1963,7 +1963,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1740,7 +1740,7 @@ async def test_light_rgb_legacy(
+@@ -1738,7 +1738,7 @@ async def test_light_rgb_legacy(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_OFF,
@@ -1972,7 +1972,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls([call(key=1, state=False, device_id=0)])
-@@ -1749,7 +1749,7 @@ async def test_light_rgb_legacy(
+@@ -1747,7 +1747,7 @@ async def test_light_rgb_legacy(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1981,7 +1981,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1799,7 +1799,7 @@ async def test_light_effects(
+@@ -1797,7 +1797,7 @@ async def test_light_effects(
          user_service=user_service,
          states=states,
      )
@@ -1990,7 +1990,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      assert state.attributes[ATTR_EFFECT_LIST] == ["effect1", "effect2"]
-@@ -1807,7 +1807,7 @@ async def test_light_effects(
+@@ -1805,7 +1805,7 @@ async def test_light_effects(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -1999,7 +1999,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1867,7 +1867,7 @@ async def test_only_cold_warm_white_support(
+@@ -1865,7 +1865,7 @@ async def test_only_cold_warm_white_support(
          user_service=user_service,
          states=states,
      )
@@ -2008,7 +2008,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [ColorMode.COLOR_TEMP]
-@@ -1876,7 +1876,7 @@ async def test_only_cold_warm_white_support(
+@@ -1874,7 +1874,7 @@ async def test_only_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -2017,7 +2017,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1887,7 +1887,7 @@ async def test_only_cold_warm_white_support(
+@@ -1885,7 +1885,7 @@ async def test_only_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -2026,7 +2026,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1906,7 +1906,7 @@ async def test_only_cold_warm_white_support(
+@@ -1904,7 +1904,7 @@ async def test_only_cold_warm_white_support(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -2035,7 +2035,7 @@ index bf602a6fa84..f48f5181128 100644
          blocking=True,
      )
      mock_client.light_command.assert_has_calls(
-@@ -1949,7 +1949,7 @@ async def test_light_no_color_modes(
+@@ -2046,7 +2046,7 @@ async def test_light_no_color_modes(
          user_service=user_service,
          states=states,
      )
@@ -2044,7 +2044,7 @@ index bf602a6fa84..f48f5181128 100644
      assert state is not None
      assert state.state == STATE_ON
      assert state.attributes[ATTR_SUPPORTED_COLOR_MODES] == [ColorMode.ONOFF]
-@@ -1957,7 +1957,7 @@ async def test_light_no_color_modes(
+@@ -2054,7 +2054,7 @@ async def test_light_no_color_modes(
      await hass.services.async_call(
          LIGHT_DOMAIN,
          SERVICE_TURN_ON,
@@ -2119,7 +2119,7 @@ index 53639353f59..0b69826c181 100644
      )
      mock_client.lock_command.assert_has_calls([call(1, LockCommand.OPEN, device_id=0)])
 diff --git a/tests/components/esphome/test_manager.py b/tests/components/esphome/test_manager.py
-index ef22b018d64..2a1350bd81c 100644
+index e6913e5e422..bba25350434 100644
 --- a/tests/components/esphome/test_manager.py
 +++ b/tests/components/esphome/test_manager.py
 @@ -1892,10 +1892,6 @@ async def test_device_adds_friendly_name(
@@ -2134,10 +2134,10 @@ index ef22b018d64..2a1350bd81c 100644
  
      await device.mock_disconnect(True)
 diff --git a/tests/components/esphome/test_media_player.py b/tests/components/esphome/test_media_player.py
-index b5805298b97..01cde000ad0 100644
+index 922361cb4bd..62a2939e1fb 100644
 --- a/tests/components/esphome/test_media_player.py
 +++ b/tests/components/esphome/test_media_player.py
-@@ -75,7 +75,7 @@ async def test_media_player_entity(
+@@ -77,7 +77,7 @@ async def test_media_player_entity(
          user_service=user_service,
          states=states,
      )
@@ -2146,7 +2146,7 @@ index b5805298b97..01cde000ad0 100644
      assert state is not None
      assert state.state == "paused"
  
-@@ -83,7 +83,7 @@ async def test_media_player_entity(
+@@ -85,7 +85,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_VOLUME_MUTE,
          {
@@ -2155,7 +2155,7 @@ index b5805298b97..01cde000ad0 100644
              ATTR_MEDIA_VOLUME_MUTED: True,
          },
          blocking=True,
-@@ -97,7 +97,7 @@ async def test_media_player_entity(
+@@ -99,7 +99,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_VOLUME_MUTE,
          {
@@ -2164,7 +2164,7 @@ index b5805298b97..01cde000ad0 100644
              ATTR_MEDIA_VOLUME_MUTED: True,
          },
          blocking=True,
-@@ -111,7 +111,7 @@ async def test_media_player_entity(
+@@ -113,7 +113,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_VOLUME_SET,
          {
@@ -2173,7 +2173,7 @@ index b5805298b97..01cde000ad0 100644
              ATTR_MEDIA_VOLUME_LEVEL: 0.5,
          },
          blocking=True,
-@@ -125,7 +125,7 @@ async def test_media_player_entity(
+@@ -127,7 +127,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_MEDIA_PAUSE,
          {
@@ -2182,7 +2182,7 @@ index b5805298b97..01cde000ad0 100644
          },
          blocking=True,
      )
-@@ -138,7 +138,7 @@ async def test_media_player_entity(
+@@ -140,7 +140,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_MEDIA_PLAY,
          {
@@ -2191,7 +2191,7 @@ index b5805298b97..01cde000ad0 100644
          },
          blocking=True,
      )
-@@ -151,7 +151,7 @@ async def test_media_player_entity(
+@@ -153,7 +153,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_MEDIA_STOP,
          {
@@ -2200,7 +2200,7 @@ index b5805298b97..01cde000ad0 100644
          },
          blocking=True,
      )
-@@ -330,7 +330,7 @@ async def test_media_player_entity_with_source(
+@@ -333,7 +333,7 @@ async def test_media_player_entity_with_source(
          user_service=user_service,
          states=states,
      )
@@ -2209,7 +2209,7 @@ index b5805298b97..01cde000ad0 100644
      assert state is not None
      assert state.state == "playing"
  
-@@ -339,7 +339,7 @@ async def test_media_player_entity_with_source(
+@@ -342,7 +342,7 @@ async def test_media_player_entity_with_source(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2218,7 +2218,7 @@ index b5805298b97..01cde000ad0 100644
                  ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
                  ATTR_MEDIA_CONTENT_ID: "media-source://local/xz",
              },
-@@ -363,7 +363,7 @@ async def test_media_player_entity_with_source(
+@@ -366,7 +366,7 @@ async def test_media_player_entity_with_source(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2227,7 +2227,7 @@ index b5805298b97..01cde000ad0 100644
                  ATTR_MEDIA_CONTENT_TYPE: "audio/mp3",
                  ATTR_MEDIA_CONTENT_ID: "media-source://local/xy",
              },
-@@ -386,7 +386,7 @@ async def test_media_player_entity_with_source(
+@@ -389,7 +389,7 @@ async def test_media_player_entity_with_source(
          {
              "id": 1,
              "type": "media_player/browse_media",
@@ -2236,7 +2236,7 @@ index b5805298b97..01cde000ad0 100644
          }
      )
      response = await client.receive_json()
-@@ -396,7 +396,7 @@ async def test_media_player_entity_with_source(
+@@ -399,7 +399,7 @@ async def test_media_player_entity_with_source(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_PLAY_MEDIA,
          {
@@ -2245,7 +2245,7 @@ index b5805298b97..01cde000ad0 100644
              ATTR_MEDIA_CONTENT_TYPE: MediaType.URL,
              ATTR_MEDIA_CONTENT_ID: "media-source://tts?message=hello",
              ATTR_MEDIA_ANNOUNCE: True,
-@@ -468,7 +468,7 @@ async def test_media_player_proxy(
+@@ -472,7 +472,7 @@ async def test_media_player_proxy(
          connections={(dr.CONNECTION_NETWORK_MAC, mock_device.entry.unique_id)}
      )
      assert dev is not None
@@ -2254,7 +2254,7 @@ index b5805298b97..01cde000ad0 100644
      assert state is not None
      assert state.state == "paused"
  
-@@ -485,7 +485,7 @@ async def test_media_player_proxy(
+@@ -489,7 +489,7 @@ async def test_media_player_proxy(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2263,7 +2263,7 @@ index b5805298b97..01cde000ad0 100644
                  ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
                  ATTR_MEDIA_CONTENT_ID: media_url,
              },
-@@ -516,7 +516,7 @@ async def test_media_player_proxy(
+@@ -520,7 +520,7 @@ async def test_media_player_proxy(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2272,7 +2272,7 @@ index b5805298b97..01cde000ad0 100644
                  ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
                  ATTR_MEDIA_CONTENT_ID: media_url,
                  ATTR_MEDIA_ANNOUNCE: True,
-@@ -546,7 +546,7 @@ async def test_media_player_proxy(
+@@ -550,7 +550,7 @@ async def test_media_player_proxy(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2330,10 +2330,10 @@ index 02b58649fec..b0ef353086c 100644
          )
      mock_client.number_command.reset_mock()
 diff --git a/tests/components/esphome/test_repairs.py b/tests/components/esphome/test_repairs.py
-index 7b83ed894bb..8997d713af0 100644
+index 64e944b7c4f..bd028ab744e 100644
 --- a/tests/components/esphome/test_repairs.py
 +++ b/tests/components/esphome/test_repairs.py
-@@ -136,12 +136,12 @@ async def test_device_conflict_migration(
+@@ -134,12 +134,12 @@ async def test_device_conflict_migration(
          user_service=user_service,
          states=states,
      )
@@ -2348,7 +2348,7 @@ index 7b83ed894bb..8997d713af0 100644
      assert ent_reg_entry
      assert ent_reg_entry.unique_id == "11:22:33:44:55:AA-binary_sensor-mybinary_sensor"
      entries = er.async_entries_for_config_entry(
-@@ -204,7 +204,7 @@ async def test_device_conflict_migration(
+@@ -202,7 +202,7 @@ async def test_device_conflict_migration(
      assert issue_registry.async_get_issue(DOMAIN, issue_id) is None
  
      assert mock_config_entry.unique_id == "11:22:33:44:55:ab"
@@ -2379,7 +2379,7 @@ index 7de4dcd6aca..ec56c033f23 100644
      )
      mock_client.select_command.assert_has_calls([call(1, "b", device_id=0)])
 diff --git a/tests/components/esphome/test_sensor.py b/tests/components/esphome/test_sensor.py
-index 31d7bb30abb..dc6cdb8eac6 100644
+index 11acdce43d1..c4ea4de5b7a 100644
 --- a/tests/components/esphome/test_sensor.py
 +++ b/tests/components/esphome/test_sensor.py
 @@ -64,35 +64,35 @@ async def test_generic_numeric_sensor(
@@ -2667,10 +2667,10 @@ index 176510d4e65..812faeeb2c1 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
 diff --git a/tests/components/esphome/test_update.py b/tests/components/esphome/test_update.py
-index 859189f5ed9..67be65dc6fa 100644
+index 1bdb4b4ac63..1bce94147c5 100644
 --- a/tests/components/esphome/test_update.py
 +++ b/tests/components/esphome/test_update.py
-@@ -35,7 +35,7 @@ from tests.typing import WebSocketGenerator
+@@ -37,7 +37,7 @@ from tests.typing import WebSocketGenerator
  
  RELEASE_SUMMARY = "This is a release summary"
  RELEASE_URL = "https://esphome.io/changelog"

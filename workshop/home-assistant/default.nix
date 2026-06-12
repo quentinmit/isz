@@ -313,6 +313,26 @@ in {
               tv_power = power "TV";
             };
           }
+          {
+            weather = [{
+              name = "WeatherFlow";
+              unique_id = "weatherflow";
+              condition = "{{ states('sensor.hub_hb_00122953_weather') }}";
+              # condition: "{{ states('tempest_st_00122016_current_conditions') }}" # Local Only Option
+              forecast_hourly = "{{ state_attr('sensor.hub_hb_00122953_weather', 'hourly_forecast') }}";
+              temperature = "{{ states('sensor.tempest_st_00122016_temperature') | float}}";
+              apparent_temperature = "{{ states('sensor.tempest_st_00122016_feels_like_temperature') | float}}";
+              temperature_unit = "°F";
+              humidity = "{{ states('sensor.tempest_st_00122016_humidity')| int }}";
+              pressure = "{{ states('sensor.tempest_st_00122016_sea_level_pressure')| float }}";
+              pressure_unit = "inHg";
+              visibility = "{{ states('sensor.tempest_st_00122016_visibility')| float * 1.15078 }}";
+              visibility_unit = "mi";
+              wind_speed = "{{ states('sensor.tempest_st_00122016_wind_speed_avg') | float }}";
+              wind_speed_unit = "mph";
+              wind_bearing = "{{ states('sensor.tempest_st_00122016_wind_bearing_avg')| int }}";
+            }];
+          }
         ];
         sensor = [
           {
@@ -458,28 +478,6 @@ in {
             };
           }
         ];
-        weather = [
-          {
-            platform = "template";
-            name = "WeatherFlow";
-            unique_id = "weatherflow";
-            condition_template = "{{ states('sensor.hub_hb_00122953_weather') }}";
-            # condition_template: "{{ states('tempest_st_00122016_current_conditions') }}" # Local Only Option
-            temperature_template = "{{ states('sensor.tempest_st_00122016_temperature') | float}}";
-            temperature_unit = "°F";
-            apparent_temperature_template = "{{ states('sensor.tempest_st_00122016_feels_like_temperature') | float}}";
-            humidity_template = "{{ states('sensor.tempest_st_00122016_humidity')| int }}";
-            pressure_template = "{{ states('sensor.tempest_st_00122016_sea_level_pressure')| float }}";
-            pressure_unit = "inHg";
-            wind_speed_template = "{{ states('sensor.tempest_st_00122016_wind_speed_avg') | float }}";
-            wind_speed_unit = "mph";
-            wind_bearing_template = "{{ states('sensor.tempest_st_00122016_wind_bearing_avg')| int }}";
-            visibility_template = "{{ states('sensor.tempest_st_00122016_visibility')| float * 1.15078 }}";
-            visibility_unit = "mi";
-            forecast_hourly_template = "{{ state_attr('sensor.hub_hb_00122953_weather', 'hourly_forecast') }}";
-          }
-        ];
-
         tts = [
           {
             platform = "google_translate";

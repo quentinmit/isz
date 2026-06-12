@@ -38,7 +38,7 @@
         home-assistant-cli
         zapzap
         xgpro
-        affinity-nix.packages.${pkgs.stdenv.system}.v3
+        (pkgs.extend affinity-nix.overlays.default).affinity-v3
         mathematica
       ];
 
