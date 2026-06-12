@@ -279,6 +279,8 @@ in {
       };
     };
     GridLayoutItem = kindSubmodule "GridLayoutItem" {
+      freeformType = types.anything; # Hack to allow repeat?: RepeatOptions
+
       options.spec = {
         x = mkOption {
           type = types.int;

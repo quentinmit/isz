@@ -90,6 +90,35 @@ in {
               }) config.panels;
             };
           };
+          spec = mkOption {
+            type = types.submodule {
+              options = (kind.Dashboard.getSubOptions []).spec;
+            };
+            default = {};
+          };
+        };
+        config.spec = {
+          inherit (config) title tags links layout;
+          elements = lib.mapAttrs (_: p: {
+            kind = "Panel";
+            inherit (p) spec;
+          }) config.panels;
+          variables = lib.mapAttrsToList (name: args: {
+            kind = "QueryVariable";
+            spec = lib.recursiveUpdate rec {
+              inherit name;
+              query = {
+                datasource.name = config.defaultDatasourceName;
+                group = "influxdb";
+                spec = {
+                  inherit (args) query;
+                };
+              };
+              includeAll = true;
+              label = name;
+            } args.extra;
+          }) config.variables;
+          annotations = (options.services.grafana.dashboardsV2.type.getSubOptions []).spec.annotations.default ++ config.annotations;
         };
       }));
     };
@@ -100,29 +129,7 @@ in {
         inherit (cfg.datasources.${dashboard.defaultDatasourceName}) uid type;
       };
       in {
-        spec = {
-          inherit (dashboard) title tags links layout;
-          elements = lib.mapAttrs (_: p: {
-            kind = "Panel";
-            inherit (p) spec;
-          }) dashboard.panels;
-          variables = lib.mapAttrsToList (name: args: {
-            kind = "QueryVariable";
-            spec = lib.recursiveUpdate rec {
-              name = args.tag;
-              query = {
-                datasource.name = dashboard.defaultDatasourceName;
-                group = "influxdb";
-                spec = {
-                  inherit (args) query;
-                };
-              };
-              includeAll = true;
-              label = name;
-            } args.extra;
-          }) dashboard.variables;
-          annotations = (options.services.grafana.dashboardsV2.type.getSubOptions []).spec.annotations.default ++ dashboard.annotations;
-        };
+        inherit (dashboard) spec;
       }) cfg.dashboardsV2;
   };
 }

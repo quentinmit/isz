@@ -5,84 +5,176 @@
 with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; };
 let
   interval = config.isz.telegraf.interval.zpool;
-  heatmapPanel = name: args: base (lib.recursiveUpdate {
-    panel.title = name;
-    panel.interval = interval;
-    influx.query = ''
-      import "join"
+  heatmap = { name, config, ... }: {
+    options._field = lib.mkOption {
+      type = lib.types.str;
+      default = name;
+    };
+    config = {
+      spec.title = lib.mkDefault name;
+      spec.data.spec.queryOptions.interval = interval;
+      influx.query = ''
+        import "join"
 
-      cumulative = from(bucket: v.defaultBucket)
-        |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-        |> filter(fn: (r) => r["_measurement"] == "zpool_latency")
-        |> filter(fn: (r) => r["_field"] == "${name}")
-        |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
-        |> filter(fn: (r) => r["vdev"] == "root")
-        |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
-        |> difference(nonNegative: true, columns: ["_value"])
-        |> group(columns: ["_value", "le"], mode: "except")
-        |> map(fn: (r) => ({r with le: float(v: r.le)}))
+        cumulative = from(bucket: v.defaultBucket)
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_measurement"] == "zpool_latency")
+          |> filter(fn: (r) => r["_field"] == "${config._field}")
+          |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
+          |> filter(fn: (r) => r["vdev"] == "root")
+          |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
+          |> difference(nonNegative: true, columns: ["_value"])
+          |> group(columns: ["_value", "le"], mode: "except")
+          |> map(fn: (r) => ({r with le: float(v: r.le)}))
 
-      zeros = cumulative |> first()
-        |> map(fn: (r) => ({r with _value: 0, le: 0.0}))
+        zeros = cumulative |> first()
+          |> map(fn: (r) => ({r with _value: 0, le: 0.0}))
 
-      union(tables: [zeros, cumulative])
-        |> sort(columns: ["le"])
-        |> difference(nonNegative: true)
-        |> keep(columns: ["_time", "_value", "le"])
-        |> group(columns: ["le"])
+        union(tables: [zeros, cumulative])
+          |> sort(columns: ["le"])
+          |> difference(nonNegative: true)
+          |> keep(columns: ["_time", "_value", "le"])
+          |> group(columns: ["le"])
+      '';
+      spec.vizConfig.group = "heatmap";
+      spec.vizConfig.spec.options = {
+        calculate = false;
+        cellGap = 0;
+        color.scheme = lib.mkDefault "Turbo";
+        yAxis.unit = "s";
+        cellValues.unit = "short";
+        tooltip.yHistogram = true;
+        filterValues.le = 1;
+      };
+    };
+  };
+  vdevQueue = title: prefix: {
+    spec.title = "vdev I/O ${title} Queues";
+    influx.filter._measurement = "zpool_vdev_stats";
+    influx.filter._field = { op = "=~"; values = "_${prefix}_queue$"; };
+    influx.filter.vdev = "root";
+    influx.fn = "mean";
+    influx.imports = ["strings"];
+    influx.extra = ''
+      |> map(fn: (r) => ({
+        r with _field:
+          strings.title(v:
+            strings.replaceAll(
+              v: strings.trimSuffix(v: r._field, suffix: "_${prefix}_queue"),
+              t: "_", u: " "
+            )
+          )
+      }))
+      |> drop(columns: ["host", "vdev"])
     '';
-    panel.type = "heatmap";
-    panel.options = {
-      calculate = false;
-      cellGap = 0;
-      color.scheme = "Turbo";
-      yAxis.unit = "s";
-      cellValues.unit = "short";
-      tooltip.yHistogram = true;
-      filterValues.le = 1;
+    spec.vizConfig.spec.fieldConfig.defaults = {
+      unit = "short";
     };
-  } args);
-  base = args: lib.recursiveUpdate {
-    influx.filter.host = {
-      op = "=~";
-      values = ["^\${host:regex}$"];
-    };
-  } args;
-  chart = args: base (lib.recursiveUpdate {
-    panel.interval = interval;
-    panel.options = {
-      tooltip.mode = "multi";
-    };
-  } args);
+  };
 in {
-  config.isz.grafana.dashboards."ZFS" = {
-    uid = "avHi3RIg";
-    title = "ZFS";
-    defaultDatasourceName = "workshop";
-    graphTooltip = 1;
-    variables = {
-      host = {
-        predicate = ''r["_measurement"] == "zpool_stats"'';
-        extra.label = "Host";
-        extra.includeAll = false;
+  config.isz.grafana.dashboardsV2."zfs" = { ... }: {
+    imports = [({ ... }: {
+      options.panels = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submodule ({ config, ... }: {
+          config = {
+            influx.filter.host = lib.mkDefault {
+              op = "=~";
+              values = ["^\${host:regex}$"];
+            };
+            spec.data.spec.queryOptions.interval = lib.mkIf (config.spec.vizConfig.group == "timeseries") interval;
+            spec.vizConfig.spec.options = lib.mkIf (config.spec.vizConfig.group == "timeseries") {
+              tooltip.mode = "multi";
+            };
+          };
+        }));
       };
-      latencyparam = {
-        predicate = ''r["_measurement"] == "zpool_latency" and r["_field"] !~ /^total_/'';
-        tag = "_field";
-        extra.label = "Latency Parameters";
-        extra.multi = true;
+    })];
+    config = {
+      title = "ZFS";
+      defaultDatasourceName = "workshop";
+      spec.cursorSync = "Crosshair";
+      variables = {
+        host = {
+          predicate = ''r["_measurement"] == "zpool_stats"'';
+          extra.label = "Host";
+          extra.includeAll = false;
+        };
+        latencyparam = {
+          predicate = ''r["_measurement"] == "zpool_latency" and r["_field"] !~ /^total_/'';
+          tag = "_field";
+          extra.label = "Latency Parameters";
+          extra.multi = true;
+        };
       };
-    };
-    panels = [
-      (chart {
-        panel.title = "Pool Activity";
-        panel.gridPos = { x = 0; y = 0; w = 9; h = 8; };
+      layout.kind = "RowsLayout";
+      layout.spec.rows = [
+        {
+          spec.layout.kind = "GridLayout";
+          spec.title = "";
+          spec.hideHeader = true;
+          spec.layout.spec.items = [
+            { spec = {
+              element.name = "pool-activity";
+              x = 0; y = 0; width = 9; height = 8;
+            }; }
+            { spec = {
+              element.name = "pool-usage";
+              x = 0; y = 8; width = 9; height = 6;
+            }; }
+            { spec = {
+              element.name = "pool-status";
+              x = 9; y = 0; width = 5; height = 2;
+            }; }
+            { spec = {
+              element.name = "zpool-errors";
+              x = 9; y = 2; width = 5; height = 5;
+            }; }
+            { spec = {
+              element.name = "zpool-usage-stat";
+              x = 9; y = 7; width = 5; height = 7;
+            }; }
+            { spec = {
+              element.name = "vdev-queue-active";
+              x = 14; y = 0; width = 10; height = 7;
+            }; }
+            { spec = {
+              element.name = "vdev-queue-pend";
+              x = 14; y = 7; width = 10; height = 7;
+            }; }
+          ];
+        }
+        {
+          spec.title = "Latencies";
+          spec.layout.kind = "GridLayout";
+          spec.layout.spec.items = [
+            { spec = {
+              element.name = "total_read";
+              x = 0; y = 0; width = 12; height = 8;
+            }; }
+            { spec = {
+              element.name = "total_write";
+              x = 12; y = 0; width = 12; height = 8;
+            }; }
+            { spec = {
+              element.name = "latency-per-queue";
+              x = 0; y = 8; width = 24; height = 8;
+              repeat = {
+                direction = "h";
+                mode = "variable";
+                value = "latencyparam";
+              };
+            }; }
+          ];
+        }
+      ];
+      panels.pool-activity = {
+        spec.title = "Pool Activity";
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = ["read_bytes" "write_bytes" "read_ops" "write_ops"];
         influx.filter.vdev = "root";
         influx.fn = "derivative";
         influx.groupBy.fn = "sum";
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "Bps";
         };
         fields.read_ops = {
@@ -93,11 +185,10 @@ in {
           custom.axisPlacement = "right";
           unit = "iops";
         };
-      })
-      (base {
-        panel.title = "Pool Status";
-        panel.gridPos = { x = 9; y = 0; w = 5; h = 2; };
-        panel.transparent = true;
+      };
+      panels.pool-status = {
+        spec.title = "Pool Status";
+        spec.transparent = true;
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = "size";
         influx.filter.vdev = "root";
@@ -107,104 +198,16 @@ in {
           |> last()
           |> keep(columns: ["state"])
         '';
-        panel.options.reduceOptions.fields = "/.*/";
-        panel.type = "stat";
-        panel.options.colorMode = "background";
-        panel.fieldConfig.defaults.color = {
+        spec.vizConfig.group = "stat";
+        spec.vizConfig.spec.options.reduceOptions.fields = "/.*/";
+        spec.vizConfig.spec.options.colorMode = "background";
+        spec.vizConfig.spec.fieldConfig.defaults.color = {
           mode = "fixed";
           fixedColor = "semi-dark-blue";
         };
-      })
-      (chart {
-        panel.title = "vdev I/O Active Queues";
-        panel.gridPos = { x = 14; y = 0; w = 10; h = 7; };
-        influx.filter._measurement = "zpool_vdev_stats";
-        influx.filter._field = { op = "=~"; values = "_active_queue$"; };
-        influx.filter.vdev = "root";
-        influx.fn = "mean";
-        influx.imports = ["strings"];
-        influx.extra = ''
-          |> map(fn: (r) => ({
-            r with _field:
-              strings.title(v:
-                strings.replaceAll(
-                  v: strings.trimSuffix(v: r._field, suffix: "_active_queue"),
-                  t: "_", u: " "
-                )
-              )
-          }))
-          |> drop(columns: ["host", "vdev"])
-        '';
-        panel.fieldConfig.defaults = {
-          unit = "short";
-        };
-      })
-      (base {
-        panel.title = "";
-        panel.gridPos = { x = 9; y = 2; w = 5; h = 5; };
-        influx.filter._measurement = "zpool_stats";
-        influx.filter._field = ["read_errors" "write_errors" "fragmentation" "checksum_errors"];
-        influx.filter.vdev = "root";
-        influx.fn = "last1";
-        influx.extra = ''
-          |> drop(columns: ["host", "vdev", "state"])
-        '';
-        panel.type = "stat";
-        panel.options.colorMode = "value";
-        panel.options.textMode = "value_and_name";
-        panel.options.justifyMode = "center";
-        panel.fieldConfig.defaults.color = {
-          mode = "fixed";
-          fixedColor = "semi-dark-red";
-        };
-        panel.fieldConfig.defaults.unit = "short";
-        fields.fragmentation.unit = "percent";
-      })
-      (base {
-        panel.title = "";
-        panel.gridPos = { x = 9; y = 7; w = 5; h = 7; };
-        influx.filter._measurement = "zpool_stats";
-        influx.filter._field = ["alloc" "free" "size"];
-        influx.filter.vdev = "root";
-        influx.fn = "last1";
-        influx.groupBy.fn = "sum";
-        panel.type = "stat";
-        panel.options.graphMode = "none";
-        panel.options.colorMode = "background";
-        panel.options.textMode = "value_and_name";
-        panel.fieldConfig.defaults.color = {
-          mode = "fixed";
-          fixedColor = "semi-dark-blue";
-        };
-        panel.fieldConfig.defaults.unit = "decbytes";
-      })
-      (chart {
-        panel.title = "vdev I/O Pending Queues";
-        panel.gridPos = { x = 14; y = 7; w = 10; h = 7; };
-        influx.filter._measurement = "zpool_vdev_stats";
-        influx.filter._field = { op = "=~"; values = "_pend_queue$"; };
-        influx.filter.vdev = "root";
-        influx.fn = "mean";
-        influx.imports = ["strings"];
-        influx.extra = ''
-          |> map(fn: (r) => ({
-            r with _field:
-              strings.title(v:
-                strings.replaceAll(
-                  v: strings.trimSuffix(v: r._field, suffix: "_pend_queue"),
-                  t: "_", u: " "
-                )
-              )
-          }))
-          |> drop(columns: ["host", "vdev"])
-        '';
-        panel.fieldConfig.defaults = {
-          unit = "short";
-        };
-      })
-      (chart {
-        panel.title = "Pool Usage";
-        panel.gridPos = { x = 0; y = 8; w = 9; h = 6; };
+      };
+      panels.pool-usage = {
+        spec.title = "Pool Usage";
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = ["free" "alloc" "size"];
         influx.filter.vdev = "root";
@@ -212,31 +215,70 @@ in {
         influx.extra = ''
           |> drop(columns: ["host", "vdev", "state"])
         '';
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "decbytes";
         };
-      })
-      {
-        panel.title = "Latencies";
-        panel.gridPos = { x = 0; y = 14; w = 24; h = 1; };
-        panel.type = "row";
-      }
-      (heatmapPanel "total_read" {
-        panel.title = "Total Reads";
-        panel.gridPos = { x = 0; y = 15; w = 12; h = 8; };
-        panel.options.color.scheme = "Greens";
-      })
-      (heatmapPanel "total_write" {
-        panel.title = "Total Writes";
-        panel.gridPos = { x = 12; y = 15; w = 12; h = 8; };
-        panel.options.color.scheme = "Oranges";
-      })
-      (heatmapPanel "$latencyparam" {
-        panel.title = "Latency for $latencyparam queue";
-        panel.gridPos = { x = 0; y = 23; w = 6; h = 8; };
-        panel.repeat = "latencyparam";
-        panel.repeatDirection = "h";
-      })
-    ];
+      };
+      panels.zpool-errors = {
+        influx.filter._measurement = "zpool_stats";
+        influx.filter._field = ["read_errors" "write_errors" "fragmentation" "checksum_errors"];
+        influx.filter.vdev = "root";
+        influx.fn = "last1";
+        influx.extra = ''
+          |> drop(columns: ["host", "vdev", "state"])
+        '';
+        spec.vizConfig.group = "stat";
+        spec.vizConfig.spec = {
+          options.colorMode = "value";
+          options.textMode = "value_and_name";
+          options.justifyMode = "center";
+          fieldConfig.defaults.color = {
+            mode = "fixed";
+            fixedColor = "semi-dark-red";
+          };
+          fieldConfig.defaults.unit = "short";
+        };
+        fields.fragmentation.unit = "percent";
+      };
+      panels.zpool-usage-stat = {
+        influx.filter._measurement = "zpool_stats";
+        influx.filter._field = ["alloc" "free" "size"];
+        influx.filter.vdev = "root";
+        influx.fn = "last1";
+        influx.groupBy.fn = "sum";
+        spec.vizConfig.group = "stat";
+        spec.vizConfig.spec.options.graphMode = "none";
+        spec.vizConfig.spec.options.colorMode = "background";
+        spec.vizConfig.spec.options.textMode = "value_and_name";
+        spec.vizConfig.spec.fieldConfig.defaults.color = {
+          mode = "fixed";
+          fixedColor = "semi-dark-blue";
+        };
+        spec.vizConfig.spec.fieldConfig.defaults.unit = "decbytes";
+      };
+      panels.vdev-queue-active = vdevQueue "Active" "active";
+      panels.vdev-queue-pend = vdevQueue "Pending" "pend";
+      panels.total_read = { ... }: {
+        imports = [ heatmap ];
+        config.spec = {
+          title = "Total Reads";
+          vizConfig.spec.options.color.scheme = "Greens";
+        };
+      };
+      panels.total_write = { ... }: {
+        imports = [ heatmap ];
+        config.spec = {
+          title = "Total Writes";
+          vizConfig.spec.options.color.scheme = "Oranges";
+        };
+      };
+      panels.latency-per-queue = { ... }: {
+        imports = [ heatmap ];
+        config = {
+          _field = "$latencyparam";
+          spec.title = "Latency for $latencyparam queue";
+        };
+      };
+    };
   };
 }
