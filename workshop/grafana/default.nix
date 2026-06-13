@@ -92,14 +92,16 @@
         security.secret_key = "$__file{${config.sops.secrets."grafana/secret_key".path}}";
       };
       declarativePlugins = with pkgs.grafanaPlugins; [
+        equansdatahub-tree-panel
         fetzerch-sunandmoon-datasource
+        grafana-lokiexplore-app
+        grafana-mqtt-datasource
+        grafana-pyroscope-app
         grafana-worldmap-panel
         marcusolsson-json-datasource
         operato-windrose-panel
-        grafana-mqtt-datasource
         volkovlabs-echarts-panel
-        grafana-lokiexplore-app
-        grafana-pyroscope-app
+        volkovlabs-table-panel
       ];
     };
   };
