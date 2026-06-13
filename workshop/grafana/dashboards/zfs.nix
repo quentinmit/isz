@@ -314,8 +314,42 @@ in {
           |> drop(columns: ["_measurement", "host"])
           |> group()
         '';
+        influx.panelQuery.spec.hidden = true;
+        spec.data.spec.queries = [{
+          spec = {
+            query = {
+              group = "__expr__";
+              datasource.name = "__expr__";
+              spec.type = "sql";
+              spec.expression = ''
+                SELECT
+                  CONCAT(name, "/", vdev) AS vdev,
+                  TRIM(TRAILING "/" FROM
+                    REGEXP_SUBSTR(
+                      CONCAT(name, "/", vdev),
+                      "^[^/]+/.+/"
+                    )
+                  ) AS parent,
+                  path,
+                  read_errors, write_errors, fragmentation, checksum_errors
+                FROM A
+              '';
+            };
+            refId = "B";
+          };
+        }];
         spec.vizConfig = {
-          group = "table";
+          group = "equansdatahub-tree-panel";
+          version = "1.7.7";
+          spec.options = {
+            idColumn = "vdev";
+            labelColumn = "vdev";
+            parentIdColumn = "parent";
+            additionalColumns = "read_errors,write_errors,fragmentation,checksum_errors";
+            displayedTreeDepth = 100;
+            dashboardVariableName = "vdev";
+            showColumnHeaders = true;
+          };
         };
       };
     };

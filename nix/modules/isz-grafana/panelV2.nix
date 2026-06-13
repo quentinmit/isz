@@ -33,12 +33,7 @@ in {
         let
           refId = lib.elemAt [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ] i;
         in {
-          panelQuery.spec = {
-            query = queryBase // {
-              spec = {
-                inherit (influx) query;
-              };
-            };
+          panelQuery.spec = influx.panelQuery.spec // {
             inherit refId;
           };
           override = if influx.options != null then {
@@ -173,6 +168,9 @@ in {
           default = null;
           description = "Option overrides for the results of this query";
         };
+        panelQuery = mkOption {
+          type = types.anything;
+        };
       };
       config = {
         query = lib.mkDefault (
@@ -185,6 +183,11 @@ in {
             |> drop(columns: ["_start", "_stop"])
           '' + config.extra
         );
+        panelQuery.spec = {
+          query = queryBase // {
+            spec.query = config.query;
+          };
+        };
       };
     });
     FieldConfig = (pkgs.formats.json {}).type;
