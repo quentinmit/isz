@@ -180,6 +180,14 @@ in {
             { spec.element.name = "vdev-list"; }
           ];
         }
+        {
+          spec.title = "Datasets";
+          spec.layout.kind = "AutoGridLayout";
+          spec.layout.spec.fillScreen = true;
+          spec.layout.spec.items = [
+            { spec.element.name = "dataset-list"; }
+          ];
+        }
       ];
       panels.pool-activity = {
         spec.title = "Pool Activity";
@@ -352,6 +360,71 @@ in {
           };
         };
       };
+      panels.dataset-list = let
+        fields = [
+          "used"
+          "usedbydataset"
+          "usedbysnapshots"
+          "available"
+          "referenced"
+        ];
+      in {
+        spec.title = "Datasets";
+        influx.filter._measurement = "zfs_resource";
+        influx.filter._field = fields;
+        influx.fn = "last1";
+        influx.groupBy = {
+          fields = [
+            "_measurement"
+            "_field"
+            "host"
+            "name"
+          ];
+          fn = "last1";
+        };
+        influx.pivot = true;
+        influx.extra = ''
+          |> drop(columns: ["_measurement", "host"])
+          |> group()
+        '';
+        influx.panelQuery.spec.hidden = true;
+        spec.data.spec.queries = [{
+          spec = {
+            query = {
+              group = "__expr__";
+              datasource.name = "__expr__";
+              spec.type = "sql";
+              spec.expression = ''
+                SELECT
+                  name,
+                  TRIM(TRAILING "/" FROM
+                    REGEXP_SUBSTR(
+                      name,
+                      "^.+/"
+                    )
+                  ) AS parent,
+                  ${lib.concatStringsSep ", " fields}
+                FROM A
+              '';
+            };
+            refId = "B";
+          };
+        }];
+        spec.vizConfig = {
+          group = "equansdatahub-tree-panel";
+          version = "1.7.7";
+          spec.options = {
+            idColumn = "name";
+            labelColumn = "name";
+            parentIdColumn = "parent";
+            additionalColumns = lib.concatStringsSep "," fields;
+            displayedTreeDepth = 100;
+            dashboardVariableName = "dataset";
+            showColumnHeaders = true;
+          };
+        };
+      };
+
     };
   };
 }
