@@ -383,33 +383,16 @@ in {
           fn = "last1";
         };
         influx.pivot = true;
+        influx.imports = [
+          "regexp"
+          "strings"
+          "internal/debug"
+        ];
         influx.extra = ''
           |> drop(columns: ["_measurement", "host"])
+          |> map(fn: (r) => ({r with parent: if strings.containsStr(v: r.name, substr: "/") then regexp.replaceAllString(r: /\/[^\/]+$/, t: "", v: r.name) else debug.null()}))
           |> group()
         '';
-        influx.panelQuery.spec.hidden = true;
-        spec.data.spec.queries = [{
-          spec = {
-            query = {
-              group = "__expr__";
-              datasource.name = "__expr__";
-              spec.type = "sql";
-              spec.expression = ''
-                SELECT
-                  name,
-                  TRIM(TRAILING "/" FROM
-                    REGEXP_SUBSTR(
-                      name,
-                      "^.+/"
-                    )
-                  ) AS parent,
-                  ${lib.concatStringsSep ", " fields}
-                FROM A
-              '';
-            };
-            refId = "B";
-          };
-        }];
         spec.vizConfig = {
           group = "equansdatahub-tree-panel";
           version = "1.7.7";
