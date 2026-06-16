@@ -4,7 +4,7 @@ import argparse
 import logging
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 import libzfs
 
 # Add missing property converters
@@ -107,6 +107,7 @@ def main():
                 if key in props:
                     value = props[key].parsed
                     if isinstance(value, datetime):
+                        value = value.replace(tzinfo=timezone.utc)
                         value = value.timestamp()
                     if value not in EMPTY:
                         p = p.field(key, value)
