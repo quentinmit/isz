@@ -188,6 +188,14 @@ in {
             { spec.element.name = "dataset-list"; }
           ];
         }
+        {
+          spec.title = "Snapshots";
+          spec.layout.kind = "AutoGridLayout";
+          spec.layout.spec.fillScreen = true;
+          spec.layout.spec.items = [
+            { spec.element.name = "snapshot-age"; }
+          ];
+        }
       ];
       panels.pool-activity = {
         spec.title = "Pool Activity";
@@ -390,7 +398,12 @@ in {
         ];
         influx.extra = ''
           |> drop(columns: ["_measurement", "host"])
-          |> map(fn: (r) => ({r with parent: if strings.containsStr(v: r.name, substr: "/") then regexp.replaceAllString(r: /\/[^\/]+$/, t: "", v: r.name) else debug.null()}))
+          |> map(fn: (r) => ({
+            r with parent:
+              if strings.containsStr(v: r.name, substr: "/")
+              then regexp.replaceAllString(r: /\/[^\/]+$/, t: "", v: r.name)
+              else debug.null()
+          }))
           |> group()
         '';
         spec.vizConfig = {
@@ -407,7 +420,31 @@ in {
           };
         };
       };
-
+      panels.snapshot-age = {
+        spec.title = "Snapshot Age";
+        influx.filter._measurement = "zfs_resource";
+        influx.filter._field = ["snapshots_changed"];
+        influx.fn = "last1";
+        influx.groupBy = {
+          fields = [
+            "_measurement"
+            "_field"
+            "host"
+            "name"
+          ];
+          fn = "last1";
+        };
+        influx.pivot = true;
+        influx.extra = ''
+          |> map(fn: (r) => ({r with snapshots_changed: r.snapshots_changed*1000.}))
+          |> drop(columns: ["_measurement", "host"])
+          |> group()
+        '';
+        spec.vizConfig = {
+          group = "table";
+        };
+        fields.snapshots_changed.unit = "dateTimeFromNow";
+      };
     };
   };
 }
