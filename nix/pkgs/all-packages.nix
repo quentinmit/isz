@@ -23,7 +23,6 @@ final: prev:
       simplepam = callPackage ./python/simplepam {};
       vcgencmd = callPackage ./python/vcgencmd {};
       piscsi-common = callPackage ./piscsi/common.nix {};
-      inventree = callPackage ./python/inventree {};
       mouser = callPackage ./python/mouser {};
       kiutils = callPackage ./python/kiutils {};
       wrapt_timeout_decorator = callPackage ./python/wrapt_timeout_decorator {};

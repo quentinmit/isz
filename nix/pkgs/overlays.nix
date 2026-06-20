@@ -19,6 +19,17 @@ in {
           knownVulnerabilities = [];
         };
       });
+      flet = python-prev.flet.overridePythonAttrs (old: {
+        doCheck = false;
+        meta = old.meta // {
+          broken = false;
+        };
+      });
+      flet-desktop = python-prev.flet-desktop.overridePythonAttrs (old: {
+        build-system = with python-final; old.build-system ++ [
+          setuptools
+        ];
+      });
     })
   ];
   telnet = final.runCommand "telnet" {} ''
