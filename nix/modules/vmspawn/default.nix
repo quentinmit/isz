@@ -163,6 +163,8 @@ in {
         ];
         serviceConfig = {
           StateDirectory = "machines/%i";
+          TimeoutSec = "5min";
+          WatchdogSec = "6min";
           ExecStart = [
             ""
             "${lib.getExe' pkgs.systemd "systemd-vmspawn"} --directory=/var/lib/machines/%i --register=yes --keep-unit --network-tap --machine=%i --bind-ro=/nix/store:/nix/.ro-store ${lib.escapeShellArgs cfg.extraFlags} --linux=${root}/kernel --initrd=${root}/initrd ${root}/kernel-params init=${root}/init regInfo=${pkgs.closureInfo { rootPaths = [ cfg.config.system.build.toplevel ]; }}/registration"

@@ -251,7 +251,7 @@
         ./afs/configuration.nix
       ];
       fileSystems."/var/cache/openafs" = {
-        device = "/dev/sda";
+        device = "/dev/vda";
         fsType = "ext4";
       };
     };
