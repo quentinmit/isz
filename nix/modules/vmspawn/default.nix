@@ -148,9 +148,12 @@ in {
       environment.etc."qemu/firmware".source = "${pkgs.qemu_kvm}/share/qemu/firmware";
       systemd.additionalUpstreamSystemUnits = lib.mkIf (lib.versionAtLeast config.systemd.package.version "256") [
         "systemd-vmspawn@.service"
+        "systemd-machined.socket"
       ];
       systemd.additionalUpstreamUserUnits = lib.mkIf (lib.versionAtLeast config.systemd.package.version "258") [
         "systemd-vmspawn@.service"
+        "systemd-machined.socket"
+        "systemd-machined.service"
       ];
       systemd.services = lib.mapAttrs' (name: cfg: let
         root = cfg.config.system.build.toplevel;
