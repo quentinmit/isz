@@ -1,14 +1,14 @@
 { gradle2nix
-, jdk23
+, zulu25
 , fetchFromGitHub
 , makeWrapper
 , wrapGAppsHook3
 , lib
 }:
 let
-  jdk = jdk23.override { enableJavaFX = true; };
+  jdk = zulu25.override { enableJavaFX = true; };
   pname = "sdrtrunk";
-  version = "0.6.1";
+  version = "0.6.1+20260219";
 in gradle2nix.buildGradlePackage {
   inherit pname version;
   lockFile = ./gradle.lock;
@@ -23,8 +23,8 @@ in gradle2nix.buildGradlePackage {
   src = fetchFromGitHub {
     owner = "DSheirer";
     repo = pname;
-    rev = "v${version}";
-    hash = "sha256-5cklAqO7KyDdkQM0fCZTT8DHsZx/Tf0c8B9TiLMLrkA=";
+    rev = "a053315675e6764fe95c671139d796893c2b41a1";
+    hash = "sha256-mafJUMZZQSSCZdJ1RFGCa4J2IJXOrtuXalMS7HVI5OI=";
   };
 
   postInstall = ''
