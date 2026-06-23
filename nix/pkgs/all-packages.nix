@@ -192,4 +192,5 @@ final: prev:
   typodermic-public-domain = final.callPackage ./typodermic-public-domain {};
   xfed = final.callPackage ./xfed {};
   xfedor = final.callPackage ./xfedor {};
+  lucida-fonts = final.callPackage ./lucida-fonts {};
 }
