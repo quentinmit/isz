@@ -20,7 +20,13 @@ in {
     fonts.fontDir.enable = true;
     fonts.enableDefaultPackages = true;
     fonts.packages = with pkgs; [
+      corefonts
       font-misc-misc
+      lucida-fonts
+      roboto
+      roboto-flex
+      roboto-mono
+      roboto-serif
     ];
 
     programs.dconf.enable = true;
@@ -104,6 +110,18 @@ in {
         gst-plugins-good
         gstreamer
       ]);
+
+      fonts.fontconfig = {
+        defaultFonts.sansSerif = [
+          "Roboto"
+        ];
+        defaultFonts.serif = [
+          "Roboto Serif"
+        ];
+        defaultFonts.monospace = [
+          "Roboto Mono"
+        ];
+      };
 
       java.userPrefs.io.github.dsheirer.preference = {
         decoder."path.jmbe.library.1.0.0" = "${jmbe}/jmbe-${jmbe.version}.jar";
