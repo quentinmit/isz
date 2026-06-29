@@ -104,6 +104,7 @@ in {
           tag = "_field";
           extra.label = "Latency Parameters";
           extra.multi = true;
+          extra.hide = "hideVariable";
         };
       };
       layout.kind = "TabsLayout";
@@ -112,6 +113,24 @@ in {
           spec.title = "Overview";
           spec.layout.kind = "RowsLayout";
           spec.layout.spec.rows = [
+            {
+              spec.layout.kind = "AutoGridLayout";
+              spec.title = "Scan Status";
+              spec.conditionalRendering.kind = "ConditionalRenderingGroup";
+              spec.conditionalRendering.spec.condition = "and";
+              spec.conditionalRendering.spec.visibility = "show";
+              spec.conditionalRendering.spec.items = [
+                {
+                  kind = "ConditionalRenderingVariable";
+                  spec.variable = "scan_exists";
+                  spec.operator = "equals";
+                  spec.value = "yes";
+                }
+              ];
+              spec.layout.spec.items = [
+                { spec.element.name = "scan-progress"; }
+              ];
+             }
             {
               spec.layout.kind = "GridLayout";
               spec.title = "";
@@ -444,6 +463,32 @@ in {
           group = "table";
         };
         fields.snapshots_changed.unit = "dateTimeFromNow";
+      };
+
+      panels.scan-progress = {
+        spec.title = "Scan Progress";
+        influx.filter._measurement = "zpool_scan_stats";
+        influx.filter._field = ["issued" "examined" "processed" "to_examine"];
+        influx.filter.state = { op = "!="; values = "finished"; };
+        influx.fn = "last";
+        spec.vizConfig.spec.fieldConfig.defaults = {
+          unit = "bytes";
+        };
+      };
+      variables.scan_exists = {
+       query = ''
+         from(bucket: "icestationzebra")
+         |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+         |> filter(fn: (r) => r["_measurement"] == "zpool_scan_stats")
+         |> filter(fn: (r) => r["_field"] == "issued")
+         |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
+         |> filter(fn: (r) => r["state"] != "finished")
+         |> group()
+         |> last()
+         |> map(fn: (r) => ({_time: r._time, _value: "yes"}))
+       '';
+        extra.hide = "hideVariable";
+        extra.refresh = "onTimeRangeChanged";
       };
     };
   };

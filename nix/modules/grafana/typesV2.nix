@@ -279,7 +279,7 @@ in {
       };
     };
     GridLayoutItem = kindSubmodule "GridLayoutItem" {
-      freeformType = types.anything; # Hack to allow repeat?: RepeatOptions
+      inherit freeformType; # Hack to allow repeat?: RepeatOptions
 
       options.spec = {
         x = mkOption {
@@ -306,6 +306,7 @@ in {
       };
     };
     RowsLayoutRow = kindSubmodule "RowsLayoutRow" {
+      inherit freeformType; # Hack to allow conditionalRendering?
       options.spec = {
         collapse = mkOption {
           type = types.bool;
