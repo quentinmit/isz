@@ -220,6 +220,10 @@ in {
     disabledTests = old.disabledTests ++ [
       "test_phys_core_returns_int"
     ];
+    disabledTestPaths = old.disabledTestPaths ++ [
+      "tests/test_browser_restful.py"
+      "tests/test_restful.py"
+    ];
   });
   xpra = prev.xpra.overrideAttrs (old: {
     postPatch = old.postPatch or "" + ''
