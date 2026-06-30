@@ -25,6 +25,7 @@
 
   boot.initrd.systemd.enable = true;
   boot.zfs.requestEncryptionCredentials = ["zpool"];
+  boot.zfs.forceImportRoot = false;
   boot.kernelModules = [
     "nct6775" # For sensors
   ];

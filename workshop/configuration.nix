@@ -46,6 +46,8 @@
     enable = true;
     devices.zpool.secretFile = "${./zpool.jwe}";
   };
+  boot.zfs.requestEncryptionCredentials = ["zpool"];
+  boot.zfs.forceImportRoot = false;
 
   environment.etc."lvm/lvm.conf".text = ''
     devices/issue_discards=1
