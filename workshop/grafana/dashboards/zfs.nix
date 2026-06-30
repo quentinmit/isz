@@ -250,9 +250,16 @@ in {
         spec.vizConfig.group = "stat";
         spec.vizConfig.spec.options.reduceOptions.fields = "/.*/";
         spec.vizConfig.spec.options.colorMode = "background";
-        spec.vizConfig.spec.fieldConfig.defaults.color = {
-          mode = "fixed";
-          fixedColor = "semi-dark-blue";
+        spec.vizConfig.spec.fieldConfig.defaults = {
+          mappings = [{
+            type = "value";
+            options.DEGRADED.color = "dark-orange";
+            options.ONLINE.color = "dark-green";
+          }];
+          color = {
+            mode = "fixed";
+            fixedColor = "semi-dark-blue";
+          };
         };
       };
       panels.pool-usage = {
