@@ -39,6 +39,7 @@
 
   isz.secureBoot.enable = true;
   boot.lanzaboote.pkiBundle = lib.mkForce "/var/lib/sbctl";
+  boot.zfs.requestEncryptionCredentials = ["zpool"];
 
   boot = {
     initrd.availableKernelModules = [
