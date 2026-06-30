@@ -61,6 +61,7 @@ in {
         agg = fn: column:
           if fn == null then ""
           else if fn == "last1" then ''
+            |> sort(columns: ["_time"])
             |> last(column: ${fluxValue column})
           '' else if fn == "max1" then ''
             |> max(column: ${fluxValue column})

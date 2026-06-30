@@ -244,6 +244,7 @@ in {
         influx.fn = "last1";
         influx.extra = ''
           |> group()
+          |> sort(columns: ["_time"])
           |> last()
           |> keep(columns: ["state"])
         '';
