@@ -193,4 +193,5 @@ final: prev:
   xfed = final.callPackage ./xfed {};
   xfedor = final.callPackage ./xfedor {};
   lucida-fonts = final.callPackage ./lucida-fonts {};
+  greptimedb = final.callPackage ./greptimedb {};
 }

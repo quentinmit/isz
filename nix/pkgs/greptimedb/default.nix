@@ -1,0 +1,50 @@
+{
+  protobuf,
+  lib,
+  fetchFromGitHub,
+  rust-bin,
+  makeRustPlatform,
+  withEnterprise ? false,
+}:
+let
+  rust = rust-bin.nightly."2026-03-21".default;
+  rustPlatform = makeRustPlatform {
+    cargo = rust;
+    rustc = rust;
+  };
+in rustPlatform.buildRustPackage (finalAttrs: {
+  pname = "greptimedb";
+  version = "1.1.1";
+
+  src = fetchFromGitHub {
+    owner = "GreptimeTeam";
+    repo = "greptimedb";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-srHhOQP4yxosuj+XxeyrpwhAiJO7MVETLzr/LuhbchM=";
+  };
+
+  cargoHash = "sha256-Phi+NeywAdsq4kHJJOmzrfLg1CCLMbFetdkEzjvJgjw=";
+
+  nativeBuildInputs = [
+    protobuf
+  ];
+
+  depsExtraArgs.postBuild = ''
+    mv $out/git/5da284414e9b14f678344b51e5292229e4b5f8d2/proto $out/git/5da284414e9b14f678344b51e5292229e4b5f8d2/rust/otel-arrow-rust/proto
+    substituteInPlace $out/git/5da284414e9b14f678344b51e5292229e4b5f8d2/rust/otel-arrow-rust/build.rs \
+      --replace-fail "{base}/../../proto" "{base}/proto"
+  '';
+
+  cargoBuildFlags = [ "--bin" "greptime" ];
+
+  doCheck = false;
+
+  buildFeatures = lib.optional withEnterprise "enterprise";
+
+  meta = {
+    description = "The open-source Observability 2.0 database";
+    homepage = "https://greptime.com/";
+    license = if withEnterprise then lib.licenses.unfree else lib.licenses.asl20;
+    maintainers = [ lib.maintainers.quentin ];
+  };
+})
