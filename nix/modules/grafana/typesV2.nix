@@ -24,23 +24,45 @@ let
         name = "byKind";
         description = "attrset with kind one of: ${choicesStr}";
         descriptionClass = "noun";
-        check = lib.isAttrs;
-        merge =
-          loc: defs:
-          let
-            choice = (head (lib.filter (def: def.value ? kind) defs)).value.kind;
-            checkedValueDefs = map (
-              def:
-              if (def.value.kind or choice) != choice then
-                throw "The option `${showOption loc}` is defined both as `${choice}` and `${def.value.kind}`, in ${showFiles (getFiles defs)}."
-              else
-                def
-            ) defs;
-          in
-        if kinds ? ${choice} then
-          (lib.modules.evalOptionValue loc kinds.${choice} checkedValueDefs).value
-        else
-          throw "The option `${showOption loc}` is defined as ${lib.strings.escapeNixString choice}, but ${lib.strings.escapeNixString choice} is not among the valid choices (${choicesStr}). Value ${choice} was defined in ${showFiles (getFiles defs)}.";
+        check = {
+          __functor = self: lib.isAttrs;
+          isV2MergeCoherent = true;
+        };
+        merge = {
+          __functor =
+            self: loc: defs:
+            (self.v2 { inherit loc defs; }).value;
+          v2 = { loc, defs }:
+            let
+              choice = (head (lib.filter (def: def.value ? kind) defs)).value.kind;
+              checkDefsForError =
+                loc: defs:
+                if all (def: lib.isAttrs def.value) defs then
+                  null
+                else
+                  let
+                    invalidDefs = filter (def: !lib.isAttrs def.value) defs;
+                  in {
+                    message = "Definition values: ${showDefs invalidDefs}";
+                  };
+
+              checkedValueDefs = map (
+                def:
+                if (def.value.kind or choice) != choice then
+                  throw "The option `${showOption loc}` is defined both as `${choice}` and `${def.value.kind}`, in ${showFiles (getFiles defs)}."
+                else
+                  def
+              ) defs;
+              evalResult =
+                if kinds ? ${choice} then
+                  (lib.modules.evalOptionValue loc kinds.${choice} checkedValueDefs)
+                else
+                  throw "The option `${showOption loc}` is defined as ${lib.strings.escapeNixString choice}, but ${lib.strings.escapeNixString choice} is not among the valid choices (${choicesStr}). Value ${choice} was defined in ${showFiles (getFiles defs)}.";
+            in {
+              headError = checkDefsForError loc defs;
+              inherit (evalResult) value valueMeta;
+            };
+        };
         nestedTypes = kinds;
         functor = {
           name = "byKind";
@@ -79,6 +101,42 @@ let
         default = kind;
       };
     }] ++ toList modules;
+  };
+  withOptionals = type: type // {
+    description = "${type.description} without optional fields";
+    merge = {
+      __functor =
+        self: loc: defs:
+        (self.v2 { inherit loc defs; }).value;
+      v2 =
+        { loc, defs }@args:
+        let
+          recurse = a: mapAttrs (
+            name: value:
+            if isAttrs value && !isOption value
+            then recurse value
+            else value.value
+          ) (
+            filterAttrs (
+              name: option:
+              !isAttrs option
+              || !isOption option
+              || !(option.type._optional or false && option.value == null)
+            )
+              a
+          );
+          baseMerged = type.merge.v2 args;
+          value = recurse (lib.removeAttrs baseMerged.valueMeta.configuration.options [ "_module" ]);
+        in {
+          inherit (baseMerged) headError valueMeta;
+          inherit value;
+        };
+    };
+    substSubModules = m: withOptionals (type.substSubModules m);
+  };
+  optionalOr = type: types.nullOr type // {
+    _optional = true;
+    substSubModules = m: optionalOr (type.substSubModules m);
   };
   kindType = type: config.services.grafana.kind.${type};
   kindsType = types: byKind (lib.genAttrs types (x: mkOption { type = config.services.grafana.kind.${x}; default = {}; }));
@@ -145,7 +203,7 @@ in {
         };
       };
     };
-    Dashboard = kindSubmodule "Dashboard" ({ name, ... }: {
+    Dashboard = withOptionals (kindSubmodule "Dashboard" ({ name, ... }: {
       options.apiVersion = mkOption {
         type = types.uniq (types.enum ["dashboard.grafana.app/v2"]);
         default = "dashboard.grafana.app/v2";
@@ -271,7 +329,7 @@ in {
           default = [];
         };
       };
-    });
+    }));
     GridLayout = kindSubmodule "GridLayout" {
       options.spec.items = mkOption {
         type = types.listOf (kindType "GridLayoutItem");
@@ -305,14 +363,16 @@ in {
         default = [];
       };
     };
-    RowsLayoutRow = kindSubmodule "RowsLayoutRow" {
-      inherit freeformType; # Hack to allow conditionalRendering?
+    RowsLayoutRow = withOptionals (kindSubmodule "RowsLayoutRow" {
       options.spec = {
         collapse = mkOption {
           type = types.bool;
           default = false;
         };
-        # conditionalRendering?
+        conditionalRendering = mkOption {
+          type = optionalOr (kindType "ConditionalRenderingGroup");
+          default = null;
+        };
 	      fillScreen = mkOption {
           type = types.bool;
           default = false;
@@ -349,16 +409,19 @@ in {
           default = [];
         };
       };
-    };
+    });
     TabsLayout = kindSubmodule "TabsLayout" {
       options.spec.tabs = mkOption {
         type = types.listOf (kindType "TabsLayoutTab");
       };
     };
-    TabsLayoutTab = kindSubmodule "TabsLayoutTab" {
+    TabsLayoutTab = withOptionals (kindSubmodule "TabsLayoutTab" {
       options.spec = {
-        # conditionalRendering?
-        layout = mkOption {
+        conditionalRendering = mkOption {
+          type = optionalOr (kindType "ConditionalRenderingGroup");
+          default = null;
+        };
+	      layout = mkOption {
           type = kindsType [
             "AutoGridLayout"
             "GridLayout"
@@ -385,7 +448,7 @@ in {
           ]);
         };
       };
-    };
+    });
     ElementReference = kindSubmodule "ElementReference" {
       options.name = mkOption {
         type = types.str;
@@ -417,10 +480,58 @@ in {
         };
       };
     };
-    AutoGridLayoutItem = kindSubmodule "AutoGridLayoutItem" {
+    AutoGridLayoutItem = withOptionals (kindSubmodule "AutoGridLayoutItem" {
       options.spec = {
-        element = mkOption {
+        conditionalRendering = mkOption {
+          type = optionalOr (kindType "ConditionalRenderingGroup");
+          default = null;
+        };
+	      element = mkOption {
           type = kindType "ElementReference";
+        };
+      };
+    });
+    ConditionalRenderingGroup = kindSubmodule "ConditionalRenderingGroup" {
+      options.spec = {
+        visibility = mkOption {
+          type = types.enum ["show" "hide"];
+        };
+        condition = mkOption {
+          type = types.enum ["and" "or"];
+        };
+        items = mkOption {
+          type = types.listOf (kindsType [
+            "ConditionalRenderingVariable"
+            "ConditionalRenderingData"
+            "ConditionalRenderingTimeRangeSize"
+          ]);
+        };
+      };
+    };
+    ConditionalRenderingVariable = kindSubmodule "ConditionalRenderingVariable" {
+      options.spec = {
+        variable = mkOption {
+          type = types.str;
+        };
+        operator = mkOption {
+          type = types.enum ["equals" "notEquals" "matches" "notMatches"];
+        };
+        value = mkOption {
+          type = types.str;
+        };
+      };
+    };
+    ConditionalRenderingData = kindSubmodule "ConditionalRenderingData" {
+      options.spec = {
+        value = mkOption {
+          type = types.bool;
+        };
+      };
+    };
+    ConditionalRenderingTimeRangeSize = kindSubmodule "ConditionalRenderingTimeRangeSize" {
+      options.spec = {
+        value = mkOption {
+          type = types.str;
         };
       };
     };
