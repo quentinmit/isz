@@ -5,6 +5,7 @@
   fetchFromGitHub,
   rust-bin,
   makeRustPlatform,
+  testers,
   withEnterprise ? false,
 }:
 let
@@ -69,5 +70,15 @@ in rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://greptime.com/";
     license = if withEnterprise then lib.licenses.unfree else lib.licenses.asl20;
     maintainers = [ lib.maintainers.quentin ];
+  };
+
+  passthru.tests.default = testers.runNixOSTest {
+    imports = [
+      ./test.nix
+    ];
+    defaults = {
+      imports = [ ../../modules/greptimedb.nix ];
+      services.greptimedb.package = finalAttrs.finalPackage;
+    };
   };
 })
