@@ -20,8 +20,6 @@
     nixos-hardware.inputs.nixpkgs.follows = "unstable";
     darwin.url = "github:LnL7/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
-    nur-mweinelt.url = "github:mweinelt/nur-packages";
-    nur-mweinelt.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.inputs.flake-compat.follows = "flake-compat";
@@ -97,10 +95,10 @@
         nixpkgs-25_05 = import nixpkgs-25_05 {
           inherit (final.stdenv.hostPlatform) system;
           overlays = [(final: prev: {
-            inherit (gradle2nix.packages.${final.system or "x86_64-linux"}) gradle2nix;
+            inherit (gradle2nix.packages.${final.stdenv.hostPlatform.system or "x86_64-linux"}) gradle2nix;
           })];
         };
-        inherit (gradle2nix.packages.${final.system or "x86_64-linux"}) gradle2nix;
+        inherit (gradle2nix.packages.${final.stdenv.hostPlatform.system or "x86_64-linux"}) gradle2nix;
       };
       overlays = [
         overlay

@@ -46,6 +46,7 @@ final: prev:
     layout-card = final.callPackage ./homeassistant/layout-card.nix {};
     restriction-card = final.callPackage ./homeassistant/restriction-card.nix {};
     hui-element = final.callPackage ./homeassistant/hui-element.nix {};
+    slider-button-card = final.callPackage ./homeassistant/slider-button-card.nix {};
   };
   home-assistant-custom-components = prev.home-assistant-custom-components // {
     pyscript = final.home-assistant.python3Packages.callPackage ./homeassistant/pyscript.nix {};

@@ -1080,26 +1080,6 @@
         "type": "indirect"
       }
     },
-    "nur-mweinelt": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1698926559,
-        "narHash": "sha256-BOKjD9DuSB5mRNG4JetI0yJCy9qPSS0qqbLtrjU96as=",
-        "owner": "mweinelt",
-        "repo": "nur-packages",
-        "rev": "ce964f21470ed455db9ce051d3e11838a292bbfc",
-        "type": "github"
-      },
-      "original": {
-        "owner": "mweinelt",
-        "repo": "nur-packages",
-        "type": "github"
-      }
-    },
     "on-linux": {
       "flake": false,
       "locked": {
@@ -1323,7 +1303,6 @@
         "nixpkgs": "nixpkgs_6",
         "nixpkgs-23_05": "nixpkgs-23_05",
         "nixpkgs-25_05": "nixpkgs-25_05",
-        "nur-mweinelt": "nur-mweinelt",
         "oom-hardware": "oom-hardware",
         "plasma-manager": "plasma-manager",
         "py-profinet": "py-profinet",

@@ -1,4 +1,4 @@
-{ lib, pkgs, config, channels, nur-mweinelt, ... }:
+{ lib, pkgs, config, channels, ... }:
 let
   cond = condition: conditions: {
     inherit condition conditions;
@@ -61,8 +61,6 @@ in {
           hui-element
           apexcharts-card
           multiple-entity-row
-        ;
-        inherit (nur-mweinelt.packages.${pkgs.system}.hassLovelaceModules)
           slider-button-card
         ;
         ha-bambulab-cards = pkgs.unstable.home-assistant-custom-components.bambu_lab.cards;
