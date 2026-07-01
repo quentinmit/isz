@@ -1,4 +1,5 @@
 {
+  cacert,
   protobuf,
   lib,
   fetchFromGitHub,
@@ -37,12 +38,34 @@ in rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoBuildFlags = [ "--bin" "greptime" ];
 
+  # Tests are currently still flaky - don't run them by default.
   doCheck = false;
+
+  preCheck = ''
+    # Without this tests fails with
+    # Client::new(): reqwest::Error { kind: Builder, source: General("No CA certificates were loaded from the system") }
+    export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
+
+    cargoTestFlags="--build-jobs ''${NIX_BUILD_CORES:-1} $cargoTestFlags"
+  '';
+  # Plain "cargo test" fails in common-query prelude::tests
+  useNextest = true;
+  # Match the default cargo-nextest arguments from Makefile
+  cargoCheckFeatures = [
+    "pg_kvbackend"
+    "mysql_kvbackend"
+  ];
+  cargoTestFlags = [
+    "--retries" "3"
+  ];
+  # Parallel tests will use conflicting binds.
+  dontUseCargoParallelTests = true;
 
   buildFeatures = lib.optional withEnterprise "enterprise";
 
   meta = {
     description = "The open-source Observability 2.0 database";
+    mainProgram = "greptime";
     homepage = "https://greptime.com/";
     license = if withEnterprise then lib.licenses.unfree else lib.licenses.asl20;
     maintainers = [ lib.maintainers.quentin ];
