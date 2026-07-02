@@ -6,6 +6,12 @@
   rust-bin,
   makeRustPlatform,
   testers,
+  stdenv,
+  nodejs,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_9,
+  fetchPnpmDeps,
   withEnterprise ? false,
 }:
 let
@@ -14,6 +20,7 @@ let
     cargo = rust;
     rustc = rust;
   };
+  pnpm = pnpm_9;
 in rustPlatform.buildRustPackage (finalAttrs: {
   pname = "greptimedb";
   version = "1.1.1";
@@ -27,6 +34,38 @@ in rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-Phi+NeywAdsq4kHJJOmzrfLg1CCLMbFetdkEzjvJgjw=";
 
+  dashboard = stdenv.mkDerivation (finalAttrs: {
+    pname = "greptimedb-dashboard";
+    version = "0.12.2";
+
+    src = fetchFromGitHub {
+      owner = "GreptimeTeam";
+      repo = "dashboard";
+      rev = "v${finalAttrs.version}";
+      hash = "sha256-Poq73aUowkQKyHpZHSe5IJFkQJ3lWQ1mSjF94Sjsg58=";
+    };
+
+    nativeBuildInputs = [
+      nodejs
+      pnpmConfigHook
+      pnpmBuildHook
+      pnpm
+    ];
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      inherit pnpm;
+      fetcherVersion = 4;
+      hash = "sha256-tONL9o4fsyDbQWZeyB06UpI9TwA/PzX5maiACPUavZw=";
+    };
+
+    installPhase = ''
+      runHook preInstall
+      cp -R dist $out
+      runHook postInstall
+    '';
+  });
+
   nativeBuildInputs = [
     protobuf
   ];
@@ -35,6 +74,10 @@ in rustPlatform.buildRustPackage (finalAttrs: {
     mv $out/git/5da284414e9b14f678344b51e5292229e4b5f8d2/proto $out/git/5da284414e9b14f678344b51e5292229e4b5f8d2/rust/otel-arrow-rust/proto
     substituteInPlace $out/git/5da284414e9b14f678344b51e5292229e4b5f8d2/rust/otel-arrow-rust/build.rs \
       --replace-fail "{base}/../../proto" "{base}/proto"
+  '';
+
+  postPatch = ''
+    ln -s $dashboard src/servers/dashboard/dist
   '';
 
   cargoBuildFlags = [ "--bin" "greptime" ];
@@ -62,7 +105,9 @@ in rustPlatform.buildRustPackage (finalAttrs: {
   # Parallel tests will use conflicting binds.
   dontUseCargoParallelTests = true;
 
-  buildFeatures = lib.optional withEnterprise "enterprise";
+  buildFeatures = [
+    "dashboard"
+  ] ++ lib.optional withEnterprise "enterprise";
 
   meta = {
     description = "The open-source Observability 2.0 database";
