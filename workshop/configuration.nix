@@ -33,6 +33,7 @@
       ./homebox.nix
       ./libvirtd.nix
       ./globaltalk
+      ./greptimedb.nix
       nixos-hardware.nixosModules.common-cpu-amd
       nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];

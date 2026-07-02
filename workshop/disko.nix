@@ -86,6 +86,7 @@
           mountpoint = "/var/lib";
         };
         "var/lib/grafana".type = "zfs_fs";
+        "var/lib/greptimedb".type = "zfs_fs";
         "var/lib/hass".type = "zfs_fs";
         "var/lib/homebox".type = "zfs_fs";
         "var/lib/influxdb2".type = "zfs_fs";
