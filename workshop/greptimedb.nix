@@ -1,7 +1,20 @@
 { config, lib, pkgs, ... }:
-{
+let
+  users = {
+    quentin = {};
+    "telegraf@workshop.isz.wtf" = {};
+    "grafana@workshop.isz.wtf" = {};
+  };
+in {
+  sops.secrets = lib.mapAttrs' (name: v: lib.nameValuePair "greptimedb/users/${name}" v) users;
+  sops.templates."greptimedb-users" = {
+    owner = "greptimedb";
+    path = "/var/lib/greptimedb/users";
+    content = lib.concatMapAttrsStringSep "\n" (name: _: "${name}=${config.sops.placeholder."greptimedb/users/${name}"}") users;
+  };
   services.greptimedb = {
     enable = true;
+    config.user_provider = "watch_file_user_provider:${config.sops.templates."greptimedb-users".path}";
   };
   services.nginx = {
     upstreams.greptimedb.servers."localhost:4000" = {};

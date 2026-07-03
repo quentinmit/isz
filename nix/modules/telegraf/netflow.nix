@@ -15,6 +15,7 @@ in {
       inputs.netflow = [{
         name_suffix = "_raw";
         tags.influxdb_bucket = "netflow_raw";
+        tags.greptimedb_database = "netflow";
         service_address = "udp://:2055";
         protocol = "ipfix";
       }];

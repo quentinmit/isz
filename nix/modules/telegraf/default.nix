@@ -75,6 +75,12 @@ in {
       postgresql = mkEnableOption "PostgreSQL support" // {
         default = config.services.postgresql.enable or false;
       };
+    } // lib.optionalAttrs (!standalone) {
+      envSecrets = mkOption {
+        type = types.attrsOf types.str;
+        default = {};
+        description = "Environment variables to set that contains sops placeholders";
+      };
     };
   };
   config = let
@@ -119,6 +125,15 @@ in {
         permissions = "u+rx,g+x";
         setuid = true;
       };
+    } else {})
+    (if (isNixOS && options ? sops) then lib.mkIf cfg.enable {
+      sops.templates."telegraf.env" = {
+        owner = config.systemd.services.telegraf.serviceConfig.User or "";
+        content = lib.concatMapAttrsStringSep "\n" (name: value: "${name}=${value}") cfg.envSecrets;
+      };
+      systemd.services.telegraf.serviceConfig.EnvironmentFile = lib.mkIf (cfg.envSecrets != {}) [
+        config.sops.templates."telegraf.env".path
+      ];
     } else {})
     (if (isNixOS && options ? sops) then lib.mkIf cfg.enable {
       sops.secrets.telegraf = {
@@ -191,6 +206,7 @@ in {
               bucket = "icestationzebra";
               bucket_tag = "influxdb_bucket";
               exclude_bucket_tag = true;
+              tagexclude = [ "greptimedb_database" ];
               timeout = "60s"; # Default timeout of 5s is sometimes too slow
             }];
             # TODO: Add option for stdout

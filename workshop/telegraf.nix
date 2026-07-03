@@ -63,10 +63,31 @@
       postgresql = true;
       netflow.enable = true;
     };
+    isz.telegraf.envSecrets.GREPTIMEDB_PASSWORD = config.sops.placeholder."greptimedb/users/telegraf@workshop.isz.wtf";
     services.telegraf.extraConfig = lib.mkMerge [
+      {
+        outputs.influxdb_v2 = [{
+          alias = "greptimedb";
+          urls = ["https://greptimedb.isz.wtf/v1/influxdb"];
+          token = "telegraf@workshop.isz.wtf:$GREPTIMEDB_PASSWORD";
+          ## Leave empty
+          organization = "";
+          bucket = "telegraf";
+          bucket_tag = "greptimedb_database";
+          exclude_bucket_tag = true;
+          tagexclude = [ "influxdb_bucket" ];
+          timeout = "60s";
+
+          namepass = ["netflow_raw"];
+        }];
+      }
       {
         outputs.socket_writer = [{
           namepass = ["netflow_raw"];
+          tagexclude = [
+            "influxdb_bucket"
+            "greptimedb_database"
+          ];
           address = "unixgram:///run/vector/telegraf_netflow.sock";
           data_format = "json";
         }];
