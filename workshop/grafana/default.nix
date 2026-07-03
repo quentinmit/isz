@@ -76,7 +76,35 @@
           }
         ];
       };
+      greptimedb = {
+        uid = "greptimedb";
+        type = "info8fcc-greptimedb-datasource";
+        basicAuth = true;
+        basicAuthUser = "grafana@workshop.isz.wtf";
+        jsonData.host = "https://greptimedb.isz.wtf";
+        jsonData.logs = {
+          contextColumns = [];
+          defaultTable = "";
+          selectContextColumns = true;
+        };
+        jsonData.pdcInjected = false;
+        jsonData.protocol = "native";
+        jsonData.traces = {
+          defaultTable = "";
+          durationColumn = "duration_nano";
+          durationUnit = "nanoseconds";
+          operationNameColumn = "span_name";
+          parentSpanIdColumn = "parent_span_id";
+          serviceNameColumn = "service_name";
+          panIdColumn = "span_id";
+          startTimeColumn = "timestamp";
+          traceIdColumn = "trace_id";
+        };
+        jsonData.version = "2.1.4";
+        secureJsonData.basicAuthPassword = "$__file{${config.sops.secrets."greptimedb/users/grafana@workshop.isz.wtf".path}}";
+      };
     };
+  sops.secrets."greptimedb/users/grafana@workshop.isz.wtf".owner = "grafana";
     services.grafana = {
       enable = true;
       package = pkgs.unstable.grafana;
@@ -87,7 +115,7 @@
         feature_toggles.enable = "timeSeriesTable,dashboardNewLayouts,kubernetesDashboards,dashboardScene,sqlExpressions";
         feature_toggles.preinstallAutoUpdate = false;
         dataproxy.timeout = 300;
-        plugins.allow_loading_unsigned_plugins = "operato-windrose-panel";
+        plugins.allow_loading_unsigned_plugins = "operato-windrose-panel,info8fcc-greptimedb-datasource";
         news.news_feed_enabled = false;
         security.secret_key = "$__file{${config.sops.secrets."grafana/secret_key".path}}";
       };
@@ -98,6 +126,7 @@
         grafana-mqtt-datasource
         grafana-pyroscope-app
         grafana-worldmap-panel
+        info8fcc-greptimedb-datasource-unsigned
         marcusolsson-json-datasource
         operato-windrose-panel
         volkovlabs-echarts-panel

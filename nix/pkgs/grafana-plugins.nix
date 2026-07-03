@@ -1,4 +1,7 @@
-{ grafanaPlugin }:
+{
+  grafanaPlugin,
+  fetchzip,
+}:
 {
   operato-windrose-panel = grafanaPlugin {
     pname = "operato-windrose-panel";
@@ -22,5 +25,27 @@
     pname = "equansdatahub-tree-panel";
     version = "1.7.7";
     zipHash = "sha256-43j6Z9vcUTmxlK3Fug3BrdwvAaED9RE6ouvd33hXIqA=";
+  };
+  info8fcc-greptimedb-datasource = let
+    version = "2.1.7";
+  in grafanaPlugin {
+    pname = "info8fcc-greptimedb-datasource";
+    inherit version;
+    zipHash = null;
+    src = fetchzip {
+      url = "https://github.com/GreptimeTeam/greptimedb-grafana-datasource/releases/download/v${version}/info8fcc-greptimedb-datasource.zip";
+      hash = "sha256-QKZowitIjEwunpgtSOei9+PYdZK1ymWalZHobUOzXAA=";
+    };
+  };
+  info8fcc-greptimedb-datasource-unsigned = let
+    version = "2.1.7";
+  in grafanaPlugin {
+    pname = "info8fcc-greptimedb-datasource";
+    inherit version;
+    zipHash = null;
+    src = fetchzip {
+      url = "https://github.com/GreptimeTeam/greptimedb-grafana-datasource/releases/download/v${version}/info8fcc-greptimedb-datasource-unsigned.zip";
+      hash = "sha256-AoY4rIpJS9AsJ5TDNAg3NaIRLXZRWf0IPtmoWFy7iIU=";
+    };
   };
 }
