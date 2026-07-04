@@ -12,6 +12,10 @@ in {
     path = "/var/lib/greptimedb/users";
     content = lib.concatMapAttrsStringSep "\n" (name: _: "${name}=${config.sops.placeholder."greptimedb/users/${name}"}") users;
   };
+  environment.systemPackages = with pkgs; [
+    greptimedb
+    pqrs
+  ];
   services.greptimedb = {
     enable = true;
     config.user_provider = "watch_file_user_provider:${config.sops.templates."greptimedb-users".path}";
