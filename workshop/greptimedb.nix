@@ -33,6 +33,7 @@ in {
           proxy_buffering off;
           allow 172.30.96.0/23;
           deny all;
+          client_max_body_size 100M;
         '';
       };
     };
