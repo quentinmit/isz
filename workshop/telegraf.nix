@@ -78,7 +78,17 @@
           tagexclude = [ "influxdb_bucket" ];
           timeout = "60s";
 
-          namepass = ["netflow_raw"];
+          namepass = [
+            # netflow
+            "netflow_raw"
+            # weatherflow
+            "evt_strike"
+            "lightning_strike_time"
+            "observation"
+            "rain_start_time"
+            "rapid_wind"
+            "status_update"
+          ];
         }];
       }
       {
@@ -127,6 +137,7 @@
           alias = "weatherflow";
           name_prefix = "weatherflow_";
           tags.influxdb_bucket = "weatherflow";
+          tags.greptimedb_database = "weatherflow";
 
           servers = ["tcp://mqtt.isz.wtf:1883"];
 
