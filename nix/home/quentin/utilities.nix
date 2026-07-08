@@ -51,7 +51,6 @@
       perlPackages.StringShellQuote
       pigz
       pixz
-      pv
       renameutils
       ripgrep
       rlwrap

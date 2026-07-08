@@ -68,6 +68,7 @@ let
     jq
     # man # already present
     ncdu
+    pv
     screen
     # texinfoInteractive # already present
     tree
