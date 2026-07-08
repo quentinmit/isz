@@ -52,7 +52,7 @@ in {
       home.packages = [
         cfg.package
         (lib.hiPrio (pkgs.writeShellScriptBin "alpine" ''
-          exec ${lib.getExe cfg.package} -P ${confFile}
+          exec ${lib.getExe' cfg.package "alpine"} -P ${confFile}
         ''))
       ];
     })

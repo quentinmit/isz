@@ -62,7 +62,7 @@ in {
         Group = "sdrtrunk";
         PAMName = "login";
         RuntimeDirectory = "sdrtrunk";
-        ExecStart = "${lib.getExe pkgs.xpra} --no-daemon --bind=%t/sdrtrunk/sdrtrunk.sock --socket-permissions=660 start --start-child=${lib.getExe pkgs.xterm} --exit-with-children=yes --systemd-run=no";
+        ExecStart = "${lib.getExe' pkgs.xpra "xpra"} --no-daemon --bind=%t/sdrtrunk/sdrtrunk.sock --socket-permissions=660 start --start-child=${lib.getExe pkgs.xterm} --exit-with-children=yes --systemd-run=no";
       };
     };
 

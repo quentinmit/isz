@@ -694,11 +694,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1747724193,
-        "narHash": "sha256-w/ZKcTyiIjvLPM71jeXGRy+LClR4SevKFwUx91v9pZ4=",
+        "lastModified": 1783470417,
+        "narHash": "sha256-nnzzFjdmrT6xSMrferf847qT4IWo+nXzyz8oUZQdSyg=",
         "owner": "quentinmit",
         "repo": "mosh-server-upnp",
-        "rev": "2a55ff500f8cc6844e36caa55759fd1d7fae7e43",
+        "rev": "2cd7b294c542a8e5de3a16971cdeee97ef35ad95",
         "type": "github"
       },
       "original": {

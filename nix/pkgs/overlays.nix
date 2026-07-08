@@ -187,8 +187,8 @@ in {
       ./sanoid/native-recursion.patch
     ];
   });
-  alpine = prev.alpine.overrideAttrs (old: lib.optionalAttrs (old.version == "2.26") {
-    patches = (old.patches or []) ++ [
+  alpine = prev.alpine.overrideAttrs (old: {
+    patches = (old.patches or []) ++ lib.optionals (old.version == "2.26") [
       (final.fetchurl {
         url = "https://alpineapp.email/alpine/patches/alpine-2.26/maildir.patch.gz";
         hash = "sha256-V4CEGLAqDhy4JpQAaKoQ6u2CeysjYJ8F/SAV7JIEPTc=";#sha256-f83AHYlHwUimyAztFCXHkIEQCKtEU5BDUrxwFFQmVqo=";
