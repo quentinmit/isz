@@ -186,6 +186,12 @@
             fclones
           ];
         }
+        {
+          programs.yt-dlp = {
+            enable = true;
+            settings.output = "\"%(webpage_url)#S.%(title)s [%(id)s].%(ext)s\"";
+          };
+        }
       ];
     };
   };
