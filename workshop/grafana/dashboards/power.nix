@@ -27,18 +27,18 @@ let
           spec.rawSql = ''
             WITH t1 AS (
               SELECT
-                date_bin('$__interval', greptime_timestamp) as "time",
-                last_value(total_time_seconds) as total_time_seconds,
-                last_value(total_${integralField}) as total_${integralField},
-                max(max_${field}) as max_${field},
-                min(min_${field}) as min_${field}
+                greptime_timestamp as "time",
+                last_value(total_time_seconds) RANGE '$__interval' FILL NULL as total_time_seconds,
+                last_value(total_${integralField}) RANGE '$__interval' FILL NULL as total_${integralField},
+                max(max_${field}) RANGE '$__interval' FILL NULL as max_${field},
+                min(min_${field}) RANGE '$__interval' FILL NULL as min_${field}
               FROM
                 "profinet"."caparoc"
               WHERE (
                 ${lib.concatMapAttrsStringSep " and " (name: value: "${name} = '${value}'") config.channel.filter}
                 and $__timeFilter(greptime_timestamp)
               )
-              GROUP BY date_bin('$__interval', greptime_timestamp)
+              ALIGN '$__interval' BY (name_of_station, channel)
               ORDER BY time ASC
             )
             SELECT
