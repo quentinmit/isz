@@ -18,42 +18,39 @@ let
       inherit (config.channel) field integralField filter;
     in lib.mkIf (config.channel.field != null) {
       channel.filter.name_of_station = lib.mkDefault name_of_station;
-      influx = [
-        {
-          bucket = "profinet";
-          filter = {
-            _measurement = "caparoc";
-            _field = ["total_${integralField}" "total_time_seconds"];
-          } // filter;
-          fn = null;
-          extra = ''
-            |> window(every: v.windowPeriod)
-            |> last()
-            |> window(every: inf)
-            |> difference(nonNegative: true)
-            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
-            |> drop(columns: ["total_${integralField}", "total_time_seconds"])
-            |> yield(name: "mean")
+      spec.data.spec.queries = [{
+        spec.query = {
+          group = "info8cc-greptimedb-datasource";
+          datasource.name = "greptimedb";
+          spec.editorType = "sql";
+          spec.queryType = "timeseries";
+          spec.rawSql = ''
+            WITH t1 AS (
+              SELECT
+                date_bin('$__interval', greptime_timestamp) as "time",
+                last_value(total_time_seconds) as total_time_seconds,
+                last_value(total_${integralField}) as total_${integralField},
+                max(max_${field}) as max_${field},
+                min(min_${field}) as min_${field}
+              FROM
+                "profinet"."caparoc"
+              WHERE (
+                ${lib.concatMapAttrsStringSep " and " (name: value: "${name} = '${value}'") config.channel.filter}
+                and $__timeFilter(greptime_timestamp)
+              )
+              GROUP BY date_bin('$__interval', greptime_timestamp)
+              ORDER BY time ASC
+            )
+            SELECT
+              time,
+              (total_${integralField}-lag(total_${integralField}) over (order by time))/(total_time_seconds-lag(total_time_seconds) over (order by time)) as average_${field},
+              max_${field},
+              min_${field}
+            FROM t1;
           '';
-        }
-        {
-          bucket = "profinet";
-          filter = {
-            _measurement = "caparoc";
-            _field = "min_${field}";
-          } // filter;
-          fn = "min";
-        }
-        {
-          bucket = "profinet";
-          filter = {
-            _measurement = "caparoc";
-            _field = "max_${field}";
-          } // filter;
-          fn = "max";
-        }
-      ];
+        };
+      }];
+      spec.vizConfig.group = "timeseries";
       spec.vizConfig.spec.fieldConfig.defaults = {
         custom.fillOpacity = 0;
       };
