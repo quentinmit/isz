@@ -1,116 +1,166 @@
 { config, pkgs, lib, ... }:
 with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; };
 let
-  channelGraph = { field, integralField, filter, influx ? [] }: args: lib.recursiveUpdate {
-    influx = influx ++ [
-      {
-        bucket = "profinet";
-        filter = {
-          _measurement = "caparoc";
-          _field = ["total_${integralField}" "total_time_seconds"];
-        } // filter;
-        fn = null;
-        extra = ''
-          |> window(every: v.windowPeriod)
-          |> last()
-          |> window(every: inf)
-          |> difference(nonNegative: true)
-          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-          |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
-          |> drop(columns: ["total_${integralField}", "total_time_seconds"])
-          |> yield(name: "mean")
+  channelModule = { config, name_of_station, ... }: {
+    options.channel = {
+      field = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+      };
+      integralField = lib.mkOption {
+        type = lib.types.str;
+      };
+      filter = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+      };
+    };
+    config = let
+      inherit (config.channel) field integralField filter;
+    in lib.mkIf (config.channel.field != null) {
+      channel.filter.name_of_station = lib.mkDefault name_of_station;
+      influx = [
+        {
+          bucket = "profinet";
+          filter = {
+            _measurement = "caparoc";
+            _field = ["total_${integralField}" "total_time_seconds"];
+          } // filter;
+          fn = null;
+          extra = ''
+            |> window(every: v.windowPeriod)
+            |> last()
+            |> window(every: inf)
+            |> difference(nonNegative: true)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
+            |> drop(columns: ["total_${integralField}", "total_time_seconds"])
+            |> yield(name: "mean")
+          '';
+        }
+        {
+          bucket = "profinet";
+          filter = {
+            _measurement = "caparoc";
+            _field = "min_${field}";
+          } // filter;
+          fn = "min";
+        }
+        {
+          bucket = "profinet";
+          filter = {
+            _measurement = "caparoc";
+            _field = "max_${field}";
+          } // filter;
+          fn = "max";
+        }
+      ];
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        custom.fillOpacity = 0;
+      };
+      spec.vizConfig.spec.options.tooltip.mode = "multi";
+      fields."average_${field}" = {
+        displayName = "Average";
+        color = { mode = "fixed"; fixedColor = "green"; };
+        custom.lineWidth = 1;
+      };
+      fields."max_${field}" = {
+        displayName = "Max";
+        custom.lineWidth = 0;
+        custom.fillOpacity = 25;
+        custom.fillBelowTo = "min_${field}";
+        color.mode = "fixed";
+        custom.hideFrom.legend = true;
+      };
+      fields."min_${field}" = {
+        displayName = "Min";
+        custom.lineWidth = 0;
+        color.mode = "fixed";
+        custom.hideFrom.legend = true;
+      };
+      spec.data.spec.queryOptions.interval = "1s";
+    };
+  };
+  stackedModule = { config, name_of_station, ... }: {
+    options.stacked = {
+      field = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+      };
+      integralField = lib.mkOption {
+        type = lib.types.str;
+      };
+      name_of_station = lib.mkOption {
+        type = lib.types.str;
+        default = name_of_station;
+      };
+    };
+    config = let
+      inherit (config.stacked) field integralField name_of_station;
+    in lib.mkIf (config.stacked.field != null) {
+      influx = [{
+        query = ''
+          import "join"
+
+          names = from(bucket: "profinet")
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_measurement"] == "caparoc")
+            |> filter(fn: (r) => r["_field"] == "status")
+            |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
+            |> last()
+            |> group(columns: ["name_of_station", "channel"])
+            |> sort(columns: ["_time"])
+            |> last()
+            |> keep(columns: ["name_of_station", "channel", "channel_name"])
+            |> map(fn: (r) => ({name_of_station: r.name_of_station, channel: r.channel, channel_name: if exists r.channel_name then r.channel_name else "Channel "+r.channel}))
+
+          data = from(bucket: "profinet")
+            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+            |> filter(fn: (r) => r["_field"] == "total_${integralField}" or r["_field"] == "total_time_seconds")
+            |> filter(fn: (r) => r["channel"] != "total")
+            |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
+            |> window(every: v.windowPeriod)
+            |> last()
+            |> window(every: inf)
+            |> difference(nonNegative: true)
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
+            |> drop(columns: ["channel_name", "total_${integralField}", "total_time_seconds"])
+
+          join.left(
+              left: data |> group(columns: ["name_of_station", "channel"]),
+              right: names,
+              on: (l, r) => l.name_of_station == r.name_of_station and l.channel == r.channel,
+              as: (l, r) => ({l with channel_name: r.channel_name}),
+          )
+            |> group(columns: ["_measurement", "_field", "_start", "_stop", "name_of_station", "channel", "channel_name"])
+            |> yield(name: "mean")
         '';
-      }
-      {
-        bucket = "profinet";
-        filter = {
-          _measurement = "caparoc";
-          _field = "min_${field}";
-        } // filter;
-        fn = "min";
-      }
-      {
-        bucket = "profinet";
-        filter = {
-          _measurement = "caparoc";
-          _field = "max_${field}";
-        } // filter;
-        fn = "max";
-      }
-    ];
-    panel.fieldConfig.defaults = {
-      custom.fillOpacity = 0;
+      }];
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        displayName = "\${__field.labels.channel_name}";
+        custom.stacking.mode = "normal";
+        custom.fillOpacity = 10;
+      };
+      spec.vizConfig.spec.options.tooltip.mode = "multi";
+      spec.data.spec.queryOptions.interval = "1s";
     };
-    panel.options.tooltip.mode = "multi";
-    fields."average_${field}" = {
-      displayName = "Average";
-      color = { mode = "fixed"; fixedColor = "green"; };
-      custom.lineWidth = 1;
+  };
+  dashboardModule = { config, ... }: let
+    inherit (config) name_of_station;
+  in {
+    options.name_of_station = lib.mkOption {
+      type = lib.types.str;
     };
-    fields."max_${field}" = {
-      displayName = "Max";
-      custom.lineWidth = 0;
-      custom.fillOpacity = 25;
-      custom.fillBelowTo = "min_${field}";
-      color.mode = "fixed";
-      custom.hideFrom.legend = true;
+    options.panels = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.submodule ({ config, ... }: {
+        imports = [
+          channelModule
+          stackedModule
+        ];
+        _module.args.name_of_station = name_of_station;
+      }));
     };
-    fields."min_${field}" = {
-      displayName = "Min";
-      custom.lineWidth = 0;
-      color.mode = "fixed";
-      custom.hideFrom.legend = true;
-    };
-    panel.interval = "1s";
-  } args;
-  stackedGraph = { field, integralField, name_of_station, influx ? [] }: args: lib.recursiveUpdate {
-    influx = influx ++ [{
-      query = ''
-        import "join"
-
-        names = from(bucket: "profinet")
-          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-          |> filter(fn: (r) => r["_measurement"] == "caparoc")
-          |> filter(fn: (r) => r["_field"] == "status")
-          |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
-          |> last()
-          |> group(columns: ["name_of_station", "channel"])
-          |> sort(columns: ["_time"])
-          |> last()
-          |> keep(columns: ["name_of_station", "channel", "channel_name"])
-          |> map(fn: (r) => ({name_of_station: r.name_of_station, channel: r.channel, channel_name: if exists r.channel_name then r.channel_name else "Channel "+r.channel}))
-
-        data = from(bucket: "profinet")
-          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-          |> filter(fn: (r) => r["_field"] == "total_${integralField}" or r["_field"] == "total_time_seconds")
-          |> filter(fn: (r) => r["channel"] != "total")
-          |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
-          |> window(every: v.windowPeriod)
-          |> last()
-          |> window(every: inf)
-          |> difference(nonNegative: true)
-          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-          |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
-          |> drop(columns: ["channel_name", "total_${integralField}", "total_time_seconds"])
-
-        join.left(
-            left: data |> group(columns: ["name_of_station", "channel"]),
-            right: names,
-            on: (l, r) => l.name_of_station == r.name_of_station and l.channel == r.channel,
-            as: (l, r) => ({l with channel_name: r.channel_name}),
-        )
-          |> group(columns: ["_measurement", "_field", "_start", "_stop", "name_of_station", "channel", "channel_name"])
-          |> yield(name: "mean")
-      '';
-    }];
-    panel.fieldConfig.defaults = {
-      displayName = "\${__field.labels.channel_name}";
-      custom.stacking.mode = "normal";
-      custom.fillOpacity = 10;
-    };
-    panel.options.tooltip.mode = "multi";
-    panel.interval = "1s";
-  } args;
+  };
   channelsVar = name_of_station: {
     query = ''
       from(bucket: "profinet")
@@ -131,33 +181,82 @@ let
         }))
         |> yield(name: "last")
     '';
-    extra.hide = 2; # show nothing
+    extra.hide = "hideVariable"; # show nothing
     extra.includeAll = true;
     extra.regex = ''/(?<value>\S+)\s+(?<text>.+)/'';
   };
 in {
-  config.isz.grafana.dashboards."Workshop Power" = let
-    name_of_station = "workshop-caparoc";
-  in {
-    uid = "f96fd7e1-33eb-47c1-89ec-e8fe2741e043";
-    title = "Workshop Power";
-    defaultDatasourceName = "workshop";
-    graphTooltip = 2;
-    variables = {
-      caparoc_channel = channelsVar name_of_station;
-    };
-    panels = [
+  config.isz.grafana.dashboardsV2."workshop-power" = { config, ... }: {
+    imports = [
+      dashboardModule
+    ];
+    config = {
+      name_of_station = "workshop-caparoc";
+      title = "Workshop Power";
+      defaultDatasourceName = "workshop";
+      spec.cursorSync = "Tooltip";
+      variables = {
+        caparoc_channel = channelsVar config.name_of_station;
+      };
+      layout.kind = "GridLayout";
+      layout.spec.items = [
+        { spec = {
+            element.name = "battery-volts";
+            x = 0; y = 0; width = 2; height = 8;
+          }; }
+        { spec = {
+            element.name = "system-volts";
+            x = 2; y = 0; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "battery-temperature";
+            x = 12; y = 0; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "total-current-power";
+            x = 0; y = 8; width = 2; height = 8;
+          }; }
+        { spec = {
+            element.name = "total-current";
+            x = 2; y = 8; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "total-power";
+            x = 12; y = 8; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "stacked-current";
+            x = 2; y = 16; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "stacked-power";
+            x = 12; y = 16; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "per-channel-current";
+            x = 2; y = 24; width = 10; height = 8;
+            repeat.direction = "v";
+            repeat.mode = "variable";
+            repeat.value = "caparoc_channel";
+          }; }
+        { spec = {
+            element.name = "per-channel-power";
+            x = 12; y = 24; width = 10; height = 8;
+            repeat.direction = "v";
+            repeat.mode = "variable";
+            repeat.value = "caparoc_channel";
+          }; }
+      ];
       # Battery
-      {
-        panel.gridPos = { x = 0; y = 0; w = 2; h = 8; };
-        panel.type = "gauge";
+      panels.battery-volts = {
+        spec.vizConfig.group = "gauge";
         influx = [
           {
             bucket = "profinet";
             filter._measurement = "caparoc";
             filter._field = "average_voltage_volts";
             filter.channel = "total";
-            filter.name_of_station = name_of_station;
+            filter.name_of_station = config.name_of_station;
             fn = "last1";
           }
           {
@@ -166,11 +265,12 @@ in {
             fn = "last1";
           }
         ];
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "volt";
           decimals = 1;
           min = 10;
           max = 16;
+          color.mode = "palette-classic";
         };
         fields."Bat.V".displayName = "Battery Voltage";
         fields."PS.V".displayName = "PSU Voltage";
@@ -178,56 +278,53 @@ in {
           displayName = "System Voltage";
           decimals = 2;
         };
-      }
-      (channelGraph {
-        field = "voltage_volts";
-        integralField = "voltage_time_volt_seconds";
-        filter.channel = "total";
-        filter.name_of_station = name_of_station;
+      };
+      panels.system-volts = {
+        channel = {
+          field = "voltage_volts";
+          integralField = "voltage_time_volt_seconds";
+          filter.channel = "total";
+        };
         influx = [{
           filter._measurement = "epicpwrgate.status";
           filter._field = ["Bat.V" "PS.V"];
           fn = "mean";
         }];
-      } {
-        panel.gridPos = { x = 2; y = 0; w = 10; h = 8; };
-        panel.title = "Workshop System Voltage";
-        panel.fieldConfig.defaults = {
+        spec.title = "Workshop System Voltage";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "volt";
           decimals = 3;
         };
         fields."Bat.V".displayName = "Battery Voltage";
         fields."PS.V".displayName = "PSU Voltage";
-      })
-      {
-        panel.gridPos = { x = 12; y = 0; w = 10; h = 8; };
-        panel.title = "Battery Temperature";
+      };
+      panels.battery-temperature = {
+        spec.title = "Battery Temperature";
         influx.filter._measurement = "epicpwrgate.status";
         influx.filter._field = "Temp";
         influx.fn = "mean";
         influx.extra = ''
           |> map(fn: (r) => ({r with _value: (r._value - 32.) * 5./9.}))
         '';
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "celsius";
           decimals = 2;
         };
-        panel.options.tooltip.mode = "multi";
-      }
+        spec.vizConfig.spec.options.tooltip.mode = "multi";
+      };
       # Total Current/Power
-      {
-        panel.gridPos = { x = 0; y = 8; w = 2; h = 8; };
-        panel.type = "gauge";
+      panels.total-current-power = {
+        spec.vizConfig.group = "gauge";
         influx.bucket = "profinet";
         influx.filter._measurement = "caparoc";
         influx.filter._field = ["average_current_amps" "average_power_watts"];
         influx.filter.channel = "total";
-        influx.filter.name_of_station = name_of_station;
+        influx.filter.name_of_station = config.name_of_station;
         influx.fn = "last1";
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           color.mode = "thresholds";
         };
-        panel.options.showThresholdMarkers = false;
+        spec.vizConfig.spec.options.showThresholdMarkers = false;
         fields.average_current_amps = {
           displayName = "Average Current";
           unit = "amp";
@@ -248,113 +345,156 @@ in {
             { value = 300; color = "red"; }
           ];
         };
-      }
-      (channelGraph {
-        field = "current_amps";
-        integralField = "charge_coulombs";
-        filter.channel = "total";
-        filter.name_of_station = name_of_station;
+      };
+      panels.total-current = {
+        channel = {
+          field = "current_amps";
+          integralField = "charge_coulombs";
+          filter.channel = "total";
+        };
         influx = [{
           filter._measurement = "epicpwrgate.status";
           filter._field = ["Bat.A" "TargetI.A"];
           fn = "mean";
         }];
-      } {
-        panel.gridPos = { x = 2; y = 8; w = 10; h = 8; };
-        panel.title = "Workshop Total Current";
-        panel.fieldConfig.defaults = {
+        spec.title = "Workshop Total Current";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "amp";
           decimals = 2;
         };
-      })
-      (channelGraph {
-        field = "power_watts";
-        integralField = "energy_joules";
-        filter.channel = "total";
-        filter.name_of_station = name_of_station;
-      } {
-        panel.gridPos = { x = 12; y = 8; w = 10; h = 8; };
-        panel.title = "Workshop Total Power";
-        panel.fieldConfig.defaults = {
+      };
+      panels.total-power = {
+        channel = {
+          field = "power_watts";
+          integralField = "energy_joules";
+          filter.channel = "total";
+        };
+        spec.title = "Workshop Total Power";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "watt";
         };
-      })
+      };
       # Stacked current/power
-      (stackedGraph {
-        field = "current_amps";
-        integralField = "charge_coulombs";
-        inherit name_of_station;
-      } {
-        panel.gridPos = { x = 2; y = 16; w = 10; h = 8; };
-        panel.title = "Current";
-        panel.fieldConfig.defaults = {
+      panels.stacked-current = {
+        stacked = {
+          field = "current_amps";
+          integralField = "charge_coulombs";
+        };
+        spec.title = "Current";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "amp";
         };
-      })
-      (stackedGraph {
-        field = "power_watts";
-        integralField = "energy_joules";
-        inherit name_of_station;
-      } {
-        panel.gridPos = { x = 12; y = 16; w = 10; h = 8; };
-        panel.title = "Power";
-        panel.fieldConfig.defaults = {
+      };
+      panels.stacked-power = {
+        stacked = {
+          field = "power_watts";
+          integralField = "energy_joules";
+        };
+        spec.title = "Power";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "watt";
         };
-      })
+      };
       # Per-channel current and power
-      (channelGraph {
-        field = "current_amps";
-        integralField = "charge_coulombs";
-        filter.channel = "\${caparoc_channel}";
-        filter.name_of_station = name_of_station;
-      } {
-        panel.gridPos = { x = 2; y = 24; w = 10; h = 8; };
-        panel.title = "\${caparoc_channel} Current";
-        panel.fieldConfig.defaults = {
+      panels.per-channel-current = {
+        channel = {
+          field = "current_amps";
+          integralField = "charge_coulombs";
+          filter.channel = "\${caparoc_channel}";
+        };
+        spec.title = "\${caparoc_channel} Current";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "amp";
         };
-        panel.repeat = "caparoc_channel";
-        panel.repeatDirection = "v";
-      })
-      (channelGraph {
-        field = "power_watts";
-        integralField = "energy_joules";
-        filter.channel = "\${caparoc_channel}";
-        filter.name_of_station = name_of_station;
-      } {
-        panel.gridPos = { x = 12; y = 24; w = 10; h = 8; };
-        panel.title = "\${caparoc_channel} Power";
-        panel.fieldConfig.defaults = {
+      };
+      panels.per-channel-power = {
+        channel = {
+          field = "power_watts";
+          integralField = "energy_joules";
+          filter.channel = "\${caparoc_channel}";
+        };
+        spec.title = "\${caparoc_channel} Power";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "watt";
         };
-        panel.repeat = "caparoc_channel";
-        panel.repeatDirection = "v";
-      })
-    ];
-  };
-  config.isz.grafana.dashboards."Bedroom Power" = let
-    name_of_station = "bedroom-caparoc";
-  in {
-    uid = "bedroom-power";
-    title = "Bedroom Power";
-    defaultDatasourceName = "workshop";
-    graphTooltip = 2;
-    variables = {
-      caparoc_channel = channelsVar name_of_station;
+      };
     };
-    panels = [
+  };
+  config.isz.grafana.dashboardsV2."bedroom-power" = { config, ... }: {
+    imports = [
+      dashboardModule
+    ];
+    config = {
+      name_of_station = "bedroom-caparoc";
+      title = "Bedroom Power";
+      defaultDatasourceName = "workshop";
+      spec.cursorSync = "Tooltip";
+      variables = {
+        caparoc_channel = channelsVar config.name_of_station;
+      };
+      layout.kind = "GridLayout";
+      layout.spec.items = [
+        { spec = {
+            element.name = "battery-volts";
+            x = 0; y = 0; width = 2; height = 8;
+          }; }
+        { spec = {
+            element.name = "system-volts";
+            x = 2; y = 0; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "battery-temperature";
+            x = 12; y = 0; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "total-current-power";
+            x = 0; y = 8; width = 2; height = 8;
+          }; }
+        { spec = {
+            element.name = "total-current";
+            x = 2; y = 8; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "total-power";
+            x = 12; y = 8; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "stacked-current";
+            x = 2; y = 16; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "stacked-power";
+            x = 12; y = 16; width = 10; height = 8;
+          }; }
+        { spec = {
+            element.name = "wago-status";
+            x = 2; y = 24; width = 20; height = 11;
+          }; }
+        { spec = {
+            element.name = "per-channel-current";
+            x = 2; y = 35; width = 10; height = 8;
+            repeat.direction = "v";
+            repeat.mode = "variable";
+            repeat.value = "caparoc_channel";
+          }; }
+        { spec = {
+            element.name = "per-channel-power";
+            x = 12; y = 35; width = 10; height = 8;
+            repeat.direction = "v";
+            repeat.mode = "variable";
+            repeat.value = "caparoc_channel";
+          }; }
+      ];
       # Battery
-      {
-        panel.gridPos = { x = 0; y = 0; w = 2; h = 8; };
-        panel.type = "gauge";
+      panels.battery-volts = {
+        spec.vizConfig.group = "gauge";
         influx = [
           {
             bucket = "profinet";
             filter._measurement = "caparoc";
             filter._field = "average_voltage_volts";
             filter.channel = "total";
-            filter.name_of_station = name_of_station;
+            filter.name_of_station = config.name_of_station;
             fn = "last1";
           }
           {
@@ -363,11 +503,12 @@ in {
             fn = "last1";
           }
         ];
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "volt";
           decimals = 1;
           min = 10;
           max = 16;
+          color.mode = "palette-classic";
         };
         fields."BatteryVolts".displayName = "Battery Voltage";
         fields."PSUVolts".displayName = "PSU Voltage";
@@ -375,53 +516,50 @@ in {
           displayName = "System Voltage";
           decimals = 2;
         };
-      }
-      (channelGraph {
-        field = "voltage_volts";
-        integralField = "voltage_time_volt_seconds";
-        filter.channel = "total";
-        filter.name_of_station = name_of_station;
+      };
+      panels.system-volts = {
+        channel = {
+          field = "voltage_volts";
+          integralField = "voltage_time_volt_seconds";
+          filter.channel = "total";
+        };
         influx = [{
           filter._measurement = "wago.status";
           filter._field = ["BatteryVolts" "PSUVolts"];
           fn = "mean";
         }];
-      } {
-        panel.gridPos = { x = 2; y = 0; w = 10; h = 8; };
-        panel.title = "Bedroom System Voltage";
-        panel.fieldConfig.defaults = {
+        spec.title = "Bedroom System Voltage";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "volt";
           decimals = 3;
         };
         fields."BatteryVolts".displayName = "Battery Voltage";
         fields."PSUVolts".displayName = "PSU Voltage";
-      })
-      {
-        panel.gridPos = { x = 12; y = 0; w = 10; h = 8; };
-        panel.title = "Battery Temperature";
+      };
+      panels.battery-temperature = {
+        spec.title = "Battery Temperature";
         influx.filter._measurement = "wago.status";
         influx.filter._field = "TemperatureDegreesCelsius";
         influx.fn = "mean";
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "celsius";
           decimals = 2;
         };
-        panel.options.tooltip.mode = "multi";
-      }
+        spec.vizConfig.spec.options.tooltip.mode = "multi";
+      };
       # Total Current/Power
-      {
-        panel.gridPos = { x = 0; y = 8; w = 2; h = 8; };
-        panel.type = "gauge";
+      panels.total-current-power = {
+        spec.vizConfig.group = "gauge";
         influx.bucket = "profinet";
         influx.filter._measurement = "caparoc";
         influx.filter._field = ["average_current_amps" "average_power_watts"];
         influx.filter.channel = "total";
-        influx.filter.name_of_station = name_of_station;
+        influx.filter.name_of_station = config.name_of_station;
         influx.fn = "last1";
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           color.mode = "thresholds";
         };
-        panel.options.showThresholdMarkers = false;
+        spec.vizConfig.spec.options.showThresholdMarkers = false;
         fields.average_current_amps = {
           displayName = "Average Current";
           unit = "amp";
@@ -442,33 +580,33 @@ in {
             { value = 120; color = "red"; }
           ];
         };
-      }
-      (channelGraph {
-        field = "current_amps";
-        integralField = "charge_coulombs";
-        filter.channel = "total";
-        filter.name_of_station = name_of_station;
+      };
+      panels.total-current = {
+        channel = {
+          field = "current_amps";
+          integralField = "charge_coulombs";
+          filter.channel = "total";
+        };
         influx = [{
           filter._measurement = "wago.status";
           filter._field = ["BatteryInAmps" "BatteryOutAmps" "PSUAmps"];
           fn = "mean";
         }];
-      } {
-        panel.gridPos = { x = 2; y = 8; w = 10; h = 8; };
-        panel.title = "Bedroom Total Current";
-        panel.fieldConfig.defaults = {
+        spec.title = "Bedroom Total Current";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "amp";
           decimals = 2;
         };
         fields."BatteryInAmps".displayName = "Battery In";
         fields."BatteryOutAmps".displayName = "Battery Out";
         fields."PSUAmps".displayName = "PSU";
-      })
-      (channelGraph {
-        field = "power_watts";
-        integralField = "energy_joules";
-        filter.channel = "total";
-        filter.name_of_station = name_of_station;
+      };
+      panels.total-power = {
+        channel = {
+          field = "power_watts";
+          integralField = "energy_joules";
+          filter.channel = "total";
+        };
         influx = [{
           filter._measurement = "wago.status";
           filter._field = ["PSUAmps" "BatteryOutAmps" "BatteryInAmps" "OutputVolts"];
@@ -483,41 +621,36 @@ in {
             |> aggregateWindow(every: v.windowPeriod, fn: mean, column: "LoadWatts", createEmpty: false)
           '';
         }];
-      } {
-        panel.gridPos = { x = 12; y = 8; w = 10; h = 8; };
-        panel.title = "Bedroom Total Power";
-        panel.fieldConfig.defaults = {
+        spec.title = "Bedroom Total Power";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "watt";
         };
-      })
+      };
       # Stacked current/power
-      (stackedGraph {
-        field = "current_amps";
-        integralField = "charge_coulombs";
-        inherit name_of_station;
-      } {
-        panel.gridPos = { x = 2; y = 16; w = 10; h = 8; };
-        panel.title = "Current";
-        panel.fieldConfig.defaults = {
+      panels.stacked-current = {
+        stacked = {
+          field = "current_amps";
+          integralField = "charge_coulombs";
+        };
+        spec.title = "Current";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "amp";
         };
-      })
-      (stackedGraph {
-        field = "power_watts";
-        integralField = "energy_joules";
-        inherit name_of_station;
-      } {
-        panel.gridPos = { x = 12; y = 16; w = 10; h = 8; };
-        panel.title = "Power";
-        panel.fieldConfig.defaults = {
+      };
+      panels.stacked-power = {
+        stacked = {
+          field = "power_watts";
+          integralField = "energy_joules";
+        };
+        spec.title = "Power";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "watt";
         };
-      })
+      };
       # Status
-      {
-        panel.gridPos = { x = 2; y = 24; w = 20; h = 11; };
-        panel.title = "Wago Status";
-        panel.type = "state-timeline";
+      panels.wago-status = {
+        spec.title = "Wago Status";
+        spec.vizConfig.group = "state-timeline";
         influx = {
           imports = ["bitwise"];
           filter._measurement = "wago.status";
@@ -537,36 +670,30 @@ in {
         };
         fields."02".displayName = "Buffer mode";
         fields."08".displayName = "Battery charge <85%";
-      }
+      };
       # Per-channel current and power
-      (channelGraph {
-        field = "current_amps";
-        integralField = "charge_coulombs";
-        filter.channel = "\${caparoc_channel}";
-        filter.name_of_station = name_of_station;
-      } {
-        panel.gridPos = { x = 2; y = 35; w = 10; h = 8; };
-        panel.title = "\${caparoc_channel} Current";
-        panel.fieldConfig.defaults = {
+      panels.per-channel-current = {
+        channel = {
+          field = "current_amps";
+          integralField = "charge_coulombs";
+          filter.channel = "\${caparoc_channel}";
+        };
+        spec.title = "\${caparoc_channel} Current";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "amp";
         };
-        panel.repeat = "caparoc_channel";
-        panel.repeatDirection = "v";
-      })
-      (channelGraph {
-        field = "power_watts";
-        integralField = "energy_joules";
-        filter.channel = "\${caparoc_channel}";
-        filter.name_of_station = name_of_station;
-      } {
-        panel.gridPos = { x = 12; y = 35; w = 10; h = 8; };
-        panel.title = "\${caparoc_channel} Power";
-        panel.fieldConfig.defaults = {
+      };
+      panels.per-channel-power = {
+        channel = {
+          field = "power_watts";
+          integralField = "energy_joules";
+          filter.channel = "\${caparoc_channel}";
+        };
+        spec.title = "\${caparoc_channel} Power";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "watt";
         };
-        panel.repeat = "caparoc_channel";
-        panel.repeatDirection = "v";
-      })
-    ];
+      };
+    };
   };
 }
