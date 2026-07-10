@@ -2,8 +2,19 @@
 
 {
   config = {
+    sops.secrets.profinet_influx_token = {};
+    sops.secrets."greptimedb/users/pnio2mqtt@workshop.isz.wtf" = {};
+    sops.templates."pnio2mqtt.env" = {
+      content = ''
+        INFLUX_TOKEN=${config.sops.placeholder.profinet_influx_token}
+        GREPTIMEDB_TOKEN=${config.sops.placeholder."greptimedb/users/pnio2mqtt@workshop.isz.wtf"}
+      '';
+    };
+    systemd.services.pnio2mqtt.serviceConfig.EnvironmentFile = [
+      config.sops.templates."pnio2mqtt.env".path
+    ];
     isz.pnio2mqtt.enable = true;
-    isz.pnio2mqtt.extraSettings = {
+    isz.pnio2mqtt.settings = {
       ifname = "vlan981";
 
       name_of_station = "workshop-caparoc";
@@ -11,6 +22,21 @@
       mqtt.server = "mqtt.isz.wtf";
       mqtt.topic_prefix = "workshop/power";
       mqtt.device.name = "Workshop Caparoc";
+
+      influxdb = [
+        {
+          host = "http://influx.isz.wtf:8086";
+          org = "icestationzebra";
+          bucket = "profinet";
+          token = "$INFLUX_TOKEN";
+        }
+        {
+          host = "https://greptimedb.isz.wtf/v1/influxdb";
+          org = "";
+          bucket = "profinet";
+          token = "pnio2mqtt@workshop.isz.wtf:$GREPTIMEDB_TOKEN";
+        }
+      ];
 
       # Update speed = 32000 Hz / 32 / 64, or ~16 Hz
       send_clock_factor = 32;

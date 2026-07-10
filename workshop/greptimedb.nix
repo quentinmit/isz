@@ -4,6 +4,9 @@ let
     quentin = {};
     "telegraf@workshop.isz.wtf" = {};
     "grafana@workshop.isz.wtf" = {};
+    "pnio2mqtt@workshop.isz.wtf" = {};
+    "telegraf@bedroom-pi.isz.wtf".sopsFile = ../bedroom-pi/shared-secrets.yaml;
+    "pnio2mqtt@bedroom-pi.isz.wtf".sopsFile = ../bedroom-pi/shared-secrets.yaml;
   };
 in {
   sops.secrets = lib.mapAttrs' (name: v: lib.nameValuePair "greptimedb/users/${name}" v) users;

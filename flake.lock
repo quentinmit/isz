@@ -1161,11 +1161,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1754288287,
-        "narHash": "sha256-K35ui0V3AYESCEKiqsiK+CCTEBOgtML2OyLx5hhWSwU=",
+        "lastModified": 1783654081,
+        "narHash": "sha256-1AA5sfwZafAH3PSD37VaoDL/IrrSWJd68dfRkgf2ERY=",
         "owner": "quentinmit",
         "repo": "py-profinet",
-        "rev": "cd421cfa77b9269525a7974b485fec4999408496",
+        "rev": "fcf8028f0b08dc477da970677c7bdda1872c616a",
         "type": "github"
       },
       "original": {
