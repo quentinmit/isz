@@ -685,7 +685,9 @@ in {
         };
       };
     };
-    Transformation = types.anything; # TODO
+    Transformation = kindSubmodule "Transformation" {
+      inherit freeformType; # TODO
+    };
     VizConfig = kindSubmodule "VizConfig" {
       options.group = mkOption {
         type = types.str;

@@ -90,45 +90,61 @@ let
     config = let
       inherit (config.stacked) field integralField;
     in lib.mkIf (config.stacked.field != null) {
-      influx = [{
-        query = ''
-          import "join"
-
-          names = from(bucket: "profinet")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "caparoc")
-            |> filter(fn: (r) => r["_field"] == "status")
-            |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
-            |> last()
-            |> group(columns: ["name_of_station", "channel"])
-            |> sort(columns: ["_time"])
-            |> last()
-            |> keep(columns: ["name_of_station", "channel", "channel_name"])
-            |> map(fn: (r) => ({name_of_station: r.name_of_station, channel: r.channel, channel_name: if exists r.channel_name then r.channel_name else "Channel "+r.channel}))
-
-          data = from(bucket: "profinet")
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_field"] == "total_${integralField}" or r["_field"] == "total_time_seconds")
-            |> filter(fn: (r) => r["channel"] != "total")
-            |> filter(fn: (r) => r.name_of_station == ${fluxValue name_of_station})
-            |> window(every: v.windowPeriod)
-            |> last()
-            |> window(every: inf)
-            |> difference(nonNegative: true)
-            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> map(fn: (r) => ({r with average_${field}: r.total_${integralField}/r.total_time_seconds}))
-            |> drop(columns: ["channel_name", "total_${integralField}", "total_time_seconds"])
-
-          join.left(
-              left: data |> group(columns: ["name_of_station", "channel"]),
-              right: names,
-              on: (l, r) => l.name_of_station == r.name_of_station and l.channel == r.channel,
-              as: (l, r) => ({l with channel_name: r.channel_name}),
-          )
-            |> group(columns: ["_measurement", "_field", "_start", "_stop", "name_of_station", "channel", "channel_name"])
-            |> yield(name: "mean")
-        '';
+      spec.data.spec.transformations = [{
+        group = "prepareTimeSeries";
+        spec.options.format = "multi";
       }];
+      spec.data.spec.queries = [{
+        spec.query = {
+          group = "info8cc-greptimedb-datasource";
+          datasource.name = "greptimedb";
+          spec.editorType = "sql";
+          spec.queryType = "timeseries";
+          spec.rawSql = ''
+            WITH t1 AS (
+              SELECT
+                greptime_timestamp as "time",
+                channel,
+                last_value(total_time_seconds) RANGE '$__interval' FILL NULL as total_time_seconds,
+                last_value(total_${integralField}) RANGE '$__interval' FILL NULL as total_${integralField},
+              FROM
+                profinet.caparoc
+              WHERE (
+                name_of_station = ${sqlValue name_of_station}
+                AND channel != 'total'
+                AND $__timeFilter(greptime_timestamp)
+              )
+              ALIGN '$__interval' BY (name_of_station, channel)
+              ORDER BY time ASC
+            ), names AS (
+              SELECT
+                channel,
+                COALESCE(LAST_VALUE(channel_name), CONCAT('Channel ', channel)) AS channel_name
+              FROM
+                profinet.caparoc
+              WHERE
+                name_of_station = ${sqlValue name_of_station}
+                and $__timeFilter(greptime_timestamp)
+              GROUP BY channel
+            ), t2 AS (
+              SELECT
+                time,
+                channel,
+                (total_${integralField}-lag(total_${integralField}) over (partition by channel order by time))/(total_time_seconds-lag(total_time_seconds) over (partition by channel order by time)) as average_${field},
+              FROM t1
+            )
+            SELECT
+              time,
+              channel,
+              channel_name,
+              average_${field}
+            FROM
+              t2 LEFT JOIN names USING (channel)
+            ORDER BY channel, time;
+          '';
+        };
+      }];
+      spec.vizConfig.group = "timeseries";
       spec.vizConfig.spec.fieldConfig.defaults = {
         displayName = "\${__field.labels.channel_name}";
         custom.stacking.mode = "normal";
