@@ -35,7 +35,7 @@ let
               FROM
                 "profinet"."caparoc"
               WHERE (
-                ${lib.concatMapAttrsStringSep " and " (name: value: "${name} = '${value}'") config.channel.filter}
+                ${lib.concatMapAttrsStringSep " and " (name: value: "${name} = ${sqlValue value}") config.channel.filter}
                 and $__timeFilter(greptime_timestamp)
               )
               ALIGN '$__interval' BY (name_of_station, channel)
@@ -86,13 +86,9 @@ let
       integralField = lib.mkOption {
         type = lib.types.str;
       };
-      name_of_station = lib.mkOption {
-        type = lib.types.str;
-        default = name_of_station;
-      };
     };
     config = let
-      inherit (config.stacked) field integralField name_of_station;
+      inherit (config.stacked) field integralField;
     in lib.mkIf (config.stacked.field != null) {
       influx = [{
         query = ''
@@ -142,6 +138,42 @@ let
       spec.data.spec.queryOptions.interval = "1s";
     };
   };
+  gaugeModule = { config, name_of_station, ... }: {
+    options.gauge = {
+      fields = lib.mkOption {
+        type = lib.types.nullOr (lib.types.listOf lib.types.str);
+        default = null;
+      };
+    };
+    config = lib.mkIf (config.gauge.fields != null) {
+      spec.vizConfig.group = "gauge";
+      spec.data.spec.queries = [{
+        spec.query = {
+          group = "info8cc-greptimedb-datasource";
+          datasource.name = "greptimedb";
+          spec.editorType = "sql";
+          spec.queryType = "timeseries";
+          spec.rawSql = ''
+            SELECT
+              greptime_timestamp,
+              ${lib.concatMapStringsSep ", " (field: "average_${field}") config.gauge.fields}
+            FROM
+              profinet.caparoc
+            WHERE (
+              name_of_station = ${sqlValue name_of_station}
+              and channel = 'total'
+              and $__timeFilter(greptime_timestamp)
+            )
+            ORDER BY greptime_timestamp DESC
+            LIMIT 1;
+          '';
+        };
+      }];
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        color.mode = lib.mkDefault "palette-classic";
+      };
+    };
+  };
   dashboardModule = { config, ... }: let
     inherit (config) name_of_station;
   in {
@@ -153,6 +185,7 @@ let
         imports = [
           channelModule
           stackedModule
+          gaugeModule
         ];
         _module.args.name_of_station = name_of_station;
       }));
@@ -198,7 +231,7 @@ in {
       layout.kind = "GridLayout";
       layout.spec.items = [
         { spec = {
-            element.name = "battery-volts";
+            element.name = "gauge-volts";
             x = 0; y = 0; width = 2; height = 8;
           }; }
         { spec = {
@@ -210,7 +243,7 @@ in {
             x = 12; y = 0; width = 10; height = 8;
           }; }
         { spec = {
-            element.name = "total-current-power";
+            element.name = "gauge-current-power";
             x = 0; y = 8; width = 2; height = 8;
           }; }
         { spec = {
@@ -245,17 +278,9 @@ in {
           }; }
       ];
       # Battery
-      panels.battery-volts = {
-        spec.vizConfig.group = "gauge";
+      panels.gauge-volts = {
+        gauge.fields = [ "voltage_volts" ];
         influx = [
-          {
-            bucket = "profinet";
-            filter._measurement = "caparoc";
-            filter._field = "average_voltage_volts";
-            filter.channel = "total";
-            filter.name_of_station = config.name_of_station;
-            fn = "last1";
-          }
           {
             filter._measurement = "epicpwrgate.status";
             filter._field = ["Bat.V" "PS.V"];
@@ -267,7 +292,6 @@ in {
           decimals = 1;
           min = 10;
           max = 16;
-          color.mode = "palette-classic";
         };
         fields."Bat.V".displayName = "Battery Voltage";
         fields."PS.V".displayName = "PSU Voltage";
@@ -310,14 +334,11 @@ in {
         spec.vizConfig.spec.options.tooltip.mode = "multi";
       };
       # Total Current/Power
-      panels.total-current-power = {
-        spec.vizConfig.group = "gauge";
-        influx.bucket = "profinet";
-        influx.filter._measurement = "caparoc";
-        influx.filter._field = ["average_current_amps" "average_power_watts"];
-        influx.filter.channel = "total";
-        influx.filter.name_of_station = config.name_of_station;
-        influx.fn = "last1";
+      panels.gauge-current-power = {
+        gauge.fields = [
+          "current_amps"
+          "power_watts"
+        ];
         spec.vizConfig.spec.fieldConfig.defaults = {
           color.mode = "thresholds";
         };
@@ -432,7 +453,7 @@ in {
       layout.kind = "GridLayout";
       layout.spec.items = [
         { spec = {
-            element.name = "battery-volts";
+            element.name = "gauge-volts";
             x = 0; y = 0; width = 2; height = 8;
           }; }
         { spec = {
@@ -444,7 +465,7 @@ in {
             x = 12; y = 0; width = 10; height = 8;
           }; }
         { spec = {
-            element.name = "total-current-power";
+            element.name = "gauge-current-power";
             x = 0; y = 8; width = 2; height = 8;
           }; }
         { spec = {
@@ -483,17 +504,9 @@ in {
           }; }
       ];
       # Battery
-      panels.battery-volts = {
-        spec.vizConfig.group = "gauge";
+      panels.gauge-volts = {
+        gauge.fields = [ "voltage_volts" ];
         influx = [
-          {
-            bucket = "profinet";
-            filter._measurement = "caparoc";
-            filter._field = "average_voltage_volts";
-            filter.channel = "total";
-            filter.name_of_station = config.name_of_station;
-            fn = "last1";
-          }
           {
             filter._measurement = "wago.status";
             filter._field = ["BatteryVolts" "PSUVolts"];
@@ -505,7 +518,6 @@ in {
           decimals = 1;
           min = 10;
           max = 16;
-          color.mode = "palette-classic";
         };
         fields."BatteryVolts".displayName = "Battery Voltage";
         fields."PSUVolts".displayName = "PSU Voltage";
@@ -545,14 +557,11 @@ in {
         spec.vizConfig.spec.options.tooltip.mode = "multi";
       };
       # Total Current/Power
-      panels.total-current-power = {
-        spec.vizConfig.group = "gauge";
-        influx.bucket = "profinet";
-        influx.filter._measurement = "caparoc";
-        influx.filter._field = ["average_current_amps" "average_power_watts"];
-        influx.filter.channel = "total";
-        influx.filter.name_of_station = config.name_of_station;
-        influx.fn = "last1";
+      panels.gauge-current-power = {
+        gauge.fields = [
+          "current_amps"
+          "power_watts"
+        ];
         spec.vizConfig.spec.fieldConfig.defaults = {
           color.mode = "thresholds";
         };
