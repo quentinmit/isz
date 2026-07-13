@@ -31,7 +31,7 @@ in {
     (lib.mkIf (g.influx != []) (let
       queries = lib.imap0 (i: influx:
         let
-          refId = lib.elemAt [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ] i;
+          refId = "Influx${lib.elemAt [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ] i}";
         in {
           panelQuery.spec = influx.panelQuery.spec // {
             inherit refId;

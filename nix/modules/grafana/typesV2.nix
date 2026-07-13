@@ -670,21 +670,28 @@ in {
         };
       };
     };
-    PanelQuery = kindSubmodule "PanelQuery" {
+    PanelQuery = kindSubmodule "PanelQuery" ({ name, ... }: let
+      queryRefs = [ "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" ];
+      nameParts = lib.match "\\[definition ([[:digit:]]+)-entry ([[:digit:]]+)]" name;
+      defNum = lib.toInt (lib.elemAt nameParts 0);
+      entryNum = lib.toInt (lib.elemAt nameParts 1);
+      refId =
+        "${optionalString (defNum > 1) (lib.elemAt queryRefs (defNum - 2))}${lib.elemAt queryRefs (entryNum - 1)}";
+    in {
       options.spec = {
         query = mkOption {
           type = kindType "DataQuery";
         };
         refId = mkOption {
           type = types.str;
-          default = "A";
+          default = refId;
         };
         hidden = mkOption {
           type = types.bool;
           default = false;
         };
       };
-    };
+    });
     Transformation = kindSubmodule "Transformation" {
       inherit freeformType; # TODO
     };
