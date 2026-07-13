@@ -46,7 +46,15 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.title = "Routerboard HW";
         panel.gridPos = { x = 2; y = 1; w = 3; h = 2; };
         panel.type = "stat";
-        # TODO
+        influx.filter._measurement = "mikrotik-/system/resource";
+        influx.filter._field = "version";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.extra = ''
+          |> group()
+          |> map(fn: (r) => ({_value: r["board-name"]}))
+        '';
+        panel.options.reduceOptions.fields = "/.*/";
       }
       {
         panel.title = "Installed Packages";
@@ -125,7 +133,16 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.title = "CPU";
         panel.gridPos = { x = 2; y = 3; w = 3; h = 2; };
         panel.type = "stat";
-        # TODO
+        influx.filter._measurement = "mikrotik-/system/resource";
+        influx.filter._field = "cpu-frequency";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.extra = ''
+          |> keep(columns: ["cpu", "_value"])
+        '';
+        panel.options.textMode = "value_and_name";
+        panel.fieldConfig.defaults.unit = "MHz";
+        panel.fieldConfig.defaults.displayName = "\${__field.labels.cpu}";
       }
       {
         panel.title = "Temperature";
@@ -157,7 +174,14 @@ with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; 
         panel.title = "System version";
         panel.gridPos = { x = 2; y = 5; w = 3; h = 3; };
         panel.type = "stat";
-        # TODO
+        influx.filter._measurement = "mikrotik-/system/resource";
+        influx.filter._field = "version";
+        influx.filter.hostname = "\${hostname}";
+        influx.fn = "last1";
+        influx.extra = ''
+          |> keep(columns: ["_value"])
+        '';
+        panel.options.reduceOptions.fields = "/.*/";
       }
       {
         panel.title = "Uptime";
