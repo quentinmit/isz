@@ -56,6 +56,7 @@
             app = "jetkvm";
           };
         };
+        greptimedb.url = "https://greptimedb.isz.wtf/metrics";
       };
       hitron.targets = [
         { ip = "192.168.100.1"; }
