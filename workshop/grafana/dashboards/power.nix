@@ -43,7 +43,9 @@ let
             )
             SELECT
               time,
-              (total_${integralField}-lag(total_${integralField}) over (order by time))/(total_time_seconds-lag(total_time_seconds) over (order by time)) as average_${field},
+              CASE WHEN total_time_seconds < lag(total_time_seconds) over (order by time) OR total_${integralField} < lag(total_${integralField}) over (order by time) THEN NULL
+              ELSE (total_${integralField}-lag(total_${integralField}) over (order by time))/(total_time_seconds-lag(total_time_seconds) over (order by time))
+              END as average_${field},
               max_${field},
               min_${field}
             FROM t1;
@@ -119,7 +121,7 @@ let
             ), names AS (
               SELECT
                 channel,
-                COALESCE(LAST_VALUE(channel_name), CONCAT('Channel ', channel)) AS channel_name
+                COALESCE(LAST_VALUE(channel_name ORDER BY greptime_timestamp), CONCAT('Channel ', channel)) AS channel_name
               FROM
                 profinet.caparoc
               WHERE
@@ -130,7 +132,9 @@ let
               SELECT
                 time,
                 channel,
-                (total_${integralField}-lag(total_${integralField}) over (partition by channel order by time))/(total_time_seconds-lag(total_time_seconds) over (partition by channel order by time)) as average_${field},
+                CASE WHEN total_time_seconds < lag(total_time_seconds) over (partition by channel order by time) OR total_${integralField} < lag(total_${integralField}) over (partition by channel order by time) THEN NULL
+                ELSE (total_${integralField}-lag(total_${integralField}) over (partition by channel order by time))/(total_time_seconds-lag(total_time_seconds) over (partition by channel order by time))
+                END as average_${field},
               FROM t1
             )
             SELECT
@@ -217,7 +221,7 @@ let
         SELECT
           CONCAT(
             channel, ' ',
-            COALESCE(LAST_VALUE(channel_name), CONCAT('Channel ', channel))
+            COALESCE(LAST_VALUE(channel_name ORDER BY greptime_timestamp), CONCAT('Channel ', channel))
           ) AS value
         FROM
           profinet.caparoc
