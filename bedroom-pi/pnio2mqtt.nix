@@ -2,11 +2,9 @@
 
 {
   config = {
-    sops.secrets.profinet_influx_token = {};
     sops.secrets."greptimedb/users/pnio2mqtt@bedroom-pi.isz.wtf".sopsFile = ./shared-secrets.yaml;
     sops.templates."pnio2mqtt.env" = {
       content = ''
-        INFLUX_TOKEN=${config.sops.placeholder.profinet_influx_token}
         GREPTIMEDB_TOKEN=${config.sops.placeholder."greptimedb/users/pnio2mqtt@bedroom-pi.isz.wtf"}
       '';
     };
@@ -24,12 +22,6 @@
       mqtt.device.name = "Bedroom Caparoc";
 
       influxdb = [
-        {
-          host = "http://influx.isz.wtf:8086";
-          org = "icestationzebra";
-          bucket = "profinet";
-          token = "$INFLUX_TOKEN";
-        }
         {
           host = "https://greptimedb.isz.wtf/v1/influxdb";
           org = "";
