@@ -95,16 +95,16 @@ in {
       spec.cursorSync = "Crosshair";
       variables = {
         host = {
-          predicate = ''r["_measurement"] == "zpool_stats"'';
-          extra.label = "Host";
-          extra.includeAll = false;
+          influx.predicate = ''r["_measurement"] == "zpool_stats"'';
+          spec.label = "Host";
+          spec.includeAll = false;
         };
         latencyparam = {
-          predicate = ''r["_measurement"] == "zpool_latency" and r["_field"] !~ /^total_/'';
-          tag = "_field";
-          extra.label = "Latency Parameters";
-          extra.multi = true;
-          extra.hide = "hideVariable";
+          influx.predicate = ''r["_measurement"] == "zpool_latency" and r["_field"] !~ /^total_/'';
+          influx.tag = "_field";
+          spec.label = "Latency Parameters";
+          spec.multi = true;
+          spec.hide = "hideVariable";
         };
       };
       layout.kind = "TabsLayout";
@@ -484,7 +484,7 @@ in {
         };
       };
       variables.scan_exists = {
-       query = ''
+       influx.query = ''
          from(bucket: "icestationzebra")
          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
          |> filter(fn: (r) => r["_measurement"] == "zpool_scan_stats")
@@ -495,8 +495,8 @@ in {
          |> last()
          |> map(fn: (r) => ({_time: r._time, _value: "yes"}))
        '';
-        extra.hide = "hideVariable";
-        extra.refresh = "onTimeRangeChanged";
+        spec.hide = "hideVariable";
+        spec.refresh = "onTimeRangeChanged";
       };
     };
   };

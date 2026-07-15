@@ -7,7 +7,9 @@ in {
   options = with lib; {
     isz.grafana.dashboardsV2 = mkOption {
       default = {};
-      type = with types; attrsOf (submodule ({ config, ... }: {
+      type = with types; attrsOf (submodule ({ config, ... }: let
+        inherit (config) defaultDatasourceName;
+      in {
         options = {
           title = mkOption {
             type = types.str;
@@ -22,37 +24,50 @@ in {
           variables = let
             variableOpts = { name, config, ... }: {
               options = {
-                tag = mkOption {
-                  type = types.str;
-                };
-                predicate = mkOption {
-                  type = types.str;
-                };
-                extra = mkOption {
-                  type = types.attrsOf dashboardFormat.type;
-                  default = {};
-                };
-                query = mkOption {
-                  type = types.str;
+                influx = mkOption {
+                  type = types.nullOr (types.submodule ({ config, ... }: {
+                    options = {
+                      tag = mkOption {
+                        type = types.str;
+                        default = name;
+                      };
+                      predicate = mkOption {
+                        type = types.str;
+                      };
+                      query = mkOption {
+                        type = types.str;
+                      };
+                    };
+                    config = {
+                      query = mkDefault ''
+                        import "influxdata/influxdb/schema"
+                        schema.tagValues(
+                          bucket: v.defaultBucket,
+                          tag: ${fluxValue config.tag},
+                          predicate: (r) => ${config.predicate},
+                          start: v.timeRangeStart,
+                          stop: v.timeRangeStop
+                        )
+                      '';
+                    };
+                  }));
                 };
               };
               config = {
-                tag = mkDefault name;
-                query = mkDefault ''
-                  import "influxdata/influxdb/schema"
-
-                  schema.tagValues(
-                    bucket: v.defaultBucket,
-                    tag: ${fluxValue config.tag},
-                    predicate: (r) => ${config.predicate},
-                    start: v.timeRangeStart,
-                    stop: v.timeRangeStop
-                  )
-                '';
+                spec.name = lib.mkDefault name;
+                spec.query = lib.mkIf (config.influx != null) {
+                  datasource.name = lib.mkDefault defaultDatasourceName;
+                  group = "influxdb";
+                  spec = {
+                    inherit (config.influx) query;
+                  };
+                };
+                spec.includeAll = lib.mkDefault true;
+                spec.label = lib.mkDefault name;
               };
             };
           in mkOption {
-            type = with types; attrsOf (submodule variableOpts);
+            type = with types; attrsOf (lib.types.mergeTypes kind.QueryVariable (submodule variableOpts));
             default = {};
           };
           links = mkOption {
@@ -104,19 +119,7 @@ in {
             inherit (p) spec;
           }) config.panels;
           variables = lib.mapAttrsToList (name: args: {
-            kind = "QueryVariable";
-            spec = lib.recursiveUpdate rec {
-              inherit name;
-              query = {
-                datasource.name = config.defaultDatasourceName;
-                group = "influxdb";
-                spec = {
-                  inherit (args) query;
-                };
-              };
-              includeAll = true;
-              label = name;
-            } args.extra;
+            inherit (args) kind spec;
           }) config.variables;
           annotations = (options.services.grafana.dashboardsV2.type.getSubOptions []).spec.annotations.default ++ config.annotations;
         };

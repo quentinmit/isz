@@ -4,9 +4,9 @@
     title = "Ping Times";
     defaultDatasourceName = "workshop";
     variables.country = {
-      predicate = ''r._measurement == "ping"'';
-      extra.multi = false;
-      extra.includeAll = false;
+      influx.predicate = ''r._measurement == "ping"'';
+      spec.multi = false;
+      spec.includeAll = false;
     };
     panels.by-target = {
       influx.filter = {

@@ -208,7 +208,7 @@ let
     };
   };
   channelsVar = name_of_station: {
-    query = ''
+    influx.query = ''
       from(bucket: "profinet")
         |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
         |> filter(fn: (r) => r["_measurement"] == "caparoc")
@@ -227,9 +227,9 @@ let
         }))
         |> yield(name: "last")
     '';
-    extra.hide = "hideVariable"; # show nothing
-    extra.includeAll = true;
-    extra.regex = ''/(?<value>\S+)\s+(?<text>.+)/'';
+    spec.hide = "hideVariable"; # show nothing
+    spec.includeAll = true;
+    spec.regex = ''/(?<value>\S+)\s+(?<text>.+)/'';
   };
 in {
   config.isz.grafana.dashboardsV2."workshop-power" = { config, ... }: {
