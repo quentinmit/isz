@@ -85,4 +85,12 @@ in {
       })
     ];
   });
+  pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+    (python-final: python-prev: {
+      paho-mqtt = python-prev.paho-mqtt.overridePythonAttrs (old: {
+        # https://github.com/NixOS/nixpkgs/pull/541855
+        doCheck = assert (!lib.hasInfix "gen.sh" old.preCheck); false;
+      });
+    })
+  ];
 }

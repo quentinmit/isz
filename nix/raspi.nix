@@ -58,6 +58,7 @@ in
   options = with lib; {
     boot.loader.generic-extlinux-compatible = {
       enable = mkEnableOption "bogus";
+      useGenerationDeviceTree = mkEnableOption "bogus";
     };
     boot.loader.isz-raspi = {
       uboot = mkOption {

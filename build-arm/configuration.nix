@@ -71,7 +71,22 @@
   boot = {
     # TODO: Add config from https://github.com/armbian/build/blob/ca4dc8085a50e65158fc788800b1423cd7334fb5/config/kernel/linux-rockchip-rk3588-edge.config
 
-    kernelPackages = pkgs.linuxKernel.packages.linux_7_0;
+    kernelPackages = pkgs.linuxKernel.packages.linux_7_1;
+
+    # ZFS 2.4.2 supports Linux 7.1 even though it claims not: https://github.com/openzfs/zfs/issues/18760
+    # Note: `.override { enableUnsupportedExperimentalKernel = true; }` does not work because `enableUnsupportedExperimentalKernel` is hidden inside innerArgs in the ZFS package.
+    zfs.modulePackage = let
+      zfs = config.boot.kernelPackages.${config.boot.zfs.package.kernelModuleAttribute}.overrideAttrs (old: {
+      configureFlags = (old.configureFlags or [ ]) ++ [ "--enable-linux-experimental" ];
+      meta = old.meta // {
+        broken = false;
+      };
+    });
+    in lib.mkAssert (
+      zfs.version == "2.4.2"
+      && (lib.versionAtLeast config.boot.kernelPackages.kernel.version "7.1")
+      && (!lib.versionAtLeast config.boot.kernelPackages.kernel.version "7.2")
+    ) "ZFS now natively supports Linux 7.1" zfs;
 
     loader.grub.enable = false;
     loader.systemd-boot.enable = true;

@@ -20,7 +20,10 @@ let
     cargo = rust;
     rustc = rust;
   };
-  pnpm = pnpm_9;
+  pnpm = pnpm_9.override {
+    # Vulnerabilities in package fetching do not matter when the result is hashed by Nix.
+    knownVulnerabilities = [];
+  };
 in rustPlatform.buildRustPackage (finalAttrs: {
   pname = "greptimedb";
   version = "1.1.2";
