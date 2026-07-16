@@ -75,6 +75,10 @@ in {
       postgresql = mkEnableOption "PostgreSQL support" // {
         default = config.services.postgresql.enable or false;
       };
+      influxdb.namedrop = mkOption {
+        type = types.listOf types.str;
+        default = [];
+      };
     } // lib.optionalAttrs (!standalone) {
       envSecrets = mkOption {
         type = types.attrsOf types.str;
@@ -208,6 +212,7 @@ in {
               exclude_bucket_tag = true;
               tagexclude = [ "greptimedb_database" ];
               timeout = "60s"; # Default timeout of 5s is sometimes too slow
+              inherit (cfg.influxdb) namedrop;
             }];
             # TODO: Add option for stdout
           };

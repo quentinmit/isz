@@ -63,6 +63,16 @@
       ];
       postgresql = true;
       netflow.enable = true;
+      # Migrated to GreptimeDB
+      influxdb.namedrop = [
+        "netflow_raw"
+        "evt_strike"
+        "lightning_strike_time"
+        "observation"
+        "rain_start_time"
+        "rapid_wind"
+        "status_update"
+      ];
     };
     isz.telegraf.envSecrets.GREPTIMEDB_PASSWORD = config.sops.placeholder."greptimedb/users/telegraf@workshop.isz.wtf";
     services.telegraf.extraConfig = lib.mkMerge [
