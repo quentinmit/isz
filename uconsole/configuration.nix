@@ -32,7 +32,7 @@
     ];
   };
 
-  boot.loader.isz-raspi.config = {
+  hardware.raspberry-pi.configtxt.settings = {
     gpio = [
       "10=ip,np"
       "11=op"

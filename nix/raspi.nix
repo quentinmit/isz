@@ -1,51 +1,5 @@
 { config, pkgs, lib, modulesPath, nixos-hardware, ... }:
 
-let
-  toConfigTxt = with builtins; let
-    recurse = path: value:
-      if isAttrs value then
-        lib.mapAttrsToList (name: recurse ([ name ] ++ path)) value
-      else
-        {
-          conditionals = lib.lists.sort builtins.lessThan (filter (k: k != "all") (tail path));
-          name = head path;
-          inherit value;
-        };
-    groupItems = items:
-      (lib.attrsets.mapAttrsToList
-        (groupJSON: items:
-          {
-            conditionals = fromJSON groupJSON;
-            inherit items;
-          })
-        (lib.attrsets.mapAttrs
-          (k: builtins.listToAttrs)
-          (builtins.groupBy
-            (x: toJSON x.conditionals)
-            items
-          )
-        )
-      );
-    mkValueString = v:
-      if isInt v then toString v
-      else if isString v then v
-      else if true == v then "1"
-      else if false == v then "0"
-      else abort "the value is not supported: ${toPretty {} (toString v)}";
-    mkKeyValue = lib.generators.mkKeyValueDefault { inherit mkValueString; } "=";
-    mkGroup = group:
-      lib.strings.concatMapStrings (k: "[${k}]\n") group.conditionals
-        + lib.generators.toKeyValue { inherit mkKeyValue; listsAsDuplicateKeys = true; } group.items
-    ;
-    in
-      attrs:
-      let
-        groups = lib.lists.sort
-          (a: b: a.conditionals < b.conditionals)
-          (groupItems (lib.flatten (recurse [] attrs)));
-      in
-        lib.strings.concatMapStringsSep "\n[all]\n" mkGroup groups;
-in
 {
   disabledModules = [
     "system/boot/loader/generic-extlinux-compatible"
@@ -77,14 +31,6 @@ in
           Maximum number of configurations in the boot menu.
         '';
       };
-      config = mkOption {
-        type = with types; let
-          atom = oneOf [str int bool];
-          molecule = oneOf [atom (listOf atom) (attrsOf molecule)];
-        in attrsOf molecule;
-        default = {};
-        description = "config.txt options";
-      };
     };
     rpi.serialConsole = mkOption {
       type = types.bool;
@@ -110,7 +56,6 @@ in
     ecbBuilderArgs = "-g ${toString cfg.configurationLimit} -t ${timeoutStr}"
       + lib.optionalString (dtCfg.name != null) " -n ${dtCfg.name}";
 
-    configTxtPkg = pkgs.writeText "config.txt" (toConfigTxt cfg.config);
     cp = lib.getExe' pkgs.coreutils "cp";
     copyRpiFirmware = lib.strings.concatMapStringsSep "\n" (f: "${cp} ${pkgs.raspberrypifw}/share/raspberrypi/boot/${f} firmware/") [
       "bootcode.bin"
@@ -134,7 +79,7 @@ in
     populateFirmwareCommands = ''
       if [ -n "''${img:+present}" ] || ${pkgs.util-linux}/bin/findmnt /boot/firmware > /dev/null; then
         # Add the config
-        ${cp} ${configTxtPkg} firmware/config.txt
+        ${cp} ${config.hardware.raspberry-pi.configtxt.file} firmware/config.txt
         ${lib.optionalString isRpi3 ''
         # Add pi3 specific files
         ${cp} ${cfg.uboot.rpi3}/u-boot.bin firmware/u-boot-rpi3.bin
@@ -172,8 +117,16 @@ in
       })
     ];
 
-    boot.loader.isz-raspi.config = lib.mkMerge [
+    hardware.raspberry-pi.configtxt.settings = lib.mkMerge [
       {
+        all = {
+          # Undo defaults from nixos-hardware
+          dtparam = [];
+          dtoverlay = [];
+          display_auto_detect = [];
+          camera_auto_detect = [];
+        };
+
         pi4.kernel = lib.mkIf isRpi4 (lib.mkDefault "u-boot-rpi4.bin");
         pi4.enable_gic = lib.mkDefault true;
         pi4.armstub = lib.mkDefault "armstrub8-gic.bin";
@@ -182,11 +135,11 @@ in
 
         # U-Boot used to need this to work, regardless of whether UART is actually used or not.
         # TODO: check when/if this can be removed.
-        enable_uart = lib.mkDefault true;
+        all.enable_uart = lib.mkDefault true;
 
         # Prevent the firmware from smashing the framebuffer setup done by the mainline kernel
         # when attempting to show low-voltage or overtemperature warnings.
-        avoid_warnings = lib.mkDefault true;
+        all.avoid_warnings = lib.mkDefault true;
 
         # Boot in 64-bit mode
         arm_64bit = lib.mkIf pkgs.stdenv.hostPlatform.isAarch64 true;
@@ -197,6 +150,8 @@ in
         # Force 1080p60
         hdmi_group = 1;
         hdmi_mode = 16;
+        # Disable nixos-hardware default
+        all.disable_fw_kms_setup = [];
       })
     ];
 
