@@ -1,6 +1,6 @@
 { config, ... }:
 {
-  config.isz.grafana.dashboardsV2."Experimental/nixos" = {
+  config.isz.grafana.dashboardsV2."nixos" = {
     title = "NixOS";
     defaultDatasourceName = "workshop";
     panels.last-updated = {
