@@ -20,16 +20,19 @@
 
         kernel = from(bucket: "icestationzebra")
           |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-          |> filter(fn: (r) => r["_measurement"] == "sysctl")
-          |> filter(fn: (r) => r["_field"] == "kernel.osrelease")
+          |> filter(fn: (r) => r["_measurement"] == "nix_boot_json")
+          |> filter(fn: (r) => r["_field"] == "kernel_derivation_name")
           |> last()
+          |> map(fn: (r) => ({r with _field: strings.split(v: r.boot_json_path, t: "/")[2] + "-kernel"}))
+          |> keep(columns: ["_time", "host", "_field", "_value"])
+          |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> group()
 
-        join.full(
+        join.left(
           left: registry,
           right: kernel,
           on: (l, r) => l.host == r.host,
-          as: (l, r) => ({l with "booted-osrelease": r._value})
+          as: (l, r) => ({l with "booted-kernel": r["booted-system-kernel"], "next-kernel": r["current-system-kernel"]})
         )
           |> yield(name: "last")
       '';
