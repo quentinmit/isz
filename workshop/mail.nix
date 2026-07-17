@@ -23,28 +23,30 @@ in {
       "Residents"
     ];
   };
-  sops.templates."dovecot-oauth.conf.ext".content = ''
-    tokeninfo_url = https://auth.isz.wtf/application/o/userinfo/?access_token=
-    introspection_url = https://${config.sops.placeholder."authentik/apps/dovecot/client_id"}:${config.sops.placeholder."authentik/apps/dovecot/client_secret"}@authentik.company/application/o/introspect/
-    introspection_mode = post
-    force_introspection = yes
-    active_attribute = active
-    active_value = true
-    username_attribute = email
-    tls_ca_cert_file = /etc/ssl/certs/ca-certificates.crt
-  '';
+  sops.templates."dovecot-oauth2_introspection_url".content =
+    ''https://${config.sops.placeholder."authentik/apps/dovecot/client_id"}:${config.sops.placeholder."authentik/apps/dovecot/client_secret"}@auth.isz.wtf/application/o/introspect/'';
   services.dovecot2 = {
     enable = true;
 
     enablePAM = false;
 
+    package = pkgs.dovecot; # Dovecot 2.4
+
     # https://integrations.goauthentik.io/chat-communication-collaboration/roundcube/
     settings = {
-      ssl_cert = "<${sslCertDir}/cert.pem";
-      ssl_key = "<${sslCertDir}/key.pem";
-      ssl_ca = "<${sslCertDir}/chain.pem";
+      dovecot_config_version = "2.4.2";
+      dovecot_storage_version = "2.4.0";
 
-      auth_debug = true;
+      protocols.imap = true;
+      protocols.lmtp = true;
+
+      ssl_server = {
+        cert_file = "${sslCertDir}/cert.pem";
+        key_file = "${sslCertDir}/key.pem";
+        ca_file = "${sslCertDir}/chain.pem";
+      };
+
+      log_debug = "category=auth";
       auth_verbose = true;
 
       auth_mechanisms = ["plain" "login" "oauthbearer" "xoauth2"];
@@ -53,26 +55,41 @@ in {
 
       default_vsz_limit = "8G";
 
-      mail_location = "mdbox:/var/lib/dovecot/mdbox/%d/%n";
+      mail_driver = "mdbox";
+      mail_path = "/var/lib/dovecot/mdbox/%{user | domain}/%{user | username}";
 
-      userdb = [
+      "userdb passwd-file" = [
         {
           driver = "passwd-file";
-          args = "username_format=%Ln /etc/passwd";
+          passwd_file_path = "/etc/passwd";
+          auth_username_format = "%{user | username | lower}";
         }
       ];
 
-      passdb = [
+      "passdb passwd-file" = [
         {
           driver = "passwd-file";
-          args = "username_format=%Ln /etc/dovecot/auth/%Ld/passwd";
+          auth_username_format = "%{user | username | lower}";
+          passwd_file_path = "/etc/dovecot/auth/%{user | domain | lower}/passwd";
         }
+      ];
+
+      "passdb oauth2" = [
         {
           driver = "oauth2";
-          mechanisms = ["xoauth2" "oauthbearer"];
-          args = config.sops.templates."dovecot-oauth.conf.ext".path;
+          mechanisms_filter = ["xoauth2" "oauthbearer"];
         }
       ];
+      oauth2 = {
+        tokeninfo_url = "https://auth.isz.wtf/application/o/userinfo/?access_token=";
+        introspection_url = "<${config.sops.templates."dovecot-oauth2_introspection_url".path}";
+        introspection_mode = "post";
+        force_introspection = true;
+        active_attribute = "active";
+        active_value = "true";
+        username_attribute = "email";
+        ssl_client_ca_file = "/etc/ssl/certs/ca-certificates.crt";
+      };
     };
   };
 
