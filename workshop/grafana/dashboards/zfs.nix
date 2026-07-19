@@ -375,7 +375,7 @@ in {
                   ) AS parent,
                   path,
                   read_errors, write_errors, fragmentation, checksum_errors
-                FROM A
+                FROM InfluxA
               '';
             };
             refId = "B";
