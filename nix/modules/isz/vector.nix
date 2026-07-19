@@ -75,6 +75,7 @@ in {
             slugify_dynamic_fields = false;
             auth.strategy = "bearer";
             auth.token = "SECRET[systemd.loki_oauth_token]";
+            dangerously_allow_unconfined_template_resolution = true;
           };
         }));
       };

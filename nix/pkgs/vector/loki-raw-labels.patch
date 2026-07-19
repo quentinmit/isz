@@ -1,14 +1,14 @@
-commit 8a6993ba6b34eece7714c1804340580b881f9c27
+commit 01b85846b07c5463361958b582b82369aa234637
 Author: Quentin Smith <quentin@mit.edu>
 Date:   Thu Feb 6 04:14:00 2025 -0500
 
     feat(loki sinks): support uppercase labels and structured metadata (#19038)
 
 diff --git a/src/common/expansion.rs b/src/common/expansion.rs
-index 04c737498..f6e60606f 100644
+index 1cabd712b9..df9fc8dcf3 100644
 --- a/src/common/expansion.rs
 +++ b/src/common/expansion.rs
-@@ -16,6 +16,7 @@ pub(crate) fn pair_expansion(
+@@ -17,6 +17,7 @@ pub(crate) fn pair_expansion(
      value_s: &str,
      static_pairs: &mut HashMap<String, String>,
      dynamic_pairs: &mut HashMap<String, String>,
@@ -16,7 +16,7 @@ index 04c737498..f6e60606f 100644
  ) -> Result<HashMap<String, String>, serde_json::Error> {
      let mut expanded_pairs = HashMap::new();
      if let Some(opening_prefix) = key_s.strip_suffix('*') {
-@@ -25,7 +26,11 @@ pub(crate) fn pair_expansion(
+@@ -26,7 +27,11 @@ pub(crate) fn pair_expansion(
          // key_* -> key_one, key_two, key_three
          // * -> one, two, three
          for (k, v) in output {
@@ -30,10 +30,10 @@ index 04c737498..f6e60606f 100644
              if val == "<null>" {
                  warn!("Encountered \"null\" value for dynamic pair. key: {}", key);
 diff --git a/src/sinks/loki/config.rs b/src/sinks/loki/config.rs
-index 06f827b35..6dae078db 100644
+index 044438c837..c01cad229f 100644
 --- a/src/sinks/loki/config.rs
 +++ b/src/sinks/loki/config.rs
-@@ -83,6 +83,13 @@ pub struct LokiConfig {
+@@ -84,6 +84,13 @@ pub struct LokiConfig {
      #[serde(default = "crate::serde::default_false")]
      pub remove_structured_metadata_fields: bool,
  
@@ -48,35 +48,35 @@ index 06f827b35..6dae078db 100644
      ///
      /// The timestamp is still sent as event metadata for Loki to use for indexing.
 diff --git a/src/sinks/loki/sink.rs b/src/sinks/loki/sink.rs
-index d206a792b..377c7ba48 100644
+index a3bc704fdb..bfc1c53468 100644
 --- a/src/sinks/loki/sink.rs
 +++ b/src/sinks/loki/sink.rs
-@@ -136,6 +136,7 @@ pub(super) struct EventEncoder {
+@@ -173,6 +173,7 @@ pub(super) struct EventEncoder {
      structured_metadata: HashMap<Template, Template>,
      remove_structured_metadata_fields: bool,
      remove_timestamp: bool,
 +    slugify_dynamic_fields: bool,
  }
  
- impl EventEncoder {
-@@ -177,7 +178,7 @@ impl EventEncoder {
- 
-             let key_s = key.unwrap();
-             let value_s = value.unwrap();
--            let result = pair_expansion(&key_s, &value_s, &mut static_labels, &mut dynamic_labels);
-+            let result = pair_expansion(&key_s, &value_s, &mut static_labels, &mut dynamic_labels, self.slugify_dynamic_fields);
-             // we just need to check the error since the result have been inserted in the static_pairs or dynamic_pairs
-             if let Err(err) = result {
-                 warn!(
-@@ -257,6 +258,7 @@ impl EventEncoder {
-                 &value_s,
-                 &mut static_structured_metadata,
-                 &mut dynamic_structured_metadata,
-+                self.slugify_dynamic_fields,
-             );
-             // we just need to check the error since the result have been inserted in the static_pairs or dynamic_pairs
-             if let Err(err) = result {
-@@ -488,6 +490,7 @@ impl LokiSink {
+ /// Returns `true` if a `TemplateRenderingError` is a confinement violation.
+@@ -198,7 +199,7 @@ impl EventEncoder {
+             ) {
+                 (Ok(key_s), Ok(value_s)) => {
+                     if let Err(err) =
+-                        pair_expansion(&key_s, &value_s, &mut static_labels, &mut dynamic_labels)
++                        pair_expansion(&key_s, &value_s, &mut static_labels, &mut dynamic_labels, self.slugify_dynamic_fields)
+                     {
+                         warn!(
+                             "Failed to expand dynamic label. value: {}, err: {}",
+@@ -311,6 +312,7 @@ impl EventEncoder {
+                         &value_s,
+                         &mut static_structured_metadata,
+                         &mut dynamic_structured_metadata,
++                        self.slugify_dynamic_fields,
+                     ) {
+                         warn!(
+                             "Failed to expand dynamic structured metadata. value: {}, err: {}",
+@@ -630,6 +632,7 @@ impl LokiSink {
                  remove_label_fields: config.remove_label_fields,
                  remove_structured_metadata_fields: config.remove_structured_metadata_fields,
                  remove_timestamp: config.remove_timestamp,
@@ -84,7 +84,7 @@ index d206a792b..377c7ba48 100644
              },
              batch_settings: config.batch.into_batcher_settings()?,
              out_of_order_action: config.out_of_order_action,
-@@ -587,6 +590,7 @@ mod tests {
+@@ -735,6 +738,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -92,7 +92,7 @@ index d206a792b..377c7ba48 100644
          };
          let mut event = Event::Log(LogEvent::from("hello world"));
          let log = event.as_mut_log();
-@@ -634,6 +638,7 @@ mod tests {
+@@ -782,6 +786,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -100,7 +100,7 @@ index d206a792b..377c7ba48 100644
          };
          let mut event = Event::Log(LogEvent::from("hello world"));
          let log = event.as_mut_log();
-@@ -688,6 +693,7 @@ mod tests {
+@@ -836,6 +841,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -108,7 +108,7 @@ index d206a792b..377c7ba48 100644
          };
  
          let message = r#"
-@@ -701,7 +707,67 @@ mod tests {
+@@ -849,7 +855,67 @@ mod tests {
          	"metadata": {
          		"cluster_name": "operations",
          		"cluster_environment": "development",
@@ -177,7 +177,7 @@ index d206a792b..377c7ba48 100644
          	}
          }
          "#;
-@@ -709,13 +775,14 @@ mod tests {
+@@ -857,13 +923,14 @@ mod tests {
          let event = Event::Log(LogEvent::from(msg));
          let record = encoder.encode_event(event).unwrap();
  
@@ -193,7 +193,7 @@ index d206a792b..377c7ba48 100644
          Ok(())
      }
  
-@@ -740,6 +807,7 @@ mod tests {
+@@ -888,6 +955,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -201,7 +201,7 @@ index d206a792b..377c7ba48 100644
          };
  
          let message = r#"
-@@ -780,6 +848,7 @@ mod tests {
+@@ -928,6 +996,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -209,7 +209,7 @@ index d206a792b..377c7ba48 100644
          };
  
          let msg: ObjectMap = serde_json::from_str("{}")?;
-@@ -803,6 +872,7 @@ mod tests {
+@@ -951,6 +1020,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: true,
@@ -217,7 +217,7 @@ index d206a792b..377c7ba48 100644
          };
          let mut event = Event::Log(LogEvent::from("hello world"));
          let log = event.as_mut_log();
-@@ -837,6 +907,7 @@ mod tests {
+@@ -985,6 +1055,7 @@ mod tests {
              remove_label_fields: true,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -225,7 +225,7 @@ index d206a792b..377c7ba48 100644
          };
          let mut event = Event::Log(LogEvent::from("hello world"));
          let log = event.as_mut_log();
-@@ -875,6 +946,7 @@ mod tests {
+@@ -1023,6 +1094,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -233,7 +233,7 @@ index d206a792b..377c7ba48 100644
          };
  
          let message = r#"
-@@ -930,6 +1002,7 @@ mod tests {
+@@ -1078,6 +1150,7 @@ mod tests {
              remove_label_fields: false,
              remove_structured_metadata_fields: false,
              remove_timestamp: false,
@@ -242,10 +242,10 @@ index d206a792b..377c7ba48 100644
          let base = chrono::Utc::now();
          let events = random_lines(100)
 diff --git a/src/sinks/loki/tests.rs b/src/sinks/loki/tests.rs
-index 90d3fc786..51ec03426 100644
+index 8849c4f0e2..77f4b705d5 100644
 --- a/src/sinks/loki/tests.rs
 +++ b/src/sinks/loki/tests.rs
-@@ -202,3 +202,31 @@ async fn structured_metadata_as_json() {
+@@ -208,3 +208,32 @@ async fn structured_metadata_as_json() {
  
      assert_eq!(body[2], expected_metadata);
  }
@@ -260,6 +260,7 @@ index 90d3fc786..51ec03426 100644
 +        encoding.codec = "json"
 +        encoding.except_fields = ["foo"]
 +        slugify_dynamic_fields = false
++        dangerously_allow_unconfined_template_resolution = true
 +        "#,
 +    )
 +    .unwrap();
@@ -267,7 +268,7 @@ index 90d3fc786..51ec03426 100644
 +    let mut sink = LokiSink::new(config, client).unwrap();
 +
 +    let mut e1 = Event::Log(LogEvent::from("hello world"));
-+    e1.as_mut_log().insert("foo", btreemap! {
++    e1.as_mut_log().insert(event_path!("foo"), btreemap! {
 +        "_UPPERCASE" => "yes",
 +    });
 +
@@ -278,10 +279,10 @@ index 90d3fc786..51ec03426 100644
 +    assert_eq!(body[2], expected_metadata);
 +}
 diff --git a/src/transforms/log_to_metric.rs b/src/transforms/log_to_metric.rs
-index 02f084e55..3049b0aaf 100644
+index f08d0a1d3c..e336a6155d 100644
 --- a/src/transforms/log_to_metric.rs
 +++ b/src/transforms/log_to_metric.rs
-@@ -355,7 +355,7 @@ fn render_tag_into(
+@@ -352,7 +352,7 @@ fn render_tag_into(
          }
          Some(template) => match render_template(template, event) {
              Ok(value) => {

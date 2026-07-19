@@ -26,7 +26,6 @@
               . = {
                   "timestamp": ts,
                   "host": cef.dvchost,
-                  "ip": cef.dvc,
                   "topics": cef.name,
                   "message": replace(string!(cef.msg), r'\r\n$', ""),
                   "vendor": cef.deviceVendor,
