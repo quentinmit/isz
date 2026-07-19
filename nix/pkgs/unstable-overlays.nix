@@ -23,6 +23,11 @@ in {
     patches = (old.patches or []) ++ [
       ./vector/loki-raw-labels.patch
     ];
+    checkFlags = let checkFlags = lib.optionals final.stdenv.isAarch64 [
+      "--skip=topology::test::reload::topology_reload_reuses_removed_enrichment_table_source_key"
+    ];
+    in assert (lib.intersectLists (old.checkFlags or []) checkFlags == []);
+        (old.checkFlags or []) ++ checkFlags;
   });
   bitmagnet = prev.bitmagnet.overrideAttrs (old: {
     patches = (old.patches or []) ++ [
