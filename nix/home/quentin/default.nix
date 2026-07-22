@@ -348,7 +348,7 @@ in {
         unstable.elf-dissector
         imhex
         okteta
-        iaito
+        unstable.iaito
       ];
 
       xdg.desktopEntries.cyberchef = lib.mkIf pkgs.stdenv.isLinux {
