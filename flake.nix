@@ -119,10 +119,12 @@
       findModules = dir:
         builtins.concatLists (builtins.attrValues (builtins.mapAttrs
           (name: type:
-            if type == "regular" then [{
-              name = builtins.elemAt (builtins.match "(.*)\\.nix" name) 0;
+            if type == "regular" then let
+              m = builtins.match "(.*)\\.nix" name;
+            in nixpkgs.lib.optional (m != null) {
+              name = builtins.elemAt m 0;
               value = dir + "/${name}";
-            }] else if (
+            } else if (
               builtins.readDir (dir + "/${name}"))
             ? "default.nix" then [{
               inherit name;

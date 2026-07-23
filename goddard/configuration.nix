@@ -27,7 +27,11 @@
   networking.hostId = "007f0200";
 
   isz.secureBoot.enable = true;
-  boot.supportedFilesystems.zfs = true;
+  boot.initrd.clevis = {
+    enable = true;
+    devices.goddard.secretFile = "${./zpool.jwe}";
+  };
+  boot.zfs.requestEncryptionCredentials = ["goddard"];
   boot.zfs.forceImportRoot = false;
   boot.zfs.unsafeAllowHibernation = true;
 
@@ -48,9 +52,6 @@
     && (!lib.versionAtLeast config.boot.kernelPackages.kernel.version "7.2")
   ) "ZFS now natively supports Linux 7.1" zfs;
 
-  environment.etc."lvm/lvm.conf".text = ''
-    devices/issue_discards=1
-  '';
   services.fstrim.enable = true;
   services.smartd.enable = true;
 
