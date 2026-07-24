@@ -52,6 +52,12 @@
     && (!lib.versionAtLeast config.boot.kernelPackages.kernel.version "7.2")
   ) "ZFS now natively supports Linux 7.1" zfs;
 
+  isz.syncoid.enable = true;
+  services.syncoid = {
+    interval = "5:05"; # Every day at 5:05
+    service.serviceConfig.ConditionACPower = true; # Only when plugged in
+  };
+
   services.fstrim.enable = true;
   services.smartd.enable = true;
 

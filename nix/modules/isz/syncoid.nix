@@ -11,7 +11,7 @@ in {
     services.zfs.autoSnapshot.enable = false;
     services.sanoid = {
       enable = true;
-      interval = "*:0/15";
+      interval = lib.mkDefault "*:0/15";
       templates.default = {
         frequently = 4;
         hourly = 24;
@@ -29,7 +29,7 @@ in {
     };
     services.syncoid = {
       enable = true;
-      interval = "0/3:10"; # Every 3 hours at :10 after the hour
+      interval = lib.mkDefault "0/3:10"; # Every 3 hours at :10 after the hour
       localSourceAllow = [
         "bookmark"
         "hold"
