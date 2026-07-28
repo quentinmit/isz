@@ -25,6 +25,11 @@ buildHomeAssistantComponent {
     watchdog
   ];
 
+  ignoreVersionRequirement = [
+    # nixpkgs has croniter 6.2.4, pyscript requires exactly 6.0.0
+    "croniter"
+  ];
+
   meta = with lib; {
     description = "Pyscript adds rich Python scripting to HASS";
     homepage = "https://github.com/custom-components/${domain}";

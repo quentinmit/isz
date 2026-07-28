@@ -83,7 +83,7 @@
       };
     });
     in lib.mkAssert (
-      zfs.version == "2.4.2"
+      zfs.version == "2.4.3"
       && (lib.versionAtLeast config.boot.kernelPackages.kernel.version "7.1")
       && (!lib.versionAtLeast config.boot.kernelPackages.kernel.version "7.2")
     ) "ZFS now natively supports Linux 7.1" zfs;
