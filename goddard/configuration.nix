@@ -55,7 +55,7 @@
   isz.syncoid.enable = true;
   services.syncoid = {
     interval = "5:05"; # Every day at 5:05
-    service.serviceConfig.ConditionACPower = true; # Only when plugged in
+    service.unitConfig.ConditionACPower = true; # Only when plugged in
   };
 
   services.fstrim.enable = true;
