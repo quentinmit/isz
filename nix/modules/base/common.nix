@@ -19,12 +19,7 @@
       auto-optimise-store = lib.mkIf (!pkgs.stdenv.isDarwin) true;
       # Preserve source for gcroots to make rebuilding faster.
       keep-outputs = true;
-      # sops-nix uses garnix.io
-      substituters = [
-        "https://cache.garnix.io"
-      ];
       trusted-public-keys = [
-        "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
         "build-arm.isz.wtf-0:GNjLPEmW9L2kiFNDGmNPqqtxSh+v/HYHlyLqkrvf+Vk="
         "goddard.isz.wtf-0:DrWdaSAZghCxQ1eKxrVOu6iRrM2S8fs12baKmL9Hkps="
       ];
