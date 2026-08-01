@@ -24,7 +24,7 @@ in {
     config.user_provider = "watch_file_user_provider:${config.sops.templates."greptimedb-users".path}";
   };
   services.nginx = {
-    upstreams.greptimedb.servers."localhost:4000" = {};
+    upstreams.greptimedb.servers."127.0.0.1:4000" = {};
     virtualHosts."greptimedb.isz.wtf" = {
       forceSSL = true;
       enableACME = true;
