@@ -187,9 +187,11 @@ in {
         }
         {
           model = "authentik_policies.policybinding";
-          identifiers.order = 1;
-          attrs.policy = keyOf "source-enrollment-if-invitation-policy";
-          attrs.target = keyOf "default-source-enrollment-flow";
+          identifiers = {
+            order = 1;
+            policy = keyOf "source-enrollment-if-invitation-policy";
+            target = keyOf "default-source-enrollment-flow";
+          };
         }
         # OAuth2 sources
         {
