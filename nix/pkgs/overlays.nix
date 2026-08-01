@@ -240,4 +240,14 @@ in {
       };
     }
   );
+  spoolman = prev.spoolman.overridePythonAttrs (old: let
+    version = "0.24.0";
+  in
+    assert lib.versionOlder old.version "0.24.0";
+    {
+      src = old.src.override {
+        rev = "v${version}";
+        hash = "sha256-2E6Z7s/ZQuEbufroKiwHxK1pjUO/hdJ1F29cTfHtNcA=";
+      };
+    });
 }
