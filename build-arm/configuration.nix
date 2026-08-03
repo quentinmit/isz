@@ -88,6 +88,8 @@
       && (!lib.versionAtLeast config.boot.kernelPackages.kernel.version "7.2")
     ) "ZFS now natively supports Linux 7.1" zfs;
 
+    zfs.forceImportRoot = false;
+
     loader.grub.enable = false;
     loader.systemd-boot.enable = true;
     loader.systemd-boot.graceful = true;
