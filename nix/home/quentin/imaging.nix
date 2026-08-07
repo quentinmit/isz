@@ -32,7 +32,7 @@ in {
         nsxiv
         opencv
         ptouch-print
-        rawtherapee-snapshot
+        rawtherapee
         #broken wxSVG
         libwmf
         drawio

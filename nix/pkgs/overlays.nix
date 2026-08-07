@@ -149,17 +149,6 @@ in {
       ];
     });
   });
-  libraw-snapshot = prev.libraw.overrideAttrs (old: {
-    version = "0.22-PreRC1";
-    src = old.src.override {
-      rev = "3733457df9b0420cb90061bceae06adec5aa33c7";
-      tag = null;
-      hash = "sha256-zGiqpr6/Mls2fa0vCo6rtd5ukL8K8X7u5erHsc6nCpQ=";
-    };
-  });
-  rawtherapee-snapshot = final.rawtherapee.override {
-    libraw = final.libraw-snapshot;
-  };
   libsigrok = prev.libsigrok.overrideAttrs (old: {
     patches = (old.patches or []) ++ [(final.fetchpatch {
       url = "https://patch-diff.githubusercontent.com/raw/sigrokproject/libsigrok/pull/246.diff";
