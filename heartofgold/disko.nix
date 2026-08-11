@@ -1,8 +1,11 @@
 { lib, ... }:
 {
+  imports = [
+    ./disko-28.nix
+  ];
   services.zfs = {
     autoScrub.enable = true;
-    autoSnapshot.enable = true;
+    autoSnapshot.enable = false;
   };
   disko.devices = let
     zfsDisks = [
