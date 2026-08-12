@@ -13,11 +13,16 @@
 
   boot.zfs.requestEncryptionCredentials = [ "boot" ];
   boot.zfs.forceImportRoot = false;
+  boot.zfs.devNodes = "/dev/disk/by-partlabel";
 
   boot = {
     loader.grub.enable = true;
 
     initrd.systemd.enable = true;
+    initrd.systemd.emergencyAccess = true;
+    initrd.systemd.network = config.systemd.network;
+    #initrd.network.ssh.enable = true;
+    initrd.network.ssh.authorizedKeys = config.users.users.root.openssh.authorizedKeys.keys;
     initrd.availableKernelModules = [
       "ahci"
       "xhci_pci"
@@ -25,8 +30,11 @@
       "virtio_scsi"
       "sr_mod"
       "virtio_blk"
+      "virtio_net"
     ];
-    kernelModules = [ "kvm-amd" ];
+    kernelModules = [
+      "kvm-amd"
+    ];
     consoleLogLevel = 9;
     kernelParams = [
       "rootwait"
@@ -46,7 +54,7 @@
 
   isz.openssh = {
     hostKeyTypes = ["ecdsa" "ed25519"];
-    #useSops = true;
+    useSops = true;
   };
 
   services.openssh = {

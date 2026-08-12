@@ -11,6 +11,7 @@ keys:
 - &build-arm_ssh_age age1s0vn6u4zqkz0k5wvagt942er99k3m588gh4vjp7e2lewzkms6asqntknaq
 - &atlas_ssh_age age1lnk5vwfyx26lvtu94fjvncse9ye3p64gsrm46hyudaayp8rlt5jsp8q6cy
 - &pixel9_pro_xl_linux_ssh_age age1dp8m5ap9z8tjkkhff0ylzh8gptw7z8y04keh6qu4lujahm58fqhs7x9qmr
+- &mnemosyne_ssh_age age19rw220elmc2tyj35p5vjfx4m2pqsr4mhn2wahj4nljsakn5ms9hs938877
 
 creation_rules:
 - path_regex: ^workshop/secrets\.yaml$
@@ -85,3 +86,9 @@ creation_rules:
     - *admin_quentin_gpg
     age:
     - *pixel9_pro_xl_linux_ssh_age
+- path_regex: ^mnemosyne/secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *mnemosyne_ssh_age

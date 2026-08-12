@@ -110,6 +110,8 @@ uconsole         A 172.30.98.69
 pixel-9-pro-xl-linux A 172.30.98.70
 droid            CNAME pixel-9-pro-xl-linux
 tunnel-comclub   A 172.30.98.71
+mnemosyne        A 172.30.98.72
+mnemosyne-initrd A 172.30.98.73
 
 ; AppleTalk hosts on vlan 983 (172.30.98.128/26)
 ; VXLAN on vlan3096/239.0.98.128
