@@ -1,6 +1,19 @@
-{ lib, ... }:
-{
-  disko.devices = let
+{ lib, config, ... }:
+let
+  inherit (config.disko.zpool18) name;
+in {
+  options.disko.zpool18 = {
+    name = lib.mkOption {
+      type = lib.types.str;
+      default = "zpool";
+    };
+    root = lib.mkOption {
+      type = lib.types.bool;
+      default = !config.disko.zpool28.root;
+    };
+  };
+
+  config.disko.devices = let
     zfsDisks = [
       # DOA disk: 4BHH758H
       "/dev/disk/by-id/ata-ST18000NT001-3NF101_ZVTDQ6XT"
@@ -45,7 +58,7 @@
               size = "100%";
               content = {
                 type = "zfs";
-                pool = "zpool";
+                pool = name;
               };
             };
           };
@@ -69,13 +82,13 @@
             size = "100%";
             content = {
               type = "zfs";
-              pool = "zpool";
+              pool = name;
             };
           };
         };
       };
     }));
-    zpool.zpool = {
+    zpool.${name} = {
       type = "zpool";
       mode.topology = {
         type = "topology";
@@ -101,7 +114,7 @@
         keyformat = "passphrase";
       };
       mountpoint = "/";
-      datasets = {
+      datasets = if config.disko.zpool18.root then {
         backup = {
           type = "zfs_fs";
           mountpoint = "/srv/backup";
@@ -175,6 +188,10 @@
           };
         };
         "media/media1e" = {
+          type = "zfs_fs";
+        };
+      } else {
+        placeholder = {
           type = "zfs_fs";
         };
       };
