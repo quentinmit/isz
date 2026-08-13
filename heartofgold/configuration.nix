@@ -24,7 +24,10 @@
   networking.hostId = "8daa50bc";
 
   boot.initrd.systemd.enable = true;
-  boot.zfs.requestEncryptionCredentials = ["zpool"];
+  boot.zfs.requestEncryptionCredentials = [
+    "zpool"
+    "zpool/backup"
+  ];
   boot.zfs.forceImportRoot = false;
   boot.kernelModules = [
     "nct6775" # For sensors
@@ -46,6 +49,7 @@
   boot.initrd.clevis = {
     enable = true;
     devices.zpool.secretFile = "${./zpool.jwe}";
+    devices."zpool/backup".secretFile = "${./zpool.jwe}";
   };
 
   isz.openssh = {

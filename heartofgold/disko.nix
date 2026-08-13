@@ -109,6 +109,10 @@
       };
       mountpoint = "/";
       datasets = {
+        backup = {
+          type = "zfs_fs";
+          mountpoint = "/srv/backup";
+        };
         root = {
           type = "zfs_fs";
           mountpoint = "/";
