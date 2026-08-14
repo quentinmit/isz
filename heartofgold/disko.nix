@@ -15,6 +15,7 @@
     ];
   in {
     zfs.requestEncryptionCredentials = names;
+    zfs.pools.zpool.devNodes = "/dev/disk/by-partlabel";
     initrd.clevis = {
       enable = true;
       devices = lib.genAttrs names (_: { secretFile = "${./zpool.jwe}"; });
