@@ -1,22 +1,8 @@
 { lib, config, ... }:
 let
-  inherit (config.disko.zpool28) name;
+  pool = "zpool";
 in {
-  options.disko.zpool28 = {
-    name = lib.mkOption {
-      type = lib.types.str;
-      default = "zpool28";
-    };
-    root = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-    };
-  };
-
-  # FIXME: Exclude USB-connected drive that doesn't support SMART to prevent hangs.
-  config.isz.telegraf.smart.excludes = ["/dev/sdn"];
-
-  config.disko.devices = let
+  disko.devices = let
     zfsDisks = [
       "/dev/disk/by-id/ata-ST28000NM000C-3WM103_ZXA0KVF0" # wwn-0x5000c500e89392ad
       "/dev/disk/by-id/ata-ST28000NM000C-3WM103_ZXA1A1VQ" # wwn-0x5000c500e9c83cf2
@@ -32,6 +18,44 @@ in {
     deviceToDiskoName = device: lib.last (lib.splitString "_" device);
   in {
     disk = {
+      nvme0n1 = {
+        # nvme format --lbaf=1 /dev/nvme0n1
+        type = "disk";
+        device = "/dev/nvme0n1";
+        content = {
+          type = "gpt";
+          partitions = {
+            ESP = {
+              size = "8G";
+              type = "EF00";
+              content = {
+                type = "filesystem";
+                format = "vfat";
+                mountpoint = "/boot";
+                mountOptions = [
+                  "defaults"
+                  "fmask=0027"
+                  "dmask=0027"
+                ];
+              };
+            };
+            swap = {
+              size = "128G";
+              content = {
+                type = "swap";
+                randomEncryption = true;
+              };
+            };
+            l2arc = {
+              size = "100%";
+              content = {
+                type = "zfs";
+                inherit pool;
+              };
+            };
+          };
+        };
+      };
     } // (lib.genAttrs' zfsDisks (device: lib.nameValuePair (deviceToDiskoName device) {
       type = "disk";
       inherit device;
@@ -50,13 +74,13 @@ in {
             size = "100%";
             content = {
               type = "zfs";
-              pool = name;
+              inherit pool;
             };
           };
         };
       };
     }));
-    zpool.${name} = {
+    zpool.${pool} = {
       type = "zpool";
       mode.topology = {
         type = "topology";
@@ -64,7 +88,7 @@ in {
           mode = "raidz2";
           members = map deviceToDiskoName zfsDisks;
         }];
-        # FIXME: cache = [ "nvme0n1" ];
+        cache = [ "nvme0n1" ];
       };
       options = {
         ashift = "12";
@@ -82,7 +106,7 @@ in {
         keyformat = "passphrase";
       };
       mountpoint = "/";
-      datasets = if config.disko.zpool28.root then {
+      datasets = {
         backup = {
           type = "zfs_fs";
           mountpoint = "/srv/backup";
@@ -170,10 +194,6 @@ in {
           };
         };
         "heartofgold/media/media1e" = {
-          type = "zfs_fs";
-        };
-      } else {
-        placeholder = {
           type = "zfs_fs";
         };
       };
