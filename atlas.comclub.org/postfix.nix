@@ -128,16 +128,12 @@ in {
       smtpd_sasl_type = "dovecot";
       smtpd_sasl_path = "private/auth";
     };
-    settings.master.submission = {
-      type = "inet";
-      private = false;
-      command = "smtpd";
-      args = [
-        "-o" "smtpd_tls_security_level=encrypt"
-        "-o" "smtpd_sasl_auth_enable=yes"
-        "-o" "smtpd_client_restrictions=permit_sasl_authenticated,reject"
-        "-o" "milter_macro_daemon_name=ORIGINATING"
-      ];
+    enableSubmission = true;
+    submissionOptions = {
+      smtpd_tls_security_level = "encrypt";
+      smtpd_sasl_auth_enable = "yes";
+      smtpd_client_restrictions = "permit_sasl_authenticated,reject";
+      milter_macro_daemon_name = "ORIGINATING";
     };
   };
   services.rspamd = {
