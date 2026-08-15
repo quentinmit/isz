@@ -71,6 +71,12 @@
   networking.useNetworkd = true;
   networking.nftables.enable = true;
 
+  isz.telegraf = {
+    enable = true;
+  };
+
+  isz.vector.enable = true;
+
   virtualisation = let
     vmVariant = {
       users.users.root.hashedPassword = "";
