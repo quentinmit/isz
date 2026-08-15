@@ -16,26 +16,8 @@ in {
   options = with lib; {
     isz.telegraf = {
       enable = mkEnableOption "telegraf";
-      docker = mkEnableOption "Docker";
       amdgpu = mkEnableOption "amdgpu";
       debug = mkEnableOption "debug";
-      smart.enable = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Enable SMART monitoring";
-      };
-      smart.smartctl = mkOption {
-        type = with types; nullOr path;
-        default = "${pkgs.smartmontools}/bin/smartctl";
-      };
-      smart.nvme = mkOption {
-        type = with types; nullOr path;
-        default = null;
-      };
-      smart.excludes = mkOption {
-        type = types.listOf types.str;
-        default = [];
-      };
       openweathermap = {
         appId = mkOption {
           type = with types; nullOr str;
@@ -48,32 +30,6 @@ in {
       };
       interval = mkOption {
         type = types.attrsOf (types.strMatching "[0-9]+[hms]");
-      };
-      prometheus.apps = let
-        interval = config.isz.telegraf.interval.prometheus;
-        app = with types; submodule ({ name, config, ... }: {
-          options = {
-            url = mkOption { type = str; };
-            tags = mkOption { type = attrsOf str; };
-            extraConfig = mkOption { type = attrs; };
-          };
-          config = {
-            tags.app = lib.mkDefault name;
-            extraConfig = {
-              alias = name;
-              urls = [config.url];
-              metric_version = 2;
-              inherit interval;
-              inherit (config) tags;
-            };
-          };
-        });
-      in mkOption {
-        type = with types; attrsOf app;
-        default = {};
-      };
-      postgresql = mkEnableOption "PostgreSQL support" // {
-        default = config.services.postgresql.enable or false;
       };
       influxdb.namedrop = mkOption {
         type = types.listOf types.str;
@@ -99,7 +55,6 @@ in {
         cgroup = "60s";
         internal = "60s";
         openweathermap = "10m";
-        prometheus = "60s";
         sensors = "10s";
       };
     }
@@ -110,24 +65,6 @@ in {
       systemd.services.telegraf = {
         wants = ["suid-sgid-wrappers.service"];
         after = ["suid-sgid-wrappers.service"];
-      };
-    } else {})
-    (if isNixOS then lib.mkIf (cfg.enable && cfg.smart.enable) {
-      isz.telegraf.smart.smartctl = lib.mkDefault "/run/wrappers/bin/smartctl_telegraf";
-      isz.telegraf.smart.nvme = lib.mkDefault "/run/wrappers/bin/nvme_telegraf";
-      security.wrappers.smartctl_telegraf = lib.mkIf (cfg.smart.smartctl != null) {
-        source = "${pkgs.smartmontools}/bin/smartctl";
-        owner = "root";
-        group = "telegraf";
-        permissions = "u+rx,g+x";
-        setuid = true;
-      };
-      security.wrappers.nvme_telegraf = lib.mkIf (cfg.smart.nvme != null) {
-        source = "${pkgs.nvme-cli}/bin/nvme";
-        owner = "root";
-        group = "telegraf";
-        permissions = "u+rx,g+x";
-        setuid = true;
       };
     } else {})
     (if (isNixOS && options ? sops) then lib.mkIf cfg.enable {
@@ -154,15 +91,6 @@ in {
         reloadTriggers = with lib.lists;
           optional (cfg.mikrotik.api.targets != [] || cfg.mikrotik.swos.targets != []) pkgs.iszTelegraf.mikrotik
           ++ optional cfg.w1 pkgs.iszTelegraf.w1;
-      };
-    } else {})
-    (if isNixOS then lib.mkIf (cfg.enable && cfg.postgresql) {
-      services.postgresql = {
-        ensureUsers = [{
-          name = "telegraf";
-          ensureDBOwnership = true;
-        }];
-        ensureDatabases = [ "telegraf" ];
       };
     } else {})
     {
@@ -232,12 +160,6 @@ in {
             nstat = [{}];
             netstat = [{}];
             processes = [{}];
-            smart = lib.mkIf cfg.smart.enable [{
-              path_smartctl = lib.mkIf (cfg.smart.smartctl != null) cfg.smart.smartctl;
-              path_nvme = lib.mkIf (cfg.smart.nvme != null) cfg.smart.nvme;
-              inherit (cfg.smart) excludes;
-              attributes = true;
-            }];
             swap = [{}];
             system = [{}];
             temp = [{
@@ -253,7 +175,7 @@ in {
         (lib.mkIf pkgs.stdenv.isLinux {
           inputs = {
             kernel = [{}];
-            linux_cpu = [{}];
+            linux_cpu = lib.mkIf (!lib.elem "virtio_pci" (config.boot.initrd.availableKernelModules or [])) [{}];
             cgroup = [{
               interval = cfg.interval.cgroup;
               paths = let
@@ -277,20 +199,6 @@ in {
             interrupts = [{}];
           };
         })
-        (lib.mkIf cfg.docker {
-          inputs.docker = [{
-            endpoint = "unix:///var/run/docker.sock";
-            gather_services = false;
-            container_names = [];
-            container_name_include = [];
-            container_name_exclude = [];
-            timeout = "5s";
-            perdevice = true;
-            total = false;
-            docker_label_include = [];
-            docker_label_exclude = [];
-          }];
-        })
         (lib.mkIf cfg.amdgpu {
           inputs.execd = [{
             alias = "amdgpu";
@@ -310,14 +218,6 @@ in {
             lang = "en";
             fetch = ["weather" "forecast"];
             interval = cfg.interval.openweathermap;
-          }];
-        })
-        (lib.mkIf (cfg.prometheus.apps != {}) {
-          inputs.prometheus = lib.mapAttrsToList (_: value: value.extraConfig) cfg.prometheus.apps;
-        })
-        (lib.mkIf cfg.postgresql {
-          inputs.postgresql = [{
-            address = "postgresql://";
           }];
         })
       ];
