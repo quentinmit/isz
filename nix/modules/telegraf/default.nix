@@ -18,6 +18,10 @@ in {
       enable = mkEnableOption "telegraf";
       amdgpu = mkEnableOption "amdgpu";
       debug = mkEnableOption "debug";
+      vm = mkOption {
+        type = types.bool;
+        default = lib.elem "virtio_pci" (config.boot.initrd.availableKernelModules or []);
+      };
       openweathermap = {
         appId = mkOption {
           type = with types; nullOr str;
@@ -175,7 +179,7 @@ in {
         (lib.mkIf pkgs.stdenv.isLinux {
           inputs = {
             kernel = [{}];
-            linux_cpu = lib.mkIf (!lib.elem "virtio_pci" (config.boot.initrd.availableKernelModules or [])) [{}];
+            linux_cpu = lib.mkIf (!cfg.vm) [{}];
             cgroup = [{
               interval = cfg.interval.cgroup;
               paths = let
@@ -190,7 +194,7 @@ in {
               ];
             }];
             linux_sysctl_fs = [{}];
-            sensors = [{
+            sensors = lib.mkIf (!cfg.vm) [{
               interval = cfg.interval.sensors;
               tagdrop.chip = ["w1_slave_temp-*"];
               # Can take >5s to read when there are w1 sensors.
