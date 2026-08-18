@@ -1,8 +1,8 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index 20d44aa7cbf..79d24de67a3 100644
+index 9aa75736d63..d3122f88529 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
-@@ -27,6 +27,7 @@ from homeassistant.helpers import (
+@@ -28,6 +28,7 @@ from homeassistant.helpers import (
  from homeassistant.helpers.device_registry import DeviceInfo
  from homeassistant.helpers.entity import Entity
  from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -10,7 +10,7 @@ index 20d44aa7cbf..79d24de67a3 100644
  
  from .const import DOMAIN
  
-@@ -88,7 +89,7 @@ def async_static_info_updated(
+@@ -84,7 +85,7 @@ def async_static_info_updated(
  
          # Create new entity if it doesn't exist
          if not old_info:
@@ -19,7 +19,7 @@ index 20d44aa7cbf..79d24de67a3 100644
              add_entities.append(entity)
              continue
  
-@@ -111,7 +112,7 @@ def async_static_info_updated(
+@@ -107,7 +108,7 @@ def async_static_info_updated(
                  old_info.device_id,
                  info.device_id,
              )
@@ -28,7 +28,7 @@ index 20d44aa7cbf..79d24de67a3 100644
              add_entities.append(entity)
              continue
  
-@@ -163,7 +164,7 @@ def async_static_info_updated(
+@@ -161,7 +162,7 @@ def async_static_info_updated(
          entry_data.async_signal_entity_removal(info_type, old_info.device_id, info.key)
  
          # Create new entity with the new device_id
@@ -37,7 +37,7 @@ index 20d44aa7cbf..79d24de67a3 100644
  
      # Anything still in current_infos is now gone
      if current_infos:
-@@ -331,7 +332,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
+@@ -329,7 +330,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
  class EsphomeBaseEntity(Entity):
      """Define a base esphome entity."""
  
@@ -45,7 +45,7 @@ index 20d44aa7cbf..79d24de67a3 100644
      _attr_should_poll = False
      _device_info: EsphomeDeviceInfo
      device_entry: dr.DeviceEntry
-@@ -348,6 +348,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
+@@ -346,6 +346,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
      def __init__(
          self,
          entry_data: RuntimeEntryData,
@@ -53,7 +53,7 @@ index 20d44aa7cbf..79d24de67a3 100644
          entity_info: EntityInfo,
          state_type: type[_StateT],
      ) -> None:
-@@ -361,6 +362,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
+@@ -359,6 +360,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
          self._state_type = state_type
          self._on_static_info_update(entity_info)
  
@@ -61,7 +61,7 @@ index 20d44aa7cbf..79d24de67a3 100644
          # Determine the device connection based on whether this
          # entity belongs to a sub device
          if entity_info.device_id:
-@@ -370,11 +372,46 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
+@@ -368,11 +370,46 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
                      (DOMAIN, f"{device_info.mac_address}_{entity_info.device_id}")
                  }
              )
@@ -106,9 +106,9 @@ index 20d44aa7cbf..79d24de67a3 100644
 +            # an empty string so we drop the object_id.
 +            self.entity_id = f"{domain}.{slugify(device_name)}"
  
+     @override
      async def async_added_to_hass(self) -> None:
-         """Register callbacks."""
-@@ -500,6 +537,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
+@@ -499,6 +536,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
  class EsphomeAssistEntity(EsphomeBaseEntity):
      """Define a base entity for Assist Pipeline entities."""
  
@@ -118,10 +118,10 @@ index 20d44aa7cbf..79d24de67a3 100644
          """Initialize the binary sensor."""
          self._entry_data = entry_data
 diff --git a/homeassistant/components/esphome/manager.py b/homeassistant/components/esphome/manager.py
-index 2a6d3847172..751490e0415 100644
+index 362b8981a73..baf97889adf 100644
 --- a/homeassistant/components/esphome/manager.py
 +++ b/homeassistant/components/esphome/manager.py
-@@ -644,15 +644,6 @@ class ESPHomeManager:
+@@ -680,15 +680,6 @@ class ESPHomeManager:
          if device_info.name:
              reconnect_logic.name = device_info.name
  
@@ -137,7 +137,7 @@ index 2a6d3847172..751490e0415 100644
          # Build device_id_to_name mapping for efficient lookup
          entry_data.device_id_to_name = {
              sub_device.device_id: sub_device.name or device_info.name
-@@ -1059,7 +1050,7 @@ def _async_setup_device_registry(
+@@ -1265,7 +1256,7 @@ def _async_setup_device_registry(
          config_entry_id=entry.entry_id,
          configuration_url=configuration_url,
          connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)},
@@ -795,7 +795,7 @@ index 940fae5cfef..f752105e18b 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
 diff --git a/tests/components/esphome/test_entity.py b/tests/components/esphome/test_entity.py
-index 36bf8636622..51ded2733bc 100644
+index 3e381696759..121cd250879 100644
 --- a/tests/components/esphome/test_entity.py
 +++ b/tests/components/esphome/test_entity.py
 @@ -70,10 +70,10 @@ async def test_entities_removed(
@@ -1126,7 +1126,7 @@ index 36bf8636622..51ded2733bc 100644
      assert sensor_entity is not None
      assert sensor_entity.device_id == main_device.id
  
-@@ -1611,6 +1611,7 @@ async def test_entity_device_id_rename_in_yaml(
+@@ -1661,6 +1661,7 @@ async def test_entity_device_id_rename_in_yaml(
          ("τιμή αισθητήρα", "binary_sensor.test_time_aisthetera"),
      ],
  )
@@ -1135,7 +1135,7 @@ index 36bf8636622..51ded2733bc 100644
      hass: HomeAssistant,
      mock_client: APIClient,
 diff --git a/tests/components/esphome/test_event.py b/tests/components/esphome/test_event.py
-index 3cff3184bf1..55a811d3caa 100644
+index de3ccf28417..796b79ccdd9 100644
 --- a/tests/components/esphome/test_event.py
 +++ b/tests/components/esphome/test_event.py
 @@ -35,7 +35,7 @@ async def test_generic_event_entity(
@@ -1162,7 +1162,7 @@ index 3cff3184bf1..55a811d3caa 100644
      # Event entity should be available immediately without waiting for data
 -    state = hass.states.get("event.test_my_event")
 +    state = hass.states.get("event.test_myevent")
-     assert state.state == "2024-04-24T00:00:00.000+00:00"
+     assert state.state == "2024-04-24T00:00:00.001+00:00"
      assert state.attributes["event_type"] == "type1"
 diff --git a/tests/components/esphome/test_fan.py b/tests/components/esphome/test_fan.py
 index 763e95d3e6f..b2aff4d45d7 100644
@@ -2119,10 +2119,10 @@ index 53639353f59..0b69826c181 100644
      )
      mock_client.lock_command.assert_has_calls([call(1, LockCommand.OPEN, device_id=0)])
 diff --git a/tests/components/esphome/test_manager.py b/tests/components/esphome/test_manager.py
-index e6913e5e422..bba25350434 100644
+index 12f779c189f..ef5a12e6d2a 100644
 --- a/tests/components/esphome/test_manager.py
 +++ b/tests/components/esphome/test_manager.py
-@@ -1892,10 +1892,6 @@ async def test_device_adds_friendly_name(
+@@ -1927,10 +1927,6 @@ async def test_device_adds_friendly_name(
          connections={(dr.CONNECTION_NETWORK_MAC, device.entry.unique_id)}
      )
      assert dev.name == "Nofriendlyname"
@@ -2330,10 +2330,10 @@ index 02b58649fec..b0ef353086c 100644
          )
      mock_client.number_command.reset_mock()
 diff --git a/tests/components/esphome/test_repairs.py b/tests/components/esphome/test_repairs.py
-index 64e944b7c4f..bd028ab744e 100644
+index 975f0fb31ef..5725c792946 100644
 --- a/tests/components/esphome/test_repairs.py
 +++ b/tests/components/esphome/test_repairs.py
-@@ -134,12 +134,12 @@ async def test_device_conflict_migration(
+@@ -132,12 +132,12 @@ async def test_device_conflict_migration(
          user_service=user_service,
          states=states,
      )
@@ -2346,17 +2346,17 @@ index 64e944b7c4f..bd028ab744e 100644
 -    ent_reg_entry = entity_registry.async_get("binary_sensor.test_my_binary_sensor")
 +    ent_reg_entry = entity_registry.async_get("binary_sensor.test_mybinary_sensor")
      assert ent_reg_entry
-     assert ent_reg_entry.unique_id == "11:22:33:44:55:AA-binary_sensor-mybinary_sensor"
-     entries = er.async_entries_for_config_entry(
-@@ -202,7 +202,7 @@ async def test_device_conflict_migration(
+     assert (
+         ent_reg_entry.unique_id == "11:22:33:44:55:AA/0/binary_sensor/my binary_sensor"
+@@ -201,7 +201,7 @@ async def test_device_conflict_migration(
      assert issue_registry.async_get_issue(DOMAIN, issue_id) is None
  
      assert mock_config_entry.unique_id == "11:22:33:44:55:ab"
 -    ent_reg_entry = entity_registry.async_get("binary_sensor.test_my_binary_sensor")
 +    ent_reg_entry = entity_registry.async_get("binary_sensor.test_mybinary_sensor")
      assert ent_reg_entry
-     assert ent_reg_entry.unique_id == "11:22:33:44:55:AB-binary_sensor-mybinary_sensor"
- 
+     assert (
+         ent_reg_entry.unique_id == "11:22:33:44:55:AB/0/binary_sensor/my binary_sensor"
 diff --git a/tests/components/esphome/test_select.py b/tests/components/esphome/test_select.py
 index 7de4dcd6aca..ec56c033f23 100644
 --- a/tests/components/esphome/test_select.py
@@ -2379,7 +2379,7 @@ index 7de4dcd6aca..ec56c033f23 100644
      )
      mock_client.select_command.assert_has_calls([call(1, "b", device_id=0)])
 diff --git a/tests/components/esphome/test_sensor.py b/tests/components/esphome/test_sensor.py
-index 11acdce43d1..c4ea4de5b7a 100644
+index adea7007c2c..98b9d4f1f77 100644
 --- a/tests/components/esphome/test_sensor.py
 +++ b/tests/components/esphome/test_sensor.py
 @@ -64,35 +64,35 @@ async def test_generic_numeric_sensor(
@@ -2477,7 +2477,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == "2023-06-22T18:43:52+00:00"
  
-@@ -259,7 +259,7 @@ async def test_generic_numeric_sensor_legacy_last_reset_convert(
+@@ -286,7 +286,7 @@ async def test_generic_numeric_sensor_legacy_last_reset_convert(
          user_service=user_service,
          states=states,
      )
@@ -2486,7 +2486,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == "50"
      assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL_INCREASING
-@@ -286,7 +286,7 @@ async def test_generic_numeric_sensor_no_state(
+@@ -313,7 +313,7 @@ async def test_generic_numeric_sensor_no_state(
          user_service=user_service,
          states=states,
      )
@@ -2495,7 +2495,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -312,7 +312,7 @@ async def test_generic_numeric_sensor_nan_state(
+@@ -339,7 +339,7 @@ async def test_generic_numeric_sensor_nan_state(
          user_service=user_service,
          states=states,
      )
@@ -2504,7 +2504,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -338,7 +338,7 @@ async def test_generic_numeric_sensor_missing_state(
+@@ -365,7 +365,7 @@ async def test_generic_numeric_sensor_missing_state(
          user_service=user_service,
          states=states,
      )
@@ -2513,7 +2513,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -364,7 +364,7 @@ async def test_generic_text_sensor(
+@@ -391,7 +391,7 @@ async def test_generic_text_sensor(
          user_service=user_service,
          states=states,
      )
@@ -2522,7 +2522,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == "i am a teapot"
  
-@@ -390,7 +390,7 @@ async def test_generic_text_sensor_missing_state(
+@@ -417,7 +417,7 @@ async def test_generic_text_sensor_missing_state(
          user_service=user_service,
          states=states,
      )
@@ -2531,7 +2531,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -417,7 +417,7 @@ async def test_generic_text_sensor_device_class_timestamp(
+@@ -444,7 +444,7 @@ async def test_generic_text_sensor_device_class_timestamp(
          user_service=user_service,
          states=states,
      )
@@ -2540,7 +2540,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == "2023-06-22T18:43:52+00:00"
      assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TIMESTAMP
-@@ -445,7 +445,7 @@ async def test_generic_text_sensor_device_class_date(
+@@ -472,7 +472,7 @@ async def test_generic_text_sensor_device_class_date(
          user_service=user_service,
          states=states,
      )
@@ -2549,7 +2549,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == "2023-06-22"
      assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.DATE
-@@ -473,7 +473,7 @@ async def test_generic_numeric_sensor_empty_string_uom(
+@@ -500,7 +500,7 @@ async def test_generic_numeric_sensor_empty_string_uom(
          user_service=user_service,
          states=states,
      )
@@ -2558,7 +2558,7 @@ index 11acdce43d1..c4ea4de5b7a 100644
      assert state is not None
      assert state.state == "123"
      assert ATTR_UNIT_OF_MEASUREMENT not in state.attributes
-@@ -531,8 +531,8 @@ async def test_suggested_display_precision_by_device_class(
+@@ -558,8 +558,8 @@ async def test_suggested_display_precision_by_device_class(
          states=states,
      )
  
@@ -2667,10 +2667,10 @@ index 176510d4e65..812faeeb2c1 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
 diff --git a/tests/components/esphome/test_update.py b/tests/components/esphome/test_update.py
-index 1bdb4b4ac63..1bce94147c5 100644
+index c29606fdff1..2bf635b5593 100644
 --- a/tests/components/esphome/test_update.py
 +++ b/tests/components/esphome/test_update.py
-@@ -37,7 +37,7 @@ from tests.typing import WebSocketGenerator
+@@ -38,7 +38,7 @@ from tests.typing import WebSocketGenerator
  
  RELEASE_SUMMARY = "This is a release summary"
  RELEASE_URL = "https://esphome.io/changelog"
