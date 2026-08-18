@@ -1,8 +1,9 @@
-{ config, ... }:
+{ config, lib, ... }:
 {
   config.isz.grafana.dashboardsV2."nixos" = {
     title = "NixOS";
     defaultDatasourceName = "workshop";
+    layout = lib.mkOptionDefault { spec.fillScreen = true; }; # Use mkOptionDefault so we still get the automatic population of spec.items
     panels.last-updated = {
       influx.query = ''
         import "join"

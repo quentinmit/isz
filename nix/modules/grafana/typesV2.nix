@@ -34,7 +34,8 @@ let
             (self.v2 { inherit loc defs; }).value;
           v2 = { loc, defs }:
             let
-              choice = (head (lib.filter (def: def.value ? kind) defs)).value.kind;
+              choices = lib.filter (def: def.value ? kind) defs;
+              choice = (head choices).value.kind;
               checkDefsForError =
                 loc: defs:
                 if all (def: lib.isAttrs def.value) defs then
@@ -54,7 +55,9 @@ let
                   def
               ) defs;
               evalResult =
-                if kinds ? ${choice} then
+                if length choices == 0 then
+                  throw "The option `${showOption loc}` is missing a definition that sets the `kind` attribute (valid choices are ${choicesStr})."
+                else if kinds ? ${choice} then
                   (lib.modules.evalOptionValue loc kinds.${choice} checkedValueDefs)
                 else
                   throw "The option `${showOption loc}` is defined as ${lib.strings.escapeNixString choice}, but ${lib.strings.escapeNixString choice} is not among the valid choices (${choicesStr}). Value ${choice} was defined in ${showFiles (getFiles defs)}.";
