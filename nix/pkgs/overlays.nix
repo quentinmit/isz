@@ -40,7 +40,7 @@ in {
   bashdbInteractive = final.bashdb.overrideAttrs {
     buildInputs = (prev.buildInputs or []) ++ [ final.bashInteractive ];
   };
-  gnuplot_gui = if final.stdenv.isDarwin then final.gnuplot else final.gnuplot_qt; # See darwin-overlays.nix
+  gnuplot_gui = if final.stdenv.hostPlatform.isDarwin then final.gnuplot else final.gnuplot_qt; # See darwin-overlays.nix
   firewalld = prev.firewalld.overrideAttrs (old: {
     # Patch /usr/lib
     postPatch = ''
@@ -205,7 +205,7 @@ in {
     '';
   });
   # https://github.com/NixOS/nixpkgs/issues/500713
-  glances = prev.glances.overrideAttrs (old: lib.optionalAttrs final.stdenv.isAarch64 {
+  glances = prev.glances.overrideAttrs (old: lib.optionalAttrs final.stdenv.hostPlatform.isAarch64 {
     disabledTests = old.disabledTests ++ [
       "test_phys_core_returns_int"
     ];

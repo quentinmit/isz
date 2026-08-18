@@ -27,16 +27,16 @@
         gpsbabel-gui
         nanovna-saver
         xastir
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       csdr
       fldigi
       flrig
       pothos
       sdrangel
-      ] ++ lib.optionals (!(pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64)) [
+      ] ++ lib.optionals (!(pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64)) [
         gqrx-portaudio
       ]
-    ) ++ lib.optionals pkgs.stdenv.isLinux [
+    ) ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       gpsd
     ];
   };

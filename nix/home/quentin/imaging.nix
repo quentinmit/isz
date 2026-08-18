@@ -36,7 +36,7 @@ in {
         #broken wxSVG
         libwmf
         drawio
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         darktable
         digikam
         inkscape-with-extensions

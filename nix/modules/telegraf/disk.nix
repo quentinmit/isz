@@ -17,7 +17,7 @@
           }];
         };
       }
-      (lib.mkIf pkgs.stdenv.isLinux {
+      (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
         inputs.file = [{
           alias = "scsi";
           files = ["/sys/block/*/device/*_cnt"];

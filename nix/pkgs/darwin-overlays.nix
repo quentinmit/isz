@@ -1,6 +1,6 @@
 final: prev: let
   inherit (final) lib;
-in if prev.stdenv.isDarwin then {
+in prev.lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin {
   multimon-ng = prev.multimon-ng.overrideAttrs (old: {
     buildInputs = with final; old.buildInputs ++ [ libpulseaudio xorg.libX11 ];
   });
@@ -22,7 +22,7 @@ in if prev.stdenv.isDarwin then {
       #"-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
       #"-DCMAKE_SKIP_INSTALL_RPATH=ON"
     ];
-    preFixup = old.preFixup + final.lib.optionalString final.stdenv.isDarwin ''
+    preFixup = old.preFixup + final.lib.optionalString final.stdenv.hostPlatform.isDarwin ''
       # https://bugreports.qt.io/browse/QTBUG-81370
       qtWrapperArgs+=(--set QT_MAC_WANTS_LAYER 1)
       # Remove the executable bit from plugins so that Nix doesn't try to wrap them
@@ -239,4 +239,4 @@ in if prev.stdenv.isDarwin then {
       meta = old.meta // { broken = false; };
     });
   });
-} else {}
+}

@@ -15,7 +15,7 @@ in {
     };
   };
   config = {
-    isz.telegraf.sysctl = lib.mkIf pkgs.stdenv.isLinux {
+    isz.telegraf.sysctl = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       strings = [
         "kernel.arch"
         "kernel.osrelease"

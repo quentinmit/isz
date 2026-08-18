@@ -1,7 +1,7 @@
 { config, lib, pkgs, deploy-rs, ... }:
 let
-  isAarch64Darwin = pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64;
-  open = if pkgs.stdenv.isDarwin then "open" else "${pkgs.xdg-utils}/bin/xdg-open";
+  isAarch64Darwin = pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64;
+  open = if pkgs.stdenv.hostPlatform.isDarwin then "open" else "${pkgs.xdg-utils}/bin/xdg-open";
   available = pkg: lib.optional pkg.meta.available pkg;
 in {
   options = {
@@ -35,7 +35,7 @@ in {
       home.packages = with pkgs; [
         statix
         (pkgs.extend deploy-rs.overlays.default).deploy-rs.deploy-rs
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         nix-du
       ];
     }
@@ -45,7 +45,7 @@ in {
         openscad-unstable
         gerbv
         f3d
-      ] ++ lib.optionals pkgs.stdenv.isLinux ([
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux ([
         freecad
         meshlab
       ]
@@ -120,7 +120,7 @@ in {
         esptool
       ] ++ lib.optionals (!isAarch64Darwin) [
         pkgsCross.arm-embedded.buildPackages.gdb
-      ] ++ lib.optionals stdenv.isLinux [
+      ] ++ lib.optionals stdenv.hostPlatform.isLinux [
         platformio
       ];
     }
@@ -128,7 +128,7 @@ in {
       home.packages = with pkgs; [
         bossa
         openocd
-      ] ++ lib.optionals stdenv.isLinux [
+      ] ++ lib.optionals stdenv.hostPlatform.isLinux [
         unstable.fritzing
         teensyduino
       ] ++ available arduino-ide;
@@ -225,7 +225,7 @@ in {
       '';
     }
     (lib.mkIf config.isz.graphical {
-      home.packages = with pkgs; lib.optionals pkgs.stdenv.isLinux [
+      home.packages = with pkgs; lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         heaptrack
         kdePackages.kcachegrind
       ];
@@ -314,9 +314,9 @@ in {
         dosbox
         (lib.lowPrio qemu)  # contains libfdt which conflicts with dtc
         virt-manager
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         _86box-with-roms
-        (if pkgs.stdenv.isx86_64 then libguestfs-with-appliance else libguestfs)
+        (if pkgs.stdenv.hostPlatform.isx86_64 then libguestfs-with-appliance else libguestfs)
         pcem
         rpcemu
         wineWow64Packages.full
@@ -335,7 +335,7 @@ in {
         (kaitai-struct-compiler.override (old: lib.optionalAttrs (!config.isz.graphical) {
           jre = pkgs.jre_headless;
         }))
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         pahole
       ];
     }
@@ -343,7 +343,7 @@ in {
       home.packages = with pkgs; [
         (pkgs.writeShellScriptBin "cyberchef" "${open} ${pkgs.cyberchef}/share/cyberchef/index.html")
         (if ghidra-bin.meta.available then ghidra-bin else ghidra)
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         dwex
         unstable.elf-dissector
         imhex
@@ -351,7 +351,7 @@ in {
         unstable.iaito
       ];
 
-      xdg.desktopEntries.cyberchef = lib.mkIf pkgs.stdenv.isLinux {
+      xdg.desktopEntries.cyberchef = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
         name = "CyberChef";
         comment = "The Cyber Swiss Army Knife";
         exec = "${pkgs.xdg-utils}/bin/xdg-open ${pkgs.cyberchef}/share/cyberchef/index.html";
@@ -394,7 +394,7 @@ in {
     (lib.mkIf config.isz.graphical {
       home.packages = with pkgs; [
         qtpass
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         kdePackages.kgpg
         kdePackages.kleopatra
       ];
@@ -462,7 +462,7 @@ in {
       '';
     }
     # Network - browsh
-    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
+    (lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && config.isz.graphical) {
       programs.browsh = {
         enable = true;
         firefoxPackage = pkgs.unstable.firefox;
@@ -512,7 +512,7 @@ in {
           export PKB_API_KEY PKB_API_SECRET
           exec "${lib.getExe pkb-client}" "$@"
         '')
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         sockdump
       ];
       programs.tio = {
@@ -531,7 +531,7 @@ in {
         rdesktop
         transmission_4
         bruno
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         netsurf-browser
         qgis-ltr
         remmina
@@ -541,7 +541,7 @@ in {
       ++ (available mqttx);
     })
     # KDE PIM
-    (lib.mkIf (config.isz.graphical && pkgs.stdenv.isLinux) {
+    (lib.mkIf (config.isz.graphical && pkgs.stdenv.hostPlatform.isLinux) {
       home.packages = with pkgs; [
         # Storage backend
         kdePackages.akonadi
@@ -586,7 +586,7 @@ in {
       home.packages = with pkgs; [
         labplot
         xdot
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         #broken kgraphviewer
         (if kdePackages.kig.meta.available then kdePackages.kig else libsForQt5.kig) # KDE 6 version is currently broken
         kstars
@@ -619,7 +619,7 @@ in {
         gv
         pdftk
         zbar
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         abiword
         kdePackages.calligra
         kdePackages.ghostwriter
@@ -634,7 +634,7 @@ in {
     # Productivity - eBooks
     (lib.mkIf config.isz.graphical {
       home.packages = with pkgs;
-        lib.optionals pkgs.stdenv.isLinux [
+        lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         calibre
         foliate
         sigil
@@ -647,7 +647,7 @@ in {
         texlive.combined.scheme-full
       ] ++ lib.optionals config.isz.graphical [
         texstudio
-      ] ++ lib.optionals (pkgs.stdenv.isLinux && config.isz.graphical) [
+      ] ++ lib.optionals (pkgs.stdenv.hostPlatform.isLinux && config.isz.graphical) [
         apostrophe
         kile
         setzer
@@ -669,7 +669,7 @@ in {
         xwininfo
         xlsfonts
         xfontsel
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         xdotool # broken on macOS
       ]);
     })
@@ -685,7 +685,7 @@ in {
       };
     }
     # Completion for `open` on Darwin
-    (lib.mkIf (pkgs.stdenv.isDarwin && config.programs.bash.enableCompletion) {
+    (lib.mkIf (pkgs.stdenv.hostPlatform.isDarwin && config.programs.bash.enableCompletion) {
       programs.bash.profileExtra = ''
         if ! type _compopt_o_filenames &> /dev/null; then
           _compopt_o_filenames ()
@@ -853,7 +853,7 @@ in {
           highlightingModeRegex = "^YAML$";
         };
       };
-    in lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
+    in lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && config.isz.graphical) {
       programs.kate = {
         enable = true;
         package = pkgs.kdePackages.kate;
@@ -878,7 +878,7 @@ in {
     # Signal
     {
       programs.bash.shellAliases.signal-sqlite = let
-        root = if pkgs.stdenv.isDarwin
+        root = if pkgs.stdenv.hostPlatform.isDarwin
                then "${config.home.homeDirectory}/Library/Application Support/Signal"
                else "${config.xdg.configHome}/Signal";
       in ''

@@ -7,7 +7,7 @@ final: prev:
   rtlamr-collect = final.callPackage ./rtlamr-collect {};
   speedtest-influxdb = final.callPackage ./speedtest-influxdb {};
   zwave-js-ui-bin = final.callPackage ./zwave-js-ui/bin.nix {};
-  avidemux = if final.stdenv.isDarwin then (final.libsForQt5.callPackage ./avidemux {}) else prev.avidemux;
+  avidemux = if final.stdenv.hostPlatform.isDarwin then (final.libsForQt5.callPackage ./avidemux {}) else prev.avidemux;
   macfuse = final.callPackage ./macfuse {
     inherit (final.darwin) signingUtils;
   };

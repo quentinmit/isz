@@ -8,7 +8,7 @@
   config = lib.mkIf config.isz.quentin.games.enable {
     home.packages = with pkgs; [
       lightsoff
-    ] ++ lib.optionals pkgs.stdenv.isLinux [
+    ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       bottles
       gnuchess # broken on macOS
       igir

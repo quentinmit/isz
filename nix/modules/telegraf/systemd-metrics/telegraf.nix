@@ -1,7 +1,7 @@
 { lib, config, pkgs, ... }:
 {
   config = {
-    services.telegraf.extraConfig = lib.mkIf (config.isz.telegraf.enable && pkgs.stdenv.isLinux) {
+    services.telegraf.extraConfig = lib.mkIf (config.isz.telegraf.enable && pkgs.stdenv.hostPlatform.isLinux) {
       inputs.execd = [{
         interval = config.isz.telegraf.interval.cgroup;
         alias = "systemd_user";

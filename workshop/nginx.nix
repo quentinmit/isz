@@ -17,7 +17,7 @@
       recommendedProxySettings = true;
       upstreams.grafana.servers."unix:/${config.services.grafana.settings.server.socket}" = {};
       upstreams.influx.servers."localhost:8086" = {};
-      upstreams.homeassistant.servers."[::1]:${toString config.services.home-assistant.config.http.server_port}" = {};
+      upstreams.homeassistant.servers."[::1]:8123" = {};
       upstreams.zwave.servers."127.0.0.1:8091" = {};
       upstreams.dashboard.servers."127.0.0.1:8080" = {};
       upstreams.jellyfin.servers."172.30.96.${toString self.nixosConfigurations.heartofgold.config.isz.networking.lastOctet}:8096" = {};

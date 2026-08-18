@@ -176,7 +176,7 @@ in {
             }];
           };
         }
-        (lib.mkIf pkgs.stdenv.isLinux {
+        (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
           inputs = {
             kernel = [{}];
             linux_cpu = lib.mkIf (!cfg.vm) [{}];

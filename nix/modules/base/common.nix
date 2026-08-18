@@ -16,7 +16,7 @@
       extra-experimental-features = [ "nix-command" "flakes" ];
       # Nix on macOS has a race condition when this is turned on.
       # https://github.com/NixOS/nix/issues/7273
-      auto-optimise-store = lib.mkIf (!pkgs.stdenv.isDarwin) true;
+      auto-optimise-store = lib.mkIf (!pkgs.stdenv.hostPlatform.isDarwin) true;
       # Preserve source for gcroots to make rebuilding faster.
       keep-outputs = true;
       trusted-public-keys = [

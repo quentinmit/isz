@@ -32,7 +32,7 @@ in {
         yt-dlp
       ] ++ available youtube-dl
         ++ available jellycli
-        ++ lib.optionals pkgs.stdenv.isLinux [
+        ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         dvdbackup
         mikmod
         vapoursynth
@@ -47,7 +47,7 @@ in {
           withExamples = true;
         })
         jellyfin-media-player
-      ] ++ lib.optionals pkgs.stdenv.isLinux [
+      ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         avidemux # https://github.com/iains/gcc-darwin-arm64/issues/3 https://github.com/orgs/Homebrew/discussions/3296
         guvcview
         delfin
@@ -95,7 +95,7 @@ in {
         pulsemixer
       ];
     }
-    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
+    (lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && config.isz.graphical) {
       home.packages = with pkgs; [
         crosspipe
         lxqt.pavucontrol-qt
@@ -104,7 +104,7 @@ in {
       ];
     })
     # Multimedia - OBS
-    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) {
+    (lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && config.isz.graphical) {
       home.packages = [(pkgs.wrapOBS {
         plugins = with pkgs.obs-studio-plugins; [
           droidcam-obs
@@ -134,13 +134,13 @@ in {
       })];
     })
     # Multimedia - Carla
-    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical && (builtins.tryEval pkgs.carla.outPath).success) {
+    (lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && config.isz.graphical && (builtins.tryEval pkgs.carla.outPath).success) {
       home.packages = [
         pkgs.carla
       ];
     })
     # Multimedia - Audio
-    (lib.mkIf (pkgs.stdenv.isLinux && config.isz.graphical) (let
+    (lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && config.isz.graphical) (let
       pluginPath = type: "${config.home.profileDirectory}/lib/${type}";
       sfDir = "${config.home.profileDirectory}/share/soundfonts";
       commas = list: lib.concatStringsSep ", " list;

@@ -68,9 +68,9 @@
       yazi
       yj
       yq
-    ] ++ lib.optionals pkgs.stdenv.isLinux [
+    ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       wrap.packages.${stdenv.system}.wrap
-    ] ++ lib.optionals (config.isz.graphical && pkgs.stdenv.isLinux) ([
+    ] ++ lib.optionals (config.isz.graphical && pkgs.stdenv.hostPlatform.isLinux) ([
       d-spy
       devtoolbox
       wl-clipboard

@@ -40,7 +40,7 @@ stdenv.mkDerivation rec {
 
   # ffmpeg doesn't build on a case-sensitive filesystem due to VERSION colliding
   # with the new C++ <version> header.
-  postPatch = lib.optionalString stdenv.isDarwin ''
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     sed -i '/FFMPEG_PERFORM_PATCH 1/i\
     file(REMOVE "\''${FFMPEG_SOURCE_DIR}/VERSION")' \
     cmake/admFFmpegPrepareTar.cmake
@@ -49,7 +49,7 @@ stdenv.mkDerivation rec {
     bootStrap.bash
   '';
 
-  CXXFLAGS = lib.optionalString stdenv.isDarwin "-Wno-c++11-narrowing";
+  CXXFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-c++11-narrowing";
 
   nativeBuildInputs =
     [ yasm cmake pkg-config makeWrapper ]
@@ -57,8 +57,8 @@ stdenv.mkDerivation rec {
   buildInputs = [
     zlib gettext libvdpau libXv sqlite fribidi fontconfig
     freetype libXext libGLU
-  ] ++ lib.optionals stdenv.isLinux [ libva alsa-lib ]
-    ++ lib.optionals stdenv.isDarwin [ VideoToolbox CoreFoundation CoreMedia CoreVideo CoreAudio CoreServices QuartzCore ]
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [ libva alsa-lib ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ VideoToolbox CoreFoundation CoreMedia CoreVideo CoreAudio CoreServices QuartzCore ]
     ++ lib.optional withX264 x264
     ++ lib.optional withX265 x265
     ++ lib.optional withXvid xvidcore
@@ -76,7 +76,7 @@ stdenv.mkDerivation rec {
       "${makeWrapper} ${filename} --set ADM_ROOT_DIR $out --prefix LD_LIBRARY_PATH : ${libXext}/lib";
     wrapQtApp = wrapWith "wrapQtApp";
     wrapProgram = wrapWith "wrapProgram";
-    binNames = if stdenv.isDarwin then {
+    binNames = if stdenv.hostPlatform.isDarwin then {
       cli = "avidemux_cli";
       qt5 = "Avidemux${lib.versions.majorMinor version}";
       jobs = "avidemux_jobs";

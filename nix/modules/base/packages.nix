@@ -89,7 +89,7 @@ let
     # python311 # pyvenv is part of python311
     # wireless-regdb
     # wirelesstools
-  ] ++ lib.optionals pkgs.stdenv.isLinux [
+  ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
     # Nix
     nix-du
 
