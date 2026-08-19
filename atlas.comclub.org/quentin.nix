@@ -9,12 +9,6 @@
       home.stateVersion = "25.05";
 
       isz.base = true;
-
-      home.packages = with pkgs; [
-        xpra
-        xpra-html5
-        kdePackages.krdc
-      ];
     }
   ];
 }
