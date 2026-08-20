@@ -392,7 +392,19 @@ in {
             "TabsLayout"
           ];
         };
-        # repeat?
+        repeat = mkOption {
+          type = optionalOr (types.submodule {
+            options = {
+              mode = mkOption {
+                type = types.enum [ "variable"];
+                default = "variable";
+              };
+              value = mkOption {
+                type = types.str;
+              };
+            };
+          });
+        };
         title = mkOption {
           type = types.str;
         };

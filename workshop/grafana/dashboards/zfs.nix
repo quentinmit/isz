@@ -21,6 +21,7 @@ let
           |> filter(fn: (r) => r["_measurement"] == "zpool_latency")
           |> filter(fn: (r) => r["_field"] == "${config._field}")
           |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
+          |> filter(fn: (r) => r["name"] =~ /^''${pool:regex}$/)
           |> filter(fn: (r) => r["vdev"] == "root")
           |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
           |> difference(nonNegative: true, columns: ["_value"])
@@ -52,6 +53,7 @@ let
     spec.title = "vdev I/O ${title} Queues";
     influx.filter._measurement = "zpool_vdev_stats";
     influx.filter._field = { op = "=~"; values = "_${prefix}_queue$"; };
+    influx.filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
     influx.filter.vdev = "root";
     influx.fn = "mean";
     influx.imports = ["strings"];
@@ -99,6 +101,13 @@ in {
           spec.label = "Host";
           spec.includeAll = false;
         };
+        pool = {
+          influx.predicate = ''r["_measurement"] == "zpool_latency" and r["_field"] !~ /^total_/ and r["host"] =~ /^''${host:regex}/'';
+          influx.tag = "name";
+          spec.label = "Pool";
+          spec.multi = true;
+          spec.hide = "hideVariable";
+        };
         latencyparam = {
           influx.predicate = ''r["_measurement"] == "zpool_latency" and r["_field"] !~ /^total_/'';
           influx.tag = "_field";
@@ -106,87 +115,117 @@ in {
           spec.multi = true;
           spec.hide = "hideVariable";
         };
+        scan_exists = {
+         influx.query = ''
+           from(bucket: "icestationzebra")
+           |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+           |> filter(fn: (r) => r["_measurement"] == "zpool_scan_stats")
+           |> filter(fn: (r) => r["_field"] == "issued")
+           |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
+           |> filter(fn: (r) => r["name"] =~ /^''${pool:regex}$/)
+           |> filter(fn: (r) => r["state"] != "finished")
+           |> group()
+           |> last()
+           |> map(fn: (r) => ({_time: r._time, _value: "yes"}))
+         '';
+          spec.hide = "hideVariable";
+          spec.refresh = "onTimeRangeChanged";
+        };
       };
       layout.kind = "TabsLayout";
-      layout.spec.tabs = [
+      layout.spec.tabs = let
+        scanRow = {
+          spec.layout.kind = "AutoGridLayout";
+          spec.title = "Scan Status";
+          spec.conditionalRendering.kind = "ConditionalRenderingGroup";
+          spec.conditionalRendering.spec.condition = "and";
+          spec.conditionalRendering.spec.visibility = "show";
+          spec.conditionalRendering.spec.items = [
+            {
+              kind = "ConditionalRenderingVariable";
+              spec.variable = "scan_exists";
+              spec.operator = "equals";
+              spec.value = "yes";
+            }
+          ];
+          spec.layout.spec.items = [
+            { spec.element.name = "scan-progress"; }
+          ];
+        };
+        overviewRow = {
+          spec.layout.kind = "GridLayout";
+          spec.title = "";
+          spec.hideHeader = true;
+          spec.layout.spec.items = [
+            { spec = {
+                element.name = "pool-activity";
+                x = 0; y = 0; width = 9; height = 8;
+              }; }
+            { spec = {
+                element.name = "pool-usage";
+                x = 0; y = 8; width = 9; height = 6;
+              }; }
+            { spec = {
+                element.name = "pool-status";
+                x = 9; y = 0; width = 5; height = 2;
+              }; }
+            { spec = {
+                element.name = "zpool-errors";
+                x = 9; y = 2; width = 5; height = 5;
+              }; }
+            { spec = {
+                element.name = "zpool-usage-stat";
+                x = 9; y = 7; width = 5; height = 7;
+              }; }
+            { spec = {
+                element.name = "vdev-queue-active";
+                x = 14; y = 0; width = 10; height = 7;
+              }; }
+            { spec = {
+                element.name = "vdev-queue-pend";
+                x = 14; y = 7; width = 10; height = 7;
+              }; }
+          ];
+        };
+        latenciesRow = {
+          spec.title = "Latencies";
+          spec.layout.kind = "GridLayout";
+          spec.layout.spec.items = [
+            { spec = {
+                element.name = "total_read";
+                x = 0; y = 0; width = 12; height = 8;
+              }; }
+            { spec = {
+                element.name = "total_write";
+                x = 12; y = 0; width = 12; height = 8;
+              }; }
+            { spec = {
+                element.name = "latency-per-queue";
+                x = 0; y = 8; width = 24; height = 8;
+                repeat = {
+                  direction = "h";
+                  mode = "variable";
+                  value = "latencyparam";
+                };
+              }; }
+          ];
+        };
+      in [
         {
           spec.title = "Overview";
           spec.layout.kind = "RowsLayout";
           spec.layout.spec.rows = [
             {
-              spec.layout.kind = "AutoGridLayout";
-              spec.title = "Scan Status";
-              spec.conditionalRendering.kind = "ConditionalRenderingGroup";
-              spec.conditionalRendering.spec.condition = "and";
-              spec.conditionalRendering.spec.visibility = "show";
-              spec.conditionalRendering.spec.items = [
-                {
-                  kind = "ConditionalRenderingVariable";
-                  spec.variable = "scan_exists";
-                  spec.operator = "equals";
-                  spec.value = "yes";
-                }
-              ];
-              spec.layout.spec.items = [
-                { spec.element.name = "scan-progress"; }
-              ];
-             }
-            {
-              spec.layout.kind = "GridLayout";
-              spec.title = "";
-              spec.hideHeader = true;
-              spec.layout.spec.items = [
-                { spec = {
-                    element.name = "pool-activity";
-                    x = 0; y = 0; width = 9; height = 8;
-                  }; }
-                { spec = {
-                    element.name = "pool-usage";
-                    x = 0; y = 8; width = 9; height = 6;
-                  }; }
-                { spec = {
-                    element.name = "pool-status";
-                    x = 9; y = 0; width = 5; height = 2;
-                  }; }
-                { spec = {
-                    element.name = "zpool-errors";
-                    x = 9; y = 2; width = 5; height = 5;
-                  }; }
-                { spec = {
-                    element.name = "zpool-usage-stat";
-                    x = 9; y = 7; width = 5; height = 7;
-                  }; }
-                { spec = {
-                    element.name = "vdev-queue-active";
-                    x = 14; y = 0; width = 10; height = 7;
-                  }; }
-                { spec = {
-                    element.name = "vdev-queue-pend";
-                    x = 14; y = 7; width = 10; height = 7;
-                  }; }
-              ];
-            }
-            {
-              spec.title = "Latencies";
-              spec.layout.kind = "GridLayout";
-              spec.layout.spec.items = [
-                { spec = {
-                    element.name = "total_read";
-                    x = 0; y = 0; width = 12; height = 8;
-                  }; }
-                { spec = {
-                    element.name = "total_write";
-                    x = 12; y = 0; width = 12; height = 8;
-                  }; }
-                { spec = {
-                    element.name = "latency-per-queue";
-                    x = 0; y = 8; width = 24; height = 8;
-                    repeat = {
-                      direction = "h";
-                      mode = "variable";
-                      value = "latencyparam";
-                    };
-                  }; }
+              spec.title = "\${pool}";
+              spec.repeat = {
+                mode = "variable";
+                value = "pool";
+              };
+              spec.layout.kind = "RowsLayout";
+              spec.layout.spec.rows = [
+                scanRow
+                overviewRow
+                latenciesRow
               ];
             }
           ];
@@ -220,6 +259,7 @@ in {
         spec.title = "Pool Activity";
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = ["read_bytes" "write_bytes" "read_ops" "write_ops"];
+        influx.filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
         influx.filter.vdev = "root";
         influx.fn = "derivative";
         influx.groupBy.fn = "sum";
@@ -240,6 +280,7 @@ in {
         spec.transparent = true;
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = "size";
+        influx.filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
         influx.filter.vdev = "root";
         influx.fn = "last1";
         influx.extra = ''
@@ -267,6 +308,7 @@ in {
         spec.title = "Pool Usage";
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = ["free" "alloc" "size"];
+        influx.filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
         influx.filter.vdev = "root";
         influx.fn = "mean";
         influx.extra = ''
@@ -279,6 +321,7 @@ in {
       panels.zpool-errors = {
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = ["read_errors" "write_errors" "fragmentation" "checksum_errors"];
+        influx.filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
         influx.filter.vdev = "root";
         influx.fn = "last1";
         influx.extra = ''
@@ -300,6 +343,7 @@ in {
       panels.zpool-usage-stat = {
         influx.filter._measurement = "zpool_stats";
         influx.filter._field = ["alloc" "free" "size"];
+        influx.filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
         influx.filter.vdev = "root";
         influx.fn = "last1";
         influx.groupBy.fn = "sum";
@@ -477,26 +521,12 @@ in {
         spec.title = "Scan Progress";
         influx.filter._measurement = "zpool_scan_stats";
         influx.filter._field = ["issued" "examined" "processed" "to_examine"];
+        influx.filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
         influx.filter.state = { op = "!="; values = "finished"; };
         influx.fn = "last";
         spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "bytes";
         };
-      };
-      variables.scan_exists = {
-       influx.query = ''
-         from(bucket: "icestationzebra")
-         |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-         |> filter(fn: (r) => r["_measurement"] == "zpool_scan_stats")
-         |> filter(fn: (r) => r["_field"] == "issued")
-         |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
-         |> filter(fn: (r) => r["state"] != "finished")
-         |> group()
-         |> last()
-         |> map(fn: (r) => ({_time: r._time, _value: "yes"}))
-       '';
-        spec.hide = "hideVariable";
-        spec.refresh = "onTimeRangeChanged";
       };
     };
   };
