@@ -1,0 +1,1290 @@
+{
+  "cloudping_targets": [
+    {
+      "host": "dynamodb.us-east-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "us-east-1",
+      "location": "Virginia",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.us-east-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "us-east-2",
+      "location": "Ohio",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.us-west-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "us-west-1",
+      "location": "California",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.us-west-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "us-west-2",
+      "location": "Oregon",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ca-central-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ca-central-1",
+      "location": "Canada Central",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ca-west-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ca-west-1",
+      "location": "Canada West",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.eu-west-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "eu-west-1",
+      "location": "Ireland",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.eu-west-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "eu-west-2",
+      "location": "London",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.eu-west-3.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "eu-west-3",
+      "location": "Paris",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.eu-central-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "eu-central-1",
+      "location": "Frankfurt",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.eu-central-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "eu-central-2",
+      "location": "Zurich",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.eu-south-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "eu-south-1",
+      "location": "Milan",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.eu-south-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "eu-south-2",
+      "location": "Spain",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.eu-north-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "eu-north-1",
+      "location": "Stockholm",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.il-central-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "il-central-1",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.me-south-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "me-south-1",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "streams.dynamodb.me-central-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "me-central-1",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.af-south-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "af-south-1",
+      "location": "Cape Town",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-east-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-east-1",
+      "location": "Hong Kong",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-east-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-east-2",
+      "location": "Taipei",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-southeast-3.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-southeast-3",
+      "location": "Jakarta",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-south-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-south-1",
+      "location": "Mumbai",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-south-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-south-2",
+      "location": "Hyderabad",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-northeast-3.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-northeast-3",
+      "location": "Osaka",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-northeast-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-northeast-2",
+      "location": "Seoul",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-southeast-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-southeast-1",
+      "location": "Singapore",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-southeast-2.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-southeast-2",
+      "location": "Sydney",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-southeast-4.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-southeast-4",
+      "location": "Melbourne",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.ap-northeast-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "ap-northeast-1",
+      "location": "Tokyo",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.sa-east-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "sa-east-1",
+      "location": "S\u00e3o Paulo",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.cn-north-1.amazonaws.com.cn",
+      "service": "Amazon Web Services",
+      "datacenter": "cn-north-1",
+      "location": "Beijing",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.cn-northwest-1.amazonaws.com.cn",
+      "service": "Amazon Web Services",
+      "datacenter": "cn-northwest-1",
+      "location": "Ningxia",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.mx-central-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "mx-central-1",
+      "location": "Mexico",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.us-gov-east-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "us-gov-east-1",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "dynamodb.us-gov-west-1.amazonaws.com",
+      "service": "Amazon Web Services",
+      "datacenter": "us-gov-west-1",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "http.speedtest.las1.coreweave.com",
+      "service": "CoreWeave",
+      "datacenter": "LAS1",
+      "location": "Las Vegas",
+      "ipv4": false,
+      "ipv6": false
+    },
+    {
+      "host": "http.speedtest.ord1.coreweave.com",
+      "service": "CoreWeave",
+      "datacenter": "ORD1",
+      "location": "Chicago",
+      "ipv4": false,
+      "ipv6": false
+    },
+    {
+      "host": "http.speedtest.lga1.coreweave.com",
+      "service": "CoreWeave",
+      "datacenter": "LGA1",
+      "location": "New York",
+      "ipv4": false,
+      "ipv6": false
+    },
+    {
+      "host": "sfo2.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "SFO2",
+      "location": "San Francisco",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "sfo3.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "SFO3",
+      "location": "San Francisco",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "tor1.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "TOR1",
+      "location": "Toronto",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "atl1.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "ATL1",
+      "location": "Atlanta",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "nyc3.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "NYC3",
+      "location": "New York",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "lon1.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "LON1",
+      "location": "London",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "ams3.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "AMS3",
+      "location": "Amsterdam",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "fra1.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "FRA1",
+      "location": "Frankfurt",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "blr1.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "BLR1",
+      "location": "Bangalore",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "sgp1.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "SGP1",
+      "location": "Singapore",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "syd1.digitaloceanspaces.com",
+      "service": "DigitalOcean",
+      "datacenter": "SYD1",
+      "location": "Sydney",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "africa-south1-5tkroniexa-bq.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "africa-south1",
+      "location": "Johannesburg",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-east1-5tkroniexa-de.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-east1",
+      "location": "Taiwan",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-east2-5tkroniexa-df.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-east2",
+      "location": "Hong Kong",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-northeast1-5tkroniexa-an.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-northeast1",
+      "location": "Tokyo",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-northeast2-5tkroniexa-dt.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-northeast2",
+      "location": "Osaka",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-northeast3-5tkroniexa-du.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-northeast3",
+      "location": "Seoul",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-south1-5tkroniexa-el.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-south1",
+      "location": "Mumbai",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-south2-5tkroniexa-em.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-south2",
+      "location": "Delhi",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-southeast1-5tkroniexa-as.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-southeast1",
+      "location": "Singapore",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "asia-southeast2-5tkroniexa-et.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "asia-southeast2",
+      "location": "Jakarta",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "australia-southeast1-5tkroniexa-ts.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "australia-southeast1",
+      "location": "Sydney",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "australia-southeast2-5tkroniexa-km.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "australia-southeast2",
+      "location": "Melbourne",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-central2-5tkroniexa-lm.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-central2",
+      "location": "Warsaw",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-north1-5tkroniexa-lz.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-north1",
+      "location": "Finland",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-north2-5tkroniexa-ma.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-north2",
+      "location": "Stockholm",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-southwest1-5tkroniexa-no.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-southwest1",
+      "location": "Madrid",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west1-5tkroniexa-ew.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west1",
+      "location": "Belgium",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west10-5tkroniexa-oe.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west10",
+      "location": "Berlin",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west12-5tkroniexa-og.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west12",
+      "location": "Turin",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west2-5tkroniexa-nw.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west2",
+      "location": "London",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west3-5tkroniexa-ey.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west3",
+      "location": "Frankfurt",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west4-5tkroniexa-ez.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west4",
+      "location": "Netherlands",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west6-5tkroniexa-oa.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west6",
+      "location": "Zurich",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west8-5tkroniexa-oc.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west8",
+      "location": "Milan",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "europe-west9-5tkroniexa-od.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "europe-west9",
+      "location": "Paris",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "global.gcping.com",
+      "service": "Google Cloud Platform",
+      "datacenter": "global",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "me-central1-5tkroniexa-ww.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "me-central1",
+      "location": "Doha",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "me-central2-5tkroniexa-wx.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "me-central2",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "me-west1-5tkroniexa-zf.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "me-west1",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "northamerica-northeast1-5tkroniexa-nn.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "northamerica-northeast1",
+      "location": "Montr\u00e9al",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "northamerica-northeast2-5tkroniexa-pd.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "northamerica-northeast2",
+      "location": "Toronto",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "southamerica-east1-5tkroniexa-rj.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "southamerica-east1",
+      "location": "S\u00e3o Paulo",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "southamerica-west1-5tkroniexa-tl.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "southamerica-west1",
+      "location": "Santiago",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-central1-5tkroniexa-uc.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-central1",
+      "location": "Iowa",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-east1-5tkroniexa-ue.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-east1",
+      "location": "South Carolina",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-east4-5tkroniexa-uk.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-east4",
+      "location": "North Virginia",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-east5-5tkroniexa-ul.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-east5",
+      "location": "Columbus",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-south1-5tkroniexa-vp.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-south1",
+      "location": "Dallas",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-west1-5tkroniexa-uw.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-west1",
+      "location": "Oregon",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-west2-5tkroniexa-wl.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-west2",
+      "location": "Los Angeles",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-west3-5tkroniexa-wm.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-west3",
+      "location": "Salt Lake City",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "us-west4-5tkroniexa-wn.a.run.app",
+      "service": "Google Cloud Platform",
+      "datacenter": "us-west4",
+      "location": "Las Vegas",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "hel1-speed.hetzner.com",
+      "service": "Hetzner",
+      "location": "Finland",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "fsn1-speed.hetzner.com",
+      "service": "Hetzner",
+      "location": "Falkenstein, Germany",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speed.hetzner.de",
+      "service": "Hetzner",
+      "location": "Nuremberg, Germany",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "ash-speed.hetzner.com",
+      "service": "Hetzner",
+      "location": "Ashburn, Virginia",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "hil-speed.hetzner.com",
+      "service": "Hetzner",
+      "location": "Hillsboro, Oregon",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "sin-speed.hetzner.com",
+      "service": "Hetzner",
+      "location": "Singapore",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-south.cloud-object-storage.appdomain.cloud",
+      "service": "IBM Cloud",
+      "datacenter": "us-south",
+      "location": "Dallas",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "s3.us-east.cloud-object-storage.appdomain.cloud",
+      "service": "IBM Cloud",
+      "datacenter": "us-east",
+      "location": "Washington DC",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+      "service": "IBM Cloud",
+      "datacenter": "eu-gb",
+      "location": "London",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "s3.eu-de.cloud-object-storage.appdomain.cloud",
+      "service": "IBM Cloud",
+      "datacenter": "eu-de",
+      "location": "Frankfurt",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "s3.au-syd.cloud-object-storage.appdomain.cloud",
+      "service": "IBM Cloud",
+      "datacenter": "au-syd",
+      "location": "Sydney",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "speedtest.newark.linode.com",
+      "service": "Linode",
+      "location": "Newark (New York)",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.singapore.linode.com",
+      "service": "Linode",
+      "location": "Singapore",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.london.linode.com",
+      "service": "Linode",
+      "location": "London",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.frankfurt.linode.com",
+      "service": "Linode",
+      "location": "Frankfurt",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.dallas.linode.com",
+      "service": "Linode",
+      "location": "Dallas",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.toronto1.linode.com",
+      "service": "Linode",
+      "location": "Toronto",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.syd1.linode.com",
+      "service": "Linode",
+      "location": "Sydney",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.atlanta.linode.com",
+      "service": "Linode",
+      "location": "Atlanta",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.tokyo2.linode.com",
+      "service": "Linode",
+      "location": "Tokyo",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.mumbai1.linode.com",
+      "service": "Linode",
+      "location": "Mumbai",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "speedtest.fremont.linode.com",
+      "service": "Linode",
+      "location": "Fremont (San Francisco)",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-west-lz-pao-a.cloud.ovh.us",
+      "service": "OVH Cloud",
+      "country": "USA",
+      "city": "Palo Alto",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-west-or.io.cloud.ovh.us",
+      "service": "OVH Cloud",
+      "country": "USA",
+      "city": "Oregon",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-east-lz-dal-a.cloud.ovh.us",
+      "service": "OVH Cloud",
+      "country": "USA",
+      "city": "Dallas",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-east-lz-chi-a.cloud.ovh.us",
+      "service": "OVH Cloud",
+      "country": "USA",
+      "city": "Chicago",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-east-lz-atl-a.cloud.ovh.us",
+      "service": "OVH Cloud",
+      "country": "USA",
+      "city": "Atlanta",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.ca-east-tor.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "Canada",
+      "city": "Toronto",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-east-va.io.cloud.ovh.us",
+      "service": "OVH Cloud",
+      "country": "USA",
+      "city": "Virginia",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-east-lz-mia-a.cloud.ovh.us",
+      "service": "OVH Cloud",
+      "country": "USA",
+      "city": "Miami",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.us-east-lz-nyc-a.cloud.ovh.us",
+      "service": "OVH Cloud",
+      "country": "USA",
+      "city": "New York",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.bhs.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "Canada",
+      "city": "Quebec",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.uk.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "UK",
+      "city": "London",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.gra.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "France",
+      "city": "Gravelines",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.rbx.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "France",
+      "city": "Roubaix",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.eu-west-par.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "France",
+      "city": "Paris",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.sbg.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "France",
+      "city": "Strasbourg",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.de.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "Germany",
+      "city": "Frankfurt",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.waw.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "Poland",
+      "city": "Warsaw",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.ap-south-mum.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "India",
+      "city": "Mumbai",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.sgp.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "Singapore",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.ap-southeast-syd.io.cloud.ovh.net",
+      "service": "OVH Cloud",
+      "country": "Australia",
+      "city": "Sydney",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.fr-par.scw.cloud",
+      "service": "Scaleway",
+      "datacenter": "PAR",
+      "location": "France",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.nl-ams.scw.cloud",
+      "service": "Scaleway",
+      "datacenter": "AMS",
+      "location": "Netherlands",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "s3.pl-waw.scw.cloud",
+      "service": "Scaleway",
+      "datacenter": "WAW",
+      "location": "Poland",
+      "ipv4": true,
+      "ipv6": true
+    },
+    {
+      "host": "ams-nl-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Amsterdam",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "ga-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Atlanta",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "blr-in-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Bangalore",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "bom-in-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Mumbai",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "par-fr-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Paris",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "del-in-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Delhi NCR",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "tx-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Dallas",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "nj-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "New Jersey",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "fra-de-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Frankfurt",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "hon-hi-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Honolulu",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "sel-kor-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Seoul",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "osk-jp-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Osaka",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "jnb-za-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Johannesburg",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "lax-ca-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Los Angeles",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "lon-gb-ping.vultr.com",
+      "service": "Vultr",
+      "location": "London",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "mad-es-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Madrid",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "man-uk-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Manchester",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "mel-au-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Melbourne",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "mex-mx-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Mexico City",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "fl-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Miami",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "hnd-jp-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Tokyo",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "il-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Chicago",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "sao-br-ping.vultr.com",
+      "service": "Vultr",
+      "location": "S\u00e3o Paulo",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "scl-cl-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Santiago",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "wa-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Seattle",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "sgp-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Singapore",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "sjo-ca-us-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Silicon Valley",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "sto-se-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Stockholm",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "syd-au-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Sydney",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "tlv-il-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Tel Aviv",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "waw-pl-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Warsaw",
+      "ipv4": true,
+      "ipv6": false
+    },
+    {
+      "host": "tor-ca-ping.vultr.com",
+      "service": "Vultr",
+      "location": "Toronto",
+      "ipv4": true,
+      "ipv6": false
+    }
+  ]
+}

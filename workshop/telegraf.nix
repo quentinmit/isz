@@ -1,7 +1,12 @@
 { lib, pkgs, config, options, ... }:
 {
   config = let
-    pingTargets = [{ host = "overwatch.mit.edu"; }] ++ (builtins.fromJSON (builtins.readFile ../telegraf/static/he_lg.json)).he_lg_ping_targets;
+    pingTargets = [
+      { host = "overwatch.mit.edu"; }
+    ]
+    ++ (builtins.fromJSON (builtins.readFile ../telegraf/static/he_lg.json)).he_lg_ping_targets
+    ++ (builtins.fromJSON (builtins.readFile ../telegraf/static/cloudping.json)).cloudping_targets
+    ;
   in {
     isz.telegraf = {
       enable = true;
@@ -119,29 +124,43 @@
         }];
       }
       {
-        inputs.ping = [{
-          interval = "30s";
-          method = "native";
-          urls = map (t: t.host) pingTargets;
-          ipv4 = true;
-          ipv6 = false;
-        }];
-        processors.starlark = [{
-          namepass = ["ping"];
-          source = ''
-            tags = ${builtins.toJSON (builtins.listToAttrs (map (value: { name = value.host; inherit value; }) pingTargets))}
-            def apply(metric):
-              url = metric.tags.get("url")
-              extra = tags.get(url)
-              if extra:
-                extra = dict(extra)
-                extra.pop("host")
-                if "exchanges" in extra:
-                  extra["exchanges"] = ", ".join(extra["exchanges"])
-                metric.tags.update(extra)
-              return metric
-          '';
-        }];
+        inputs.ping = [
+          {
+            interval = "30s";
+            method = "native";
+            urls = map (t: t.host) (lib.filter (t: t.ipv4 or true) pingTargets);
+            ipv4 = true;
+            ipv6 = false;
+            tags.ip_version = "IPv4";
+          }
+          {
+            alias = "ping6";
+            interval = "30s";
+            method = "native";
+            urls = map (t: t.host) (lib.filter (t: t.ipv6 or false) pingTargets);
+            ipv4 = false;
+            ipv6 = true;
+            tags.ip_version = "IPv6";
+          }
+        ];
+        processors.starlark = [
+          {
+            namepass = ["ping"];
+            source = ''
+              tags = ${builtins.toJSON (builtins.listToAttrs (map (value: { name = value.host; value = lib.filterAttrs (name: _: name != "ipv4" && name != "ipv6") value; }) pingTargets))}
+              def apply(metric):
+                url = metric.tags.get("url")
+                extra = tags.get(url)
+                if extra:
+                  extra = dict(extra)
+                  extra.pop("host")
+                  if "exchanges" in extra:
+                    extra["exchanges"] = ", ".join(extra["exchanges"])
+                  metric.tags.update(extra)
+                return metric
+            '';
+          }
+        ];
       }
       {
         inputs.mqtt_consumer = [{

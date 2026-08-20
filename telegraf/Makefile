@@ -17,3 +17,6 @@ upload-%: %.conf
 
 static/he_lg.json: bin/generate_he_lg.py
 	$< > $@
+
+static/cloudping.json: bin/generate_cloudping.py
+	$< > $@
