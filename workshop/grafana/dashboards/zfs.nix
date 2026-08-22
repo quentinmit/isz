@@ -74,7 +74,7 @@ let
     };
   };
 in {
-  config.isz.grafana.dashboardsV2."zfs" = { ... }: {
+  config.isz.grafana.dashboardsV2."zfs" = { config, ... }: {
     imports = [({ ... }: {
       options.panels = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule ({ config, ... }: {
@@ -114,22 +114,6 @@ in {
           spec.label = "Latency Parameters";
           spec.multi = true;
           spec.hide = "hideVariable";
-        };
-        scan_exists = {
-         influx.query = ''
-           from(bucket: "icestationzebra")
-           |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-           |> filter(fn: (r) => r["_measurement"] == "zpool_scan_stats")
-           |> filter(fn: (r) => r["_field"] == "issued")
-           |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
-           |> filter(fn: (r) => r["name"] =~ /^''${pool:regex}$/)
-           |> filter(fn: (r) => r["state"] != "finished")
-           |> group()
-           |> last()
-           |> map(fn: (r) => ({_time: r._time, _value: "yes"}))
-         '';
-          spec.hide = "hideVariable";
-          spec.refresh = "onTimeRangeChanged";
         };
       };
       layout.kind = "TabsLayout";
@@ -221,6 +205,28 @@ in {
                 mode = "variable";
                 value = "pool";
               };
+              spec.variables = [{
+                kind = "QueryVariable";
+                spec.name = "scan_exists";
+                spec.label = "scan_exists";
+                spec.query.group = "influxdb";
+                spec.query.datasource.name = config.defaultDatasourceName;
+                spec.query.spec.query = ''
+                  from(bucket: "icestationzebra")
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r["_measurement"] == "zpool_scan_stats")
+                  |> filter(fn: (r) => r["_field"] == "issued")
+                  |> filter(fn: (r) => r["host"] =~ /^''${host:regex}$/)
+                  |> filter(fn: (r) => r["name"] =~ /^''${pool:regex}$/)
+                  |> filter(fn: (r) => r["state"] != "finished")
+                  |> group()
+                  |> last()
+                  |> map(fn: (r) => ({_time: r._time, _value: "yes"}))
+                '';
+                spec.includeAll = true;
+                spec.hide = "hideVariable";
+                spec.refresh = "onTimeRangeChanged";
+              }];
               spec.layout.kind = "RowsLayout";
               spec.layout.spec.rows = [
                 scanRow
