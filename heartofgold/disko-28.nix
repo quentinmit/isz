@@ -2,6 +2,7 @@
 let
   pool = "zpool";
 in {
+  boot.lanzaboote.extraEfiSysMountPoints =  [ "/boot2" ];
   disko.devices = let
     zfsDisks = [
       "/dev/disk/by-id/ata-ST28000NM000C-3WM103_ZXA0KVF0" # wwn-0x5000c500e89392ad
@@ -15,6 +16,7 @@ in {
       "/dev/disk/by-id/ata-ST28000NM000C-3WM103_ZXA2ZM28" # wwn-0x5000c500eb466fe6
       "/dev/disk/by-id/ata-ST28000NM000C-3WM103_ZXA2ZW68" # wwn-0x5000c500eb42d0c6
     ];
+    boot2Device = lib.head zfsDisks;
     deviceToDiskoName = device: lib.last (lib.splitString "_" device);
   in {
     disk = {
@@ -68,6 +70,13 @@ in {
             content = {
               type = "filesystem";
               format = "vfat";
+            } // lib.optionalAttrs (device == boot2Device) {
+              mountpoint = "/boot2";
+              mountOptions = [
+                "defaults"
+                "fmask=0027"
+                "dmask=0027"
+              ];
             };
           };
           zfs = {
