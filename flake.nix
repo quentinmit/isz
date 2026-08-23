@@ -50,10 +50,8 @@
     bluechips.url = "github:quentinmit/bluechips";
     bluechips.inputs.nixpkgs.follows = "nixpkgs";
     bluechips.inputs.flake-utils.follows = "flake-utils";
-    lanzaboote.url = "github:nix-community/lanzaboote/v0.4.2";
+    lanzaboote.url = "github:nix-community/lanzaboote/v1.1.0";
     lanzaboote.inputs.nixpkgs.follows = "nixpkgs";
-    lanzaboote.inputs.flake-compat.follows = "flake-compat";
-    lanzaboote.inputs.pre-commit-hooks-nix.follows = "";
     lanzaboote.inputs.rust-overlay.follows = "rust-overlay";
     mosh-server-upnp.url = "github:quentinmit/mosh-server-upnp/nix-flake-update";#"github:arcnmx/mosh-server-upnp";
     mosh-server-upnp.inputs.nixpkgs.follows = "nixpkgs";
