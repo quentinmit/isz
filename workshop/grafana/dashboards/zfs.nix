@@ -78,11 +78,17 @@ in {
     imports = [({ ... }: {
       options.panels = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule ({ config, ... }: {
+          options.influx = lib.mkOption {
+            type = let
+              module = lib.types.submodule ({ ... }: {
+                filter.host = lib.mkDefault {
+                  op = "=~";
+                  values = ["^\${host:regex}$"];
+                };
+              });
+            in lib.types.either module (lib.types.listOf module);
+          };
           config = {
-            influx.filter.host = lib.mkDefault {
-              op = "=~";
-              values = ["^\${host:regex}$"];
-            };
             spec.data.spec.queryOptions.interval = lib.mkIf (config.spec.vizConfig.group == "timeseries") interval;
             spec.vizConfig.spec.options = lib.mkIf (config.spec.vizConfig.group == "timeseries") {
               tooltip.mode = "multi";
@@ -525,11 +531,27 @@ in {
 
       panels.scan-progress = {
         spec.title = "Scan Progress";
-        influx.filter._measurement = "zpool_scan_stats";
-        influx.filter._field = ["issued" "examined" "processed" "to_examine"];
-        influx.filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
-        influx.filter.state = { op = "!="; values = "finished"; };
-        influx.fn = "last";
+        influx = [
+          {
+            filter._measurement = "zpool_scan_stats";
+            filter._field = ["issued" "examined" "processed" "to_examine"];
+            filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
+            filter.state = { op = "!="; values = "finished"; };
+            fn = "last";
+          }
+          {
+            filter._measurement = "zpool_scan_stats";
+            filter._field = ["issued" "examined"];
+            filter.name = { op = "=~"; values = "^\${pool:regex}$"; };
+            filter.state = { op = "!="; values = "finished"; };
+            fn = "derivative";
+            options.unit = "Bps";
+            options.custom.scaleDistribution = {
+              type = "log";
+              log = "10";
+            };
+          }
+        ];
         spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "bytes";
         };
