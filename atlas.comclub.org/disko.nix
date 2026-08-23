@@ -21,8 +21,10 @@
             content = {
               type = "filesystem";
               format = "vfat";
-            } // lib.optionalAttrs (dev == "nvme0n1") {
-              mountpoint = "/boot";
+              mountpoint = {
+                nvme0n1 = "/boot";
+                nvme1n1 = "/boot2";
+              }.${dev};
               mountOptions = [
                 "defaults"
               ];
