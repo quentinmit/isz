@@ -365,7 +365,7 @@
       sensors.sensors_power = {
         graph_title = "Power";
         influx.filter._measurement = "sensors";
-        influx.filter._field = ["power_average"];
+        influx.filter._field = [ "power_input" "power_average" ];
         influx.fn = "mean";
         unit = "watt";
       };
