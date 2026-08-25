@@ -6,7 +6,7 @@ let
     "/dev/disk/by-id/ata-ST18000NT001-3NF101_ZVTDQ6XT"   # wwn-0x5000c500e86f57fb
     "/dev/disk/by-id/ata-ST18000NT001-3NF101_ZVTE1225"   # wwn-0x5000c500e8877637
     "/dev/disk/by-id/ata-ST18000NT001-3NF101_ZVTE1FN5"   # wwn-0x5000c500e878a0f0
-    "/dev/disk/by-id/ata-WDC_WD181KFGX-68AFPN0_3MGZ074U" # wwn-0x5000cca2cecda3ff
+    "/dev/disk/by-id/ata-ST18000NM000J-2TV103_ZR523E8A"  # wwn-0x5000c500db6b38b0
     "/dev/disk/by-id/ata-WDC_WD181KFGX-68AFPN0_4BHDGUYH" # wwn-0x5000cca2b6d3c3a7
     "/dev/disk/by-id/ata-WDC_WD181KFGX-68AFPN0_4BHDRURH" # wwn-0x5000cca2b6d3e1a8
     "/dev/disk/by-id/ata-WDC_WD181KFGX-68AFPN0_4BHGZA8H" # wwn-0x5000cca2b6d4e68f
