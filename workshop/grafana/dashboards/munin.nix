@@ -335,8 +335,8 @@
         influx.filter._field = "temp_c";
         influx.fn = "mean";
         influx.extra = ''
-        |> drop(columns: ["capacity", "enabled"])
-      '';
+          |> drop(columns: ["capacity", "enabled", "device", "power"])
+        '';
         unit = "celsius";
       };
       # (new) temp_gopsutil
