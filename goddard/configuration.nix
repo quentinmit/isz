@@ -35,7 +35,7 @@
   boot.zfs.forceImportRoot = false;
   boot.zfs.unsafeAllowHibernation = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages_7_1; # TODO: Revert to linuxPackages_latest once ZFS 2.4.4 is in nixos-26.05
   boot.kernelParams = [''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''];
   # ZFS 2.4.3 supports Linux 7.1 even though it claims not: https://github.com/openzfs/zfs/issues/18760
   # Note: `.override { enableUnsupportedExperimentalKernel = true; }` does not work because `enableUnsupportedExperimentalKernel` is hidden inside innerArgs in the ZFS package.

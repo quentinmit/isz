@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 {
   services.homebox = {
     enable = true;
@@ -20,6 +20,13 @@
       "homebox/tmp"
     ];
   };
+  sops.secrets."homebox/auth/api_key_pepper" = {};
+  sops.templates."homebox.env".content = ''
+    HBOX_OIDC_CLIENT_ID="${config.sops.placeholder."authentik/apps/homebox/client_id"}"
+    HBOX_OIDC_CLIENT_SECRET="${config.sops.placeholder."authentik/apps/homebox/client_secret"}"
+    HBOX_AUTH_API_KEY_PEPPER="${config.sops.placeholder."homebox/auth/api_key_pepper"}"
+  '';
+  systemd.services.homebox.serviceConfig.EnvironmentFile = config.sops.templates."homebox.env".path;
   services.nginx = {
     upstreams.homebox.servers."unix:/run/homebox/homebox.sock" = {};
     virtualHosts."homebox.isz.wtf" = {
