@@ -35,11 +35,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1787658739,
-        "narHash": "sha256-+VLyFP6qZRga0zh5E5pFC8FqhT7uW3gAKqElw6qhWSg=",
+        "lastModified": 1787797963,
+        "narHash": "sha256-80a+dtiq4KvzToBYtUlkUHKNFkto74I6KznyPocTMTE=",
         "owner": "mrshmllow",
         "repo": "affinity-nix",
-        "rev": "a75ad8ce8422a09d8420df939d5d5e958cc15ae0",
+        "rev": "b19d3037a1098576daad066ddecb404a9e22c2e1",
         "type": "github"
       },
       "original": {
@@ -1051,11 +1051,11 @@
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1787640266,
-        "narHash": "sha256-tbu/95O8ZRmCj0kfSiDvz3YT7GSnD0fO6cxLRVYtXnU=",
-        "rev": "f4f698677b11021a8f84f452e23ae9ef2427bec3",
+        "lastModified": 1787753485,
+        "narHash": "sha256-mGPB6ofYpLaHyCO7tI0L1hCb69lsY0t7dqIsYIhXP7Y=",
+        "rev": "062346a6d85bc4b49dfaa61c986e9c5be21217d1",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.8409.f4f698677b11/nixexprs.tar.xz"
+        "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.8477.062346a6d85b/nixexprs.tar.xz"
       },
       "original": {
         "id": "nixpkgs",
