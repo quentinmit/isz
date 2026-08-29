@@ -7,18 +7,18 @@
     autoScrub.enable = true;
     autoSnapshot.enable = false;
   };
-  boot = let
-    names = [
+  boot = {
+    zfs.requestEncryptionCredentials = [
       "zpool"
       "zpool/backup"
       "zpool/heartofgold"
     ];
-  in {
-    zfs.requestEncryptionCredentials = names;
     zfs.pools.zpool.devNodes = "/dev/disk/by-partlabel";
     initrd.clevis = {
       enable = true;
-      devices = lib.genAttrs names (_: { secretFile = "${./zpool.jwe}"; });
+      devices.zpool.secretFile = "${./zpool.jwe}";
+      devices."zpool/heartofgold".secretFile = "${./zpool.jwe}";
+      devices."zpool/backup".secretFile = "${./zpool-backup.jwe}";
     };
   };
 
