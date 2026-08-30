@@ -44,12 +44,6 @@
     kernelParams = [
       "rootwait"
       "consoleblank=0"
-
-      # container metrics
-      "cgroup_enable=cpuset"
-      "cgroup_memory=1"
-      "cgroup_enable=memory"
-      "swapaccount=1"
     ];
   };
 

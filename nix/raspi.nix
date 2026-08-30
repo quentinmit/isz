@@ -159,6 +159,8 @@
       # ttyAMA0 is the serial console broken out to the GPIO
       kernelParams = lib.mkMerge [
         [
+          # Only present in RPi kernels:
+          # https://github.com/raspberrypi/linux/commit/ab520ab14d64f9a9d65cbed7d2087e8f166b16bc
           "cgroup_enable=memory"
         ]
         (lib.mkIf config.rpi.serialConsole [

@@ -62,12 +62,6 @@
 
       "consoleblank=0" # disable console blanking(screen saver)
 
-      # container metrics
-      "cgroup_enable=cpuset"
-      "cgroup_memory=1"
-      "cgroup_enable=memory"
-      "swapaccount=1"
-
       ''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''
     ];
 

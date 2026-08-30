@@ -110,12 +110,6 @@
       "console=ttyS2,1500000" # serial port
       "console=tty1" # HDMI
 
-      # container metrics
-      "cgroup_enable=cpuset"
-      "cgroup_memory=1"
-      "cgroup_enable=memory"
-      "swapaccount=1"
-
       ''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''
     ];
   };
