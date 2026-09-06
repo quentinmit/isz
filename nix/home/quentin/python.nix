@@ -7,6 +7,7 @@
     };
   };
   config.home.packages = with pkgs; lib.mkIf config.isz.quentin.python.enable [
+    hatch
     #ihaskell
     iruby
     (let

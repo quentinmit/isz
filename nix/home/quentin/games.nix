@@ -27,6 +27,7 @@
       gnome-mines
       gnome-sudoku
       swell-foop
+      mame
     ];
   };
 }
