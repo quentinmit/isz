@@ -1,5 +1,5 @@
 diff --git a/src/conf/domain_conf.c b/src/conf/domain_conf.c
-index 45235d74bc..b283906715 100644
+index 34d3b00079..7b00ec5190 100644
 --- a/src/conf/domain_conf.c
 +++ b/src/conf/domain_conf.c
 @@ -902,6 +902,7 @@ VIR_ENUM_IMPL(virDomainVideo,
@@ -10,7 +10,7 @@ index 45235d74bc..b283906715 100644
  );
  
  VIR_ENUM_IMPL(virDomainVideoVGAConf,
-@@ -13720,6 +13721,7 @@ virDomainVideoDefaultRAM(const virDomainDef *def,
+@@ -13724,6 +13725,7 @@ virDomainVideoDefaultRAM(const virDomainDef *def,
      case VIR_DOMAIN_VIDEO_TYPE_GOP:
      case VIR_DOMAIN_VIDEO_TYPE_NONE:
      case VIR_DOMAIN_VIDEO_TYPE_RAMFB:
@@ -19,7 +19,7 @@ index 45235d74bc..b283906715 100644
      default:
          return 0;
 diff --git a/src/conf/domain_conf.h b/src/conf/domain_conf.h
-index 91f57de0f1..13d5d84848 100644
+index 3732525af4..4d0b1e5a2f 100644
 --- a/src/conf/domain_conf.h
 +++ b/src/conf/domain_conf.h
 @@ -1870,6 +1870,7 @@ typedef enum {
@@ -55,26 +55,26 @@ index 51dc3edcc2..fcb2e825e2 100644
                      break;
              }
 diff --git a/src/qemu/qemu_capabilities.c b/src/qemu/qemu_capabilities.c
-index 61e44b398a..20074f05d8 100644
+index 1b526cfb89..d80b038d77 100644
 --- a/src/qemu/qemu_capabilities.c
 +++ b/src/qemu/qemu_capabilities.c
-@@ -768,6 +768,7 @@ VIR_ENUM_IMPL(virQEMUCaps,
-               /* 495 */
-               "blockdev-mirror.target-is-zero", /* QEMU_CAPS_BLOCKDEV_MIRROR_TARGET_IS_ZERO */
-               "object-monitor-qmp", /* QEMU_CAPS_OBJECT_MONITOR_QMP */
+@@ -775,6 +775,7 @@ VIR_ENUM_IMPL(virQEMUCaps,
+               /* 500 */
+               "arm-smmuv3.cmdqv", /* QEMU_CAPS_ARM_SMMUV3_CMDQV */
+               "iothread.poll-weight", /* QEMU_CAPS_IOTHREAD_POLL_WEIGHT */
 +              "nubus-macfb", /* QEMU_CAPS_DEVICE_NUBUS_MACFB */
      );
  
  
-@@ -1481,6 +1482,7 @@ struct virQEMUCapsStringFlags virQEMUCapsObjectTypes[] = {
-     { "uefi-vars-x64", QEMU_CAPS_DEVICE_UEFI_VARS },
+@@ -1489,6 +1490,7 @@ struct virQEMUCapsStringFlags virQEMUCapsObjectTypes[] = {
      { "uefi-vars-sysbus", QEMU_CAPS_DEVICE_UEFI_VARS },
      { "monitor-qmp", QEMU_CAPS_OBJECT_MONITOR_QMP },
+     { "arm-smmuv3", QEMU_CAPS_DEVICE_ARM_SMMUV3 },
 +    { "nubus-macfb", QEMU_CAPS_DEVICE_NUBUS_MACFB },
  };
  
  
-@@ -6924,6 +6926,8 @@ virQEMUCapsFillDomainDeviceVideoCaps(virQEMUCaps *qemuCaps,
+@@ -6942,6 +6944,8 @@ virQEMUCapsFillDomainDeviceVideoCaps(virQEMUCaps *qemuCaps,
          VIR_DOMAIN_CAPS_ENUM_SET(dev->modelType, VIR_DOMAIN_VIDEO_TYPE_BOCHS);
      if (virQEMUCapsGet(qemuCaps, QEMU_CAPS_DEVICE_RAMFB))
          VIR_DOMAIN_CAPS_ENUM_SET(dev->modelType, VIR_DOMAIN_VIDEO_TYPE_RAMFB);
@@ -84,19 +84,19 @@ index 61e44b398a..20074f05d8 100644
  
  
 diff --git a/src/qemu/qemu_capabilities.h b/src/qemu/qemu_capabilities.h
-index c846771d50..45f81626ee 100644
+index 495c1eb603..fa489badb0 100644
 --- a/src/qemu/qemu_capabilities.h
 +++ b/src/qemu/qemu_capabilities.h
-@@ -742,6 +742,7 @@ typedef enum { /* virQEMUCapsFlags grouping marker for syntax-check */
-     /* 495 */
-     QEMU_CAPS_BLOCKDEV_MIRROR_TARGET_IS_ZERO, /* 'blockdev-mirror' supports 'target-is-zero' */
-     QEMU_CAPS_OBJECT_MONITOR_QMP, /* 'monitor-qmp' -object */
+@@ -749,6 +749,7 @@ typedef enum { /* virQEMUCapsFlags grouping marker for syntax-check */
+     /* 500 */
+     QEMU_CAPS_ARM_SMMUV3_CMDQV, /* arm-smmuv3.cmdqv */
+     QEMU_CAPS_IOTHREAD_POLL_WEIGHT, /* -object iothread.poll-weight */
 +    QEMU_CAPS_DEVICE_NUBUS_MACFB, /* -device nubus-macfb */
  
      QEMU_CAPS_LAST /* this must always be the last item */
  } virQEMUCapsFlags;
 diff --git a/src/qemu/qemu_command.c b/src/qemu/qemu_command.c
-index a76a034158..5e02d37930 100644
+index a07b915f4d..fecdf112e4 100644
 --- a/src/qemu/qemu_command.c
 +++ b/src/qemu/qemu_command.c
 @@ -89,6 +89,7 @@ VIR_ENUM_IMPL(qemuVideo,
@@ -165,7 +165,7 @@ index a8292a9782..30f8c0cb85 100644
  
          if (!virDeviceInfoPCIAddressIsWanted(&def->videos[i]->info))
 diff --git a/src/qemu/qemu_monitor_json.c b/src/qemu/qemu_monitor_json.c
-index af9a77ed3b..3cbef48b5c 100644
+index 7e3249cd47..ba2f13112f 100644
 --- a/src/qemu/qemu_monitor_json.c
 +++ b/src/qemu/qemu_monitor_json.c
 @@ -1939,6 +1939,7 @@ qemuMonitorJSONUpdateVideoMemorySize(qemuMonitor *mon,

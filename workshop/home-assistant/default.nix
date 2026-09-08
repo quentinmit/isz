@@ -165,10 +165,11 @@ in {
           time_zone = "America/New_York";
           external_url = "https://homeassistant.isz.wtf";
         };
-        http = {
-          trusted_proxies = [ "::1" "127.0.0.1" ];
-          use_x_forwarded_for = true;
-        };
+        # TODO: Move this into runtime configuration.
+        #http = {
+        #  trusted_proxies = [ "::1" "127.0.0.1" ];
+        #  use_x_forwarded_for = true;
+        #};
         lovelace = {
           resource_mode = "yaml";
           dashboards = lib.mapAttrs (name: content: {
@@ -245,13 +246,14 @@ in {
           };
         };
         influxdb = {
-          api_version = 2;
-          ssl = true;
-          host = "influx.isz.wtf";
-          port = 443;
-          token = "!secret ha_influx_write_token";
-          organization = "44ff94dc2f766f90";
-          bucket = "home_assistant";
+          # TODO: Move these settings to runtime configuration.
+          #api_version = 2;
+          #ssl = true;
+          #host = "influx.isz.wtf";
+          #port = 443;
+          #token = "!secret ha_influx_write_token";
+          #organization = "44ff94dc2f766f90";
+          #bucket = "home_assistant";
           tags = {
             source = "HA";
           };
