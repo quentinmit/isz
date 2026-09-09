@@ -5,6 +5,7 @@
     disko.nixosModules.disko
     ./disko.nix
     ./wireguard.nix
+    ./backup.nix
   ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

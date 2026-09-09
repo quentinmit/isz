@@ -83,7 +83,10 @@
     };
   };
 
-  isz.syncoid.enable = true;
+  isz.syncoid = {
+    enable = true;
+    targets.mnemosyne.pool = "tank";
+  };
 
   networking.hostName = "atlas";
   networking.domain = "comclub.org";
