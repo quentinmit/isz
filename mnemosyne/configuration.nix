@@ -15,6 +15,7 @@
   boot.zfs.requestEncryptionCredentials = [ "boot" ];
   boot.zfs.forceImportRoot = false;
   boot.zfs.devNodes = "/dev/disk/by-partlabel";
+  boot.zfs.extraPools = [ "tank" ];
 
   sops.secrets."initrd_ssh_host_keys/ed25519" = {};
   boot.initrd.secrets."/etc/secrets/ssh_host_ed25519_key" = lib.mkForce config.sops.secrets."initrd_ssh_host_keys/ed25519".path;

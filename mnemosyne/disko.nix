@@ -1,4 +1,7 @@
 {
+  imports = [
+    ./disko-tank.nix
+  ];
   services.zfs = {
     autoScrub.enable = true;
   };
