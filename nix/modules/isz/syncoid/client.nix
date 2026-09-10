@@ -32,12 +32,15 @@ in {
       services.zfs.autoSnapshot.enable = false;
       services.sanoid = {
         enable = true;
+        # https://github.com/jimsalterjrs/sanoid/issues/957
+        extraArgs = [ "--cache-ttl=600" ];
         interval = lib.mkDefault "*:0/15";
         templates.default = {
           frequently = 4;
           hourly = 24;
-          daily = 7;
-          monthly = 12;
+          # Temporarily double number of snapshots to work around https://github.com/jimsalterjrs/sanoid/issues/957
+          daily = 2*7;
+          monthly = 2*12;
           yearly = 0;
         };
         datasets = lib.mapAttrs (_: _: {
