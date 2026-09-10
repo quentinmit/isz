@@ -17,6 +17,10 @@ in {
               type = lib.types.str;
               default = "zpool";
             };
+            sendHolds = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+            };
             excludeDatasets = lib.mkOption {
               type = lib.types.listOf lib.types.str;
               default = lib.mapAttrsToList (name: _: "${name}/nix") config.disko.devices.zpool;
@@ -53,6 +57,8 @@ in {
       isz.syncoid.targets.heartofgold = {
         hostName = "heartofgold.mgmt.isz.wtf";
         pool = "zpool";
+        # Don't propagate holds if there are more than one target, because nothing will ever release those holds on other targets.
+        sendHolds = (builtins.attrNames cfg.targets) == ["heartofgold"];
       };
     })
     {
@@ -82,7 +88,7 @@ in {
               #"--force-delete"
               "--identifier" targetName
             ];
-            sendOptions = "Rwh${lib.concatMapStrings (name: " X ${name}") target.excludeDatasets}";
+            sendOptions = "Rw${lib.optionalString target.sendHolds "h"}${lib.concatMapStrings (name: " X ${name}") target.excludeDatasets}";
             recvOptions = "v u o canmount=off o secondarycache=none o mountpoint=/srv/backup/${config.networking.hostName}/${source} o com.sun:auto-snapshot=false o readonly=on";
             inherit source;
             target = "syncoid-${config.networking.hostName}@${target.hostName}:${target.pool}/backup/${config.networking.hostName}/${source}";
