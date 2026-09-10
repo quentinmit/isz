@@ -22,16 +22,9 @@
     };
   };
 
+  isz.sanoid.enable = true;
   services.sanoid = {
-    enable = true;
-    interval = lib.mkDefault "*:0/15";
-    templates.default = {
-      frequently = 0;
-      hourly = 24;
-      daily = 7;
-      monthly = 12;
-      yearly = 0;
-    };
+    templates.default.frequently = 0;
     datasets."zpool/heartofgold" = {
       use_template = ["default"];
       recursive = "zfs";

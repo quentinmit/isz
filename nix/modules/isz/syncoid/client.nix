@@ -36,17 +36,17 @@ in {
         extraArgs = [ "--cache-ttl=600" ];
         interval = lib.mkDefault "*:0/15";
         templates.default = {
-          frequently = 4;
-          hourly = 24;
+          frequently = lib.mkDefault 4;
+          hourly = lib.mkDefault 24;
           # Temporarily double number of snapshots to work around https://github.com/jimsalterjrs/sanoid/issues/957
-          daily = 2*7;
-          monthly = 2*12;
-          yearly = 0;
+          daily = lib.mkDefault (2*7);
+          monthly = lib.mkDefault (2*12);
+          yearly = lib.mkDefault 0;
         };
-        datasets = lib.mapAttrs (_: _: {
+        datasets = lib.mkDefault (lib.mapAttrs (_: _: {
           use_template = ["default"];
           recursive = "zfs";
-        }) config.disko.devices.zpool;
+        }) config.disko.devices.zpool);
       };
     })
     (lib.mkIf cfg.enable {
