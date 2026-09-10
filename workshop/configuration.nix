@@ -57,7 +57,10 @@
   services.fstrim.enable = true;
   services.smartd.enable = true;
 
-  isz.syncoid.enable = true;
+  isz.syncoid = {
+    enable = true;
+    targets.mnemosyne.pool = "tank";
+  };
 
   networking.hostName = "workshop"; # Define your hostname.
   networking.hostId = "98071ba3";
