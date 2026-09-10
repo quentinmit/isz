@@ -59,7 +59,15 @@
 
   isz.syncoid = {
     enable = true;
-    targets.mnemosyne.pool = "tank";
+    targets.mnemosyne = {
+      pool = "tank";
+      excludeDatasets = [
+        "zpool/nix"
+        # 10+ GiB per day; /var/lib/postgresql snapshots contain the same
+        # information and are over an order of magnitude smaller.
+        "zpool/var/backup/postgresql"
+      ];
+    };
   };
 
   networking.hostName = "workshop"; # Define your hostname.
