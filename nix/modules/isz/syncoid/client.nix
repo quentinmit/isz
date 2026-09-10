@@ -80,6 +80,7 @@ in {
               "--use-hold"
               #"--create-bookmark"
               #"--force-delete"
+              "--identifier" targetName
             ];
             sendOptions = "Rwh${lib.concatMapStrings (name: " X ${name}") target.excludeDatasets}";
             recvOptions = "v u o canmount=off o secondarycache=none o mountpoint=/srv/backup/${config.networking.hostName}/${source} o com.sun:auto-snapshot=false o readonly=on";
