@@ -13,6 +13,10 @@ in {
               type = lib.types.str;
               default = "${name}.isz.wtf";
             };
+            sources = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = builtins.attrNames config.disko.devices.zpool;
+            };
             pool = lib.mkOption {
               type = lib.types.str;
               default = "zpool";
@@ -79,7 +83,7 @@ in {
           "mount"
         ];
         commands = lib.concatMapAttrs (targetName: target:
-          lib.mapAttrs' (source: _: lib.nameValuePair "${source}-${targetName}" {
+          lib.genAttrs' target.sources (source: lib.nameValuePair "${source}-${targetName}" {
             extraArgs = [
               "--debug"
               "--no-sync-snap"
@@ -93,7 +97,7 @@ in {
             inherit source;
             target = "syncoid-${config.networking.hostName}@${target.hostName}:${target.pool}/backup/${config.networking.hostName}/${source}";
             sshKey = config.sops.secrets."syncoid/ssh_keys/${targetName}".path;
-          }) config.disko.devices.zpool) cfg.targets;
+          })) cfg.targets;
       };
     }
   ];
