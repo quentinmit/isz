@@ -7,7 +7,7 @@
 }:
 let
   pname = "pkb-client";
-  version = "2.3.0";
+  version = "2.3.1";
 in buildPythonApplication {
   inherit pname version;
 
@@ -15,7 +15,7 @@ in buildPythonApplication {
     owner = "infinityofspace";
     repo = "pkb_client";
     rev = "v${version}";
-    hash = "sha256-nUj6OxjAarv6kCyknkS1x8kIXF7ihs/oqygUxc0S+90=";
+    hash = "sha256-d52yzpg3Uq0GY+dzkN1aDdtf3gTuXHiNnRApI8qt0ys=";
   };
 
   pyproject = true;
