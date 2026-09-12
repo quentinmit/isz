@@ -38,7 +38,12 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''];
 
-  isz.syncoid.enable = true;
+  isz.syncoid = {
+    enable = true;
+    targets.mnemosyne = {
+      pool = "tank";
+    };
+  };
   services.syncoid = {
     interval = "5:05"; # Every day at 5:05
     service.unitConfig.ConditionACPower = true; # Only when plugged in
