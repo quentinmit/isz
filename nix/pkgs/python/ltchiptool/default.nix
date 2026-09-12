@@ -4,13 +4,13 @@
   wrapGAppsHook3,
 }: let
   pname = "ltchiptool";
-  version = "4.12.2";
+  version = "4.14.4";
 in python3.pkgs.buildPythonApplication {
   inherit pname version;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-9CVpUPLXLUIngxkqzn+SmeBJ8pCUtob7Lkn+BqjaAtY=";
+    hash = "sha256-MDGVIaAPasrUmHkorSvLew5Z9qn4cJgc1XBCZNZE250=";
   };
 
   format = "pyproject";
