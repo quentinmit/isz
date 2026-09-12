@@ -8,13 +8,13 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "plasma-homeassistant";
-  version = "1.2.0";
+  version = "1.5.1";
 
   src = fetchFromGitHub {
     owner = "korapp";
     repo = finalAttrs.pname;
     tag = "v${finalAttrs.version}";
-    hash = "sha256-7Q9WTLrRQJCKtMDmum3YViKWk6V1vusGBjEqVrllbc4=";
+    hash = "sha256-2ES0gM10YS1J6e8H+duRNeL+Z0qBHZdPaIaqz7qw7TQ=";
     fetchSubmodules = true;
   };
 
