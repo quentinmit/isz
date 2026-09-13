@@ -46,26 +46,34 @@ func main() {
 		}
 	}
 }
+
+func once(ctx context.Context, client *linkzone.Client, writeApi api.WriteAPI) error {
+	result := map[string]interface{}{}
+	if err := client.Request(ctx, "GetNetworkInfo", nil, &result); err != nil {
+		return err
+	}
+	report(writeApi, "networkinfo", result)
+	result = map[string]interface{}{}
+	if err := client.Request(ctx, "GetSystemStatus", nil, &result); err != nil {
+		return err
+	}
+	report(writeApi, "systemstatus", result)
+	result = map[string]interface{}{}
+	if err := client.Request(ctx, "GetConnectionState", nil, &result); err != nil {
+		return err
+	}
+	report(writeApi, "connectionstate", result)
+	return nil
+}
+
 func loop(ctx context.Context, writeApi api.WriteAPI) error {
 	defer writeApi.Flush()
 	c := linkzone.NewClient(*address)
 	t := time.NewTicker(*interval)
 	for {
-		result := map[string]interface{}{}
-		if err := c.Request(ctx, "GetNetworkInfo", nil, &result); err != nil {
-			return err
+		if err := once(ctx, c, writeApi); err != nil {
+			log.Printf("failed to poll: %v", err)
 		}
-		report(writeApi, "networkinfo", result)
-		result = map[string]interface{}{}
-		if err := c.Request(ctx, "GetSystemStatus", nil, &result); err != nil {
-			return err
-		}
-		report(writeApi, "systemstatus", result)
-		result = map[string]interface{}{}
-		if err := c.Request(ctx, "GetConnectionState", nil, &result); err != nil {
-			return err
-		}
-		report(writeApi, "connectionstate", result)
 		select {
 		case <-t.C:
 		}
