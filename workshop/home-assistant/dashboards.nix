@@ -314,7 +314,7 @@ in {
                 hold_action.target.entity_id = "remote.google_tv_streamer";
                 hold_action.data = {
                   inherit command;
-                  hold_sec = 0.5;
+                  hold_secs = 0.5;
                 };
               } // attrs);
               a2button = command: command2: attrs: abutton command ({
