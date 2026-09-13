@@ -26,26 +26,26 @@ let
   };
 in rustPlatform.buildRustPackage (finalAttrs: {
   pname = "greptimedb";
-  version = "1.1.4";
+  version = "1.2.0";
 
   src = fetchFromGitHub {
     owner = "GreptimeTeam";
     repo = "greptimedb";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-+Qb3cyvGrUhi3nBbEUoG2jJyYHFcTSIg34E6ZiI+weY=";
+    hash = "sha256-YDg5nQhO3EwSjVnte8LZGG1WAKc92FXNhUoa2DcfNCE=";
   };
 
-  cargoHash = "sha256-MVuy7AYHHCU4iynL0dXIQMLxwiTzHnwxCW9CzSsIF2w=";
+  cargoHash = "sha256-mWtqzFtfDLEEVhgC4tF4RqP2p+G3PG1IM0ix1RTY5Wg=";
 
   dashboard = stdenv.mkDerivation (finalAttrs: {
     pname = "greptimedb-dashboard";
-    version = "0.13.10";
+    version = "0.13.13";
 
     src = fetchFromGitHub {
       owner = "GreptimeTeam";
       repo = "dashboard";
       rev = "v${finalAttrs.version}";
-      hash = "sha256-VUSjvsppSFXGzIBKZdwTSb2lCEJPblQP+UtM93xgUQQ=";
+      hash = "sha256-2sHkNosKysD/n75JBFkgT6DAgeNRWfO+fxZHicwX7W8=";
     };
 
     nativeBuildInputs = [
@@ -59,7 +59,7 @@ in rustPlatform.buildRustPackage (finalAttrs: {
       inherit (finalAttrs) pname version src;
       inherit pnpm;
       fetcherVersion = 4;
-      hash = "sha256-0MYqsHdnahNB3LHRESU24NWyPJEVLesUdD5smNDTAK8=";
+      hash = "sha256-6HuKDpK/fRA5cyi5/RMHEuWW7rAO6TDmY8yuNGMzuwQ=";
     };
 
     installPhase = ''
