@@ -38,14 +38,14 @@
     };
   };
   info8fcc-greptimedb-datasource-unsigned = let
-    version = "2.2.1";
+    version = "3.0.3";
   in grafanaPlugin {
     pname = "info8fcc-greptimedb-datasource";
     inherit version;
     zipHash = null;
     src = fetchzip {
       url = "https://github.com/GreptimeTeam/greptimedb-grafana-datasource/releases/download/v${version}/info8fcc-greptimedb-datasource-unsigned.zip";
-      hash = "sha256-AXwrym2ESheL1tWgKuwh0zRHQcjRxygpRlhyMrHAPKs=";
+      hash = "sha256-DxwhRuiEA50tQTHdmhnr14GNv2Nd0QrLVg61IMFCIao=";
     };
   };
 }
