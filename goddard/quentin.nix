@@ -42,6 +42,8 @@
         mathematica
       ];
 
+      services.baloo.indexHiddenFolders = lib.mkForce false;
+
       services.baloo.excludeFolders = [
         # Don't index Electron folders
         "$HOME/.config/"

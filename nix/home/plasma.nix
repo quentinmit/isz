@@ -22,6 +22,10 @@ in {
         example = ["$HOME/.config/google-chrome/"];
         description = "Folders to exclude from indexing. Note that $HOME is expanded, so to exclude a folder containing a literal $, escape it as $$.";
       };
+      excludeFilters = mkOption {
+        type = with types; nullOr (listOf str);
+        default = null;
+      };
     };
   };
   config = lib.mkIf config.isz.plasma.enable {
@@ -30,6 +34,136 @@ in {
       excludeFolders = [
         "$HOME/.config/google-chrome/"
         "$HOME/.cache/google-chrome/"
+      ];
+      excludeFilters = [
+        # Defaults from https://github.com/KDE/baloo/blob/master/src/file/fileexcludefilters.cpp
+        # tmp files
+        "*~"
+        "*.part"
+
+        # temporary build files
+        "*.o"
+        "*.la"
+        "*.lo"
+        "*.loT"
+        "*.moc"
+        "moc_*.cpp"
+        "qrc_*.cpp"
+        "ui_*.h"
+        "cmake_install.cmake"
+        "CMakeCache.txt"
+        "CTestTestfile.cmake"
+        "libtool"
+        "config.status"
+        "confdefs.h"
+        "autom4te"
+        "conftest"
+        "confstat"
+        "Makefile.am"
+        "*.gcode" # CNC machine/3D printer toolpath files
+        ".ninja_deps"
+        ".ninja_log"
+        "build.ninja"
+
+        # misc
+        "*.csproj"
+        "*.m4"
+        "*.rej"
+        "*.gmo"
+        "*.pc"
+        "*.omf"
+        "*.aux"
+        "*.tmp"
+        "*.po"
+        "*.vm*"
+        "*.nvram"
+        "*.rcore"
+        "*.swp"
+        "*.swap"
+        "lzo"
+        "litmain.sh"
+        "*.orig"
+        ".histfile.*"
+        ".xsession-errors*"
+        "*.map"
+        "*.so"
+        "*.a"
+        "*.db"
+        "*.qrc"
+        "*.ini"
+        "*.init"
+        "*.img"    # typical extension for raw disk images
+        "*.vdi"    # Virtualbox disk images
+        "*.vbox*"  # Virtualbox VM files
+        "vbox.log" # Virtualbox log files
+        "*.qcow2"  # QEMU QCOW2 disk images
+        "*.vmdk"   # VMware disk images
+        "*.vhd"    # Hyper-V disk images
+        "*.vhdx"   # Hyper-V disk images
+        "*.sql"     # SQL database dumps
+        "*.sql.gz"  # Compressed SQL database dumps
+        "*.ytdl"    # youtube-dl temp files
+        "*.tfstate*" # Terraform state files
+
+        # Bytecode files
+        "*.class" # Java
+        "*.pyc"   # Python
+        "*.pyo"   # More Python
+        "*.elc"   # Emacs Lisp
+        "*.qmlc"  # QML
+        "*.jsc"   # Javascript
+
+        # files known in bioinformatics containing huge amount of unindexable data
+        "*.fastq"
+        "*.fq"
+        "*.gb"
+        "*.fasta"
+        "*.fna"
+        "*.gbff"
+        "*.faa"
+        "*.fna"
+
+        # Default folder exclude filters
+        "po"
+
+        # VCS
+        "CVS"
+        ".svn"
+        ".git"
+        "_darcs"
+        ".bzr"
+        ".hg"
+
+        # development
+        "CMakeFiles"
+        "CMakeTmp"
+        "CMakeTmpQmake"
+        ".moc"
+        ".obj"
+        ".pch"
+        ".uic"
+        ".npm"
+        ".yarn"
+        ".yarn-cache"
+        "__pycache__"
+        "node_modules"
+        "node_packages"
+        "nbproject"
+        ".terraform"
+        ".venv"
+        "venv"
+
+        # misc
+        "core-dumps"
+        "lost+found"
+        ".snapshots"
+
+        # Quentin's additions
+        "target" # Rust
+        "*.d" # Rust
+        "*.rlib" # Rust
+        "*.rmeta" # Rust
+        "*.mir" # Clang
       ];
     };
     home.packages = with pkgs; [
@@ -311,6 +445,7 @@ in {
             value = arrayValue cfg.excludeFolders;
             shellExpand = true;
           };
+          "exclude filters" = lib.mkIf (cfg.excludeFilters != null) (arrayValue cfg.excludeFilters);
         };
         "dolphinrc"."DetailsMode"."PreviewSize" = 16;
         "kdeglobals"."KDE"."SingleClick" = false;
