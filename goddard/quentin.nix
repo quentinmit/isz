@@ -55,6 +55,8 @@
         "$HOME/.gradle/"
         "$HOME/.zoom/"
         "$HOME/.npm/"
+
+        "$HOME/Software/"
       ];
 
       services.easyeffects = {
