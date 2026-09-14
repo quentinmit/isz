@@ -130,6 +130,9 @@ let
     evtest
 
     # Performance tools
+    atop
+    below
+    btop
     iotop
     psmisc
     strace
