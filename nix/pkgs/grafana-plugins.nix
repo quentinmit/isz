@@ -27,17 +27,6 @@
     zipHash = "sha256-43j6Z9vcUTmxlK3Fug3BrdwvAaED9RE6ouvd33hXIqA=";
   };
   info8fcc-greptimedb-datasource = let
-    version = "2.2.1";
-  in grafanaPlugin {
-    pname = "info8fcc-greptimedb-datasource";
-    inherit version;
-    zipHash = null;
-    src = fetchzip {
-      url = "https://github.com/GreptimeTeam/greptimedb-grafana-datasource/releases/download/v${version}/info8fcc-greptimedb-datasource.zip";
-      hash = "sha256-2XTnVDPvAAzqBcU9rKBVBQKW1M7p59e5GoWHbUuC9rI=";
-    };
-  };
-  info8fcc-greptimedb-datasource-unsigned = let
     version = "3.0.3";
   in grafanaPlugin {
     pname = "info8fcc-greptimedb-datasource";

@@ -126,7 +126,7 @@
         grafana-mqtt-datasource
         grafana-pyroscope-app
         grafana-worldmap-panel
-        info8fcc-greptimedb-datasource-unsigned
+        info8fcc-greptimedb-datasource
         marcusolsson-json-datasource
         operato-windrose-panel
         volkovlabs-echarts-panel
