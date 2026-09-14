@@ -92,10 +92,6 @@ let
     config = let
       inherit (config.stacked) field integralField;
     in lib.mkIf (config.stacked.field != null) {
-      spec.data.spec.transformations = [{
-        group = "prepareTimeSeries";
-        spec.options.format = "multi";
-      }];
       spec.data.spec.queries = [{
         spec.query = {
           group = "info8cc-greptimedb-datasource";
