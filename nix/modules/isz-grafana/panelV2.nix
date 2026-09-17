@@ -44,7 +44,7 @@ in {
         }) (lib.toList g.influx);
     in {
       vizConfig.group = lib.mkDefault "timeseries";
-      data.spec.queryOptions.interval = lib.mkDefault "10s";
+      data.spec.queryOptions.interval = lib.mkOptionDefault "10s";
       data.spec.queries = map (q: q.panelQuery) queries;
       vizConfig.spec.fieldConfig.overrides = builtins.filter (o: o != null) (map (q: q.override) queries);
     }))
