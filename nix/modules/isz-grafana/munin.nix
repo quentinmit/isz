@@ -4,14 +4,14 @@ let
   inherit (config.isz.grafana) datasources;
 in {
   options = with lib; {
-    isz.grafana.dashboards = mkOption {
+    isz.grafana.dashboardsV2 = mkOption {
       type = with types; attrsOf (submodule ({ config, ... }: let
         dashboard = config;
       in {
         options.munin.graphs = let
           Graph = types.submoduleWith {
             modules = [
-              ./panel.nix
+              ./panelV2.nix
               ({ config, ... }: {
                 key = "munin-panel";
                 options = {
@@ -46,15 +46,11 @@ in {
                   stacking = mkEnableOption "stack series";
                   right = mkEnableOption "place graph on right";
                 };
-                config.panel = let g = config; in {
-                  gridPos = {
-                    w = 12;
-                    h = 8;
-                    x = if g.right then 12 else 0;
-                  };
-                  title = g.graph_title;
-                  options.tooltip.mode = "multi";
-                  options.legend = {
+                config = let g = config; in {
+                  # TODO: right
+                  spec.title = g.graph_title;
+                  spec.vizConfig.spec.options.tooltip.mode = "multi";
+                  spec.vizConfig.spec.options.legend = {
                     showLegend = true;
                     displayMode = "table";
                     placement = "bottom";
@@ -67,7 +63,7 @@ in {
                     sortBy = "Last *";
                     sortDesc = true;
                   };
-                  fieldConfig.defaults = lib.mkMerge [
+                  spec.vizConfig.spec.fieldConfig.defaults = lib.mkMerge [
                     {
                       inherit (g) unit;
                     }
@@ -89,9 +85,7 @@ in {
                       custom.scaleDistribution.log = lib.mkDefault 10;
                     })
                   ];
-                  repeat = lib.mkIf (g.repeat != null) g.repeat;
-                  repeatDirection = lib.mkIf (g.repeat != null) "v";
-                  description = lib.mkIf (g.graph_info != null) g.graph_info;
+                  spec.description = lib.mkIf (g.graph_info != null) g.graph_info;
                 };
               })
             ];
@@ -109,29 +103,24 @@ in {
           type = with types; attrsOf (attrsOf Graph);
           default = {};
         };
-        config.panels = let
-          panels = lib.concatLists (
-            lib.mapAttrsToList
-              (category: graphs:
-                [{
-                  panel = {
-                    title = category;
-                    type = "row";
-                    gridPos.h = 1;
-                    gridPos.w = 24;
-                  };
-                }] ++
-                lib.mapAttrsToList (_: g: { inherit (g) panel; }) graphs
-              )
-              dashboard.munin.graphs
-          );
-          sumHeights = lib.foldl' (s: p: s + p.panel.gridPos.h) 0;
-        in
-        lib.foldl (a: b: a ++ [(lib.recursiveUpdate b {
-          panel.gridPos = b.panel.gridPos // {
-            y = if (b.panel.gridPos.x or 0) == 0 then sumHeights a else (lib.last a).panel.gridPos.y;
-          };
-        })]) [] panels;
+        config.layout = lib.mkIf (dashboard.munin.graphs != {}) {
+          kind = "RowsLayout";
+          spec.rows = lib.mapAttrsToList (category: graphs: {
+            spec.title = category;
+            spec.layout.kind = "AutoGridLayout";
+            spec.layout.spec.columnWidthMode = "wide";
+            spec.layout.spec.items = lib.mapAttrsToList (name: g: {
+              spec.element.name = "${category}.${name}";
+              spec.repeat = lib.mkIf (g.repeat != null) {
+                mode = "variable";
+                value = g.repeat;
+              };
+            }) graphs;
+          }) dashboard.munin.graphs;
+        };
+        config.panels = lib.concatMapAttrs (category: graphs: lib.mapAttrs' (name: g: lib.nameValuePair "${category}.${name}" {
+          inherit (g) spec;
+        }) graphs) dashboard.munin.graphs;
       }));
     };
   };

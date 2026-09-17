@@ -1,28 +1,27 @@
 { config, options, pkgs, lib, ... }:
 {
-  config.isz.grafana.dashboards.munin = {
-    uid = "Pd7zBps4z";
+  config.isz.grafana.dashboardsV2.Pd7zBps4z = {
     title = "Munin";
     defaultDatasourceName = "workshop";
     variables = {
       host = {
-        predicate = ''r["_measurement"] == "system"'';
-        extra.label = "Host";
-        extra.multi = true;
+        influx.predicate = ''r["_measurement"] == "system"'';
+        spec.label = "Host";
+        spec.multi = true;
       };
       smart_device = {
-        tag = "device";
-        predicate = ''r["_measurement"] == "smart_device" and r.host =~ /''${host:regex}/'';
-        extra.label = "SMART Device";
+        influx.tag = "device";
+        influx.predicate = ''r["_measurement"] == "smart_device" and r.host =~ /''${host:regex}/'';
+        spec.label = "SMART Device";
       };
       interface = {
-        predicate = ''r["_measurement"] == "net" and r.interface != "all" and r.host =~ /''${host:regex}/'';
+        influx.predicate = ''r["_measurement"] == "net" and r.interface != "all" and r.host =~ /''${host:regex}/'';
       };
       battery = {
-        tag = "name";
-        predicate = ''r._measurement == "power_supply" and r.type == "Battery" and r.host =~ /''${host:regex}/'';
-        extra.hide = 2;
-        extra.skipUrlSync = true;
+        influx.tag = "name";
+        influx.predicate = ''r._measurement == "power_supply" and r.type == "Battery" and r.host =~ /''${host:regex}/'';
+        spec.hide = "hideVariable";
+        spec.skipUrlSync = true;
       };
     };
     munin.graphs = {
@@ -506,7 +505,7 @@
         |> drop(columns: ["_start", "_stop", "total", "sreclaimable", "swap_total", "swap_free"])
       '';
         stacking = true;
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           custom.fillOpacity = 50;
         };
         unit = "bytes";
@@ -590,7 +589,7 @@
         unit = "short";
       };
       systemd.ip_traffic_bytes = {
-        panel.interval = "60s";
+        spec.data.spec.queryOptions.interval = "60s";
         graph_title = "Unit IP traffic";
         graph_vlabel = "bits in (-) / out (+) per second";
         influx.filter._measurement = "systemd_unit";
@@ -599,20 +598,20 @@
         influx.extra = ''
           |> map(fn: (r) => ({r with _value: 8. * r._value}))
         '';
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
         };
         fields.IPIngressBytes.custom.transform = "negative-Y";
         unit = "bps";
       };
       systemd.ip_traffic_packets = {
-        panel.interval = "60s";
+        spec.data.spec.queryOptions.interval = "60s";
         graph_title = "Unit IP packets";
         graph_vlabel = "packets in (-) / out (+) per second";
         influx.filter._measurement = "systemd_unit";
         influx.filter._field = ["IPIngressPackets" "IPEgressPackets"];
         influx.fn = "derivative";
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
         };
         fields.IPIngressPackets.custom.transform = "negative-Y";
@@ -620,26 +619,26 @@
         right = true;
       };
       systemd.io_bytes = {
-        panel.interval = "60s";
+        spec.data.spec.queryOptions.interval = "60s";
         graph_title = "Unit IO throughput";
         graph_vlabel = "Bytes/second read (-) / write (+)";
         influx.filter._measurement = "systemd_unit";
         influx.filter._field = ["IOReadBytes" "IOWriteBytes"];
         influx.fn = "derivative";
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
         };
         fields.IOReadBytes.custom.transform = "negative-Y";
         unit = "binBps";
       };
       systemd.io_packets = {
-        panel.interval = "60s";
+        spec.data.spec.queryOptions.interval = "60s";
         graph_title = "Unit IOs";
         graph_vlabel = "IOs/second read (-) / write (+)";
         influx.filter._measurement = "systemd_unit";
         influx.filter._field = ["IOReadOperations" "IOWriteOperations"];
         influx.fn = "derivative";
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
         };
         fields.IOReadOperations.custom.transform = "negative-Y";
@@ -647,7 +646,7 @@
         right = true;
       };
       systemd.cpu = {
-        panel.interval = "60s";
+        spec.data.spec.queryOptions.interval = "60s";
         graph_title = "Unit CPU usage";
         influx.filter._measurement = "systemd_unit";
         influx.filter._field = "CPUUsageNSec";
@@ -656,18 +655,18 @@
         influx.extra = ''
           |> map(fn: (r) => ({r with _value: r._value / 1000000000.}))
         '';
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           displayName = "\${__field.labels.Id} \${__field.labels.host}";
         };
         stacking = true;
         unit = "percentunit";
       };
       systemd.memory = {
-        panel.interval = "60s";
+        spec.data.spec.queryOptions.interval = "60s";
         graph_title = "Unit memory usage";
         influx.filter._field = "MemoryCurrent";
         influx.fn = "mean";
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           displayName = "\${__field.labels.ControlGroup} \${__field.labels.host}";
         };
         unit = "bytes";
@@ -789,7 +788,7 @@
           |> map(fn: (r) => ({r with _field: strings.trimPrefix(prefix: "arcstats_", v: r._field)}))
         '';
         stacking = true;
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           custom.fillOpacity = 50;
         };
         unit = "bytes";

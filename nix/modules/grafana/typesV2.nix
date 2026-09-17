@@ -504,6 +504,19 @@ in {
 	      element = mkOption {
           type = kindType "ElementReference";
         };
+        repeat = mkOption {
+          type = optionalOr (types.submodule {
+            options = {
+              mode = mkOption {
+                type = types.enum [ "variable"];
+                default = "variable";
+              };
+              value = mkOption {
+                type = types.str;
+              };
+            };
+          });
+        };
       };
     });
     ConditionalRenderingGroup = kindSubmodule "ConditionalRenderingGroup" {

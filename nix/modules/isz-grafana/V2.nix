@@ -80,15 +80,21 @@ in {
           };
           panels = mkOption {
             type = types.attrsOf (types.submoduleWith {
-              modules = [ ./panelV2.nix ];
+              modules = [
+                ./panelV2.nix
+                ({ name, ... }: {
+                  config.spec.id = let
+                    panelNames = builtins.attrNames config.panels;
+                    panelIndexes = lib.listToAttrs (lib.imap1 (i: n: lib.nameValuePair n i) panelNames);
+                  in lib.mkDefault panelIndexes.${name};
+                })
+              ];
               shorthandOnlyDefinesConfig = true;
               specialArgs = let
-                panelNames = builtins.attrNames config.panels;
-                panelIndexes = lib.listToAttrs (lib.imap1 (i: n: lib.nameValuePair n i) panelNames);
               in {
                 inherit (cfg) datasources;
                 inherit (config) defaultDatasourceName;
-                inherit pkgs panelIndexes;
+                inherit pkgs;
                 extraInfluxFilter = {};
               };
             });
