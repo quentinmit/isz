@@ -334,13 +334,12 @@
       };
     };
   };
-  config.isz.grafana.dashboards.wifi-client = {
-    uid = "eXssGz84k";
+  config.isz.grafana.dashboardsV2.eXssGz84k = {
     title = "WiFi Client";
     defaultDatasourceName = "workshop";
     variables = {
       macaddress = {
-        query = ''
+        influx.query = ''
           import "join"
           import "influxdata/influxdb/schema"
 
@@ -372,21 +371,24 @@
           )
           |> sort(columns: ["noComment", "comment", "_value"])
           '';
-        extra.label = "MAC address";
-        extra.regex = ''/^(?<text>(?<value>[^ ]+).*)/'';
-        extra.includeAll = false;
+        spec.label = "MAC address";
+        spec.regex = ''/^(?<text>(?<value>[^ ]+).*)/'';
+        spec.includeAll = false;
       };
     };
     annotations = [{
-      datasource = {
-        inherit (config.isz.grafana.datasources.loki) type uid;
+      spec.enable = true;
+      spec.name = "Wireless logs";
+      spec.query = {
+        datasource.name = config.isz.grafana.datasources.loki.uid;
+        group = config.isz.grafana.datasources.loki.type;
       };
-      name = "Wireless logs";
-      expr = ''
-        {source_type="mikrotik",topic="wireless",level!="debug"} |~ `(?i)''${macaddress}` | json | line_format `{{or .message __line__}}`
-      '';
-      enable = true;
-      tagKeys = "host,level";
+      spec.legacyOptions = {
+        expr = ''
+          {source_type="mikrotik",topic="wireless",level!="debug"} |~ `(?i)''${macaddress}` | json | line_format `{{or .message __line__}}`
+        '';
+        tagKeys = "host,level";
+      };
     }];
     links = [
       {
@@ -394,18 +396,48 @@
         type = "dashboards";
       }
     ];
+    layout.kind = "GridLayout";
+    layout.spec.items = [
+      { spec = {
+          element.name = "lease-info";
+          x = 0; y = 0; width = 20; height = 3;
+        }; }
+      { spec = {
+          element.name = "wireless-rate";
+          x = 0; y = 3; width = 10; height = 8;
+        }; }
+      { spec = {
+          element.name = "throughput";
+          x = 10; y = 3; width = 10; height = 8;
+        }; }
+      { spec = {
+          element.name = "rssi-at-rate";
+          x = 0; y = 11; width = 10; height = 8;
+        }; }
+      { spec = {
+          element.name = "tx-ccq";
+          x = 10; y = 11; width = 10; height = 8;
+        }; }
+      { spec = {
+          element.name = "outgoing-traffic";
+          x = 0; y = 19; width = 10; height = 8;
+        }; }
+      { spec = {
+          element.name = "logs";
+          x = 0; y = 27; width = 20; height = 8;
+        }; }
+      { spec = {
+          element.name = "stats";
+          x = 20; y = 0; width = 4; height = 36;
+        }; }
+    ];
     panels = let
       interval = config.isz.telegraf.interval.mikrotik;
       nfInterval = config.isz.telegraf.interval.netflow;
-    in [
-      {
-        panel = {
-          gridPos = { x = 0; y = 0; w = 20; h = 3; };
-          title = "";
-          type = "table";
-        };
-        panel.fieldConfig.defaults = {
-        };
+    in {
+      lease-info = {
+        spec.title = "";
+        spec.vizConfig.group = "table";
         influx.filter._measurement = "mikrotik-/ip/dhcp-server/lease";
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "last1";
@@ -436,15 +468,12 @@
           "host-name"
           "active-client-id"
         ];
-      }
-      {
-        panel = {
-          gridPos = { x = 0; y = 3; w = 10; h = 8; };
-          title = "Wireless Rate";
-          options.tooltip.mode = "multi";
-          inherit interval;
-        };
-        panel.fieldConfig.defaults = {
+      };
+      wireless-rate = {
+        spec.title = "Wireless Rate";
+        spec.vizConfig.spec.options.tooltip.mode = "multi";
+        spec.data.spec.queryOptions.interval = interval;
+        spec.vizConfig.spec.fieldConfig.defaults = {
           custom.axisLabel = "rx (-) / tx (+)";
           unit = "bps";
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
@@ -455,15 +484,12 @@
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "mean";
         influx.createEmpty = true;
-      }
-      {
-        panel = {
-          gridPos = { x = 10; y = 3; w = 10; h = 8; };
-          title = "Throughput";
-          options.tooltip.mode = "multi";
-          inherit interval;
-        };
-        panel.fieldConfig.defaults = {
+      };
+      throughput = {
+        spec.title = "Throughput";
+        spec.vizConfig.spec.options.tooltip.mode = "multi";
+        spec.data.spec.queryOptions.interval = interval;
+        spec.vizConfig.spec.fieldConfig.defaults = {
           custom.axisLabel = "in (-) / out (+)";
           custom.fillOpacity = 10;
           custom.scaleDistribution = {
@@ -480,15 +506,12 @@
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "derivative";
         influx.createEmpty = true;
-      }
-      {
-        panel = {
-          gridPos = { x = 0; y = 11; w = 10; h = 8; };
-          title = "Signal Strength at Rate";
-          options.tooltip.mode = "multi";
-          inherit interval;
-        };
-        panel.fieldConfig.defaults = {
+      };
+      rssi-at-rate = {
+        spec.title = "Signal Strength at Rate";
+        spec.vizConfig.spec.options.tooltip.mode = "multi";
+        spec.data.spec.queryOptions.interval = interval;
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "dBm";
           displayName = "\${__field.labels.rate}";
         };
@@ -513,14 +536,11 @@
           }))
           |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: true)
         '';
-      }
-      {
-        panel = {
-          gridPos = { x = 10; y = 11; w = 10; h = 8; };
-          title = "TX CCQ";
-          inherit interval;
-        };
-        panel.fieldConfig.defaults = {
+      };
+      tx-ccq = {
+        spec.title = "TX CCQ";
+        spec.data.spec.queryOptions.interval = interval;
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "percent";
         };
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
@@ -528,14 +548,11 @@
         influx.filter.mac-address = "\${macaddress}";
         influx.fn = "mean";
         influx.createEmpty = true;
-      }
-      {
-        panel = {
-          gridPos = { x = 0; y = 19; w = 10; h = 8; };
-          title = "Outgoing traffic";
-          interval = nfInterval;
-        };
-        panel.fieldConfig.defaults = {
+      };
+      outgoing-traffic = {
+        spec.title = "Outgoing traffic";
+        spec.data.spec.queryOptions.interval = nfInterval;
+        spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "Bps";
         };
         influx = {
@@ -550,19 +567,17 @@
           '';
           createEmpty = true;
         };
-      }
-      {
-        panel = {
-          gridPos = { x = 20; y = 0; w = 4; h = 36; };
-          title = "Stats";
-          type = "stat";
-          options.text = {
-            titleSize = 18;
-            valueSize = 20;
-          };
-          options.orientation = "horizontal";
-          inherit interval;
+      };
+      stats = {
+        spec.title = "Stats";
+        spec.vizConfig.group = "stat";
+        spec.vizConfig.spec.options.text = {
+          titleSize = 18;
+          valueSize = 20;
         };
+        spec.vizConfig.spec.options.orientation = "horizontal";
+        spec.vizConfig.spec.fieldConfig.defaults.color.mode = "palette-classic";
+        spec.data.spec.queryOptions.interval = interval;
         influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
         influx.filter.mac-address = "\${macaddress}";
         influx.filter._field = [
@@ -620,22 +635,23 @@
         '';
         # For use with the "dateTimeFromNow" unit
         # |> map(fn: (r) => ({r with _value: if (r._field == "last-activity-ns" or r._field == "uptime-ns") then float(v: uint(v: date.sub(from: r._time, d: duration(v: int(v: r._value)))))/1000000. else r._value}))
-      }
-      {
+      };
+      logs = {
         datasourceName = "loki";
-        panel = {
-          gridPos = { x = 0; y = 27; w = 20; h = 8; };
-          title = "Recent Logs";
-          type = "logs";
-          targets = [{
-            expr = ''
-              {source_type="mikrotik"} |~ `(?i)''${macaddress}` | json message="message" | line_format `{{if .name}}{{.name}}{{else}}{{.topic}}{{if and (ne .subtopic "<null>") (ne .subtopic "")}},{{.subtopic}}{{end}}{{end}} {{or .message __line__}}` | drop message,detected_level,service_name,subtopic="<null>",timestamp_end,__error__,__error_details__
-            '';
-            queryType = "range";
-          }];
-          options.showTime = true;
-        };
-      }
-    ];
+        spec.title = "Recent Logs";
+        spec.vizConfig.group = "logs";
+        spec.data.spec.queries = [{
+          spec.query.spec.expr = ''
+            {source_type="mikrotik"}
+            |~ `(?i)''${macaddress}`
+            | json message="message"
+            | line_format `{{if .name}}{{.name}}{{else}}{{.topic}}{{if and (ne .subtopic "<null>") (ne .subtopic "")}},{{.subtopic}}{{end}}{{end}} {{or .message __line__}}`
+            | drop message,detected_level,service_name,subtopic="<null>",timestamp_end,__error__,__error_details__
+          '';
+          spec.query.spec.queryType = "range";
+        }];
+        spec.vizConfig.spec.options.showTime = true;
+      };
+    };
   };
 }

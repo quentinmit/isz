@@ -162,6 +162,7 @@ in {
   };
   config.services.grafana.kind = {
     AnnotationQuery = kindSubmodule "AnnotationQuery" {
+      inherit freeformType; # "..."
       options.spec = {
         query = mkOption {
           type = kindType "DataQuery";
