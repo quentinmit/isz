@@ -8,10 +8,8 @@ with import ./lib.nix { inherit config pkgs lib; };
 with import ../grafana/types.nix { inherit pkgs lib; };
 let
   queryBase = {
-    datasource = {
-      name = datasources.${config.datasourceName}.uid;
-    };
-    group = datasources.${config.datasourceName}.type;
+    datasource.name = lib.mkDefault datasources.${config.datasourceName}.uid;
+    group = lib.mkDefault datasources.${config.datasourceName}.type;
   };
 in {
   config.spec = let
@@ -215,11 +213,10 @@ in {
             default = [];
             type = types.listOf (types.submodule {
               freeformType = dashboardFormat.type;
-              config.spec.query = lib.mkDefault queryBase;
+              config.spec.query = queryBase;
             });
           };
         };
-        # panel.datasource defaults to panel.targets[0].datasource in default.nix
       });
     };
   };

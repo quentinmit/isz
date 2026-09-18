@@ -1,20 +1,35 @@
 { config, options, pkgs, lib, ... }:
 {
-  config.isz.grafana.dashboards.wifi-clients = {
-    uid = "vQ9bVarMz";
+  config.isz.grafana.dashboardsV2.vQ9bVarMz = {
     title = "WiFi Clients";
     tags = [ "home" "wifi" ];
     defaultDatasourceName = "workshop";
+    layout.kind = "GridLayout";
+    layout.spec.items = [
+      { spec = {
+          element.name = "clients-table";
+          x = 0; y = 0; width = 24; height = 20;
+        }; }
+      { spec = {
+          element.name = "tx-rate";
+          x = 0; y = 20; width = 12; height = 11;
+        }; }
+      { spec = {
+          element.name = "throughput";
+          x = 12; y = 20; width = 12; height = 11;
+        }; }
+      { spec = {
+          element.name = "logs";
+          x = 0; y = 31; width = 24; height = 8;
+        }; }
+    ];
     panels = let
       interval = config.isz.telegraf.interval.mikrotik;
-    in [
-      {
-        panel = {
-          gridPos = { x = 0; y = 0; w = 24; h = 20; };
-          title = "WiFi Clients";
-          type = "table";
-        };
-        panel.fieldConfig.defaults = {
+    in {
+      clients-table = {
+        spec.title = "WiFi Clients";
+        spec.vizConfig.group = "table";
+        spec.vizConfig.spec.fieldConfig.defaults = {
           custom.filterable = true;
         };
         influx.query = ''
@@ -175,17 +190,16 @@
           "tx-rate"
           "rx-rate"
         ];
-      }
-      {
-        panel = {
-          gridPos = { x = 0; y = 20; w = 12; h = 11; };
-          title = "TX Rate";
-          inherit interval;
-          options.tooltip.mode = "multi";
-          options.tooltip.sort = "desc";
-          options.legend.showLegend = false;
+      };
+      tx-rate = {
+        spec.title = "TX Rate";
+        spec.data.spec.queryOptions.interval = interval;
+        spec.vizConfig.spec.options = {
+          tooltip.mode = "multi";
+          tooltip.sort = "desc";
+          legend.showLegend = false;
         };
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           displayName = ''''${__field.labels.interface} ''${__field.labels.mac-address} ''${__field.labels.comment}'';
           unit = "bps";
           links = [{
@@ -237,17 +251,16 @@
           |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: true)
           |> yield()
         '';
-      }
-      {
-        panel = {
-          gridPos = { x = 12; y = 20; w = 12; h = 11; };
-          title = "Throughput";
-          inherit interval;
-          options.tooltip.mode = "multi";
-          options.tooltip.sort = "desc";
-          options.legend.showLegend = false;
+      };
+      throughput = {
+        spec.title = "Throughput";
+        spec.data.spec.queryOptions.interval = interval;
+        spec.vizConfig.spec.options = {
+          tooltip.mode = "multi";
+          tooltip.sort = "desc";
+          legend.showLegend = false;
         };
-        panel.fieldConfig.defaults = {
+        spec.vizConfig.spec.fieldConfig.defaults = {
           displayName = ''''${__field.name} ''${__field.labels.interface} ''${__field.labels.comment}'';
           unit = "Bps";
           custom.axisLabel = "in (-) / out (+)";
@@ -302,23 +315,24 @@
           |> group(columns: ["_measurement", "_field", "_start", "_stop", "hostname", "interface", "mac-address", "comment"])
           |> yield()
         '';
-      }
-      {
+      };
+      logs = {
         datasourceName = "loki";
-        panel = {
-          gridPos = { x = 0; y = 31; w = 24; h = 8; };
-          title = "Recent Logs";
-          type = "logs";
-          targets = [{
-            expr = ''
-              {source_type="mikrotik", topic="wireless"} | json message="message" | regexp `(?P<macaddress>(?:[0-9A-F]{2}:){5}[0-9A-F]{2})` | line_format `{{if .name}}{{.name}}{{else}}{{.topic}}{{if and (ne .subtopic "<null>") (ne .subtopic "")}},{{.subtopic}}{{end}}{{end}} {{or .message __line__}}` | drop message,detected_level,service_name,subtopic="<null>",timestamp_end,__error__,__error_details__
-            '';
-            queryType = "range";
-          }];
-          options.showTime = true;
-        };
-      }
-    ];
+        spec.title = "Recent Logs";
+        spec.vizConfig.group = "logs";
+        spec.data.spec.queries = [{
+          spec.query.spec.expr = ''
+            {source_type="mikrotik", topic="wireless"}
+            | json message="message"
+            | regexp `(?P<macaddress>(?:[0-9A-F]{2}:){5}[0-9A-F]{2})`
+            | line_format `{{if .name}}{{.name}}{{else}}{{.topic}}{{if and (ne .subtopic "<null>") (ne .subtopic "")}},{{.subtopic}}{{end}}{{end}} {{or .message __line__}}`
+            | drop message,detected_level,service_name,subtopic="<null>",timestamp_end,__error__,__error_details__
+          '';
+          spec.query.spec.queryType = "range";
+        }];
+        spec.vizConfig.spec.options.showTime = true;
+      };
+    };
   };
   config.isz.grafana.dashboards.wifi-client = {
     uid = "eXssGz84k";
