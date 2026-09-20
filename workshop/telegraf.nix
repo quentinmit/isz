@@ -77,6 +77,8 @@
         "rain_start_time"
         "rapid_wind"
         "status_update"
+        ":*"
+        "swos*"
       ];
     };
     isz.telegraf.envSecrets.GREPTIMEDB_PASSWORD = config.sops.placeholder."greptimedb/users/telegraf@workshop.isz.wtf";
