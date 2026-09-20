@@ -25,6 +25,16 @@
     ];
     panels = let
       interval = config.isz.telegraf.interval.mikrotik;
+      leasesQuery = ''
+        SELECT
+          hostname,
+          "mac-address",
+          last_value(comment ORDER BY greptime_timestamp DESC) AS comment,
+          last_value("active-address" ORDER BY greptime_timestamp DESC) AS "active-address",
+        FROM mikrotik.":ip:dhcp-server:lease"
+        WHERE $__timeFilter(greptime_timestamp)
+        GROUP BY hostname, "mac-address"
+      '';
     in {
       clients-table = {
         spec.title = "WiFi Clients";
@@ -32,107 +42,79 @@
         spec.vizConfig.spec.fieldConfig.defaults = {
           custom.filterable = true;
         };
-        influx.query = ''
-          import "join"
-
-          interfaces1 = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless")
-            |> filter(fn: (r) => r["_field"] == "running")
-            |> last()
-            |> group(columns: ["hostname"])
-            |> map(fn: (r) => ({r with "master-interface": if exists r["master-interface"] then r["master-interface"] else r["name"]}))
-          interfaces2 = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless")
-            |> filter(fn: (r) => r["_field"] == "running")
-            |> last()
-            |> group(columns: ["hostname"])
-            // Should not be necessary but causes a panic if missing
-            |> map(fn: (r) => ({r with "master-interface": if exists r["master-interface"] then r["master-interface"] else r["name"]}))
-
-          interfaces = join.left(
-            left: interfaces1,
-            right: interfaces2,
-            on: (l, r) => l["master-interface"] == r["name"],
-            as: (l, r) => ({
-              "hostname": l.hostname,
-              "name": l.name,
-              "ssid": l.ssid,
-              "band": if exists r.band then r.band else l.band,
-            })
-            )
-            |> group(columns: ["hostname"])
-
-          registrations = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless/registration-table")
-            |> filter(fn: (r) => r["_field"] == "tx-rate-name" or r._field == "rx-rate-name" or r._field == "uptime-ns" or r._field == "signal-strength" or r._field == "tx-ccq")
-            |> group(columns: ["_measurement", "_field", "_start", "_stop", "agent_host", "hostname", "interface", "mac-address"])
-            |> last()
-            |> map(fn: (r) => ({r with "last-ip": if exists r["last-ip"] then r["last-ip"] else ""}))
-            |> pivot(rowKey: ["_time", "last-ip"], columnKey: ["_field"], valueColumn: "_value")
-            |> group(columns: ["hostname"])
-
-          leases = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/ip/dhcp-server/lease")
-            |> filter(fn: (r) => r["_field"] == "active-address" or r._field == "status")
-            |> filter(fn: (r) => exists r["mac-address"])
-            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> group(columns: ["hostname", "mac-address"])
-            |> sort(columns: ["_time"])
-            |> last(column: "status")
-            |> group(columns: ["hostname"])
-
-          registrations2 = join.left(
-            left: registrations,
-            right: leases,
-            on: (l, r) => l["mac-address"] == r["mac-address"],
-            as: (l, r) => ({
-              "hostname": l.hostname,
-              "interface": l.interface,
-              "last-seen": l._time,
-              "mac-address": l["mac-address"],
-              "last-ip": l["last-ip"],
-              "active-address": r["active-address"],
-              "known": exists r.comment,
-              "comment": r.comment,
-              "rx-rate": l["rx-rate-name"],
-              "tx-rate": l["tx-rate-name"],
-              "tx-ccq": l["tx-ccq"],
-              "uptime": l["uptime-ns"],
-              "signal-strength": l["signal-strength"]
-            })
-          )
-          |> sort(columns: ["interface", "active-address"])
-          |> sort(columns: ["last-seen"], desc: true)
-
-          join.left(
-            left: registrations2,
-            right: interfaces,
-            on: (l, r) => l["interface"] == r["name"],
-            as: (l, r) => ({
-              "hostname": l.hostname,
-              "interface": l.interface,
-              "band": r.band,
-              "ssid": r.ssid,
-              "last-seen": l["last-seen"],
-              "mac-address": l["mac-address"],
-              "last-ip": l["last-ip"],
-              "active-address": l["active-address"],
-              "known": l.known,
-              "comment": l.comment,
-              "rx-rate": l["rx-rate"],
-              "tx-rate": l["tx-rate"],
-              "tx-ccq": l["tx-ccq"],
-              "uptime": l["uptime"],
-              "signal-strength": l["signal-strength"]
-            })
-            )
-            |> drop(columns: ["hostname"])
-            |> yield()
-        '';
+        spec.data.spec.queries = [{
+          spec.query = {
+            group = "info8cc-greptimedb-datasource";
+          datasource.name = "greptimedb";
+          spec.editorType = "sql";
+          spec.queryType = "table";
+          spec.rawSql = ''
+            WITH
+              interfaces_raw AS (
+                SELECT DISTINCT ON (hostname, name)
+                  hostname,
+                  name,
+                  ssid,
+                  band,
+                  "master-interface"
+                FROM mikrotik.":interface:wireless"
+                WHERE $__timeFilter(greptime_timestamp)
+                ORDER BY hostname, name, greptime_timestamp DESC
+              ),
+              interfaces AS (
+                SELECT
+                  i.hostname,
+                  i.name,
+                  i.ssid,
+                  coalesce(i.band, m.band) AS band
+                FROM interfaces_raw i
+                LEFT JOIN interfaces_raw m ON m.name = i."master-interface"
+              ),
+              leases AS (
+                ${leasesQuery}
+              ),
+              registrations AS (
+                SELECT
+                  hostname,
+                  interface,
+                  "mac-address",
+                  max(greptime_timestamp) AS "last-seen",
+                  last_value("last-ip" ORDER BY greptime_timestamp DESC) AS "last-ip",
+                  last_value("tx-rate-name" ORDER BY greptime_timestamp DESC) AS "tx-rate",
+                  last_value("rx-rate-name" ORDER BY greptime_timestamp DESC) AS "rx-rate",
+                  last_value("uptime-ns" ORDER BY greptime_timestamp DESC) AS "uptime",
+                  last_value("signal-strength" ORDER BY greptime_timestamp DESC) AS "signal-strength",
+                  last_value("tx-ccq" ORDER BY greptime_timestamp DESC) AS "tx-ccq",
+                FROM mikrotik.":interface:wireless:registration-table"
+                WHERE
+                  $__timeFilter(greptime_timestamp)
+                  AND rate IS NULL
+                GROUP BY hostname, interface, "mac-address"
+                ORDER BY hostname, interface, "last-seen" DESC
+              )
+            SELECT
+              r.interface,
+              i.band,
+              i.ssid,
+              r."last-seen",
+              r."mac-address",
+              r."last-ip",
+              l."active-address",
+              (l.comment IS NOT NULL) AS known,
+              l.comment,
+              r."rx-rate",
+              r."tx-rate",
+              r."tx-ccq",
+              r."uptime",
+              r."signal-strength",
+            FROM
+              registrations r
+            LEFT JOIN leases l USING (hostname, "mac-address")
+            LEFT JOIN interfaces i ON i.hostname == r.hostname AND i.name == r.interface
+            ORDER BY r.hostname, interface, "last-seen" DESC
+          '';
+          };
+        }];
         fields.last-seen.custom.width = 170;
         fields.interface.custom.width = 65;
         fields.band.custom.width = 100;
@@ -193,6 +175,7 @@
       };
       tx-rate = {
         spec.title = "TX Rate";
+        spec.vizConfig.group = "timeseries";
         spec.data.spec.queryOptions.interval = interval;
         spec.vizConfig.spec.options = {
           tooltip.mode = "multi";
@@ -207,53 +190,46 @@
             url = ''/d/eXssGz84k/wifi-client?orgId=1&var-macaddress=''${__field.labels.mac-address}'';
           }];
         };
-        influx.query = ''
-          import "join"
-
-          rates = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless/registration-table")
-            |> filter(fn: (r) => r["_field"] == "tx-rate")
-            |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false) // true
-            |> group(columns: ["hostname", "mac-address"])
-
-          leases = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/ip/dhcp-server/lease")
-            |> filter(fn: (r) => r._field == "status")
-            |> filter(fn: (r) => exists r["mac-address"])
-            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> group(columns: ["hostname", "mac-address"])
-            |> sort(columns: ["_time"])
-            |> last(column: "status")
-            |> map(fn: (r) => ({r with comment: if exists r.comment then r.comment else ""}))
-            |> keep(columns: ["hostname", "mac-address", "comment"])
-
-          join.left(
-            left: rates,
-            right: leases,
-            on: (l, r) => l["mac-address"] == r["mac-address"],
-            as: (l, r) => ({
-              "hostname": l.hostname,
-              "interface": l.interface,
-              "mac-address": l["mac-address"],
-              "last-ip": l["last-ip"],
-              "comment": r.comment,
-              "_value": l._value,
-              "_time": l._time,
-              "_start": l._start,
-              "_stop": l._stop,
-              "_measurement": l._measurement,
-              "_field": l._field,
-            })
-          )
-          |> group(columns: ["_measurement", "_field", "_start", "_stop", "hostname", "interface", "mac-address", "comment"])
-          |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: true)
-          |> yield()
-        '';
+        spec.data.spec.queries = [{
+          spec.query = {
+            group = "info8cc-greptimedb-datasource";
+            datasource.name = "greptimedb";
+            spec.editorType = "sql";
+            spec.queryType = "timeseries";
+            spec.rawSql = ''
+              WITH
+                leases AS (${leasesQuery}),
+                rates AS (
+                  SELECT
+                    hostname,
+                    interface,
+                    "mac-address",
+                    greptime_timestamp AS "time",
+                    mean("tx-rate") RANGE '$__interval' AS "tx-rate",
+                  FROM
+                    mikrotik.":interface:wireless:registration-table"
+                  WHERE
+                    $__timeFilter(greptime_timestamp)
+                    AND rate IS NULL
+                  ALIGN '$__interval' BY (hostname, interface, "mac-address")
+                  ORDER BY time ASC
+                )
+              SELECT
+                hostname,
+                interface,
+                "mac-address",
+                comment,
+                "time",
+                "tx-rate"
+              FROM rates
+              LEFT JOIN leases USING (hostname, "mac-address")
+            '';
+          };
+        }];
       };
       throughput = {
         spec.title = "Throughput";
+        spec.vizConfig.group = "timeseries";
         spec.data.spec.queryOptions.interval = interval;
         spec.vizConfig.spec.options = {
           tooltip.mode = "multi";
@@ -272,49 +248,54 @@
           }];
         };
         fields.rx-bytes.custom.transform = "negative-Y";
-        influx.query = ''
-          import "join"
-
-          rates = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/interface/wireless/registration-table")
-            |> filter(fn: (r) => r["_field"] == "tx-bytes" or r._field == "rx-bytes")
-            |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
-            |> derivative(nonNegative: true)
-            |> group(columns: ["hostname", "mac-address"])
-
-          leases = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/ip/dhcp-server/lease")
-            |> filter(fn: (r) => r._field == "status")
-            |> filter(fn: (r) => exists r["mac-address"])
-            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> group(columns: ["hostname", "mac-address"])
-            |> sort(columns: ["_time"])
-            |> last(column: "status")
-            |> map(fn: (r) => ({r with comment: if exists r.comment then r.comment else r["mac-address"]}))
-            |> keep(columns: ["hostname", "mac-address", "comment"])
-
-          join.left(
-            left: rates,
-            right: leases,
-            on: (l, r) => l["mac-address"] == r["mac-address"],
-            as: (l, r) => ({
-              "hostname": l.hostname,
-              "interface": l.interface,
-              "mac-address": l["mac-address"],
-              "comment": if exists r.comment then r.comment else l["mac-address"],
-              "_time": l._time,
-              "_start": l._start,
-              "_stop": l._stop,
-              "_measurement": l._measurement,
-              "_field": l._field,
-              "_value": l._value,
-            })
-          )
-          |> group(columns: ["_measurement", "_field", "_start", "_stop", "hostname", "interface", "mac-address", "comment"])
-          |> yield()
-        '';
+        spec.data.spec.queries = [{
+          spec.query = {
+            group = "info8cc-greptimedb-datasource";
+            datasource.name = "greptimedb";
+            spec.editorType = "sql";
+            spec.queryType = "timeseries";
+            spec.rawSql = ''
+              WITH
+                leases AS (${leasesQuery}),
+                rates AS (
+                  SELECT DISTINCT ON (hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp))
+                    hostname,
+                    interface,
+                    "mac-address",
+                    greptime_timestamp AS "time",
+                    "tx-bytes",
+                    "rx-bytes",
+                  FROM
+                    mikrotik.":interface:wireless:registration-table"
+                  WHERE
+                    $__timeFilter(greptime_timestamp)
+                    AND rate IS NULL
+                  ORDER BY hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
+                ),
+                rates2 AS (
+                  SELECT
+                    hostname,
+                    interface,
+                    "mac-address",
+                    time,
+                    time - lag("time") over (partition by hostname, interface, "mac-address" order by time) AS delta_time,
+                    "tx-bytes" - lag("tx-bytes") over (partition by hostname, interface, "mac-address" order by time) AS "delta_tx-bytes",
+                    "rx-bytes" - lag("rx-bytes") over (partition by hostname, interface, "mac-address" order by time) AS "delta_rx-bytes",
+                  FROM rates
+                )
+              SELECT
+                hostname,
+                interface,
+                "mac-address",
+                "comment",
+                "time",
+                CASE WHEN "delta_tx-bytes" < 0 THEN NULL ELSE "delta_tx-bytes" / arrow_cast(delta_time, 'Float64')*1e9 END AS "tx-bytes",
+                CASE WHEN "delta_rx-bytes" < 0 THEN NULL ELSE "delta_rx-bytes" / arrow_cast(delta_time, 'Float64')*1e9 END AS "rx-bytes",
+              FROM rates2
+              LEFT JOIN leases USING (hostname, "mac-address")
+            '';
+          };
+        }];
       };
       logs = {
         datasourceName = "loki";
