@@ -33,6 +33,7 @@ in {
   ];
   imports = [
     ./influxV2.nix
+    ./greptimeV2.nix
   ];
   options = with lib; let
     FieldConfig = (pkgs.formats.json {}).type;

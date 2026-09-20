@@ -3,7 +3,7 @@
   config.isz.grafana.dashboardsV2.vQ9bVarMz = {
     title = "WiFi Clients";
     tags = [ "home" "wifi" ];
-    defaultDatasourceName = "workshop";
+    defaultDatasourceName = "greptimedb";
     layout.kind = "GridLayout";
     layout.spec.items = [
       { spec = {
@@ -42,13 +42,9 @@
         spec.vizConfig.spec.fieldConfig.defaults = {
           custom.filterable = true;
         };
-        spec.data.spec.queries = [{
-          spec.query = {
-            group = "info8cc-greptimedb-datasource";
-          datasource.name = "greptimedb";
-          spec.editorType = "sql";
-          spec.queryType = "table";
-          spec.rawSql = ''
+        greptime = {
+          queryType = "table";
+          rawSql = ''
             WITH
               interfaces_raw AS (
                 SELECT DISTINCT ON (hostname, name)
@@ -113,8 +109,7 @@
             LEFT JOIN interfaces i ON i.hostname == r.hostname AND i.name == r.interface
             ORDER BY r.hostname, interface, "last-seen" DESC, comment, "mac-address"
           '';
-          };
-        }];
+        };
         fields.last-seen.custom.width = 170;
         fields.interface.custom.width = 65;
         fields.band.custom.width = 100;
@@ -175,7 +170,6 @@
       };
       tx-rate = {
         spec.title = "TX Rate";
-        spec.vizConfig.group = "timeseries";
         spec.data.spec.queryOptions.interval = interval;
         spec.vizConfig.spec.options = {
           tooltip.mode = "multi";
@@ -190,46 +184,37 @@
             url = ''/d/eXssGz84k/wifi-client?orgId=1&var-macaddress=''${__field.labels.mac-address}'';
           }];
         };
-        spec.data.spec.queries = [{
-          spec.query = {
-            group = "info8cc-greptimedb-datasource";
-            datasource.name = "greptimedb";
-            spec.editorType = "sql";
-            spec.queryType = "timeseries";
-            spec.rawSql = ''
-              WITH
-                leases AS (${leasesQuery}),
-                rates AS (
-                  SELECT
-                    hostname,
-                    interface,
-                    "mac-address",
-                    greptime_timestamp AS "time",
-                    mean("tx-rate") RANGE '$__interval' AS "tx-rate",
-                  FROM
-                    mikrotik.":interface:wireless:registration-table"
-                  WHERE
-                    $__timeFilter(greptime_timestamp)
-                    AND rate IS NULL
-                  ALIGN '$__interval' BY (hostname, interface, "mac-address")
-                  ORDER BY time ASC
-                )
+        greptime.rawSql = ''
+          WITH
+            leases AS (${leasesQuery}),
+            rates AS (
               SELECT
                 hostname,
                 interface,
                 "mac-address",
-                comment,
-                "time",
-                "tx-rate"
-              FROM rates
-              LEFT JOIN leases USING (hostname, "mac-address")
-            '';
-          };
-        }];
+                greptime_timestamp AS "time",
+                mean("tx-rate") RANGE '$__interval' AS "tx-rate",
+              FROM
+                mikrotik.":interface:wireless:registration-table"
+              WHERE
+                $__timeFilter(greptime_timestamp)
+                AND rate IS NULL
+              ALIGN '$__interval' BY (hostname, interface, "mac-address")
+              ORDER BY time ASC
+            )
+          SELECT
+            hostname,
+            interface,
+            "mac-address",
+            comment,
+            "time",
+            "tx-rate"
+          FROM rates
+          LEFT JOIN leases USING (hostname, "mac-address")
+        '';
       };
       throughput = {
         spec.title = "Throughput";
-        spec.vizConfig.group = "timeseries";
         spec.data.spec.queryOptions.interval = interval;
         spec.vizConfig.spec.options = {
           tooltip.mode = "multi";
@@ -248,54 +233,46 @@
           }];
         };
         fields.rx-bytes.custom.transform = "negative-Y";
-        spec.data.spec.queries = [{
-          spec.query = {
-            group = "info8cc-greptimedb-datasource";
-            datasource.name = "greptimedb";
-            spec.editorType = "sql";
-            spec.queryType = "timeseries";
-            spec.rawSql = ''
-              WITH
-                leases AS (${leasesQuery}),
-                rates AS (
-                  SELECT DISTINCT ON (hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp))
-                    hostname,
-                    interface,
-                    "mac-address",
-                    greptime_timestamp AS "time",
-                    "tx-bytes",
-                    "rx-bytes",
-                  FROM
-                    mikrotik.":interface:wireless:registration-table"
-                  WHERE
-                    $__timeFilter(greptime_timestamp)
-                    AND rate IS NULL
-                  ORDER BY hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
-                ),
-                rates2 AS (
-                  SELECT
-                    hostname,
-                    interface,
-                    "mac-address",
-                    time,
-                    time - lag("time") over (partition by hostname, interface, "mac-address" order by time) AS delta_time,
-                    "tx-bytes" - lag("tx-bytes") over (partition by hostname, interface, "mac-address" order by time) AS "delta_tx-bytes",
-                    "rx-bytes" - lag("rx-bytes") over (partition by hostname, interface, "mac-address" order by time) AS "delta_rx-bytes",
-                  FROM rates
-                )
+        greptime.rawSql = ''
+          WITH
+            leases AS (${leasesQuery}),
+            rates AS (
+              SELECT DISTINCT ON (hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp))
+                hostname,
+                interface,
+                "mac-address",
+                greptime_timestamp AS "time",
+                "tx-bytes",
+                "rx-bytes",
+              FROM
+                mikrotik.":interface:wireless:registration-table"
+              WHERE
+                $__timeFilter(greptime_timestamp)
+                AND rate IS NULL
+              ORDER BY hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
+            ),
+            rates2 AS (
               SELECT
                 hostname,
                 interface,
                 "mac-address",
-                "comment",
-                "time",
-                CASE WHEN "delta_tx-bytes" < 0 THEN NULL ELSE "delta_tx-bytes" / arrow_cast(delta_time, 'Float64')*1e9 END AS "tx-bytes",
-                CASE WHEN "delta_rx-bytes" < 0 THEN NULL ELSE "delta_rx-bytes" / arrow_cast(delta_time, 'Float64')*1e9 END AS "rx-bytes",
-              FROM rates2
-              LEFT JOIN leases USING (hostname, "mac-address")
-            '';
-          };
-        }];
+                time,
+                time - lag("time") over (partition by hostname, interface, "mac-address" order by time) AS delta_time,
+                "tx-bytes" - lag("tx-bytes") over (partition by hostname, interface, "mac-address" order by time) AS "delta_tx-bytes",
+                "rx-bytes" - lag("rx-bytes") over (partition by hostname, interface, "mac-address" order by time) AS "delta_rx-bytes",
+              FROM rates
+            )
+          SELECT
+            hostname,
+            interface,
+            "mac-address",
+            "comment",
+            "time",
+            CASE WHEN "delta_tx-bytes" < 0 THEN NULL ELSE "delta_tx-bytes" / arrow_cast(delta_time, 'Float64')*1e9 END AS "tx-bytes",
+            CASE WHEN "delta_rx-bytes" < 0 THEN NULL ELSE "delta_rx-bytes" / arrow_cast(delta_time, 'Float64')*1e9 END AS "rx-bytes",
+          FROM rates2
+          LEFT JOIN leases USING (hostname, "mac-address")
+        '';
       };
       logs = {
         datasourceName = "loki";
