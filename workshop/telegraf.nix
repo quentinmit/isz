@@ -94,17 +94,7 @@
           tagexclude = [ "influxdb_bucket" ];
           timeout = "60s";
 
-          namepass = [
-            # netflow
-            "netflow_raw"
-            # weatherflow
-            "evt_strike"
-            "lightning_strike_time"
-            "observation"
-            "rain_start_time"
-            "rapid_wind"
-            "status_update"
-          ];
+          tagpass.greptimedb_database = ["*"];
         }];
       }
       {

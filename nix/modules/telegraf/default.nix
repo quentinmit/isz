@@ -143,6 +143,7 @@ in {
               bucket_tag = "influxdb_bucket";
               exclude_bucket_tag = true;
               tagexclude = [ "greptimedb_database" ];
+              tagdrop.influxdb_bucket = [""];
               timeout = "60s"; # Default timeout of 5s is sometimes too slow
               inherit (cfg.influxdb) namedrop;
             }];
