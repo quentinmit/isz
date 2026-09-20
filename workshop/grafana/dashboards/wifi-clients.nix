@@ -111,7 +111,7 @@
               registrations r
             LEFT JOIN leases l USING (hostname, "mac-address")
             LEFT JOIN interfaces i ON i.hostname == r.hostname AND i.name == r.interface
-            ORDER BY r.hostname, interface, "last-seen" DESC
+            ORDER BY r.hostname, interface, "last-seen" DESC, comment, "mac-address"
           '';
           };
         }];
