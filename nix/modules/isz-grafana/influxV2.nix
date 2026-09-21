@@ -50,13 +50,6 @@ with import ../grafana/types.nix { inherit pkgs lib; };
           '';
         filters = lib.mapAttrsToList (field: values:
           ''|> filter(fn: (r) => ${fluxFilter field values})'');
-        literalExpressionType = with lib.types; mkOptionType {
-          name = "literalExpression";
-          description = "literal expression";
-          descriptionClass = "noun";
-          check = isType "literalExpression";
-          merge = mergeEqualOption;
-        };
       in {
       key = "Query";
       options = {

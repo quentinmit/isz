@@ -3,6 +3,10 @@ let
   inherit
     (import ./lib.nix { inherit config pkgs lib; })
     dashboardFormat
+    literalExpressionType
+    sqlIdentifier
+    sqlValue
+    sqlFilter
     toProperties;
 in {
   options = let
@@ -21,11 +25,73 @@ in {
           default = null;
           description = "Option overrides for the results of this query";
         };
+        filter = lib.mkOption {
+          type = let
+            inherit (lib.types) submodule coercedTo nullOr attrsOf listOf oneOf enum str int bool;
+          in attrsOf (
+            coercedTo str (s: { values = [s]; })
+              (coercedTo (listOf str) (s: { values = s; })
+               (submodule {
+                 key = "Query.filter";
+                 options = {
+                   op = lib.mkOption {
+                     type = enum ["=" "!="];
+                     default = "=";
+                   };
+                   values = lib.mkOption {
+                     type = coercedTo str (s: [s]) (listOf (nullOr (oneOf [str int bool literalExpressionType])));
+                   };
+                 };
+               }))
+          );
+          default = {};
+        };
+        database = lib.mkOption {
+          type = lib.types.str;
+        };
+        table = lib.mkOption {
+          type = lib.types.str;
+        };
+        tags = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [];
+        };
+        fields = lib.mkOption {
+          type = lib.types.listOf (lib.types.either lib.types.str literalExpressionType);
+        };
+        fn = lib.mkOption {
+          type = lib.types.enum ["last1" "mean"];
+        };
         panelQuery = lib.mkOption {
           type = dashboardFormat.type;
         };
       };
       config = {
+        rawSql = let
+          tags = lib.concatMapStringsSep ", " sqlIdentifier config.tags;
+          filters = ''(${lib.concatStringsSep ") AND (" (["$__timeFilter(greptime_timestamp)"] ++ (lib.mapAttrsToList sqlFilter config.filter))})'';
+        in lib.mkDefault (
+          if config.fn == "last1" then ''
+            SELECT DISTINCT ON (${tags})
+              ${lib.concatMapStringsSep ", " sqlIdentifier (config.tags ++ config.fields)}
+            FROM
+              ${sqlIdentifier config.database}.${sqlIdentifier config.table}
+            WHERE
+              ${filters}
+            ORDER BY ${lib.concatMapStringsSep ", " sqlIdentifier config.tags}, greptime_timestamp DESC
+          '' else ''
+            SELECT
+              ${tags},
+              greptime_timestamp,
+              ${lib.concatMapStringsSep ", " (x: "${config.fn}(${sqlIdentifier x}) RANGE '$__interval' FILL NULL AS ${sqlIdentifier x}") config.fields},
+            FROM
+              ${sqlIdentifier config.database}.${sqlIdentifier config.table}
+            WHERE
+              ${filters}
+            ALIGN '$__interval' BY (${tags})
+            ORDER BY greptime_timestamp ASC
+          ''
+        );
         panelQuery.spec = {
           query = {
             spec.editorType = "sql";

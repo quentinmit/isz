@@ -396,15 +396,32 @@
       lease-info = {
         spec.title = "";
         spec.vizConfig.group = "table";
-        influx.filter._measurement = "mikrotik-/ip/dhcp-server/lease";
-        influx.filter.mac-address = "\${macaddress}";
-        influx.fn = "last1";
-        influx.pivot = true;
-        influx.extra = ''
-          |> last(column: "_time")
-          |> drop(columns: ["hostname", "host", "agent_host", "mac-address"])
-          |> group(columns: ["_measurement"])
-        '';
+        datasourceName = "greptimedb";
+        greptime.queryType = "table";
+        greptime.database = "mikrotik";
+        greptime.table = ":ip:dhcp-server:lease";
+        greptime.filter.mac-address = "\${macaddress}";
+        greptime.fn = "last1";
+        greptime.tags = [
+          "hostname"
+          "mac-address"
+        ];
+        greptime.fields = [
+          "comment"
+          "status"
+          "active-address"
+          (lib.literalExpression ''(greptime_timestamp - arrow_cast("last-seen-ns", 'Duration(ns)')) AS "last-seen"'')
+          (lib.literalExpression ''(greptime_timestamp + arrow_cast("expires-after-ns", 'Duration(ns)')) AS "expires-at"'')
+          "host-name"
+          "active-client-id"
+          "blocked"
+          "disabled"
+          "dynamic"
+          "active-mac-address"
+          "active-server"
+          "class-id"
+          "radius"
+        ];
         fields.comment.custom.width = 200;
         fields._time.custom.width = 160;
         fields.status.custom.width = 75;
@@ -414,15 +431,15 @@
         fields.disabled.custom.width = 75;
         fields.dynamic.custom.width = 75;
         fields.radius.custom.width = 75;
-        fields.expires-after-ns.unit = "ns";
-        fields.last-seen-ns.unit = "ns";
+        fields.last-seen.unit = "dateTimeFromNow";
+        fields.expires-at.unit = "dateTimeFromNow";
         fieldOrder = [
           "comment"
           "_time"
           "status"
           "active-address"
-          "last-seen-ns"
-          "expires-after-ns"
+          "last-seen"
+          "expires-at"
           "host-name"
           "active-client-id"
         ];
@@ -437,11 +454,21 @@
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
         fields.rx-rate.custom.transform = "negative-Y";
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = ["tx-rate" "rx-rate"];
-        influx.filter.mac-address = "\${macaddress}";
-        influx.fn = "mean";
-        influx.createEmpty = true;
+        datasourceName = "greptimedb";
+        greptime.database = "mikrotik";
+        greptime.table = ":interface:wireless:registration-table";
+        greptime.tags = [
+          "hostname"
+          "interface"
+          "mac-address"
+        ];
+        greptime.fields = [
+          "tx-rate"
+          "rx-rate"
+        ];
+        greptime.filter.mac-address = "\${macaddress}";
+        greptime.filter.rate.values = [null];
+        greptime.fn = "mean";
       };
       throughput = {
         spec.title = "Throughput";
