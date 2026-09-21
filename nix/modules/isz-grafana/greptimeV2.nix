@@ -60,7 +60,7 @@ in {
           type = lib.types.listOf (lib.types.either lib.types.str literalExpressionType);
         };
         fn = lib.mkOption {
-          type = lib.types.enum ["last1" "mean"];
+          type = lib.types.enum ["last1" "mean" "derivative"];
         };
         panelQuery = lib.mkOption {
           type = dashboardFormat.type;
@@ -78,7 +78,32 @@ in {
               ${sqlIdentifier config.database}.${sqlIdentifier config.table}
             WHERE
               ${filters}
-            ORDER BY ${lib.concatMapStringsSep ", " sqlIdentifier config.tags}, greptime_timestamp DESC
+            ORDER BY ${tags}, greptime_timestamp DESC
+          '' else if config.fn == "derivative" then ''
+            WITH downsampled AS (
+              SELECT DISTINCT ON (${tags}, date_bin(interval '$__interval', greptime_timestamp))
+                ${lib.concatMapStringsSep ", " sqlIdentifier (["greptime_timestamp"] ++ config.tags ++ config.fields)}
+              FROM
+                ${sqlIdentifier config.database}.${sqlIdentifier config.table}
+              WHERE
+                ${filters}
+              ORDER BY ${tags}, date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
+            ),
+            deltas AS (
+              SELECT
+                ${tags},
+                greptime_timestamp,
+                ${lib.concatMapStringsSep ", " (i: "${sqlIdentifier i} - lag(${sqlIdentifier i}) over (partition by ${tags} order by greptime_timestamp) AS ${sqlIdentifier "delta_${i}"}") (["greptime_timestamp"] ++ config.fields)}
+              FROM downsampled
+            )
+            SELECT
+              ${tags},
+              greptime_timestamp,
+              ${lib.concatMapStringsSep ", " (i: let
+                di = sqlIdentifier "delta_${i}";
+              in "CASE WHEN ${di} < 0 THEN NULL ELSE ${di} / arrow_cast(delta_greptime_timestamp, 'Float64')*1e9 END AS ${sqlIdentifier i}") config.fields}
+            FROM
+              deltas
           '' else ''
             SELECT
               ${tags},

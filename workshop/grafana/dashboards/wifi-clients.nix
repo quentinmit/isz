@@ -294,41 +294,43 @@
   };
   config.isz.grafana.dashboardsV2.eXssGz84k = {
     title = "WiFi Client";
-    defaultDatasourceName = "workshop";
+    defaultDatasourceName = "greptimedb";
     variables = {
       macaddress = {
-        influx.query = ''
-          import "join"
-          import "influxdata/influxdb/schema"
-
-          tags = schema.tagValues(
-            bucket: v.defaultBucket,
-            tag: "mac-address",
-            predicate: (r) => r._measurement == "mikrotik-/interface/wireless/registration-table",
-            start: v.timeRangeStart,
-            stop: v.timeRangeStop
+        spec.query = {
+          datasource.name = "greptimedb";
+          group = "info8cc-greptimedb-datasource";
+          spec.editorType = "sql";
+          spec.queryType = "table";
+          spec.rawSql = ''
+          WITH leases AS (
+            SELECT
+              "mac-address",
+              LAST_VALUE(comment ORDER BY greptime_timestamp) AS comment
+            FROM
+            mikrotik.":ip:dhcp-server:lease"
+            WHERE
+              $__timeFilter(greptime_timestamp)
+            GROUP BY "mac-address"
+          ), registrations AS (
+            SELECT DISTINCT
+              "mac-address"
+            FROM
+              mikrotik.":interface:wireless:registration-table"
+            WHERE
+              $__timeFilter(greptime_timestamp)
           )
-          |> map (fn: (r) => ({"mac-address": r._value}))
-
-          leases = from(bucket: v.defaultBucket)
-            |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-            |> filter(fn: (r) => r["_measurement"] == "mikrotik-/ip/dhcp-server/lease")
-            |> filter(fn: (r) => r._field == "status")
-            |> filter(fn: (r) => exists r["mac-address"])
-            |> last()
-            |> group(columns: ["mac-address"])
-            |> sort(columns: ["_time"])
-            |> last(column: "_value")
-            |> group()
-            |> keep(columns: ["mac-address", "comment"])
-
-          join.left(
-            left: tags, right: leases,
-            on: (l, r) => l["mac-address"] == r["mac-address"],
-            as: (l, r) => ({noComment: not exists r.comment, comment: r.comment, _value: l["mac-address"] + (if exists r["comment"] then " - "+r["comment"] else "")})
-          )
-          |> sort(columns: ["noComment", "comment", "_value"])
+          SELECT
+            CONCAT(
+             "mac-address",
+             nvl2(comment, CONCAT(' - ', comment), ''')
+            ) AS value
+          FROM
+            registrations r
+            LEFT JOIN leases l USING ("mac-address")
+          ORDER BY comment, "mac-address"
           '';
+        };
         spec.label = "MAC address";
         spec.regex = ''/^(?<text>(?<value>[^ ]+).*)/'';
         spec.includeAll = false;
@@ -396,7 +398,6 @@
       lease-info = {
         spec.title = "";
         spec.vizConfig.group = "table";
-        datasourceName = "greptimedb";
         greptime.queryType = "table";
         greptime.database = "mikrotik";
         greptime.table = ":ip:dhcp-server:lease";
@@ -454,7 +455,6 @@
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
         fields.rx-rate.custom.transform = "negative-Y";
-        datasourceName = "greptimedb";
         greptime.database = "mikrotik";
         greptime.table = ":interface:wireless:registration-table";
         greptime.tags = [
@@ -486,11 +486,20 @@
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
         fields.rx-bytes.custom.transform = "negative-Y";
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = ["tx-bytes" "rx-bytes"];
-        influx.filter.mac-address = "\${macaddress}";
-        influx.fn = "derivative";
-        influx.createEmpty = true;
+        greptime.database = "mikrotik";
+        greptime.table = ":interface:wireless:registration-table";
+        greptime.tags = [
+          "hostname"
+          "interface"
+          "mac-address"
+        ];
+        greptime.fields = [
+          "tx-bytes"
+          "rx-bytes"
+        ];
+        greptime.filter.mac-address = "\${macaddress}";
+        greptime.filter.rate.values = [null];
+        greptime.fn = "derivative";
       };
       rssi-at-rate = {
         spec.title = "Signal Strength at Rate";
@@ -500,7 +509,6 @@
           unit = "dBm";
           displayName = "\${__field.labels.rate}";
         };
-        datasourceName = "greptimedb";
         greptime.rawSql = ''
           WITH
             adjusted AS (
@@ -532,7 +540,6 @@
         spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "percent";
         };
-        datasourceName = "greptimedb";
         greptime.database = "mikrotik";
         greptime.table = ":interface:wireless:registration-table";
         greptime.tags = [
@@ -553,18 +560,38 @@
         spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "Bps";
         };
-        influx = {
-          bucket = "netflow";
-          imports = ["strings"];
-          filter._measurement = "netflow_ip_outgoing";
-          filter._field = "in_bytes";
-          filter.in_src_mac.values = [(lib.literalExpression "strings.toLower(v: \${macaddress:doublequote})")];
-          fn = "sum";
-          extra = ''
-            |> map(fn: (r) => ({r with _value: r._value / float(v: int(v: v.windowPeriod) / int(v: 1s))}))
-          '';
-          createEmpty = true;
-        };
+        greptime.rawSql = ''
+          SELECT
+            source,
+            in_snmp,
+            out_snmp,
+            in_interface,
+            out_interface,
+            ip_version,
+            protocol,
+
+            src,
+            greptime_timestamp,
+            (sum(in_bytes) RANGE '$__interval' FILL NULL)/cast(arrow_cast(interval '$__interval', 'Duration(s)') AS float64) AS in_bytes
+          FROM
+            netflow.netflow_raw
+          WHERE
+            $__timeFilter(greptime_timestamp)
+            AND "in_src_mac" = lower('${"\${macaddress}"}')
+            AND ip_version = 'IPv4'
+            AND next_hop != '0.0.0.0'
+          ALIGN '$__interval' BY (
+            source,
+            in_snmp,
+            out_snmp,
+            in_interface,
+            out_interface,
+            ip_version,
+            protocol,
+
+            src
+          )
+        '';
       };
       stats = {
         spec.title = "Stats";
@@ -574,11 +601,21 @@
           valueSize = 20;
         };
         spec.vizConfig.spec.options.orientation = "horizontal";
-        spec.vizConfig.spec.fieldConfig.defaults.color.mode = "palette-classic";
+        spec.vizConfig.spec.fieldConfig.defaults = {
+          color.mode = "palette-classic";
+          displayName = "\${__field.name}";
+        };
         spec.data.spec.queryOptions.interval = interval;
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter.mac-address = "\${macaddress}";
-        influx.filter._field = [
+        greptime.database = "mikrotik";
+        greptime.table = ":interface:wireless:registration-table";
+        greptime.filter.mac-address = "\${macaddress}";
+        greptime.filter.rate.values = [null];
+        greptime.fn = "mean";
+        greptime.tags = [
+          "hostname"
+          "mac-address"
+        ];
+        greptime.fields = [
           "last-activity-ns"
           "p-throughput"
           "rx-bytes"
@@ -607,7 +644,6 @@
           "tx-rate"
           "uptime-ns"
         ];
-        influx.fn = "mean";
         fields.last-activity-ns.unit = "ns";
         fields.p-throughput.unit = "Kbits";
         fields.rx-bytes.unit = "bytes";
@@ -628,11 +664,6 @@
         fields.tx-hw-frame-bytes.unit = "bytes";
         fields.tx-rate.unit = "bps";
         fields.uptime-ns.unit = "ns";
-        influx.extra = ''
-          |> drop(columns: ["_start", "_stop", "_measurement", "agent_host", "host", "hostname", "mac-address", "last-ip", "authentication-type", "encryption", "group-encryption", "interface"])
-        '';
-        # For use with the "dateTimeFromNow" unit
-        # |> map(fn: (r) => ({r with _value: if (r._field == "last-activity-ns" or r._field == "uptime-ns") then float(v: uint(v: date.sub(from: r._time, d: duration(v: int(v: r._value)))))/1000000. else r._value}))
       };
       logs = {
         datasourceName = "loki";
