@@ -500,26 +500,30 @@
           unit = "dBm";
           displayName = "\${__field.labels.rate}";
         };
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = ["strength-at-rates" "strength-at-rates-age-ns"];
-        influx.filter.mac-address = "\${macaddress}";
-        influx.fn = "mean";
-        influx.pivot = true;
-        influx.imports = ["date"];
-        influx.extra = ''
-          |> map(fn: (r) => ({
-            _value: r["strength-at-rates"],
-            _field: "strength-at-rates",
-            rate: r.rate,
-            _time:
-              if exists r["strength-at-rates-age-ns"]
-              then date.sub(
-                from: r._time,
-                d: duration(v: int(v: r["strength-at-rates-age-ns"]))
-              )
-              else r._time
-          }))
-          |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: true)
+        datasourceName = "greptimedb";
+        greptime.rawSql = ''
+          WITH
+            adjusted AS (
+              SELECT
+                greptime_timestamp - arrow_cast("strength-at-rates-age-ns", 'Duration(ns)') AS greptime_timestamp,
+                rate,
+                "strength-at-rates",
+              FROM
+                mikrotik.":interface:wireless:registration-table"
+              WHERE
+                ($__timeFilter(greptime_timestamp))
+                AND ("mac-address" = '${"\${macaddress}"}')
+                AND ("rate" IS NOT NULL)
+            )
+          -- TODO: Use `FILL NULL` when https://github.com/GreptimeTeam/greptimedb/issues/5839 is fixed
+          SELECT
+            rate,
+            date_bin('$__interval', greptime_timestamp) AS greptime_timestamp,
+            mean("strength-at-rates") AS "strength-at-rates",
+          FROM
+            adjusted
+          GROUP BY 1, 2
+          ORDER BY greptime_timestamp ASC
         '';
       };
       tx-ccq = {
@@ -528,11 +532,20 @@
         spec.vizConfig.spec.fieldConfig.defaults = {
           unit = "percent";
         };
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = ["tx-ccq"];
-        influx.filter.mac-address = "\${macaddress}";
-        influx.fn = "mean";
-        influx.createEmpty = true;
+        datasourceName = "greptimedb";
+        greptime.database = "mikrotik";
+        greptime.table = ":interface:wireless:registration-table";
+        greptime.tags = [
+          "hostname"
+          "interface"
+          "mac-address"
+        ];
+        greptime.fields = [
+          "tx-ccq"
+        ];
+        greptime.filter.mac-address = "\${macaddress}";
+        greptime.filter.rate.values = [null];
+        greptime.fn = "mean";
       };
       outgoing-traffic = {
         spec.title = "Outgoing traffic";
