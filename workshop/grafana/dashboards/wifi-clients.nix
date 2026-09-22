@@ -522,16 +522,40 @@
                 ($__timeFilter(greptime_timestamp))
                 AND ("mac-address" = '${"\${macaddress}"}')
                 AND ("rate" IS NOT NULL)
+            ),
+            aggregated AS (
+              SELECT
+                rate,
+                date_bin('$__interval', greptime_timestamp) AS greptime_timestamp,
+                mean("strength-at-rates") AS "strength-at-rates",
+              FROM
+                adjusted
+              GROUP BY 1, 2
+            ),
+            tags AS (
+              SELECT DISTINCT
+                rate
+              FROM
+                adjusted
+            ),
+            grid AS (
+              SELECT
+                unnest(generate_series(
+                  min(greptime_timestamp),
+                  max(greptime_timestamp),
+                  interval '$__interval'
+                )) AS greptime_timestamp
+              FROM aggregated
             )
           -- TODO: Use `FILL NULL` when https://github.com/GreptimeTeam/greptimedb/issues/5839 is fixed
           SELECT
             rate,
-            date_bin('$__interval', greptime_timestamp) AS greptime_timestamp,
-            mean("strength-at-rates") AS "strength-at-rates",
+            greptime_timestamp,
+            "strength-at-rates"
           FROM
-            adjusted
-          GROUP BY 1, 2
-          ORDER BY greptime_timestamp ASC
+            grid
+            CROSS JOIN tags
+            LEFT JOIN aggregated USING (rate, greptime_timestamp)
         '';
       };
       tx-ccq = {
