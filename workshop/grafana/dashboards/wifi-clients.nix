@@ -242,6 +242,7 @@
                 interface,
                 "mac-address",
                 greptime_timestamp AS "time",
+                date_bin(interval '$__interval', greptime_timestamp) AS time_bucket,
                 "tx-bytes",
                 "rx-bytes",
               FROM
@@ -257,20 +258,35 @@
                 interface,
                 "mac-address",
                 time,
+                time_bucket,
                 time - lag("time") over (partition by hostname, interface, "mac-address" order by time) AS delta_time,
                 "tx-bytes" - lag("tx-bytes") over (partition by hostname, interface, "mac-address" order by time) AS "delta_tx-bytes",
                 "rx-bytes" - lag("rx-bytes") over (partition by hostname, interface, "mac-address" order by time) AS "delta_rx-bytes",
               FROM rates
+            ),
+            grid AS (
+              SELECT
+                hostname,
+                interface,
+                "mac-address",
+                unnest(generate_series(
+                  min(time_bucket),
+                  max(time_bucket),
+                  interval '$__interval'
+                )) AS time_bucket
+              FROM rates2
+              GROUP BY hostname, interface, "mac-address"
             )
           SELECT
-            hostname,
-            interface,
-            "mac-address",
+            r.hostname,
+            r.interface,
+            r."mac-address",
             "comment",
-            "time",
+            coalesce("time", time_bucket) AS time,
             CASE WHEN "delta_tx-bytes" < 0 THEN NULL ELSE "delta_tx-bytes" / arrow_cast(delta_time, 'Float64')*1e9 END AS "tx-bytes",
             CASE WHEN "delta_rx-bytes" < 0 THEN NULL ELSE "delta_rx-bytes" / arrow_cast(delta_time, 'Float64')*1e9 END AS "rx-bytes",
-          FROM rates2
+          FROM grid
+          LEFT JOIN rates2 r USING (hostname, interface, "mac-address", time_bucket)
           LEFT JOIN leases USING (hostname, "mac-address")
         '';
       };
