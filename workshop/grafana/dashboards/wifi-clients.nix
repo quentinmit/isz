@@ -193,7 +193,7 @@
                 interface,
                 "mac-address",
                 greptime_timestamp AS "time",
-                mean("tx-rate") RANGE '$__interval' AS "tx-rate",
+                mean("tx-rate") RANGE '$__interval' FILL NULL AS "tx-rate",
               FROM
                 mikrotik.":interface:wireless:registration-table"
               WHERE
