@@ -89,12 +89,42 @@ in {
                 ${filters}
               ORDER BY ${tags}, date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
             ),
+            binned AS (
+              SELECT
+                *,
+                date_bin(interval '$__interval', greptime_timestamp) AS _time_bucket
+              FROM
+                downsampled
+            ),
+            tags AS (
+              SELECT DISTINCT
+                ${tags}
+              FROM downsampled
+            ),
+            grid AS (
+              SELECT
+                unnest(generate_series(
+                  min(_time_bucket),
+                  max(_time_bucket),
+                  interval '$__interval'
+                )) AS _time_bucket
+              FROM binned
+            ),
+            filled AS (
+              SELECT
+                ${lib.concatMapStringsSep ", " (x: "t.${sqlIdentifier x}") config.tags},
+                ${lib.concatMapStringsSep ", " (x: "b.${sqlIdentifier x}") config.fields},
+                coalesce(greptime_timestamp, _time_bucket) AS greptime_timestamp
+              FROM grid
+              CROSS JOIN tags t
+              LEFT JOIN binned b USING (${tags}, _time_bucket)
+            ),
             deltas AS (
               SELECT
                 ${tags},
                 greptime_timestamp,
                 ${lib.concatMapStringsSep ", " (i: "${sqlIdentifier i} - lag(${sqlIdentifier i}) over (partition by ${tags} order by greptime_timestamp) AS ${sqlIdentifier "delta_${i}"}") (["greptime_timestamp"] ++ config.fields)}
-              FROM downsampled
+              FROM filled
             )
             SELECT
               ${tags},
