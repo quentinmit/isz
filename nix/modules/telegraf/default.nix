@@ -16,28 +16,13 @@ in {
   options = with lib; {
     isz.telegraf = {
       enable = mkEnableOption "telegraf";
-      amdgpu = mkEnableOption "amdgpu";
       debug = mkEnableOption "debug";
       vm = mkOption {
         type = types.bool;
         default = lib.elem "virtio_pci" (config.boot.initrd.availableKernelModules or []);
       };
-      openweathermap = {
-        appId = mkOption {
-          type = with types; nullOr str;
-          default = null;
-        };
-        cityIds = mkOption {
-          type = with types; listOf str;
-          default = [];
-        };
-      };
       interval = mkOption {
         type = types.attrsOf (types.strMatching "[0-9]+[hms]");
-      };
-      influxdb.namedrop = mkOption {
-        type = types.listOf types.str;
-        default = [];
       };
     } // lib.optionalAttrs (!standalone) {
       envSecrets = mkOption {
@@ -58,7 +43,6 @@ in {
         agent = "10s";
         cgroup = "60s";
         internal = "60s";
-        openweathermap = "10m";
         sensors = "10s";
       };
     }
@@ -116,39 +100,6 @@ in {
             omit_hostname = false;
             skip_processors_after_aggregators = false;
           };
-          processors.starlark = [{
-            alias = "dropnan";
-            order = 9999; # Run last
-            # Work around https://github.com/influxdata/telegraf/issues/17205
-            # The influxdb_v2 output drops an entire batch of metrics if there is a NaN value in any of them.
-            source = ''
-              load("logging.star", "log")
-              nan = float('nan')
-
-              def apply(metric):
-                for k, v in metric.fields.items():
-                  if v == nan:
-                    metric.fields.pop(k)
-                    log.warn("Dropped NaN value: metric {} field {}".format(metric.name, k))
-                return metric
-              '';
-          }];
-          outputs = {
-            influxdb_v2 = [{
-              # TODO: Disable https for some hosts
-              urls = ["https://influx.isz.wtf"];
-              token = "$INFLUX_TOKEN";
-              organization = "icestationzebra";
-              bucket = "icestationzebra";
-              bucket_tag = "influxdb_bucket";
-              exclude_bucket_tag = true;
-              tagexclude = [ "greptimedb_database" ];
-              tagdrop.influxdb_bucket = [""];
-              timeout = "60s"; # Default timeout of 5s is sometimes too slow
-              inherit (cfg.influxdb) namedrop;
-            }];
-            # TODO: Add option for stdout
-          };
           inputs = {
             cpu = [{
               percpu = true;
@@ -203,27 +154,6 @@ in {
             }];
             interrupts = [{}];
           };
-        })
-        (lib.mkIf cfg.amdgpu {
-          inputs.execd = [{
-            alias = "amdgpu";
-            restart_delay = "10s";
-            data_format = "influx";
-            command = ["${pkgs.amdgpu}/bin/amdgpu"];
-            environment = [
-              #"RUST_LOG=debug"
-            ];
-            signal = "STDIN";
-          }];
-        })
-        (lib.mkIf (cfg.openweathermap.appId != null && cfg.openweathermap.cityIds != []) {
-          inputs.openweathermap = [{
-            app_id = cfg.openweathermap.appId;
-            city_id = cfg.openweathermap.cityIds;
-            lang = "en";
-            fetch = ["weather" "forecast"];
-            interval = cfg.interval.openweathermap;
-          }];
         })
       ];
     }
