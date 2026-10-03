@@ -82,23 +82,8 @@
       ];
     };
     isz.telegraf.envSecrets.GREPTIMEDB_PASSWORD = config.sops.placeholder."greptimedb/users/telegraf@workshop.isz.wtf";
+    isz.telegraf.greptimedb.enable = true;
     services.telegraf.extraConfig = lib.mkMerge [
-      {
-        outputs.influxdb_v2 = [{
-          alias = "greptimedb";
-          urls = ["https://greptimedb.isz.wtf/v1/influxdb"];
-          token = "telegraf@workshop.isz.wtf:$GREPTIMEDB_PASSWORD";
-          ## Leave empty
-          organization = "";
-          bucket = "telegraf";
-          bucket_tag = "greptimedb_database";
-          exclude_bucket_tag = true;
-          tagexclude = [ "influxdb_bucket" ];
-          timeout = "60s";
-
-          tagpass.greptimedb_database = ["*"];
-        }];
-      }
       {
         outputs.socket_writer = [{
           namepass = ["netflow_raw"];
