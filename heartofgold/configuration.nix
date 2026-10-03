@@ -74,7 +74,10 @@
     amdgpu = true;
     powerSupply = true;
     drm = true;
+    greptimedb.enable = true;
   };
+  sops.secrets."greptimedb/users/telegraf@heartofgold.isz.wtf".sopsFile = ./shared-secrets.yaml;
+  isz.telegraf.envSecrets.GREPTIMEDB_PASSWORD = config.sops.placeholder."greptimedb/users/telegraf@heartofgold.isz.wtf";
 
   isz.vector = {
     enable = true;
