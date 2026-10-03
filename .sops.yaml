@@ -40,12 +40,26 @@ creation_rules:
     - *admin_quentin_gpg
     age:
     - *goddard_ssh_age
+- path_regex: ^goddard/shared-secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *goddard_ssh_age
+    - *server_workshop_ssh_age
 - path_regex: ^heartofgold/secrets\.yaml$
   key_groups:
   - pgp:
     - *admin_quentin_gpg
     age:
     - *heartofgold_ssh_age
+- path_regex: ^heartofgold/shared-secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *heartofgold_ssh_age
+    - *server_workshop_ssh_age
 - path_regex: ^nix/home/quentin/secrets\.yaml$
   key_groups:
   - pgp:
@@ -59,6 +73,13 @@ creation_rules:
     - *admin_quentin_gpg
     age:
     - *uconsole_ssh_age
+- path_regex: ^uconsole/shared-secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *uconsole_ssh_age
+    - *server_workshop_ssh_age
 - path_regex: ^nix/home/chromium/secrets\.yaml$
   key_groups:
   - pgp:
@@ -74,12 +95,26 @@ creation_rules:
     - *admin_quentin_gpg
     age:
     - *build-arm_ssh_age
+- path_regex: ^build-arm/shared-secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *build-arm_ssh_age
+    - *server_workshop_ssh_age
 - path_regex: ^atlas\.comclub\.org/secrets\.yaml$
   key_groups:
   - pgp:
     - *admin_quentin_gpg
     age:
     - *atlas_ssh_age
+- path_regex: ^atlas\.comclub\.org/shared-secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *atlas_ssh_age
+    - *server_workshop_ssh_age
 - path_regex: ^droid/secrets\.yaml$
   key_groups:
   - pgp:
@@ -92,3 +127,10 @@ creation_rules:
     - *admin_quentin_gpg
     age:
     - *mnemosyne_ssh_age
+- path_regex: ^mnemosyne/shared-secrets\.yaml$
+  key_groups:
+  - pgp:
+    - *admin_quentin_gpg
+    age:
+    - *mnemosyne_ssh_age
+    - *server_workshop_ssh_age
