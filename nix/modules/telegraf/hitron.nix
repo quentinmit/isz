@@ -169,7 +169,7 @@ in {
         {
           namepass = ["hitron-dsinfo"];
           mapping = [{
-            tag = "modulation";
+            tags = ["modulation"];
             value_mappings = {
               "0" = "16QAM";
               "1" = "64QAM";
@@ -183,13 +183,13 @@ in {
         }
         {
           namepass = ["hitron-dsofdminfo"];
-          mapping = map (field: {
-            inherit field;
+          mapping = [{
+            fields = ["mdc1lock" "ncplock" "plclock"];
             value_mappings = {
               "YES" = true;
               "NO" = false;
             };
-          }) ["mdc1lock" "ncplock" "plclock"];
+          }];
         }
       ];
       processors.starlark = [
