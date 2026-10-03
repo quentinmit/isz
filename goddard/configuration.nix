@@ -308,6 +308,15 @@
     config.sops.secrets."nix/secret-key".path
   ];
 
+  # Make builds have lower priority than interactive user processes.
+  systemd.services.nix-daemon.serviceConfig = {
+    Nice = 5;
+    CPUWeight = "idle";
+    MemoryHigh = "50%";
+    MemoryMax = "90%";
+    IOWeight = 50;
+  };
+
   environment.wordlist = {
     enable = true;
   };
