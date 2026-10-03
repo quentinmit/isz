@@ -10,6 +10,7 @@ in {
   config = lib.mkIf config.isz.quentin.hardware.enable (lib.mkMerge [
     {
       home.packages = with pkgs; [
+        glasgow
         sigrok-cli
         scopehal-apps
       ];

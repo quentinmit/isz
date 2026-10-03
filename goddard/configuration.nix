@@ -196,6 +196,7 @@
   ] ++ lib.optional mbedtls.meta.available openrgb-with-all-plugins;
 
   services.udev.packages = with pkgs; [
+    glasgow
     platformio-core.udev
     limesuiteWithGui
   ];
