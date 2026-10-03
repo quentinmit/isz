@@ -82,6 +82,7 @@
         basicAuth = true;
         basicAuthUser = "grafana@workshop.isz.wtf";
         jsonData.host = "https://greptimedb.isz.wtf";
+        jsonData.defaultDatabase = "prometheus";
         jsonData.logs = {
           contextColumns = [];
           defaultTable = "";
