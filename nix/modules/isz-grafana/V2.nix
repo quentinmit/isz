@@ -7,9 +7,7 @@ in {
   options = with lib; {
     isz.grafana.dashboardsV2 = mkOption {
       default = {};
-      type = with types; attrsOf (submodule ({ config, ... }: let
-        inherit (config) defaultDatasourceName;
-      in {
+      type = with types; attrsOf (submodule ({ config, ... }: {
         options = {
           title = mkOption {
             type = types.str;
@@ -17,9 +15,6 @@ in {
           tags = mkOption {
             type = types.listOf types.str;
             default = [];
-          };
-          defaultDatasourceName = mkOption {
-            type = types.str;
           };
           variables = let
             variableOpts = { name, config, ... }: {
@@ -56,7 +51,7 @@ in {
               config = {
                 spec.name = lib.mkDefault name;
                 spec.query = lib.mkIf (config.influx != null) {
-                  datasource.name = lib.mkDefault defaultDatasourceName;
+                  datasource.name = lib.mkDefault "workshop"; # TODO: Don't hardcode this.
                   group = "influxdb";
                   spec = {
                     inherit (config.influx) query;
@@ -93,7 +88,6 @@ in {
               specialArgs = let
               in {
                 inherit (cfg) datasources;
-                inherit (config) defaultDatasourceName;
                 inherit pkgs;
                 extraInfluxFilter = {};
               };
@@ -133,12 +127,8 @@ in {
     };
   };
   config = {
-    services.grafana.dashboardsV2 = lib.mapAttrs (_: dashboard: let
-      datasource = {
-        inherit (cfg.datasources.${dashboard.defaultDatasourceName}) uid type;
-      };
-      in {
-        inherit (dashboard) spec;
-      }) cfg.dashboardsV2;
+    services.grafana.dashboardsV2 = lib.mapAttrs (_: dashboard: {
+      inherit (dashboard) spec;
+    }) cfg.dashboardsV2;
   };
 }

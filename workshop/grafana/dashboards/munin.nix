@@ -2,7 +2,6 @@
 {
   config.isz.grafana.dashboardsV2.Pd7zBps4z = {
     title = "Munin";
-    defaultDatasourceName = "workshop";
     variables = {
       host = {
         influx.predicate = ''r["_measurement"] == "system"'';

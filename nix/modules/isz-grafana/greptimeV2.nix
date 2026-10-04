@@ -149,6 +149,7 @@ in {
         );
         panelQuery.spec = {
           query = {
+            group = "info8fcc-greptimedb-datasource";
             spec.editorType = "sql";
             spec = {
               inherit (config) queryType rawSql;

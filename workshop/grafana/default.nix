@@ -32,18 +32,6 @@
           token = "$__file{${config.sops.secrets."grafana/influx_token".path}}";
         };
       };
-      InfluxDB-InfluxQL = {
-        uid = "-v4RrpJMk";
-        type = "influxdb";
-        url = "http://172.30.97.34:8086";
-        user = "grafana";
-        database = "rtlamr";
-        basicAuth = false;
-        jsonData.httpMode = "POST";
-        secureJsonData = {
-          password = "$__file{${config.sops.secrets."grafana/influxql_password".path}}";
-        };
-      };
       "Sun and Moon" = {
         uid = "A5G--UYMz";
         orgId = 1;

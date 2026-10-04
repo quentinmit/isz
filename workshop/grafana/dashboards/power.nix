@@ -18,41 +18,32 @@ let
       inherit (config.channel) field integralField filter;
     in lib.mkIf (config.channel.field != null) {
       channel.filter.name_of_station = lib.mkDefault name_of_station;
-      spec.data.spec.queries = [{
-        spec.query = {
-          group = "info8cc-greptimedb-datasource";
-          datasource.name = "greptimedb";
-          spec.editorType = "sql";
-          spec.queryType = "timeseries";
-          spec.rawSql = ''
-            WITH t1 AS (
-              SELECT
-                greptime_timestamp as "time",
-                last_value(total_time_seconds) RANGE '$__interval' FILL NULL as total_time_seconds,
-                last_value(total_${integralField}) RANGE '$__interval' FILL NULL as total_${integralField},
-                max(max_${field}) RANGE '$__interval' FILL NULL as max_${field},
-                min(min_${field}) RANGE '$__interval' FILL NULL as min_${field}
-              FROM
-                "profinet"."caparoc"
-              WHERE (
-                ${lib.concatMapAttrsStringSep " and " (name: value: "${name} = ${sqlValue value}") config.channel.filter}
-                and $__timeFilter(greptime_timestamp)
-              )
-              ALIGN '$__interval' BY (name_of_station, channel)
-              ORDER BY time ASC
-            )
-            SELECT
-              time,
-              CASE WHEN total_time_seconds < lag(total_time_seconds) over (order by time) OR total_${integralField} < lag(total_${integralField}) over (order by time) THEN NULL
-              ELSE (total_${integralField}-lag(total_${integralField}) over (order by time))/(total_time_seconds-lag(total_time_seconds) over (order by time))
-              END as average_${field},
-              max_${field},
-              min_${field}
-            FROM t1;
-          '';
-        };
-      }];
-      spec.vizConfig.group = "timeseries";
+      greptime.rawSql = ''
+        WITH t1 AS (
+          SELECT
+            greptime_timestamp as "time",
+            last_value(total_time_seconds) RANGE '$__interval' FILL NULL as total_time_seconds,
+            last_value(total_${integralField}) RANGE '$__interval' FILL NULL as total_${integralField},
+            max(max_${field}) RANGE '$__interval' FILL NULL as max_${field},
+            min(min_${field}) RANGE '$__interval' FILL NULL as min_${field}
+          FROM
+            "profinet"."caparoc"
+          WHERE (
+            ${lib.concatMapAttrsStringSep " and " (name: value: "${name} = ${sqlValue value}") config.channel.filter}
+            and $__timeFilter(greptime_timestamp)
+          )
+          ALIGN '$__interval' BY (name_of_station, channel)
+          ORDER BY time ASC
+        )
+        SELECT
+          time,
+          CASE WHEN total_time_seconds < lag(total_time_seconds) over (order by time) OR total_${integralField} < lag(total_${integralField}) over (order by time) THEN NULL
+          ELSE (total_${integralField}-lag(total_${integralField}) over (order by time))/(total_time_seconds-lag(total_time_seconds) over (order by time))
+          END as average_${field},
+          max_${field},
+          min_${field}
+        FROM t1;
+      '';
       spec.vizConfig.spec.fieldConfig.defaults = {
         custom.fillOpacity = 0;
       };
@@ -92,59 +83,50 @@ let
     config = let
       inherit (config.stacked) field integralField;
     in lib.mkIf (config.stacked.field != null) {
-      spec.data.spec.queries = [{
-        spec.query = {
-          group = "info8cc-greptimedb-datasource";
-          datasource.name = "greptimedb";
-          spec.editorType = "sql";
-          spec.queryType = "timeseries";
-          spec.rawSql = ''
-            WITH t1 AS (
-              SELECT
-                greptime_timestamp as "time",
-                channel,
-                last_value(total_time_seconds) RANGE '$__interval' FILL NULL as total_time_seconds,
-                last_value(total_${integralField}) RANGE '$__interval' FILL NULL as total_${integralField},
-              FROM
-                profinet.caparoc
-              WHERE (
-                name_of_station = ${sqlValue name_of_station}
-                AND channel != 'total'
-                AND $__timeFilter(greptime_timestamp)
-              )
-              ALIGN '$__interval' BY (name_of_station, channel)
-              ORDER BY time ASC
-            ), names AS (
-              SELECT
-                channel,
-                COALESCE(LAST_VALUE(channel_name ORDER BY greptime_timestamp), CONCAT('Channel ', channel)) AS channel_name
-              FROM
-                profinet.caparoc
-              WHERE
-                name_of_station = ${sqlValue name_of_station}
-                and $__timeFilter(greptime_timestamp)
-              GROUP BY channel
-            ), t2 AS (
-              SELECT
-                time,
-                channel,
-                CASE WHEN total_time_seconds < lag(total_time_seconds) over (partition by channel order by time) OR total_${integralField} < lag(total_${integralField}) over (partition by channel order by time) THEN NULL
-                ELSE (total_${integralField}-lag(total_${integralField}) over (partition by channel order by time))/(total_time_seconds-lag(total_time_seconds) over (partition by channel order by time))
-                END as average_${field},
-              FROM t1
-            )
-            SELECT
-              time,
-              channel,
-              channel_name,
-              average_${field}
-            FROM
-              t2 LEFT JOIN names USING (channel)
-            ORDER BY channel, time;
-          '';
-        };
-      }];
-      spec.vizConfig.group = "timeseries";
+      greptime.rawSql = ''
+        WITH t1 AS (
+          SELECT
+            greptime_timestamp as "time",
+            channel,
+            last_value(total_time_seconds) RANGE '$__interval' FILL NULL as total_time_seconds,
+            last_value(total_${integralField}) RANGE '$__interval' FILL NULL as total_${integralField},
+          FROM
+            profinet.caparoc
+          WHERE (
+            name_of_station = ${sqlValue name_of_station}
+            AND channel != 'total'
+            AND $__timeFilter(greptime_timestamp)
+          )
+          ALIGN '$__interval' BY (name_of_station, channel)
+          ORDER BY time ASC
+        ), names AS (
+          SELECT
+            channel,
+            COALESCE(LAST_VALUE(channel_name ORDER BY greptime_timestamp), CONCAT('Channel ', channel)) AS channel_name
+          FROM
+            profinet.caparoc
+          WHERE
+            name_of_station = ${sqlValue name_of_station}
+            and $__timeFilter(greptime_timestamp)
+          GROUP BY channel
+        ), t2 AS (
+          SELECT
+            time,
+            channel,
+            CASE WHEN total_time_seconds < lag(total_time_seconds) over (partition by channel order by time) OR total_${integralField} < lag(total_${integralField}) over (partition by channel order by time) THEN NULL
+            ELSE (total_${integralField}-lag(total_${integralField}) over (partition by channel order by time))/(total_time_seconds-lag(total_time_seconds) over (partition by channel order by time))
+            END as average_${field},
+          FROM t1
+        )
+        SELECT
+          time,
+          channel,
+          channel_name,
+          average_${field}
+        FROM
+          t2 LEFT JOIN names USING (channel)
+        ORDER BY channel, time;
+      '';
       spec.vizConfig.spec.fieldConfig.defaults = {
         displayName = "\${__field.labels.channel_name}";
         custom.stacking.mode = "normal";
@@ -163,28 +145,20 @@ let
     };
     config = lib.mkIf (config.gauge.fields != null) {
       spec.vizConfig.group = "gauge";
-      spec.data.spec.queries = [{
-        spec.query = {
-          group = "info8cc-greptimedb-datasource";
-          datasource.name = "greptimedb";
-          spec.editorType = "sql";
-          spec.queryType = "timeseries";
-          spec.rawSql = ''
-            SELECT
-              greptime_timestamp,
-              ${lib.concatMapStringsSep ", " (field: "average_${field}") config.gauge.fields}
-            FROM
-              profinet.caparoc
-            WHERE (
-              name_of_station = ${sqlValue name_of_station}
-              and channel = 'total'
-              and $__timeFilter(greptime_timestamp)
-            )
-            ORDER BY greptime_timestamp DESC
-            LIMIT 1;
-          '';
-        };
-      }];
+      greptime.rawSql = ''
+        SELECT
+          greptime_timestamp,
+          ${lib.concatMapStringsSep ", " (field: "average_${field}") config.gauge.fields}
+        FROM
+          profinet.caparoc
+        WHERE (
+          name_of_station = ${sqlValue name_of_station}
+          and channel = 'total'
+          and $__timeFilter(greptime_timestamp)
+        )
+        ORDER BY greptime_timestamp DESC
+        LIMIT 1;
+      '';
       spec.vizConfig.spec.fieldConfig.defaults = {
         color.mode = lib.mkDefault "palette-classic";
       };
@@ -241,7 +215,6 @@ in {
     config = {
       name_of_station = "workshop-caparoc";
       title = "Workshop Power";
-      defaultDatasourceName = "workshop";
       spec.cursorSync = "Tooltip";
       variables = {
         caparoc_channel = channelsVar config.name_of_station;
@@ -463,7 +436,6 @@ in {
     config = {
       name_of_station = "bedroom-caparoc";
       title = "Bedroom Power";
-      defaultDatasourceName = "workshop";
       spec.cursorSync = "Tooltip";
       variables = {
         caparoc_channel = channelsVar config.name_of_station;

@@ -152,6 +152,7 @@ with import ../grafana/types.nix { inherit pkgs lib; };
         );
         panelQuery.spec = {
           query = {
+            group = "influxdb";
             spec.query = config.query;
           };
         };

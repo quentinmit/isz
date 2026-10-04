@@ -3,7 +3,6 @@
   config.isz.grafana.dashboardsV2.vQ9bVarMz = {
     title = "WiFi Clients";
     tags = [ "home" "wifi" ];
-    defaultDatasourceName = "greptimedb";
     layout.kind = "GridLayout";
     layout.spec.items = [
       { spec = {
@@ -291,10 +290,10 @@
         '';
       };
       logs = {
-        datasourceName = "loki";
         spec.title = "Recent Logs";
         spec.vizConfig.group = "logs";
         spec.data.spec.queries = [{
+          spec.query.group = "loki";
           spec.query.spec.expr = ''
             {source_type="mikrotik", topic="wireless"}
             | json message="message"
@@ -310,7 +309,6 @@
   };
   config.isz.grafana.dashboardsV2.eXssGz84k = {
     title = "WiFi Client";
-    defaultDatasourceName = "greptimedb";
     variables = {
       macaddress = {
         spec.query = {
@@ -706,10 +704,10 @@
         fields.uptime-ns.unit = "ns";
       };
       logs = {
-        datasourceName = "loki";
         spec.title = "Recent Logs";
         spec.vizConfig.group = "logs";
         spec.data.spec.queries = [{
+          spec.query.group = "loki";
           spec.query.spec.expr = ''
             {source_type="mikrotik"}
             |~ `(?i)''${macaddress}`

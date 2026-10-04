@@ -1,16 +1,11 @@
 { config, pkgs, lib
 , name
 , datasources
-, defaultDatasourceName
-, extraInfluxFilter ? {}
 , ... }:
 with import ./lib.nix { inherit config pkgs lib; };
 with import ../grafana/types.nix { inherit pkgs lib; };
 let
-  queryBase = {
-    datasource.name = lib.mkDefault datasources.${config.datasourceName}.uid;
-    group = lib.mkDefault datasources.${config.datasourceName}.type;
-  };
+  datasourceUidByGroup = lib.mapAttrs' (_: d: lib.nameValuePair d.type d.uid) datasources;
 in {
   config.spec = let
     g = config;
@@ -46,23 +41,21 @@ in {
       type = with types; nullOr (listOf str);
       default = null;
     };
-    datasourceName = mkOption {
-      type = types.str;
-      default = defaultDatasourceName;
-    };
     spec = mkOption {
-      type = types.submodule ({ config, ... }: {
+      type = types.submodule {
         freeformType = dashboardFormat.type;
         options = {
           data.spec.queries = mkOption {
             default = [];
-            type = types.listOf (types.submodule {
+            type = types.listOf (types.submodule ({ config, ... }: {
               freeformType = dashboardFormat.type;
-              config.spec.query = queryBase;
-            });
+              config.spec.query = {
+                datasource.name = lib.mkDefault datasourceUidByGroup.${config.spec.query.group};
+              };
+            }));
           };
         };
-      });
+      };
     };
   };
 }

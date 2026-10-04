@@ -2,7 +2,6 @@
 {
   config.isz.grafana.dashboardsV2."Experimental/ping-times" = {
     title = "Ping Times";
-    defaultDatasourceName = "workshop";
     variables.country = {
       influx.predicate = ''r._measurement == "ping"'';
       spec.multi = false;

@@ -32,7 +32,6 @@ in {
     config = {
       title = "Comcast";
       tags = [ "home" ];
-      defaultDatasourceName = "workshop";
       spec.cursorSync = "Crosshair";
       layout.kind = "GridLayout";
       layout.spec.items = [

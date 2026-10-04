@@ -99,7 +99,6 @@ in {
     })];
     config = {
       title = "ZFS";
-      defaultDatasourceName = "workshop";
       spec.cursorSync = "Crosshair";
       variables = {
         host = {
@@ -216,7 +215,7 @@ in {
                 spec.name = "scan_exists";
                 spec.label = "scan_exists";
                 spec.query.group = "influxdb";
-                spec.query.datasource.name = config.defaultDatasourceName;
+                spec.query.datasource.name = "workshop";
                 spec.query.spec.query = ''
                   from(bucket: "icestationzebra")
                   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
