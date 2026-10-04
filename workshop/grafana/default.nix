@@ -104,6 +104,17 @@
         jsonData.version = "2.1.4";
         secureJsonData.basicAuthPassword = "$__file{${config.sops.secrets."greptimedb/users/grafana@workshop.isz.wtf".path}}";
       };
+      greptimedb-prometheus = {
+        uid = "greptimedb-prometheus";
+        type = "prometheus";
+        basicAuth = true;
+        basicAuthUser = "grafana@workshop.isz.wtf";
+        secureJsonData.basicAuthPassword = "$__file{${config.sops.secrets."greptimedb/users/grafana@workshop.isz.wtf".path}}";
+        url = "https://greptimedb.isz.wtf/v1/prometheus/";
+        jsonData.httpHeaderName1 = "x-greptime-db-name";
+        secureJsonData.httpHeaderValue1 = "prometheus";
+        jsonData.pdcInjected = false;
+      };
     };
   sops.secrets."greptimedb/users/grafana@workshop.isz.wtf".owner = "grafana";
     services.grafana = {
