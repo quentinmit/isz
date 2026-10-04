@@ -13,6 +13,7 @@
   }) [
     "sonarr"
     "prowlarr"
+    "radarr"
   ]) ++ [{
     systemd.services.telegraf.serviceConfig.NFTSet = ["cgroup:inet:arr:cg_nginx"];
   }]);
