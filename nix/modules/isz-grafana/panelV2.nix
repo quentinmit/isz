@@ -29,6 +29,7 @@ in {
   imports = [
     ./influxV2.nix
     ./greptimeV2.nix
+    ./prometheusV2.nix
   ];
   options = with lib; let
     FieldConfig = (pkgs.formats.json {}).type;
