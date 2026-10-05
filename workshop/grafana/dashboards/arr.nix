@@ -10,16 +10,152 @@ let
         targetBlank = true;
       }];
     };
-      prometheus.expr = "max(${metric}) by (message, wikiurl)";
-      fields.Time.custom."hideFrom.viz" = true;
-      fields.Value.custom."hideFrom.viz" = true;
-      fields.wikiurl.custom."hideFrom.viz" = true;
+    prometheus.expr = "max(${metric}) by (message, wikiurl)";
+    fields.Time.custom."hideFrom.viz" = true;
+    fields.Value.custom."hideFrom.viz" = true;
+    fields.wikiurl.custom."hideFrom.viz" = true;
+    fields.message.filterable = false;
   };
 in {
   config.isz.grafana.dashboardsV2.arr = {
     title = "Arr";
-    #layout = {
-    #};
+    layout.kind = "RowsLayout";
+    layout.spec.rows = [
+      {
+        spec.title = "Prowlarr";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "prowlarr-status-stat";
+              x = 0; y = 0; width = 3; height = 4;
+            }; }
+          # { spec = {
+          #     element.name = "prowlarr-uptime-stat";
+          #     x = 3; y = 0; width = 3; height = 4;
+          #   }; }
+          { spec = {
+              element.name = "prowlarr-health-stat";
+              x = 6; y = 0; width = 5; height = 4;
+            }; }
+          { spec = {
+              element.name = "prowlarr-queries-stat";
+              x = 11; y = 0; width = 6; height = 4;
+            }; }
+          { spec = {
+              element.name = "prowlarr-latency-stat";
+              x = 17; y = 0; width = 4; height = 4;
+            }; }
+          { spec = {
+              element.name = "prowlarr-vip-stat";
+              x = 21; y = 0; width = 3; height = 4;
+            }; }
+          { spec = {
+              element.name = "prowlarr-indexer-latency";
+              x = 0; y = 4; width = 12; height = 9;
+            }; }
+          { spec = {
+              element.name = "prowlarr-user-agent-queries";
+              x = 12; y = 4; width = 12; height = 9;
+            }; }
+          { spec = {
+              element.name = "prowlarr-queries-by-indexer";
+              x = 0; y = 13; width = 6; height = 9;
+            }; }
+          { spec = {
+              element.name = "prowlarr-grabs-by-indexer";
+              x = 6; y = 13; width = 6; height = 9;
+            }; }
+          { spec = {
+              element.name = "prowlarr-queries-by-user-agent";
+              x = 12; y = 13; width = 6; height = 9;
+            }; }
+          { spec = {
+              element.name = "prowlarr-grabs-by-user-agent";
+              x = 18; y = 13; width = 6; height = 9;
+            }; }
+          { spec = {
+              element.name = "prowlarr-system-health-issues";
+              x = 12; y = 22; width = 12; height = 7;
+            }; }
+        ];
+      }
+      {
+        spec.title = "Radarr";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "radarr-status-stat";
+              x = 0; y = 0; width = 3; height = 4;
+            }; }
+          # { spec = {
+          #     element.name = "radarr-uptime-stat";
+          #     x = 3; y = 0; width = 3; height = 4;
+          #   }; }
+          { spec = {
+              element.name = "radarr-movies-stat";
+              x = 6; y = 0; width = 6; height = 4;
+            }; }
+          { spec = {
+              element.name = "radarr-downloads-stat";
+              x = 12; y = 0; width = 12; height = 4;
+            }; }
+          { spec = {
+              element.name = "radarr-qualities";
+              x = 0; y = 4; width = 24; height = 10;
+            }; }
+          # { spec = {
+          #     element.name = "radarr-network";
+          #     x = 0; y = 14; width = 8; height = 9;
+          #   }; }
+          { spec = {
+              element.name = "radarr-disk";
+              x = 8; y = 14; width = 8; height = 9;
+            }; }
+          { spec = {
+              element.name = "radarr-system-health-issues";
+              x = 16; y = 14; width = 8; height = 9;
+            }; }
+        ];
+      }
+      {
+        spec.title = "Sonarr";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "sonarr-status-stat";
+              x = 0; y = 0; width = 3; height = 4;
+            }; }
+          # { spec = {
+          #     element.name = "sonarr-uptime-stat";
+          #     x = 3; y = 0; width = 3; height = 4;
+          #   }; }
+          { spec = {
+              element.name = "sonarr-queue-stat";
+              x = 6; y = 0; width = 6; height = 4;
+            }; }
+          { spec = {
+              element.name = "sonarr-count-stat";
+              x = 12; y = 0; width = 12; height = 4;
+            }; }
+          # { spec = {
+          #     element.name = "sonarr-qualities";
+          #     x = 0; y = 4; width = 24; height = 10;
+          #   }; }
+          # { spec = {
+          #     element.name = "sonarr-network";
+          #     x = 0; y = 14; width = 8; height = 9;
+          #   }; }
+          { spec = {
+              element.name = "sonarr-disk";
+              x = 8; y = 14; width = 8; height = 9;
+            }; }
+          { spec = {
+              element.name = "sonarr-system-health-issues";
+              x = 16; y = 14; width = 8; height = 9;
+            }; }
+        ];
+      }
+    ];
     panels.prowlarr-status-stat = {
       spec.vizConfig = {
         group = "stat";
@@ -378,7 +514,7 @@ in {
           legendFormat = "Series Monitored";
         }
         {
-          expr = "max(sonarr_series_total";
+          expr = "max(sonarr_series_total)";
           legendFormat = "Series Total";
         }
         {
@@ -386,7 +522,7 @@ in {
           legendFormat = "Season Monitored";
         }
         {
-          expr = "max(sonarr_season_total";
+          expr = "max(sonarr_season_total)";
           legendFormat = "Season Total";
         }
         {
@@ -394,7 +530,7 @@ in {
           legendFormat = "Episodes Missing";
         }
         {
-          expr = "max(sonarr_episode_total";
+          expr = "max(sonarr_episode_total)";
           legendFormat = "Episodes Total";
         }
       ];
