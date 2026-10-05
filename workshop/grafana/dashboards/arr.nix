@@ -1,5 +1,21 @@
 { config, pkgs, lib, ... }:
-{
+let
+  healthIssues = metric: {
+    spec.title = "System Health Issues";
+    spec.vizConfig = {
+      group = "table";
+      spec.fieldConfig.defaults.links = [{
+        title = "Details";
+        url = "\${__data.fields.wikiurl}";
+        targetBlank = true;
+      }];
+    };
+      prometheus.expr = "max(${metric}) by (message, wikiurl)";
+      fields.Time.custom."hideFrom.viz" = true;
+      fields.Value.custom."hideFrom.viz" = true;
+      fields.wikiurl.custom."hideFrom.viz" = true;
+  };
+in {
   config.isz.grafana.dashboardsV2.arr = {
     title = "Arr";
     #layout = {
@@ -198,21 +214,7 @@
       };
       prometheus.expr = "sum(increase(prowlarr_user_agent_grabs_total[$__range])) by (user_agent)";
     };
-    panels.prowlarr-system-health-issues = {
-      spec.title = "System Health Issues";
-      spec.vizConfig = {
-        group = "table";
-        spec.fieldConfig.defaults.links = [{
-          title = "Details";
-          url = "\${__data.fields.wikiurl}";
-          targetBlank = true;
-        }];
-      };
-      prometheus.expr = "max(prowlarr_system_health_issues) by (message, wikiurl)";
-      fields.Time.custom."hideFrom.viz" = true;
-      fields.Value.custom."hideFrom.viz" = true;
-      fields.wikiurl.custom."hideFrom.viz" = true;
-    };
+    panels.prowlarr-system-health-issues = healthIssues "prowlarr_system_health_issues";
     panels.radarr-status-stat = {
       spec.vizConfig = {
         group = "stat";
@@ -316,20 +318,95 @@
       prometheus.legendFormat = "Used";
       spec.vizConfig.spec.fieldConfig.defaults.unit = "bytes";
     };
-    panels.radarr-system-health-issues = {
-      spec.title = "System Health Issues";
+    panels.radarr-system-health-issues = healthIssues "radarr_system_health_issues";
+    panels.sonarr-status-stat = {
       spec.vizConfig = {
-        group = "table";
-        spec.fieldConfig.defaults.links = [{
-          title = "Details";
-          url = "\${__data.fields.wikiurl}";
-          targetBlank = true;
-        }];
+        group = "stat";
+        spec.options.colorMode = "background";
+        spec.fieldConfig.defaults = {
+          mappings = [{
+            type = "value";
+            options."0" = {
+              text = "Down";
+              color = "red";
+              index = 1;
+            };
+            options."1" = {
+              text = "Up";
+              color = "green";
+              index = 0;
+            };
+          }];
+        };
       };
-      prometheus.expr = "max(radarr_system_health_issues) by (message, wikiurl)";
-      fields.Time.custom."hideFrom.viz" = true;
-      fields.Value.custom."hideFrom.viz" = true;
-      fields.wikiurl.custom."hideFrom.viz" = true;
+      prometheus = {
+        expr = "sonarr_system_status";
+        legendFormat = "Status";
+      };
     };
+    #panels.sonarr-uptime-stat = {
+      # TODO
+    #};
+    panels.sonarr-queue-stat = {
+      spec.vizConfig = {
+        group = "stat";
+        spec.fieldConfig.defaults.color.mode = "continuous-BlPu";
+      };
+      prometheus = [
+        {
+          expr = "sonarr_queue_total";
+          legendFormat = "Queued";
+        }
+        {
+          expr = "sonarr_history_total";
+          legendFormat = "History";
+        }
+        {
+          expr = "sonarr_episode_downloaded_total";
+          legendFormat = "Downloaded";
+        }
+      ];
+    };
+    panels.sonarr-count-stat = {
+      spec.vizConfig = {
+        group = "stat";
+        spec.fieldConfig.defaults.color.mode = "continuous-BlPu";
+      };
+      prometheus = [
+        {
+          expr = "max(sonarr_series_monitored_total)";
+          legendFormat = "Series Monitored";
+        }
+        {
+          expr = "max(sonarr_series_total";
+          legendFormat = "Series Total";
+        }
+        {
+          expr = "max(sonarr_season_monitored_total)";
+          legendFormat = "Season Monitored";
+        }
+        {
+          expr = "max(sonarr_season_total";
+          legendFormat = "Season Total";
+        }
+        {
+          expr = "max(sonarr_episode_missing_total)";
+          legendFormat = "Episodes Missing";
+        }
+        {
+          expr = "max(sonarr_episode_total";
+          legendFormat = "Episodes Total";
+        }
+      ];
+    };
+    # panels.sonarr-qualities = {};
+    # panels.sonarr-network = {};
+    panels.sonarr-disk = {
+      spec.title = "Disk";
+      prometheus.expr = "sum(sonarr_series_filesize_bytes)";
+      prometheus.legendFormat = "Used";
+      spec.vizConfig.spec.fieldConfig.defaults.unit = "bytes";
+    };
+    panels.sonarr-system-health-issues = healthIssues "sonarr_system_health_issues";
   };
 }
