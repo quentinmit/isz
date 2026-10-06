@@ -37,6 +37,7 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''];
+  hardware.amdgpu.dcDebugMask.disablePsr = false;
   boot.extraModprobeConfig = ''
     options cros_charge_control probe_with_fwk_charge_control=1
   '';
