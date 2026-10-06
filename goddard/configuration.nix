@@ -37,6 +37,9 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''];
+  boot.extraModprobeConfig = ''
+    options cros_charge_control probe_with_fwk_charge_control=1
+  '';
 
   isz.syncoid = {
     enable = true;
