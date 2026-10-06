@@ -4,6 +4,7 @@ let
     spec.title = "System Health Issues";
     spec.vizConfig = {
       group = "table";
+      spec.options.showHeader = false;
       spec.fieldConfig.defaults.links = [{
         title = "Details";
         url = "\${__data.fields.wikiurl}";
@@ -103,10 +104,10 @@ in {
               element.name = "radarr-qualities";
               x = 0; y = 4; width = 24; height = 10;
             }; }
-          # { spec = {
-          #     element.name = "radarr-network";
-          #     x = 0; y = 14; width = 8; height = 9;
-          #   }; }
+          { spec = {
+              element.name = "radarr-network";
+              x = 0; y = 14; width = 8; height = 9;
+            }; }
           { spec = {
               element.name = "radarr-disk";
               x = 8; y = 14; width = 8; height = 9;
@@ -141,10 +142,10 @@ in {
           #     element.name = "sonarr-qualities";
           #     x = 0; y = 4; width = 24; height = 10;
           #   }; }
-          # { spec = {
-          #     element.name = "sonarr-network";
-          #     x = 0; y = 14; width = 8; height = 9;
-          #   }; }
+          { spec = {
+              element.name = "sonarr-network";
+              x = 0; y = 14; width = 8; height = 9;
+            }; }
           { spec = {
               element.name = "sonarr-disk";
               x = 8; y = 14; width = 8; height = 9;
@@ -447,7 +448,16 @@ in {
       prometheus.expr = "sum(radarr_movie_quality_total) by (quality)";
       prometheus.legendFormat = "{{quality}}";
     };
-    # panels.radarr-network = {};
+    panels.radarr-network = {
+      spec.title = "Network";
+      influx.filter._measurement = "systemd_unit";
+      influx.filter._field = ["IPIngressBytes" "IPEgressBytes"];
+      influx.filter.Id = "radarr.service";
+      influx.fn = "derivative";
+      spec.vizConfig.spec.fieldConfig.defaults.unit = "binBps";
+      fields.IPIngressBytes.displayName = "Network Receive";
+      fields.IPEgressBytes.displayName = "Network Transmit";
+    };
     panels.radarr-disk = {
       spec.title = "Disk";
       prometheus.expr = "sum(radarr_movie_filesize_total)";
@@ -536,7 +546,16 @@ in {
       ];
     };
     # panels.sonarr-qualities = {};
-    # panels.sonarr-network = {};
+    panels.sonarr-network = {
+      spec.title = "Network";
+      influx.filter._measurement = "systemd_unit";
+      influx.filter._field = ["IPIngressBytes" "IPEgressBytes"];
+      influx.filter.Id = "sonarr.service";
+      influx.fn = "derivative";
+      spec.vizConfig.spec.fieldConfig.defaults.unit = "binBps";
+      fields.IPIngressBytes.displayName = "Network Receive";
+      fields.IPEgressBytes.displayName = "Network Transmit";
+    };
     panels.sonarr-disk = {
       spec.title = "Disk";
       prometheus.expr = "sum(sonarr_series_filesize_bytes)";
