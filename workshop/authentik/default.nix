@@ -47,6 +47,9 @@
     isz.telegraf.prometheus.apps.authentik = {
       url = "http://localhost:9300/metrics";
       extraConfig.http_headers.Accept = "text/plain";
+      # This metric has a `pid` label that gives it insane cardinality.
+      # https://github.com/goauthentik/authentik/pull/25882
+      extraConfig.fieldexclude = assert lib.versionOlder config.services.authentik.authentikComponents.frontend.version "2026.9.0"; ["authentik_enterprise_license_expiry_seconds"];
     };
   };
 }
