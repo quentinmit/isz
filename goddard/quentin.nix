@@ -38,7 +38,10 @@
         home-assistant-cli
         zapzap
         xgpro
-        (pkgs.extend affinity-nix.overlays.default).affinity-v3
+        (
+          (pkgs.extend affinity-nix.overlays.default)
+            .extend (self: super: { inherit (self.unstable) msitools; })
+        ).affinity-v3
         mathematica
       ];
 
