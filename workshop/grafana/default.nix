@@ -119,9 +119,15 @@
         news.news_feed_enabled = false;
         security.secret_key = "$__file{${config.sops.secrets."grafana/secret_key".path}}";
       };
-      declarativePlugins = with pkgs.grafanaPlugins; [
+      declarativePlugins = with pkgs.unstable.grafanaPlugins; [
+        # Previously bundled in Grafana <13.2
+        influxdb
+        loki
+        prometheus
+
         equansdatahub-tree-panel
         fetzerch-sunandmoon-datasource
+        grafana-metricsdrilldown-app
         grafana-lokiexplore-app
         grafana-mqtt-datasource
         grafana-pyroscope-app

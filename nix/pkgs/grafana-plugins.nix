@@ -37,4 +37,9 @@
       hash = "sha256-DxwhRuiEA50tQTHdmhnr14GNv2Nd0QrLVg61IMFCIao=";
     };
   };
+  influxdb = grafanaPlugin {
+    pname = "influxdb";
+    version = "13.1.6";
+    zipHash = "sha256-1+JWVZ0HEesLS+JvZqylCU5aFfsQHvkOCW8K6ffmaYM=";
+  };
 }
