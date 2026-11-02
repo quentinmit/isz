@@ -1,752 +1,927 @@
 { config, pkgs, lib, ... }:
 with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; };
-{
-  config.isz.grafana.dashboards.Mikrotik = {
-    uid = "mikrotik";
-    title = "Mikrotik";
-    defaultDatasourceName = "workshop";
-    graphTooltip = 2;
-    variables.hostname = {
-      predicate = ''r["_measurement"] == "mikrotik-/interface"'';
-      extra.label = "Host";
+let
+  firewallModule = { config, ... }: {
+    options.firewall.key = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
     };
-    panels = let
-      firewallGraph = key: attrs: lib.recursiveUpdate {
-        panel.fieldConfig.defaults = {
-          unit = "bps";
-          displayName = "\${__field.labels.chain} | \${__field.labels.rule}";
-        };
-        panel.options = {
-          legend.calcs = ["mean" "max" "min"];
-          legend.displayMode = "table";
-          tooltip.sort = "desc";
-        };
-        influx.filter._measurement = ["mikrotik-/ipv6/firewall/${key}" "mikrotik-/ip/firewall/${key}"];
-        influx.filter._field = "bytes";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "derivative";
-        influx.extra = ''
-          |> map(fn: (r) => ({r with _value: 8. * r._value}))
-          |> map(fn: (r) => ({r with rule: if exists r.comment then r.comment else r.rule}))
-        '';
-      } attrs;
-    in [
-      {
-        panel.title = "System";
-        panel.type = "row";
-        panel.gridPos = { x = 0; y = 0; w = 24; h = 1; };
-      }
-      {
-        panel.title = "Identity";
-        panel.gridPos = { x = 0; y = 1; w = 2; h = 3; };
-        panel.type = "stat";
-        # TODO
-      }
-      {
-        panel.title = "Routerboard HW";
-        panel.gridPos = { x = 2; y = 1; w = 3; h = 2; };
-        panel.type = "stat";
-        influx.filter._measurement = "mikrotik-/system/resource";
-        influx.filter._field = "version";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.extra = ''
-          |> group()
-          |> map(fn: (r) => ({_value: r["board-name"]}))
-        '';
-        panel.options.reduceOptions.fields = "/.*/";
-      }
-      {
-        panel.title = "Installed Packages";
-        panel.gridPos = { x = 5; y = 1; w = 5; h = 7; };
-        panel.type = "table";
-        # TODO
-      }
-      {
-        panel.gridPos = { x = 10; y = 1; w = 4; h = 7; };
-        panel.type = "bargauge";
-        panel.fieldConfig.defaults = {
-          decimals = 1;
-          max = 100;
-          min = 0;
-          unit = "percent";
-          color.mode = "thresholds";
-          thresholds.steps = [
-            { value = null; color = "rgba(50, 172, 45, 0.97)"; }
-            { value = 70; color = "rgba(237, 129, 40, 0.89)"; }
-            { value = 90; color = "rgba(245, 54, 54, 0.9)"; }
-          ];
-        };
-        panel.options = {
-          displayMode = "lcd";
-        };
-        influx = [
-          {
-            filter._measurement = "snmp-memory-usage";
-            filter._field = ["total-memory" "used-memory"];
-            filter.hostname = "\${hostname}";
-            fn = "last1";
-            pivot = true;
-            extra = ''
-              |> map(fn: (r) => ({
-                "memory-name": r["memory-name"],
-                _time: r._time,
-                _value: float(v: r["used-memory"])/float(v: r["total-memory"])*100.0
-              }))
-            '';
-          }
-          {
-            filter._measurement = "snmp";
-            filter._field = "cpu-load";
-            filter.hostname = "\${hostname}";
-            fn = "last1";
-            groupBy.fn = "mean";
-          }
+    options.firewall.log = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+    };
+    config = let
+      inherit (config.firewall) key;
+    in lib.mkIf (key != null) {
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "bps";
+        displayName = "\${__field.labels.chain} | \${__field.labels.rule}";
+      };
+      spec.vizConfig.spec.options = {
+        legend.calcs = ["mean" "max" "min"];
+        legend.displayMode = "table";
+        tooltip.sort = "desc";
+      };
+      greptime = let
+        tags = [
+          "chain"
+          { name = "rule"; expression = "coalesce(comment, rule)"; }
         ];
-        # Used RAM memory
-        # HDD Utilization
-        # TODO: CPU Load
-      }
-      {
-        panel.title = "CPU Load";
-        panel.gridPos = { x = 14; y = 1; w = 5; h = 7; };
-        influx.filter._measurement = "snmp";
-        influx.filter._field = "cpu-load";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "mean";
-        panel.fieldConfig.defaults = {
-          unit = "percent";
+        fields = [
+          { name = "bytes"; expression = "bytes * 8"; }
+        ];
+        filter.log = lib.mkIf config.firewall.log "true";
+      in [{
+        table = ":ip:firewall:${key}";
+        inherit tags fields filter;
+        fn = "derivative";
+      }] ++ lib.optional (key != "nat") {
+        table = ":ipv6:firewall:${key}";
+        inherit tags fields filter;
+        fn = "derivative";
+      };
+    };
+  };
+  dashboardModule = {
+    options.panels = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.submodule ({ config, ... }: {
+        imports = [
+          firewallModule
+        ];
+        options.greptime = lib.mkOption {
+          type = let
+            Query = lib.types.submodule {
+              config.database = lib.mkDefault "mikrotik";
+              config.filter.hostname = lib.mkDefault {
+                op = "IN";
+                values = [(lib.literalExpression "(\${hostname:sqlstring})")];
+              };
+            };
+          in lib.types.either Query (lib.types.listOf Query);
         };
-      }
-      {
-        panel.title = "CPU Frequency";
-        panel.gridPos = { x = 19; y = 1; w = 5; h = 7; };
-        influx.filter._measurement = "snmp";
-        influx.filter._field = "cpu-frequency";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "mean";
-        panel.fieldConfig.defaults = {
-          unit = "MHz";
-        };
-      }
-      {
-        panel.title = "CPU";
-        panel.gridPos = { x = 2; y = 3; w = 3; h = 2; };
-        panel.type = "stat";
-        influx.filter._measurement = "mikrotik-/system/resource";
-        influx.filter._field = "cpu-frequency";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.extra = ''
-          |> keep(columns: ["cpu", "_value"])
+      }));
+    };
+  };
+in {
+  config.isz.grafana.dashboardsV2.mikrotik = { ... }: {
+    imports = [
+      dashboardModule
+    ];
+    title = "Mikrotik";
+    spec.cursorSync = "Tooltip";
+    variables.hostname = {
+      spec.query = {
+        datasource.name = "greptimedb";
+        group = "info8cc-greptimedb-datasource";
+        spec.editorType = "sql";
+        spec.queryType = "table";
+        spec.rawSql = ''
+          SELECT DISTINCT
+            hostname
+          FROM
+            mikrotik.":interface"
+          WHERE
+            $__timeFilter(greptime_timestamp)
+          ORDER BY hostname ASC;
         '';
-        panel.options.textMode = "value_and_name";
-        panel.fieldConfig.defaults.unit = "MHz";
-        panel.fieldConfig.defaults.displayName = "\${__field.labels.cpu}";
+      };
+      spec.label = "Host";
+    };
+    layout.kind = "RowsLayout";
+    layout.spec.rows = [
+      {
+        spec.title = "System";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "identity";
+              x = 0; y = 1; width = 2; height = 3;
+            }; }
+          { spec = {
+              element.name = "routerboard-hw";
+              x = 2; y = 1; width = 3; height = 2;
+            }; }
+          { spec = {
+              element.name = "installed-packages";
+              x = 5; y = 1; width = 5; height = 7;
+            }; }
+          { spec = {
+              element.name = "memory-bargauge";
+              x = 10; y = 1; width = 4; height = 7;
+            }; }
+          { spec = {
+              element.name = "cpu-load";
+              x = 14; y = 1; width = 5; height = 7;
+            }; }
+          { spec = {
+              element.name = "cpu-frequency";
+              x = 19; y = 1; width = 5; height = 7;
+            }; }
+          { spec = {
+              element.name = "cpu";
+              x = 2; y = 3; width = 3; height = 2;
+            }; }
+          { spec = {
+              element.name = "temperature";
+              x = 0; y = 4; width = 2; height = 6;
+            }; }
+          { spec = {
+              element.name = "system-version";
+              x = 2; y = 5; width = 3; height = 3;
+            }; }
+          { spec = {
+              element.name = "uptime";
+              x = 2; y = 8; width = 3; height = 2;
+            }; }
+          { spec = {
+              element.name = "active-users";
+              x = 5; y = 8; width = 9; height = 7;
+            }; }
+          { spec = {
+              element.name = "memory-utilization";
+              x = 14; y = 9; width = 10; height = 7;
+            }; }
+          { spec = {
+              element.name = "voltage";
+              x = 0; y = 10; width = 2; height = 2;
+            }; }
+          { spec = {
+              element.name = "ip-address";
+              x = 2; y = 10; width = 3; height = 2;
+            }; }
+          { spec = {
+              element.name = "public-address";
+              x = 0; y = 12; width = 5; height = 3;
+            }; }
+        ];
       }
       {
-        panel.title = "Temperature";
-        panel.gridPos = { x = 0; y = 4; w = 2; h = 6; };
-        panel.type = "gauge";
-        influx.filter._measurement = "snmp-mikrotik-gauges";
-        influx.filter.unit = "celsius";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.groupBy = {
-          fields = [];
-          fn = "max1";
-        };
-        panel.fieldConfig.defaults = {
-          unit = "celsius";
-          min = 0;
-          max = 100;
-          color.mode = "thresholds";
-          thresholds.steps = [
-            { value = null; color = "blue"; }
-            { value = 30; color = "green"; }
-            { value = 60; color = "yellow"; }
-            { value = 70; color = "orange"; }
-            { value = 80; color = "red"; }
-          ];
-        };
+        spec.title = "DHCP";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "dhcp-pool-usage";
+              x = 0; y = 16; width = 5; height = 8;
+            }; }
+          { spec = {
+              element.name = "dhcp-leases";
+              x = 5; y = 16; width = 19; height = 19;
+            }; }
+          { spec = {
+              element.name = "dhcp-leases-by-server";
+              x = 0; y = 24; width = 5; height = 8;
+            }; }
+        ];
       }
       {
-        panel.title = "System version";
-        panel.gridPos = { x = 2; y = 5; w = 3; h = 3; };
-        panel.type = "stat";
-        influx.filter._measurement = "mikrotik-/system/resource";
-        influx.filter._field = "version";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.extra = ''
-          |> keep(columns: ["_value"])
-        '';
-        panel.options.reduceOptions.fields = "/.*/";
+        spec.title = "Network";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "network-routes";
+              x = 0; y = 36; width = 2; height = 5;
+            }; }
+          { spec = {
+              element.name = "network-routes-per-protocol";
+              x = 2; y = 36; width = 4; height = 5;
+            }; }
+          { spec = {
+              element.name = "network-ethernet-ports";
+              x = 6; y = 36; width = 6; height = 12;
+            }; }
+          { spec = {
+              element.name = "network-interface-errors";
+              x = 12; y = 36; width = 12; height = 16;
+            }; }
+          { spec = {
+              element.name = "network-poe";
+              x = 0; y = 48; width = 12; height = 4;
+            }; }
+          { spec = {
+              element.name = "network-interface-traffic";
+              x = 0; y = 52; width = 24; height = 14;
+            }; }
+        ];
       }
       {
-        panel.title = "Uptime";
-        panel.gridPos = { x = 2; y = 8; w = 3; h = 2; };
-        panel.type = "stat";
-        influx.filter._measurement = "snmp";
-        influx.filter._field = "uptime";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.extra = ''
-          |> map(fn: (r) => ({r with _value: float(v: r._value)/100.0}))
-        '';
-        panel.fieldConfig.defaults = {
-          unit = "dtdurations";
-        };
+        spec.title = "Firewall";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "firewall-open-connections";
+              x = 0; y = 67; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "firewall-open-connections-stats";
+              x = 12; y = 67; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "firewall-logged-filter";
+              x = 0; y = 75; width = 12; height = 12;
+            }; }
+          { spec = {
+              element.name = "firewall-logged-nat";
+              x = 12; y = 75; width = 12; height = 12;
+            }; }
+          { spec = {
+              element.name = "firewall-filter";
+              x = 0; y = 87; width = 12; height = 14;
+            }; }
+          { spec = {
+              element.name = "firewall-nat";
+              x = 12; y = 87; width = 12; height = 14;
+            }; }
+        ];
       }
       {
-        panel.title = "Active Users";
-        panel.gridPos = { x = 5; y = 8; w = 9; h = 7; };
-        panel.type = "table";
-        # TODO
+        spec.title = "Netwatch";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "netwatch-status";
+              x = 0; y = 102; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "netwatch-info";
+              x = 12; y = 102; width = 12; height = 8;
+            }; }
+        ];
       }
       {
-        panel.title = "Memory Utilization";
-        panel.gridPos = { x = 14; y = 9; w = 10; h = 7; };
-        panel.fieldConfig.defaults = {
-          unit = "decbytes";
-        };
-        influx.filter._measurement = "snmp-memory-usage";
-        influx.filter._field = ["total-memory" "used-memory"];
-        influx.filter.memory-name = "main memory";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "mean";
+        spec.title = "Wireless";
+        spec.layout.kind = "GridLayout";
+        spec.layout.spec.items = [
+          { spec = {
+              element.name = "wireless-noise-floor";
+              x = 0; y = 111; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "wireless-ccq";
+              x = 12; y = 111; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "wireless-client-devices";
+              x = 0; y = 119; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "wireless-client-count";
+              x = 12; y = 119; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "wireless-client-ccq";
+              x = 0; y = 127; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "wireless-client-traffic";
+              x = 12; y = 127; width = 12; height = 8;
+            }; }
+          { spec = {
+              element.name = "wireless-client-rssi";
+              x = 0; y = 135; width = 12; height = 7;
+            }; }
+          { spec = {
+              element.name = "wireless-client-snr";
+              x = 12; y = 135; width = 12; height = 7;
+            }; }
 
-        fields."total-memory" = {
-          color.fixedColor = "#E24D42";
-          color.mode = "fixed";
-          custom.fillOpacity = 20;
-          custom.lineWidth = 0;
-        };
-        fields."used-memory" = {
-          color.fixedColor = "#1F78C1";
-          color.mode = "fixed";
-        };
-      }
-      {
-        panel.title = "Voltage";
-        panel.gridPos = { x = 0; y = 10; w = 2; h = 2; };
-        panel.type = "stat";
-        panel.fieldConfig.defaults = {
-          unit = "volt";
-        };
-        influx.filter._measurement = "snmp";
-        influx.filter._field = "voltage";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-      }
-      {
-        panel.title = "IP Address";
-        panel.gridPos = { x = 2; y = 10; w = 3; h = 2; };
-        panel.type = "stat";
-        panel.fieldConfig.defaults = {
-          displayName = "\${__field.labels.interface}";
-        };
-        panel.options.reduceOptions.fields = "/.*/";
-        influx.filter._measurement = "mikrotik-/ip/address";
-        influx.filter._field = "address";
-        influx.filter.disabled = "false";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.extra = ''
-          |> keep(columns: ["interface", "_value"])
-        '';
-      }
-      {
-        panel.title = "Public Address";
-        panel.gridPos = { x = 0; y = 12; w = 5; h = 3; };
-        panel.type = "stat";
-        panel.fieldConfig.defaults = {
-          displayName = "\${__field.labels.interface}";
-        };
-        panel.options.reduceOptions.fields = "/.*/";
-        influx.filter._measurement = "mikrotik-/ip/address";
-        influx.filter._field = "address";
-        influx.filter.disabled = "false";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.extra = ''
-          |> keep(columns: ["interface", "_value"])
-        '';
-      }
-
-      {
-        panel.title = "DHCP";
-        panel.gridPos = { x = 0; y = 15; w = 24; h = 1; };
-        panel.type = "row";
-      }
-      {
-        panel.title = "IP Pool Usage";
-        panel.gridPos = { x = 0; y = 16; w = 5; h = 8; };
-        panel.type = "bargauge";
-        panel.fieldConfig.defaults = {
-          color.mode = "thresholds";
-          thresholds.mode = "percentage";
-          thresholds.steps = [
-            { value = null; color = "green"; }
-            { value = 80; color = "yellow"; }
-            { value = 90; color = "red"; }
-          ];
-        };
-        panel.options = {
-          displayMode = "lcd";
-          orientation = "horizontal";
-        };
-        influx.filter._measurement = "mikrotik-/ip/pool";
-        influx.filter._field = ["total" "used"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.pivot = true;
-        influx.extra = ''
-          |> keep(columns: ["name", "total", "used"])
-          |> group()
-        '';
-        panel.transformations = [{
-          id = "rowsToFields";
-          options.mappings = [
-            { fieldName = "name"; handlerKey = "field.name"; }
-            { fieldName = "total"; handlerKey = "max"; }
-            { fieldName = "used"; handlerKey = "field.value"; }
-          ];
-        }];
-      }
-      {
-        panel.title = "DHCP Leases";
-        panel.gridPos = { x = 5; y = 16; w = 19; h = 19; };
-        panel.type = "table";
-        influx.imports = [
-          "date"
-          "internal/debug"
         ];
-        influx.filter._measurement = "mikrotik-/ip/dhcp-server/lease";
-        influx.filter._field = ["active-address" "status" "expires-after-ns" "active-server" "class-id"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.pivot = true;
-        influx.extra = ''
-          |> map(fn: (r) => ({r with
-            "expires-at":
-              if exists r["expires-after-ns"]
-              then date.add(d:
-                duration(v: (r["expires-after-ns"])),
-                to: r._time
-              )
-              else debug.null(type: "time")
-          }))
-          |> filter(fn: (r) => r.status != "waiting")
-          |> drop(columns: ["_start", "_stop", "_measurement", "host", "agent_host", "hostname", "expires-after-ns"])
-          |> group()
-        '';
-      }
-      {
-        panel.title = "DHCP Leases by Server";
-        panel.gridPos = { x = 0; y = 24; w = 5; h = 8; };
-        panel.type = "bargauge";
-        panel.fieldConfig.defaults = {
-          displayName = "\${__field.labels.active-server}";
-        };
-        panel.options = {
-          displayMode = "lcd";
-          orientation = "horizontal";
-        };
-        influx.filter._measurement = "mikrotik-/ip/dhcp-server/lease";
-        influx.filter._field = ["status" "active-server"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.pivot = true;
-        influx.extra = ''
-          |> filter(fn: (r) => r.status != "waiting")
-          |> group(columns: ["_time", "active-server"])
-          |> count(column: "status")
-          |> group(columns: ["active-server"])
-          |> last(column: "status")
-        '';
-      }
-
-      {
-        panel.title = "Network";
-        panel.gridPos = { x = 0; y = 35; w = 24; h = 1; };
-        panel.type = "row";
-      }
-      {
-        panel.title = "Total Routes";
-        panel.gridPos = { x = 0; y = 36; w = 2; h = 5; };
-        panel.type = "gauge";
-        influx.filter._measurement = "mikrotik-/routing/route";
-        influx.filter._field = "active";
-        influx.filter._value.values = [(lib.literalExpression "true")];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.groupBy = [
-          {
-            fields = ["_time"];
-            fn = "count1";
-          }
-          {
-            fields = [];
-            fn = "last1";
-          }
-        ];
-      }
-      {
-        panel.title = "Routes per Protocol";
-        panel.gridPos = { x = 2; y = 36; w = 4; h = 5; };
-        panel.type = "bargauge";
-        panel.options = {
-          displayMode = "lcd";
-          orientation = "horizontal";
-        };
-        influx.filter._measurement = "mikrotik-/routing/route";
-        influx.filter._field = "active";
-        influx.filter._value.values = [(lib.literalExpression "true")];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.groupBy = [
-          {
-            fields = ["_time" "belongs-to"];
-            fn = "count1";
-          }
-          {
-            fields = ["belongs-to"];
-            fn = "last1";
-          }
-        ];
-      }
-      {
-        panel.title = "Ethernet Ports";
-        panel.gridPos = { x = 6; y = 36; w = 6; h = 12; };
-        panel.type = "table";
-        influx.imports = ["strings" "contrib/bonitoo-io/hex"];
-        influx.filter._measurement = "mikrotik-/interface/ethernet";
-        # rate and full-duplex only exist for interfaces that are up
-        influx.filter._field = ["rate" "full-duplex" "status"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.pivot = true;
-        influx.extra = ''
-          |> keep(columns: ["id", "name", "rate", "full-duplex"])
-          |> group()
-          |> map(fn: (r) => ({r with id: hex.uint(v: strings.trimLeft(v: r.id, cutset: "*"))}))
-          |> sort(columns: ["id"])
-          |> drop(columns: ["id"])
-        '';
-        fieldOrder = ["name" "rate" "full-duplex"];
-        fields.rate = {
-          unit = "bps";
-          custom.width = 90;
-        };
-        fields.full-duplex = {
-          custom.width = 90;
-        };
-      }
-      {
-        panel.title = "Interface Errors";
-        panel.gridPos = { x = 12; y = 36; w = 12; h = 16; };
-        panel.fieldConfig.defaults = {
-          unit = "pps";
-          custom.axisLabel = "packets in (-) / out (+) per second";
-        };
-        influx.filter._measurement = "snmp-interfaces";
-        influx.filter._field = ["errors-in" "errors-out"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "derivative";
-
-        fields.errors-in = {
-          displayName = ''In ''${__field.labels.if-name}'';
-          custom.transform = "negative-Y";
-        };
-        fields.errors-out.displayName = ''Out ''${__field.labels.if-name}'';
-      }
-      {
-        panel.title = "POE";
-        panel.gridPos = { x = 0; y = 48; w = 12; h = 4; };
-        panel.type = "table";
-        influx.imports = ["strings" "contrib/bonitoo-io/hex"];
-        influx.filter._measurement = "mikrotik-/interface/ethernet";
-        influx.filter._field = ["poe-out" "poe-priority"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.pivot = true;
-        influx.extra = ''
-          |> keep(columns: ["id", "name", "poe-out", "poe-priority"])
-          |> group()
-          |> map(fn: (r) => ({r with id: hex.uint(v: strings.trimLeft(v: r.id, cutset: "*"))}))
-          |> sort(columns: ["id"])
-          |> drop(columns: ["id"])
-        '';
-      }
-      {
-        panel.title = "Interface Traffic";
-        panel.gridPos = { x = 0; y = 52; w = 24; h = 14; };
-        panel.fieldConfig.defaults = {
-          unit = "bps";
-          custom.axisLabel = "bits in (-) / out (+) per second";
-          custom.fillOpacity = 30;
-        };
-        panel.options.legend = {
-          displayMode = "table";
-          placement = "right";
-          calcs = ["mean" "max" "min"];
-        };
-        influx.filter._measurement = "snmp-interfaces";
-        influx.filter._field = ["bytes-in" "bytes-out"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "derivative";
-        influx.extra = ''
-          |> map(fn: (r) => ({r with _value: 8. * r._value}))
-        '';
-
-        fields.bytes-in = {
-          displayName = ''In ''${__field.labels.if-name}'';
-          custom.transform = "negative-Y";
-        };
-        fields.bytes-out.displayName = ''Out ''${__field.labels.if-name}'';
-      }
-
-      {
-        panel.title = "Firewall";
-        panel.gridPos = { x = 0; y = 66; w = 24; h = 1; };
-        panel.type = "row";
-      }
-      {
-        panel.title = "Open Connections";
-        panel.gridPos = { x = 0; y = 67; w = 12; h = 8; };
-        panel.type = "table";
-        # TODO
-      }
-      {
-        panel.title = "Open Connections Stats";
-        panel.gridPos = { x = 12; y = 67; w = 12; h = 8; };
-        panel.type = "barchart";
-        # TODO
-      }
-      (firewallGraph "filter" {
-        panel.title = "Logged Firewall Rules Traffic";
-        panel.gridPos = { x = 0; y = 75; w = 12; h = 12; };
-        influx.filter.log = "true";
-      })
-      (firewallGraph "nat" {
-        panel.title = "Logged NAT Firewall Rules Traffic";
-        panel.gridPos = { x = 12; y = 75; w = 12; h = 12; };
-        influx.filter.log = "true";
-      })
-      (firewallGraph "filter" {
-        panel.title = "Firewall Rules Traffic";
-        panel.gridPos = { x = 0; y = 87; w = 12; h = 14; };
-      })
-      (firewallGraph "nat" {
-        panel.title = "NAT Firewall Rules Traffic";
-        panel.gridPos = { x = 12; y = 87; w = 12; h = 14; };
-      })
-
-      {
-        panel.title = "Netwatch";
-        panel.gridPos = { x = 0; y = 101; w = 24; h = 1; };
-        panel.type = "row";
-      }
-      {
-        panel.title = "Status over time";
-        panel.gridPos = { x = 0; y = 102; w = 12; h = 8; };
-        panel.type = "state-timeline";
-        # TODO
-      }
-      {
-        panel.title = "Netwatch Info";
-        panel.gridPos = { x = 12; y = 102; w = 12; h = 8; };
-        panel.type = "table";
-        # TODO
-      }
-
-      {
-        panel.title = "Wireless";
-        panel.gridPos = { x = 0; y = 110; w = 24; h = 1; };
-        panel.type = "row";
-      }
-      {
-        panel.title = "Noise Floor";
-        panel.gridPos = { x = 0; y = 111; w = 12; h = 8; };
-        panel.fieldConfig.defaults = {
-          unit = "dBm";
-          displayName = "\${__field.labels.channel-name}";
-        };
-        panel.options = {
-          legend.calcs = ["mean" "lastNotNull" "max" "min"];
-          legend.displayMode = "table";
-        };
-        influx.filter._measurement = "mikrotik-/interface/wireless";
-        influx.filter._field = ["noise-floor" "channel-name"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = null;
-        influx.groupBy = [
-          {
-            pivot = true;
-            fields = ["_time" "channel-name"];
-            column = "noise-floor";
-            fn = "mean";
-          }
-          {
-            fields = ["channel-name"];
-            column = "noise-floor";
-            fn = "mean";
-          }
-        ];
-      }
-      {
-        panel.title = "Overall TX CCQ";
-        panel.gridPos = { x = 12; y = 111; w = 12; h = 8; };
-        panel.fieldConfig.defaults = {
-          unit = "percent";
-          displayName = "\${__field.labels.channel-name}";
-        };
-        panel.options = {
-          legend.calcs = ["mean" "lastNotNull" "max" "min"];
-          legend.displayMode = "table";
-        };
-        influx.filter._measurement = "mikrotik-/interface/wireless";
-        influx.filter._field = ["overall-tx-ccq" "channel-name"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = null;
-        influx.groupBy = [
-          {
-            pivot = true;
-            fields = ["_time" "channel-name"];
-            column = "overall-tx-ccq";
-            fn = "mean";
-          }
-          {
-            fields = ["channel-name"];
-            column = "overall-tx-ccq";
-            fn = "mean";
-          }
-        ];
-      }
-      {
-        panel.title = "Client Devices";
-        panel.gridPos = { x = 0; y = 119; w = 12; h = 8; };
-        panel.type = "table";
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = [
-          "tx-rate-name"
-          "rx-rate-name"
-          "uptime-ns"
-        ];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "last1";
-        influx.pivot = true;
-        influx.extra = ''
-          |> drop(columns: ["_measurement", "host", "hostname", "agent_host"])
-          |> group()
-        '';
-        fieldOrder = [
-          "_time"
-          "last-ip"
-          "mac-address"
-          "rx-rate-name"
-          "tx-rate-name"
-          "uptime-ns"
-          "interface"
-        ];
-        fields.uptime-ns = {
-          unit = "ns";
-        };
-      }
-      {
-        panel.title = "Number of clients";
-        panel.gridPos = { x = 12; y = 119; w = 12; h = 8; };
-        panel.options = {
-          legend.calcs = ["mean" "lastNotNull" "max" "min"];
-          legend.displayMode = "table";
-        };
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = "uptime-ns";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "mean";
-        influx.groupBy = [
-          {
-            fields = ["_time" "interface"];
-            fn = "count";
-          }
-          {
-            fields = ["interface"];
-            fn = "mean";
-          }
-        ];
-      }
-      {
-        panel.title = "WLAN Clients Tx CCQ";
-        panel.gridPos = { x = 0; y = 127; w = 12; h = 8; };
-        panel.fieldConfig.defaults = {
-          unit = "percent";
-          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
-        };
-        panel.options = {
-          legend.calcs = ["mean"];
-          legend.displayMode = "table";
-          legend.placement = "right";
-        };
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = "tx-ccq";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "mean";
-      }
-      {
-        panel.title = "Clients Traffic";
-        panel.gridPos = { x = 12; y = 127; w = 12; h = 8; };
-        panel.fieldConfig.defaults = {
-          unit = "bps";
-          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
-        };
-        panel.options = {
-          legend.calcs = [];
-          legend.displayMode = "table";
-          legend.placement = "right";
-        };
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = ["tx-bytes" "rx-bytes"];
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "derivative";
-        fields.tx-bytes = {
-          custom.transform = "negative-Y";
-        };
-      }
-      {
-        panel.title = "Clients Signal Strength";
-        panel.gridPos = { x = 0; y = 135; w = 12; h = 7; };
-        panel.fieldConfig.defaults = {
-          unit = "dBm";
-          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
-        };
-        panel.options = {
-          legend.calcs = ["mean"];
-          legend.displayMode = "table";
-          legend.placement = "right";
-        };
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = "signal-strength";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "mean";
-      }
-      {
-        panel.title = "Clients Signal-to-Noise";
-        panel.gridPos = { x = 12; y = 135; w = 12; h = 7; };
-        panel.fieldConfig.defaults = {
-          unit = "dBm";
-          displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
-        };
-        panel.options = {
-          legend.calcs = ["mean"];
-          legend.displayMode = "table";
-          legend.placement = "right";
-        };
-        influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-        influx.filter._field = "signal-to-noise";
-        influx.filter.hostname = "\${hostname}";
-        influx.fn = "mean";
       }
     ];
+    panels.identity = {
+      spec.title = "Identity";
+      spec.vizConfig.group = "stat";
+      # TODO
+    };
+    panels.routerboard-hw = {
+      spec.title = "Routerboard HW";
+      spec.vizConfig.group = "stat";
+      greptime.table = ":system:resource";
+      greptime.fields = [ "board-name" ];
+      greptime.fn = "last1";
+      spec.vizConfig.spec.options.reduceOptions.fields = "/.*/";
+    };
+    panels.installed-packages = {
+      spec.title = "Installed Packages";
+      spec.vizConfig.group = "table";
+      # TODO
+    };
+    panels.memory-bargauge = {
+      spec.vizConfig.group = "bargauge";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        decimals = 1;
+        max = 100;
+        min = 0;
+        unit = "percent";
+        color.mode = "thresholds";
+        thresholds.steps = [
+          { value = null; color = "rgba(50, 172, 45, 0.97)"; }
+          { value = 70; color = "rgba(237, 129, 40, 0.89)"; }
+          { value = 90; color = "rgba(245, 54, 54, 0.9)"; }
+        ];
+      };
+      spec.vizConfig.spec.options = {
+        displayMode = "lcd";
+      };
+      influx = [
+        {
+          filter._measurement = "snmp-memory-usage";
+          filter._field = ["total-memory" "used-memory"];
+          filter.hostname = "\${hostname}";
+          fn = "last1";
+          pivot = true;
+          extra = ''
+            |> map(fn: (r) => ({
+              "memory-name": r["memory-name"],
+              _time: r._time,
+              _value: float(v: r["used-memory"])/float(v: r["total-memory"])*100.0
+            }))
+          '';
+        }
+        {
+          filter._measurement = "snmp";
+          filter._field = "cpu-load";
+          filter.hostname = "\${hostname}";
+          fn = "last1";
+          groupBy.fn = "mean";
+        }
+      ];
+      # Used RAM memory
+      # HDD Utilization
+      # TODO: CPU Load
+    };
+    panels.cpu-load = {
+      spec.title = "CPU Load";
+      influx.filter._measurement = "snmp";
+      influx.filter._field = "cpu-load";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "mean";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "percent";
+      };
+    };
+    panels.cpu-frequency = {
+      spec.title = "CPU Frequency";
+      influx.filter._measurement = "snmp";
+      influx.filter._field = "cpu-frequency";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "mean";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "MHz";
+      };
+    };
+    panels.cpu = {
+      spec.title = "CPU";
+      spec.vizConfig.group = "stat";
+      greptime.table = ":system:resource";
+      greptime.tags = [ "cpu" ];
+      greptime.fields = [ "cpu-frequency" ];
+      greptime.fn = "last1";
+      spec.vizConfig.spec.options.textMode = "value_and_name";
+      spec.vizConfig.spec.fieldConfig.defaults.unit = "MHz";
+      spec.vizConfig.spec.fieldConfig.defaults.displayName = "\${__field.labels.cpu}";
+    };
+    panels.temperature = {
+      spec.title = "Temperature";
+      spec.vizConfig.group = "gauge";
+      influx.filter._measurement = "snmp-mikrotik-gauges";
+      influx.filter.unit = "celsius";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "last1";
+      influx.groupBy = {
+        fields = [];
+        fn = "max1";
+      };
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "celsius";
+        min = 0;
+        max = 100;
+        color.mode = "thresholds";
+        thresholds.steps = [
+          { value = null; color = "blue"; }
+          { value = 30; color = "green"; }
+          { value = 60; color = "yellow"; }
+          { value = 70; color = "orange"; }
+          { value = 80; color = "red"; }
+        ];
+      };
+    };
+    panels.system-version = {
+      spec.title = "System version";
+      spec.vizConfig.group = "stat";
+      greptime.table = ":system:resource";
+      greptime.fields = [ "version" ];
+      greptime.fn = "last1";
+      spec.vizConfig.spec.options.reduceOptions.fields = "/.*/";
+    };
+    panels.uptime = {
+      spec.title = "Uptime";
+      spec.vizConfig.group = "stat";
+      influx.filter._measurement = "snmp";
+      influx.filter._field = "uptime";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "last1";
+      influx.extra = ''
+        |> map(fn: (r) => ({r with _value: float(v: r._value)/100.0}))
+      '';
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "dtdurations";
+      };
+    };
+    panels.active-users = {
+      spec.title = "Active Users";
+      spec.vizConfig.group = "table";
+      # TODO
+    };
+    panels.memory-utilization = {
+      spec.title = "Memory Utilization";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "decbytes";
+      };
+      influx.filter._measurement = "snmp-memory-usage";
+      influx.filter._field = ["total-memory" "used-memory"];
+      influx.filter.memory-name = "main memory";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "mean";
+
+      fields."total-memory" = {
+        color.fixedColor = "#E24D42";
+        color.mode = "fixed";
+        custom.fillOpacity = 20;
+        custom.lineWidth = 0;
+      };
+      fields."used-memory" = {
+        color.fixedColor = "#1F78C1";
+        color.mode = "fixed";
+      };
+    };
+    panels.voltage = {
+      spec.title = "Voltage";
+      spec.vizConfig.group = "stat";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "volt";
+      };
+      influx.filter._measurement = "snmp";
+      influx.filter._field = "voltage";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "last1";
+    };
+    panels.ip-address = {
+      spec.title = "IP Address";
+      spec.vizConfig.group = "stat";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        displayName = "\${__field.labels.interface}";
+      };
+      spec.vizConfig.spec.options.reduceOptions.fields = "/.*/";
+      greptime.table = ":ip:address";
+      greptime.tags = ["interface"];
+      greptime.fields = ["address"];
+      greptime.filter.disabled = "false";
+      greptime.fn = "last1";
+    };
+    panels.public-address = {
+      spec.title = "Public Address";
+      spec.vizConfig.group = "stat";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        displayName = "\${__field.labels.interface}";
+      };
+      spec.vizConfig.spec.options.reduceOptions.fields = "/.*/";
+      greptime.table = ":ip:address";
+      greptime.tags = ["interface"];
+      greptime.fields = ["address"];
+      greptime.filter.disabled = "false";
+      greptime.fn = "last1";
+    };
+
+    # DHCP
+    panels.dhcp-pool-usage = {
+      spec.title = "IP Pool Usage";
+      spec.vizConfig.group = "bargauge";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        color.mode = "thresholds";
+        thresholds.mode = "percentage";
+        thresholds.steps = [
+          { value = null; color = "green"; }
+          { value = 80; color = "yellow"; }
+          { value = 90; color = "red"; }
+        ];
+      };
+      spec.vizConfig.spec.options = {
+        displayMode = "lcd";
+        orientation = "horizontal";
+      };
+      greptime.queryType = "table";
+      greptime.table = ":ip:pool";
+      greptime.tags = ["name"];
+      greptime.fields = ["total" "used"];
+      greptime.fn = "last1";
+      spec.data.spec.transformations = [{
+        group = "rowsToFields";
+        spec.options.mappings = [
+          { fieldName = "greptime_timestamp"; handlerKey = "__ignore"; }
+          { fieldName = "name"; handlerKey = "field.name"; }
+          { fieldName = "total"; handlerKey = "max"; }
+          { fieldName = "used"; handlerKey = "field.value"; }
+        ];
+      }];
+    };
+    panels.dhcp-leases = {
+      spec.title = "DHCP Leases";
+      spec.vizConfig.group = "table";
+      greptime.queryType = "table";
+      greptime.table = ":ip:dhcp-server:lease";
+      greptime.tags = ["agent_host" "blocked" "comment" "disabled" "dynamic" "host" "hostname" "mac-address" "address" "server" "client-id" "id" "dhcp-option"];
+      greptime.fields = [
+        "active-address" "status"
+        { expression = ''greptime_timestamp + arrow_cast("expires-after-ns", 'Duration(ns)')''; name = "expires-at"; }
+        "active-server" "class-id"
+      ];
+      greptime.fn = "last1";
+      greptime.filter.status = {
+        op = "!=";
+        values = ["waiting"];
+      };
+    };
+    panels.dhcp-leases-by-server = {
+      spec.title = "DHCP Leases by Server";
+      spec.vizConfig.group = "bargauge";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        displayName = "\${__field.labels.active-server}";
+      };
+      spec.vizConfig.spec.options = {
+        displayMode = "lcd";
+        orientation = "horizontal";
+      };
+      greptime.rawSql = ''
+        WITH timestamps AS (
+          SELECT
+            hostname,
+            MAX(greptime_timestamp) AS greptime_timestamp
+          FROM
+            mikrotik.":ip:dhcp-server:lease"
+          WHERE
+            $__timeFilter(greptime_timestamp)
+            AND hostname IN (''${hostname:sqlstring})
+          GROUP BY
+            hostname
+        )
+        SELECT
+          "active-server",
+          "status",
+          COUNT(DISTINCT "mac-address") AS count
+        FROM
+          timestamps
+          INNER JOIN mikrotik.":ip:dhcp-server:lease" USING (greptime_timestamp, hostname)
+        WHERE
+          status != 'waiting'
+        GROUP BY hostname, "active-server", "status"
+      '';
+    };
+
+    # Network
+    panels.network-routes = {
+      spec.title = "Total Routes";
+      spec.vizConfig.group = "gauge";
+      influx.filter._measurement = "mikrotik-/routing/route";
+      influx.filter._field = "active";
+      influx.filter._value.values = [(lib.literalExpression "true")];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "last1";
+      influx.groupBy = [
+        {
+          fields = ["_time"];
+          fn = "count1";
+        }
+        {
+          fields = [];
+          fn = "last1";
+        }
+      ];
+    };
+    panels.network-routes-per-protocol = {
+      spec.title = "Routes per Protocol";
+      spec.vizConfig.group = "bargauge";
+      spec.vizConfig.spec.options = {
+        displayMode = "lcd";
+        orientation = "horizontal";
+      };
+      influx.filter._measurement = "mikrotik-/routing/route";
+      influx.filter._field = "active";
+      influx.filter._value.values = [(lib.literalExpression "true")];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "last1";
+      influx.groupBy = [
+        {
+          fields = ["_time" "belongs-to"];
+          fn = "count1";
+        }
+        {
+          fields = ["belongs-to"];
+          fn = "last1";
+        }
+      ];
+    };
+    panels.network-ethernet-ports = {
+      spec.title = "Ethernet Ports";
+      spec.vizConfig.group = "table";
+      influx.imports = ["strings" "contrib/bonitoo-io/hex"];
+      influx.filter._measurement = "mikrotik-/interface/ethernet";
+      # rate and full-duplex only exist for interfaces that are up
+      influx.filter._field = ["rate" "full-duplex" "status"];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "last1";
+      influx.pivot = true;
+      influx.extra = ''
+        |> keep(columns: ["id", "name", "rate", "full-duplex"])
+        |> group()
+        |> map(fn: (r) => ({r with id: hex.uint(v: strings.trimLeft(v: r.id, cutset: "*"))}))
+        |> sort(columns: ["id"])
+        |> drop(columns: ["id"])
+      '';
+      fieldOrder = ["name" "rate" "full-duplex"];
+      fields.rate = {
+        unit = "bps";
+        custom.width = 90;
+      };
+      fields.full-duplex = {
+        custom.width = 90;
+      };
+    };
+    panels.network-interface-errors = {
+      spec.title = "Interface Errors";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "pps";
+        custom.axisLabel = "packets in (-) / out (+) per second";
+      };
+      influx.filter._measurement = "snmp-interfaces";
+      influx.filter._field = ["errors-in" "errors-out"];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "derivative";
+
+      fields.errors-in = {
+        displayName = ''In ''${__field.labels.if-name}'';
+        custom.transform = "negative-Y";
+      };
+      fields.errors-out.displayName = ''Out ''${__field.labels.if-name}'';
+    };
+    panels.network-poe = {
+      spec.title = "POE";
+      spec.vizConfig.group = "table";
+      influx.imports = ["strings" "contrib/bonitoo-io/hex"];
+      influx.filter._measurement = "mikrotik-/interface/ethernet";
+      influx.filter._field = ["poe-out" "poe-priority"];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "last1";
+      influx.pivot = true;
+      influx.extra = ''
+        |> keep(columns: ["id", "name", "poe-out", "poe-priority"])
+        |> group()
+        |> map(fn: (r) => ({r with id: hex.uint(v: strings.trimLeft(v: r.id, cutset: "*"))}))
+        |> sort(columns: ["id"])
+        |> drop(columns: ["id"])
+      '';
+    };
+    panels.network-interface-traffic = {
+      spec.title = "Interface Traffic";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "bps";
+        custom.axisLabel = "bits in (-) / out (+) per second";
+        custom.fillOpacity = 30;
+      };
+      spec.vizConfig.spec.options.legend = {
+        displayMode = "table";
+        placement = "right";
+        calcs = ["mean" "max" "min"];
+      };
+      influx.filter._measurement = "snmp-interfaces";
+      influx.filter._field = ["bytes-in" "bytes-out"];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "derivative";
+      influx.extra = ''
+        |> map(fn: (r) => ({r with _value: 8. * r._value}))
+      '';
+
+      fields.bytes-in = {
+        displayName = ''In ''${__field.labels.if-name}'';
+        custom.transform = "negative-Y";
+      };
+      fields.bytes-out.displayName = ''Out ''${__field.labels.if-name}'';
+    };
+
+    # Firewall
+    panels.firewall-open-connections = {
+      spec.title = "Open Connections";
+      spec.vizConfig.group = "table";
+      # TODO
+    };
+    panels.firewall-open-connections-stats = {
+      spec.title = "Open Connections Stats";
+      spec.vizConfig.group = "barchart";
+      # TODO
+    };
+    panels.firewall-logged-filter = {
+      firewall.key = "filter";
+      firewall.log = true;
+      spec.title = "Logged Firewall Rules Traffic";
+    };
+    panels.firewall-logged-nat = {
+      firewall.key = "nat";
+      firewall.log = true;
+      spec.title = "Logged NAT Firewall Rules Traffic";
+    };
+    panels.firewall-filter = {
+      firewall.key = "filter";
+      spec.title = "Firewall Rules Traffic";
+    };
+    panels.firewall-nat = {
+      firewall.key = "nat";
+      spec.title = "NAT Firewall Rules Traffic";
+    };
+
+    # Netwatch
+    panels.netwatch-status = {
+      spec.title = "Status over time";
+      spec.vizConfig.group = "state-timeline";
+      # TODO
+    };
+    panels.netwatch-info = {
+      spec.title = "Netwatch Info";
+      spec.vizConfig.group = "table";
+      # TODO
+    };
+
+    # Wireless
+    panels.wireless-noise-floor = {
+      spec.title = "Noise Floor";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "dBm";
+        displayName = "\${__field.labels.channel-name}";
+      };
+      spec.vizConfig.spec.options = {
+        legend.calcs = ["mean" "lastNotNull" "max" "min"];
+        legend.displayMode = "table";
+      };
+      influx.filter._measurement = "mikrotik-/interface/wireless";
+      influx.filter._field = ["noise-floor" "channel-name"];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = null;
+      influx.groupBy = [
+        {
+          pivot = true;
+          fields = ["_time" "channel-name"];
+          column = "noise-floor";
+          fn = "mean";
+        }
+        {
+          fields = ["channel-name"];
+          column = "noise-floor";
+          fn = "mean";
+        }
+      ];
+    };
+    panels.wireless-ccq = {
+      spec.title = "Overall TX CCQ";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "percent";
+        displayName = "\${__field.labels.channel-name}";
+      };
+      spec.vizConfig.spec.options = {
+        legend.calcs = ["mean" "lastNotNull" "max" "min"];
+        legend.displayMode = "table";
+      };
+      influx.filter._measurement = "mikrotik-/interface/wireless";
+      influx.filter._field = ["overall-tx-ccq" "channel-name"];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = null;
+      influx.groupBy = [
+        {
+          pivot = true;
+          fields = ["_time" "channel-name"];
+          column = "overall-tx-ccq";
+          fn = "mean";
+        }
+        {
+          fields = ["channel-name"];
+          column = "overall-tx-ccq";
+          fn = "mean";
+        }
+      ];
+    };
+    panels.wireless-client-devices = {
+      spec.title = "Client Devices";
+      spec.vizConfig.group = "table";
+      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+      influx.filter._field = [
+        "tx-rate-name"
+        "rx-rate-name"
+        "uptime-ns"
+      ];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "last1";
+      influx.pivot = true;
+      influx.extra = ''
+        |> drop(columns: ["_measurement", "host", "hostname", "agent_host"])
+        |> group()
+      '';
+      fieldOrder = [
+        "_time"
+        "last-ip"
+        "mac-address"
+        "rx-rate-name"
+        "tx-rate-name"
+        "uptime-ns"
+        "interface"
+      ];
+      fields.uptime-ns = {
+        unit = "ns";
+      };
+    };
+    panels.wireless-client-count = {
+      spec.title = "Number of clients";
+      spec.vizConfig.spec.options = {
+        legend.calcs = ["mean" "lastNotNull" "max" "min"];
+        legend.displayMode = "table";
+      };
+      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+      influx.filter._field = "uptime-ns";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "mean";
+      influx.groupBy = [
+        {
+          fields = ["_time" "interface"];
+          fn = "count";
+        }
+        {
+          fields = ["interface"];
+          fn = "mean";
+        }
+      ];
+    };
+    panels.wireless-client-ccq = {
+      spec.title = "WLAN Clients Tx CCQ";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "percent";
+        displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+      };
+      spec.vizConfig.spec.options = {
+        legend.calcs = ["mean"];
+        legend.displayMode = "table";
+        legend.placement = "right";
+      };
+      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+      influx.filter._field = "tx-ccq";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "mean";
+    };
+    panels.wireless-client-traffic = {
+      spec.title = "Clients Traffic";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "bps";
+        displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+      };
+      spec.vizConfig.spec.options = {
+        legend.calcs = [];
+        legend.displayMode = "table";
+        legend.placement = "right";
+      };
+      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+      influx.filter._field = ["tx-bytes" "rx-bytes"];
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "derivative";
+      fields.tx-bytes = {
+        custom.transform = "negative-Y";
+      };
+    };
+    panels.wireless-client-rssi = {
+      spec.title = "Clients Signal Strength";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "dBm";
+        displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+      };
+      spec.vizConfig.spec.options = {
+        legend.calcs = ["mean"];
+        legend.displayMode = "table";
+        legend.placement = "right";
+      };
+      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+      influx.filter._field = "signal-strength";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "mean";
+    };
+    panels.wireless-client-snr = {
+      spec.title = "Clients Signal-to-Noise";
+      spec.vizConfig.spec.fieldConfig.defaults = {
+        unit = "dBm";
+        displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
+      };
+      spec.vizConfig.spec.options = {
+        legend.calcs = ["mean"];
+        legend.displayMode = "table";
+        legend.placement = "right";
+      };
+      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
+      influx.filter._field = "signal-to-noise";
+      influx.filter.hostname = "\${hostname}";
+      influx.fn = "mean";
+    };
   };
 }

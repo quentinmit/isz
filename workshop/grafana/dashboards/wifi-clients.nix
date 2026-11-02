@@ -425,8 +425,14 @@
           "comment"
           "status"
           "active-address"
-          (lib.literalExpression ''(greptime_timestamp - arrow_cast("last-seen-ns", 'Duration(ns)')) AS "last-seen"'')
-          (lib.literalExpression ''(greptime_timestamp + arrow_cast("expires-after-ns", 'Duration(ns)')) AS "expires-at"'')
+          {
+            expression = ''greptime_timestamp - arrow_cast("last-seen-ns", 'Duration(ns)')'';
+            name = "last-seen";
+          }
+          {
+            expression = ''greptime_timestamp + arrow_cast("expires-after-ns", 'Duration(ns)')'';
+            name = "expires-at";
+          }
           "host-name"
           "active-client-id"
           "blocked"

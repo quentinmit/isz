@@ -36,7 +36,11 @@ rec {
   sqlFilter = with builtins; field: v:
     lib.concatMapStringsSep
       (if v.op == "!=" then " and " else " or ")
-      (value: if value == null then "${sqlIdentifier field} IS ${lib.optionalString (v.op == "!=") "NOT "}NULL" else ''${sqlIdentifier field} ${v.op} ${sqlValue value}'')
+      (value:
+        if value == null
+        then "${sqlIdentifier field} IS ${lib.optionalString (v.op == "!=") "NOT "}NULL"
+        else ''${sqlIdentifier field} ${v.op} ${sqlValue value}''
+      )
       v.values
   ;
 

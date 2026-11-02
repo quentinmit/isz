@@ -10,6 +10,27 @@ let
     toProperties;
 in {
   options = let
+    expressionType = lib.types.submodule ({ config, ... }: {
+      options = {
+        expression = lib.mkOption {
+          type = lib.types.str;
+          default = sqlIdentifier config.name;
+        };
+        name = lib.mkOption {
+          type = lib.types.str;
+        };
+        namedExpression = lib.mkOption {
+          type = lib.types.str;
+          default = if config.expression == (sqlIdentifier config.name) then sqlIdentifier config.name else "(${config.expression}) AS ${sqlIdentifier config.name}";
+          readOnly = true;
+          visible = false;
+        };
+      };
+    });
+    coercedExpressionType = lib.pipe expressionType
+      [
+        (lib.types.coercedTo lib.types.str (name: { inherit name; }))
+      ];
     Query = lib.types.submodule ({ config, ... }: {
       key = "Query";
       options = {
@@ -35,7 +56,7 @@ in {
                  key = "Query.filter";
                  options = {
                    op = lib.mkOption {
-                     type = enum ["=" "!="];
+                     type = enum ["=" "!=" "IN"];
                      default = "=";
                    };
                    values = lib.mkOption {
@@ -53,11 +74,11 @@ in {
           type = lib.types.str;
         };
         tags = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
+          type = lib.types.listOf coercedExpressionType;
           default = [];
         };
         fields = lib.mkOption {
-          type = lib.types.listOf (lib.types.either lib.types.str literalExpressionType);
+          type = lib.types.listOf coercedExpressionType;
         };
         fn = lib.mkOption {
           type = lib.types.enum ["last1" "mean" "derivative"];
@@ -68,26 +89,29 @@ in {
       };
       config = {
         rawSql = let
-          tags = lib.concatMapStringsSep ", " sqlIdentifier config.tags;
+          expressions = lib.concatMapStringsSep ", " (x: x.expression);
+          namedExpressions = lib.concatMapStringsSep ", " (x: x.namedExpression);
+          names = lib.concatMapStringsSep ", " (x: sqlIdentifier x.name);
           filters = ''(${lib.concatStringsSep ") AND (" (["$__timeFilter(greptime_timestamp)"] ++ (lib.mapAttrsToList sqlFilter config.filter))})'';
         in lib.mkDefault (
           if config.fn == "last1" then ''
-            SELECT DISTINCT ON (${tags})
-              ${lib.concatMapStringsSep ", " sqlIdentifier (config.tags ++ config.fields)}
+            SELECT ${lib.optionalString (config.tags != []) ''DISTINCT ON (${expressions config.tags})''}
+              greptime_timestamp,
+              ${namedExpressions (config.tags ++ config.fields)}
             FROM
               ${sqlIdentifier config.database}.${sqlIdentifier config.table}
             WHERE
               ${filters}
-            ORDER BY ${tags}, greptime_timestamp DESC
+            ORDER BY ${lib.optionalString (config.tags != []) ''${expressions config.tags},''} greptime_timestamp DESC
           '' else if config.fn == "derivative" then ''
             WITH downsampled AS (
-              SELECT DISTINCT ON (${tags}, date_bin(interval '$__interval', greptime_timestamp))
-                ${lib.concatMapStringsSep ", " sqlIdentifier (["greptime_timestamp"] ++ config.tags ++ config.fields)}
+              SELECT DISTINCT ON (${expressions config.tags}, date_bin(interval '$__interval', greptime_timestamp))
+                greptime_timestamp, ${namedExpressions (config.tags ++ config.fields)}
               FROM
                 ${sqlIdentifier config.database}.${sqlIdentifier config.table}
               WHERE
                 ${filters}
-              ORDER BY ${tags}, date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
+              ORDER BY ${expressions config.tags}, date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
             ),
             binned AS (
               SELECT
@@ -98,7 +122,7 @@ in {
             ),
             tags AS (
               SELECT DISTINCT
-                ${tags}
+                ${names config.tags}
               FROM downsampled
             ),
             grid AS (
@@ -112,38 +136,38 @@ in {
             ),
             filled AS (
               SELECT
-                ${lib.concatMapStringsSep ", " (x: "t.${sqlIdentifier x}") config.tags},
-                ${lib.concatMapStringsSep ", " (x: "b.${sqlIdentifier x}") config.fields},
+                ${lib.concatMapStringsSep ", " (x: "t.${sqlIdentifier x.name}") config.tags},
+                ${lib.concatMapStringsSep ", " (x: "b.${sqlIdentifier x.name}") config.fields},
                 coalesce(greptime_timestamp, _time_bucket) AS greptime_timestamp
               FROM grid
               CROSS JOIN tags t
-              LEFT JOIN binned b USING (${tags}, _time_bucket)
+              LEFT JOIN binned b USING (${names config.tags}, _time_bucket)
             ),
             deltas AS (
               SELECT
-                ${tags},
+                ${names config.tags},
                 greptime_timestamp,
-                ${lib.concatMapStringsSep ", " (i: "${sqlIdentifier i} - lag(${sqlIdentifier i}) over (partition by ${tags} order by greptime_timestamp) AS ${sqlIdentifier "delta_${i}"}") (["greptime_timestamp"] ++ config.fields)}
+                ${lib.concatMapStringsSep ", " (i: "${sqlIdentifier i} - lag(${sqlIdentifier i}) over (partition by ${names config.tags} order by greptime_timestamp) AS ${sqlIdentifier "delta_${i}"}") (["greptime_timestamp"] ++ (lib.map (i: i.name) config.fields))}
               FROM filled
             )
             SELECT
-              ${tags},
+              ${names config.tags},
               greptime_timestamp,
               ${lib.concatMapStringsSep ", " (i: let
-                di = sqlIdentifier "delta_${i}";
-              in "CASE WHEN ${di} < 0 THEN NULL ELSE ${di} / arrow_cast(delta_greptime_timestamp, 'Float64')*1e9 END AS ${sqlIdentifier i}") config.fields}
+                di = sqlIdentifier "delta_${i.name}";
+              in "CASE WHEN ${di} < 0 THEN NULL ELSE ${di} / arrow_cast(delta_greptime_timestamp, 'Float64')*1e9 END AS ${sqlIdentifier i.name}") config.fields}
             FROM
               deltas
           '' else ''
             SELECT
-              ${tags},
+              ${namedExpressions config.tags},
               greptime_timestamp,
-              ${lib.concatMapStringsSep ", " (x: "${config.fn}(${sqlIdentifier x}) RANGE '$__interval' FILL NULL AS ${sqlIdentifier x}") config.fields},
+              ${lib.concatMapStringsSep ", " (x: "${config.fn}(${x.expression}) RANGE '$__interval' FILL NULL AS ${sqlIdentifier x.name}") config.fields},
             FROM
               ${sqlIdentifier config.database}.${sqlIdentifier config.table}
             WHERE
               ${filters}
-            ALIGN '$__interval' BY (${tags})
+            ALIGN '$__interval' BY (${names config.tags})
             ORDER BY greptime_timestamp ASC
           ''
         );
