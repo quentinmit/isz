@@ -2,7 +2,7 @@
   cfg = config.isz.pnio2mqtt;
   configFormat = pkgs.formats.yaml {};
   configYaml = configFormat.generate "pnio2mqtt.yaml" cfg.settings;
-  pkg = (pkgs.unstable.extend py-profinet.overlays.default).py-profinet;
+  pkg = py-profinet.packages.${pkgs.stdenv.hostPlatform.system}.py-profinet;
 in {
   options = with lib; {
     isz.pnio2mqtt = {

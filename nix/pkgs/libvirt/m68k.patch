@@ -1,5 +1,5 @@
 diff --git a/src/conf/domain_conf.c b/src/conf/domain_conf.c
-index 34d3b00079..7b00ec5190 100644
+index 94a1f8bd8e..643505efd9 100644
 --- a/src/conf/domain_conf.c
 +++ b/src/conf/domain_conf.c
 @@ -902,6 +902,7 @@ VIR_ENUM_IMPL(virDomainVideo,
@@ -19,7 +19,7 @@ index 34d3b00079..7b00ec5190 100644
      default:
          return 0;
 diff --git a/src/conf/domain_conf.h b/src/conf/domain_conf.h
-index 3732525af4..4d0b1e5a2f 100644
+index eadb5a49a4..a1c579259b 100644
 --- a/src/conf/domain_conf.h
 +++ b/src/conf/domain_conf.h
 @@ -1870,6 +1870,7 @@ typedef enum {
@@ -55,18 +55,18 @@ index 51dc3edcc2..fcb2e825e2 100644
                      break;
              }
 diff --git a/src/qemu/qemu_capabilities.c b/src/qemu/qemu_capabilities.c
-index 1b526cfb89..d80b038d77 100644
+index bc2b0412dc..1026816182 100644
 --- a/src/qemu/qemu_capabilities.c
 +++ b/src/qemu/qemu_capabilities.c
-@@ -775,6 +775,7 @@ VIR_ENUM_IMPL(virQEMUCaps,
-               /* 500 */
+@@ -776,6 +776,7 @@ VIR_ENUM_IMPL(virQEMUCaps,
                "arm-smmuv3.cmdqv", /* QEMU_CAPS_ARM_SMMUV3_CMDQV */
                "iothread.poll-weight", /* QEMU_CAPS_IOTHREAD_POLL_WEIGHT */
+               "win-dmp.guest-aware", /* QEMU_CAPS_WIN_DMP_GUEST_AWARE */
 +              "nubus-macfb", /* QEMU_CAPS_DEVICE_NUBUS_MACFB */
      );
  
  
-@@ -1489,6 +1490,7 @@ struct virQEMUCapsStringFlags virQEMUCapsObjectTypes[] = {
+@@ -1490,6 +1491,7 @@ struct virQEMUCapsStringFlags virQEMUCapsObjectTypes[] = {
      { "uefi-vars-sysbus", QEMU_CAPS_DEVICE_UEFI_VARS },
      { "monitor-qmp", QEMU_CAPS_OBJECT_MONITOR_QMP },
      { "arm-smmuv3", QEMU_CAPS_DEVICE_ARM_SMMUV3 },
@@ -74,7 +74,7 @@ index 1b526cfb89..d80b038d77 100644
  };
  
  
-@@ -6942,6 +6944,8 @@ virQEMUCapsFillDomainDeviceVideoCaps(virQEMUCaps *qemuCaps,
+@@ -6944,6 +6946,8 @@ virQEMUCapsFillDomainDeviceVideoCaps(virQEMUCaps *qemuCaps,
          VIR_DOMAIN_CAPS_ENUM_SET(dev->modelType, VIR_DOMAIN_VIDEO_TYPE_BOCHS);
      if (virQEMUCapsGet(qemuCaps, QEMU_CAPS_DEVICE_RAMFB))
          VIR_DOMAIN_CAPS_ENUM_SET(dev->modelType, VIR_DOMAIN_VIDEO_TYPE_RAMFB);
@@ -84,19 +84,19 @@ index 1b526cfb89..d80b038d77 100644
  
  
 diff --git a/src/qemu/qemu_capabilities.h b/src/qemu/qemu_capabilities.h
-index 495c1eb603..fa489badb0 100644
+index 28303fd8f0..6db1da0df2 100644
 --- a/src/qemu/qemu_capabilities.h
 +++ b/src/qemu/qemu_capabilities.h
-@@ -749,6 +749,7 @@ typedef enum { /* virQEMUCapsFlags grouping marker for syntax-check */
-     /* 500 */
+@@ -750,6 +750,7 @@ typedef enum { /* virQEMUCapsFlags grouping marker for syntax-check */
      QEMU_CAPS_ARM_SMMUV3_CMDQV, /* arm-smmuv3.cmdqv */
      QEMU_CAPS_IOTHREAD_POLL_WEIGHT, /* -object iothread.poll-weight */
+     QEMU_CAPS_WIN_DMP_GUEST_AWARE, /* 'win-dmp' is offered only to a guest that can use it */
 +    QEMU_CAPS_DEVICE_NUBUS_MACFB, /* -device nubus-macfb */
  
      QEMU_CAPS_LAST /* this must always be the last item */
  } virQEMUCapsFlags;
 diff --git a/src/qemu/qemu_command.c b/src/qemu/qemu_command.c
-index a07b915f4d..fecdf112e4 100644
+index bcddb9c922..8e369d76f1 100644
 --- a/src/qemu/qemu_command.c
 +++ b/src/qemu/qemu_command.c
 @@ -89,6 +89,7 @@ VIR_ENUM_IMPL(qemuVideo,
@@ -165,7 +165,7 @@ index a8292a9782..30f8c0cb85 100644
  
          if (!virDeviceInfoPCIAddressIsWanted(&def->videos[i]->info))
 diff --git a/src/qemu/qemu_monitor_json.c b/src/qemu/qemu_monitor_json.c
-index 7e3249cd47..ba2f13112f 100644
+index 8e88dc9442..b79acda04f 100644
 --- a/src/qemu/qemu_monitor_json.c
 +++ b/src/qemu/qemu_monitor_json.c
 @@ -1939,6 +1939,7 @@ qemuMonitorJSONUpdateVideoMemorySize(qemuMonitor *mon,
@@ -198,10 +198,10 @@ index 9eda2f6b99..8715ccec69 100644
  }
  
 diff --git a/src/qemu/qemu_process.c b/src/qemu/qemu_process.c
-index b2506edce0..29f5d3dacc 100644
+index 57a3ed3720..e8c8d5db98 100644
 --- a/src/qemu/qemu_process.c
 +++ b/src/qemu/qemu_process.c
-@@ -3298,6 +3298,7 @@ qemuProcessUpdateVideoRamSize(virDomainObj *vm,
+@@ -3329,6 +3329,7 @@ qemuProcessUpdateVideoRamSize(virDomainObj *vm,
          case VIR_DOMAIN_VIDEO_TYPE_NONE:
          case VIR_DOMAIN_VIDEO_TYPE_BOCHS:
          case VIR_DOMAIN_VIDEO_TYPE_RAMFB:
