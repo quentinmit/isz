@@ -35,7 +35,8 @@
   boot.zfs.forceImportRoot = false;
   boot.zfs.unsafeAllowHibernation = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # ZFS >2.4.4 supports Linux 7.3
+  boot.kernelPackages = assert config.boot.zfs.package.version == "2.4.4"; pkgs.linuxPackages_7_2;
   boot.kernelParams = [''dyndbg="file drivers/base/firmware_loader/main.c +fmp"''];
   hardware.amdgpu.dcDebugMask.disablePsr = false;
   boot.extraModprobeConfig = ''

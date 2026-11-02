@@ -56,9 +56,9 @@
       rlwrap
       sharutils
       sl
-      tmate
       libuchardet
       unrar
+      upterm
       vbindiff
       vttest
       xdelta

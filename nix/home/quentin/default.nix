@@ -348,7 +348,8 @@ in {
         unstable.elf-dissector
         imhex
         okteta
-        unstable.iaito
+        cutter
+        #broken iaito
       ];
 
       xdg.desktopEntries.cyberchef = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
