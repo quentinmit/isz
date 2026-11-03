@@ -544,12 +544,10 @@ in {
     panels.dhcp-leases-by-server = {
       spec.title = "DHCP Leases by Server";
       spec.vizConfig.group = "bargauge";
-      spec.vizConfig.spec.fieldConfig.defaults = {
-        displayName = "\${__field.labels.active-server}";
-      };
       spec.vizConfig.spec.options = {
         displayMode = "lcd";
         orientation = "horizontal";
+        reduceOptions.values = true;
       };
       greptime.rawSql = ''
         WITH timestamps AS (
@@ -581,21 +579,28 @@ in {
     panels.network-routes = {
       spec.title = "Total Routes";
       spec.vizConfig.group = "gauge";
-      influx.filter._measurement = "mikrotik-/routing/route";
-      influx.filter._field = "active";
-      influx.filter._value.values = [(lib.literalExpression "true")];
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "last1";
-      influx.groupBy = [
-        {
-          fields = ["_time"];
-          fn = "count1";
-        }
-        {
-          fields = [];
-          fn = "last1";
-        }
-      ];
+      greptime.rawSql = ''
+        WITH timestamps AS (
+          SELECT
+            hostname,
+            MAX(greptime_timestamp) AS greptime_timestamp
+          FROM
+            mikrotik.":routing:route"
+          WHERE
+            $__timeFilter(greptime_timestamp)
+            AND hostname IN (''${hostname:sqlstring})
+          GROUP BY
+            hostname
+        )
+        SELECT
+          COUNT(*) AS count
+        FROM
+          timestamps
+          INNER JOIN mikrotik.":routing:route" USING (greptime_timestamp, hostname)
+        WHERE
+          active
+        GROUP BY hostname
+      '';
     };
     panels.network-routes-per-protocol = {
       spec.title = "Routes per Protocol";
@@ -603,39 +608,59 @@ in {
       spec.vizConfig.spec.options = {
         displayMode = "lcd";
         orientation = "horizontal";
+        reduceOptions.values = true;
       };
-      influx.filter._measurement = "mikrotik-/routing/route";
-      influx.filter._field = "active";
-      influx.filter._value.values = [(lib.literalExpression "true")];
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "last1";
-      influx.groupBy = [
-        {
-          fields = ["_time" "belongs-to"];
-          fn = "count1";
-        }
-        {
-          fields = ["belongs-to"];
-          fn = "last1";
-        }
-      ];
+      greptime.rawSql = ''
+        WITH timestamps AS (
+          SELECT
+            hostname,
+            MAX(greptime_timestamp) AS greptime_timestamp
+          FROM
+            mikrotik.":routing:route"
+          WHERE
+            $__timeFilter(greptime_timestamp)
+            AND hostname IN (''${hostname:sqlstring})
+          GROUP BY
+            hostname
+        )
+        SELECT
+          "belongs-to",
+          COUNT(*) AS count
+        FROM
+          timestamps
+          INNER JOIN mikrotik.":routing:route" USING (greptime_timestamp, hostname)
+        WHERE
+          active
+        GROUP BY hostname, "belongs-to"
+      '';
     };
     panels.network-ethernet-ports = {
       spec.title = "Ethernet Ports";
       spec.vizConfig.group = "table";
-      influx.imports = ["strings" "contrib/bonitoo-io/hex"];
-      influx.filter._measurement = "mikrotik-/interface/ethernet";
-      # rate and full-duplex only exist for interfaces that are up
-      influx.filter._field = ["rate" "full-duplex" "status"];
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "last1";
-      influx.pivot = true;
-      influx.extra = ''
-        |> keep(columns: ["id", "name", "rate", "full-duplex"])
-        |> group()
-        |> map(fn: (r) => ({r with id: hex.uint(v: strings.trimLeft(v: r.id, cutset: "*"))}))
-        |> sort(columns: ["id"])
-        |> drop(columns: ["id"])
+      greptime.rawSql = ''
+        WITH timestamps AS (
+          SELECT
+            hostname,
+            MAX(greptime_timestamp) AS greptime_timestamp
+          FROM
+            mikrotik.":interface:ethernet"
+          WHERE
+            $__timeFilter(greptime_timestamp)
+            AND hostname IN (''${hostname:sqlstring})
+          GROUP BY
+            hostname
+        )
+        SELECT
+          name,
+          rate,
+          "full-duplex"
+        FROM
+          timestamps
+        INNER JOIN mikrotik.":interface:ethernet"
+          USING (greptime_timestamp, hostname)
+        WHERE
+          status IS NOT NULL
+        ORDER BY lpad(ltrim(id, '*'), 8, '0')
       '';
       fieldOrder = ["name" "rate" "full-duplex"];
       fields.rate = {
@@ -666,18 +691,30 @@ in {
     panels.network-poe = {
       spec.title = "POE";
       spec.vizConfig.group = "table";
-      influx.imports = ["strings" "contrib/bonitoo-io/hex"];
-      influx.filter._measurement = "mikrotik-/interface/ethernet";
-      influx.filter._field = ["poe-out" "poe-priority"];
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "last1";
-      influx.pivot = true;
-      influx.extra = ''
-        |> keep(columns: ["id", "name", "poe-out", "poe-priority"])
-        |> group()
-        |> map(fn: (r) => ({r with id: hex.uint(v: strings.trimLeft(v: r.id, cutset: "*"))}))
-        |> sort(columns: ["id"])
-        |> drop(columns: ["id"])
+      greptime.rawSql = ''
+        WITH timestamps AS (
+          SELECT
+            hostname,
+            MAX(greptime_timestamp) AS greptime_timestamp
+          FROM
+            mikrotik.":interface:ethernet"
+          WHERE
+            $__timeFilter(greptime_timestamp)
+            AND hostname IN (''${hostname:sqlstring})
+          GROUP BY
+            hostname
+        )
+        SELECT
+          name,
+          "poe-out",
+          "poe-priority"
+        FROM
+          timestamps
+        INNER JOIN mikrotik.":interface:ethernet"
+          USING (greptime_timestamp, hostname)
+        WHERE
+          status IS NOT NULL
+        ORDER BY lpad(ltrim(id, '*'), 8, '0')
       '';
     };
     panels.network-interface-traffic = {
@@ -760,23 +797,11 @@ in {
         legend.calcs = ["mean" "lastNotNull" "max" "min"];
         legend.displayMode = "table";
       };
-      influx.filter._measurement = "mikrotik-/interface/wireless";
-      influx.filter._field = ["noise-floor" "channel-name"];
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = null;
-      influx.groupBy = [
-        {
-          pivot = true;
-          fields = ["_time" "channel-name"];
-          column = "noise-floor";
-          fn = "mean";
-        }
-        {
-          fields = ["channel-name"];
-          column = "noise-floor";
-          fn = "mean";
-        }
-      ];
+      greptime.table = ":interface:wireless";
+      greptime.tags = ["hostname" "channel-name"];
+      greptime.fields = ["noise-floor"];
+      greptime.fn = "mean";
+      greptime.filter.noise-floor = { op = "!="; values = [null]; };
     };
     panels.wireless-ccq = {
       spec.title = "Overall TX CCQ";
@@ -788,23 +813,11 @@ in {
         legend.calcs = ["mean" "lastNotNull" "max" "min"];
         legend.displayMode = "table";
       };
-      influx.filter._measurement = "mikrotik-/interface/wireless";
-      influx.filter._field = ["overall-tx-ccq" "channel-name"];
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = null;
-      influx.groupBy = [
-        {
-          pivot = true;
-          fields = ["_time" "channel-name"];
-          column = "overall-tx-ccq";
-          fn = "mean";
-        }
-        {
-          fields = ["channel-name"];
-          column = "overall-tx-ccq";
-          fn = "mean";
-        }
-      ];
+      greptime.table = ":interface:wireless";
+      greptime.tags = ["hostname" "channel-name"];
+      greptime.fields = ["overall-tx-ccq"];
+      greptime.fn = "mean";
+      greptime.filter.noise-floor = { op = "!="; values = [null]; };
     };
     panels.wireless-client-devices = {
       spec.title = "Client Devices";
