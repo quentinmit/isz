@@ -88,6 +88,9 @@ in {
               "--debug"
               "--no-sync-snap"
               "--use-hold"
+              "--include-snaps=.*hourly"
+              "--include-snaps=.*daily"
+              "--include-snaps=.*monthly"
               #"--create-bookmark"
               #"--force-delete"
               "--identifier" targetName
