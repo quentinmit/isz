@@ -880,10 +880,11 @@ in {
         legend.displayMode = "table";
         legend.placement = "right";
       };
-      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-      influx.filter._field = "tx-ccq";
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "mean";
+      greptime.table = ":interface:wireless:registration-table";
+      greptime.tags = ["hostname" "interface" "mac-address"];
+      greptime.fields = ["tx-ccq"];
+      greptime.filter.rate.values = [null];
+      greptime.fn = "mean";
     };
     panels.wireless-client-traffic = {
       spec.title = "Clients Traffic";
@@ -896,10 +897,11 @@ in {
         legend.displayMode = "table";
         legend.placement = "right";
       };
-      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-      influx.filter._field = ["tx-bytes" "rx-bytes"];
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "derivative";
+      greptime.table = ":interface:wireless:registration-table";
+      greptime.tags = ["hostname" "interface" "mac-address"];
+      greptime.fields = ["tx-bytes" "rx-bytes"];
+      greptime.filter.rate.values = [null];
+      greptime.fn = "derivative";
       fields.tx-bytes = {
         custom.transform = "negative-Y";
       };
@@ -915,15 +917,16 @@ in {
         legend.displayMode = "table";
         legend.placement = "right";
       };
-      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-      influx.filter._field = "signal-strength";
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "mean";
+      greptime.table = ":interface:wireless:registration-table";
+      greptime.tags = ["hostname" "interface" "mac-address"];
+      greptime.fields = ["signal-strength"];
+      greptime.filter.rate.values = [null];
+      greptime.fn = "mean";
     };
     panels.wireless-client-snr = {
       spec.title = "Clients Signal-to-Noise";
       spec.vizConfig.spec.fieldConfig.defaults = {
-        unit = "dBm";
+        unit = "dB";
         displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
       };
       spec.vizConfig.spec.options = {
@@ -931,10 +934,11 @@ in {
         legend.displayMode = "table";
         legend.placement = "right";
       };
-      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-      influx.filter._field = "signal-to-noise";
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "mean";
+      greptime.table = ":interface:wireless:registration-table";
+      greptime.tags = ["hostname" "interface" "mac-address"];
+      greptime.fields = ["signal-to-noise"];
+      greptime.filter.rate.values = [null];
+      greptime.fn = "mean";
     };
   };
 }
