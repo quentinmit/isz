@@ -255,7 +255,9 @@ in {
             #marus25.cortex-debug
             #mcu-debug.debug-tracker-vscode
             #mcu-debug.memory-view
-          ] ++ available unstable.vscode-extensions.Surendrajat.apklab;
+          ] ++ (with unstable.vscode-extensions; [
+            Google.google-antigravity
+          ]) ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
       ];
       programs.vscode.profiles.default = {

@@ -160,6 +160,9 @@ final: prev:
         meta.license = final.lib.licenses.mit;
       };
     };
+    Google = prev.vscode-extensions.Google // {
+      google-antigravity = final.callPackage ./vscode-extensions/google-antigravity.nix {};
+    };
   };
   wd-fw-update = final.callPackage ./python/wd-fw-update {};
   dwex = final.callPackage ./python/dwex {};
