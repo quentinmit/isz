@@ -90,4 +90,14 @@ in {
       })
     ];
   });
+  atuin = prev.atuin.overrideAttrs (old: {
+    # https://github.com/atuinsh/atuin/issues/4673
+    checkFlags = let
+      flags = [
+        "--skip=a_huge_message_reads_back"
+      ];
+    in assert ((lib.intersectLists old.checkFlags flags) == []);
+      old.checkFlags
+      ++ lib.optionals (final.stdenv.hostPlatform.isLinux && final.stdenv.hostPlatform.isAarch64) flags;
+  });
 }
