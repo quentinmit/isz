@@ -7,6 +7,17 @@
         "workshop.isz.wtf",
         "greptimedb-mcp-server"
       ]
+    },
+    "grafana": {
+      "command": "envchain",
+      "args": [
+        "mcp-grafana-isz",
+        "mcp-grafana"
+      ],
+      "env": {
+        "GRAFANA_URL": "https://grafana.isz.wtf",
+        "DO_NOT_TRACK": "1"
+      }
     }
   }
 }

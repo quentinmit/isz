@@ -7,6 +7,7 @@
 
   config = lib.mkIf config.isz.quentin.ai.enable {
     home.packages = with pkgs; [
+      unstable.mcp-grafana
       unstable.greptimedb-mcp-server
       unstable.antigravity-cli
     ];
