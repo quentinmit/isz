@@ -188,7 +188,6 @@ in {
     # Database development
     {
       home.packages = with pkgs; [
-        greptimedb-mcp-server
         lazysql
         mariadb_114.client
         mdbtools
