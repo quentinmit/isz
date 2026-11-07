@@ -49,6 +49,11 @@ let
 in {
   config = {
     services.home-assistant = {
+      customComponents = builtins.attrValues {
+        inherit (pkgs.unstable.home-assistant-custom-components)
+          uix
+        ;
+      };
       customLovelaceModules = builtins.attrValues {
         inherit (pkgs.unstable.home-assistant-custom-lovelace-modules)
           mushroom
@@ -57,7 +62,6 @@ in {
           layout-card
           restriction-card
           button-card
-          card-mod
           hui-element
           apexcharts-card
           multiple-entity-row
