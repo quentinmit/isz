@@ -198,4 +198,5 @@ final: prev:
   xfedor = final.callPackage ./xfedor {};
   lucida-fonts = final.callPackage ./lucida-fonts {};
   greptimedb = final.callPackage ./greptimedb {};
+  greptimedb-mcp-server = final.python3.pkgs.callPackage ./python/greptimedb-mcp-server {};
 }

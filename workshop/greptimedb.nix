@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 let
   users = {
-    quentin = {};
+    quentin.owner = "quentin";
     "telegraf@workshop.isz.wtf" = {};
     "grafana@workshop.isz.wtf" = {};
     "pnio2mqtt@workshop.isz.wtf" = {};

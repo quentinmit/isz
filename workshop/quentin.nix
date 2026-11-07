@@ -13,6 +13,14 @@
       isz.base = true;
 
       isz.quentin.mail.enable = true;
+
+      home.packages = with pkgs; [
+        (writeShellScriptBin "greptimedb-mcp-server" ''
+          export GREPTIMEDB_USER="''${GREPTIMEDB_USER:-quentin}"
+          export GREPTIMEDB_PASSWORD="''${GREPTIMEDB_PASSWORD:-$(cat ${lib.escapeShellArg config.sops.secrets."greptimedb/users/quentin".path})}"
+          exec ${lib.getExe unstable.greptimedb-mcp-server} "$@"
+        '')
+      ];
     }
   ];
 }
