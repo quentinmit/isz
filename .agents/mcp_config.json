@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "greptimedb": {
+      "command": "ssh",
+      "args": [
+        "-T",
+        "workshop.isz.wtf",
+        "greptimedb-mcp-server"
+      ]
+    }
+  }
+}
