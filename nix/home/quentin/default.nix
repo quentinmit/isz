@@ -365,6 +365,7 @@ in {
     # Security
     {
       home.packages = with pkgs; [
+        envchain
         gpgme
         oath-toolkit
         pass-git-helper
@@ -400,6 +401,7 @@ in {
       ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         kdePackages.kgpg
         kdePackages.kleopatra
+        libsecret
       ];
       programs.plasma.configFile."IJHack/QtPass.conf".General = {
         useGit = true;
@@ -514,6 +516,11 @@ in {
           read -d "" PKB_API_KEY PKB_API_SECRET < <(${lib.getExe python3Packages.keyring} --mode creds get https://api.porkbun.com)
           export PKB_API_KEY PKB_API_SECRET
           exec "${lib.getExe pkb-client}" "$@"
+        '')
+        # Add secrets with
+        # envchain --set hass-cli HASS_SERVER HASS_TOKEN
+        (writeShellScriptBin "hass-cli" ''
+          exec ${lib.getExe envchain} ${lib.getExe home-assistant-cli} "$@"
         '')
       ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         sockdump

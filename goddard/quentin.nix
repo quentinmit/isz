@@ -35,7 +35,6 @@
         unleashed-recomp
         hedge-mod-manager
         plasma-homeassistant
-        home-assistant-cli
         zapzap
         xgpro
         (
