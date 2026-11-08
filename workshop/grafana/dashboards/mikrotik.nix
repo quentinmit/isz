@@ -854,20 +854,10 @@ in {
         legend.calcs = ["mean" "lastNotNull" "max" "min"];
         legend.displayMode = "table";
       };
-      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-      influx.filter._field = "uptime-ns";
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "mean";
-      influx.groupBy = [
-        {
-          fields = ["_time" "interface"];
-          fn = "count";
-        }
-        {
-          fields = ["interface"];
-          fn = "mean";
-        }
-      ];
+      greptime.table = ":interface:wireless:registration-table";
+      greptime.tags = ["hostname" "interface"];
+      greptime.filter.rate.values = [null];
+      greptime.fn = "count";
     };
     panels.wireless-client-ccq = {
       spec.title = "WLAN Clients Tx CCQ";

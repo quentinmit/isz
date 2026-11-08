@@ -81,7 +81,7 @@ in {
           type = lib.types.listOf coercedExpressionType;
         };
         fn = lib.mkOption {
-          type = lib.types.enum ["last1" "mean" "derivative"];
+          type = lib.types.enum ["last1" "mean" "derivative" "count"];
         };
         panelQuery = lib.mkOption {
           type = dashboardFormat.type;
@@ -158,6 +158,37 @@ in {
               in "CASE WHEN ${di} < 0 THEN NULL ELSE ${di} / arrow_cast(delta_greptime_timestamp, 'Float64')*1e9 END AS ${sqlIdentifier i.name}") config.fields}
             FROM
               deltas
+          '' else if config.fn == "count" then ''
+            WITH timestamps AS (
+              SELECT
+                MAX(greptime_timestamp) AS original_greptime_timestamp,
+                date_bin(interval '$__interval', greptime_timestamp) AS output_timestamp
+              FROM
+                ${sqlIdentifier config.database}.${sqlIdentifier config.table}
+              WHERE
+                ${filters}
+              GROUP BY 2
+            ), data AS (
+              SELECT
+                greptime_timestamp AS original_greptime_timestamp,
+                ${names config.tags},
+                count(*) AS count
+              FROM
+                ${sqlIdentifier config.database}.${sqlIdentifier config.table}
+              WHERE
+                ${filters}
+              GROUP BY original_greptime_timestamp, ${names config.tags}
+            )
+            SELECT
+              output_timestamp AS greptime_timestamp,
+              ${names config.tags},
+              "count"
+            FROM
+              timestamps
+            INNER JOIN
+              data
+            USING (original_greptime_timestamp)
+            ORDER BY output_timestamp ASC
           '' else ''
             SELECT
               ${namedExpressions config.tags},
