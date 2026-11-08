@@ -231,12 +231,12 @@ in {
       ];
     })
     # Visual Studio Code
-    {
-      home.packages = with pkgs; lib.mkIf config.isz.quentin.vscode.install [
+    (lib.mkIf config.isz.graphical {
+      programs.vscode.package = with pkgs; if config.isz.quentin.vscode.install then
         (vscode-with-extensions.override {
           vscodeExtensions = with vscode-extensions; [
             mkhl.direnv
-            bbenoist.nix
+            jnoortheen.nix-ide
             golang.go
             ms-python.python
             rust-lang.rust-analyzer
@@ -259,28 +259,44 @@ in {
             Google.google-antigravity
           ]) ++ available unstable.vscode-extensions.Surendrajat.apklab;
         })
-      ];
+        else null;
+      programs.vscode.enable = true;
       programs.vscode.profiles.default = {
         userSettings = {
-          "telemetry.enableTelemetry" = false;
+          "antigravity.enableTelemetry" = false;
+          "apklab.apkSignerPath" = pkgs.fetchurl {
+            url = "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar";
+            hash = "sha256-4Smf1vz02lJ91Tc1tWEn6OqSKjIRKBI7nDLWGbuh2DU=";
+          };
+          "apklab.jadxDirPath" = pkgs.jadx;
+          "apklab.apktoolPath" = "${pkgs.apktool}/libexec/apktool/apktool.jar";
+          "debug.javascript.autoAttachFilter" = "smart";
           "editor.autoClosingBrackets" = "beforeWhitespace";
           "editor.foldingMaximumRegions" = 50000;
-          "editor.formatOnSave" = true;
+          "editor.formatOnSave" = false;
           "editor.renderWhitespace" = "all";
           "go.useLanguageServer" = true;
           "jupyter.alwaysTrustNotebooks" = true;
           "jupyter.disableJupyterAutoStart" = true;
+          #"jupyter.insidersChannel" = "weekly";
           "jupyter.jupyterServerType" = "remote";
           #"liveshare.allowGuestDebugControl" = true;
           #"liveshare.allowGuestTaskControl" = true;
           #"liveshare.languages.allowGuestCommandControl" = true;
           #"liveshare.notebooks.allowGuestExecuteCells" = true;
+          "nix.enableLanguageServer" = true;
           "nix.formatterPath" = "";
-          #"jupyter.insidersChannel" = "weekly";
+          "nix.serverPath" = lib.getExe pkgs.nil;
+          "nix.serverSettings".nil = {
+            # https://github.com/oxalica/nil/blob/main/docs/configuration.md
+            formatting.command = [(lib.getExe pkgs.nixfmt)];
+          };
           #"python.insidersChannel" = "weekly";
           "python.languageServer" = "Pylance";
+          "telemetry.enableTelemetry" = false;
           "terminal.integrated.macOptionIsMeta" = true;
-          "window.zoomLevel" = 1;
+          "typescript.preferences.importModuleSpecifier" = "relative";
+          "window.zoomLevel" = 0;
           "workbench.editorAssociations" = {
             "*.ipynb" = "jupyter-notebook";
           };
@@ -294,7 +310,7 @@ in {
           }
         ];
       };
-    }
+    })
     # Emacs
     {
       programs.emacs.extraPackages = epkgs: with epkgs; [
