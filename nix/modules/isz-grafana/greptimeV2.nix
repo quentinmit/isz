@@ -169,15 +169,37 @@ in {
               WHERE
                 ${filters}
               GROUP BY original_greptime_timestamp, ${names config.tags}
+            ),
+            binned AS (
+              SELECT
+                date_bin(interval '$__interval', original_greptime_timestamp) AS greptime_timestamp,
+                ${names config.tags},
+                mean("count") as "count"
+              FROM data
+              GROUP BY greptime_timestamp, ${names config.tags}
+              ORDER BY greptime_timestamp ASC
+            ),
+            tags AS (
+              SELECT DISTINCT
+                ${names config.tags}
+              FROM binned
+            ),
+            grid AS (
+              SELECT
+                unnest(generate_series(
+                  min(greptime_timestamp),
+                  max(greptime_timestamp),
+                  interval '$__interval'
+                )) AS greptime_timestamp
+              FROM binned
             )
             SELECT
-              date_bin(interval '$__interval', original_greptime_timestamp) AS greptime_timestamp,
+              greptime_timestamp,
               ${names config.tags},
-              mean("count") as "count"
-            FROM
-              data
-            GROUP BY greptime_timestamp, ${names config.tags}
-            ORDER BY greptime_timestamp ASC
+              "count"
+            FROM grid
+            CROSS JOIN tags t
+            LEFT JOIN binned b USING (${names config.tags}, greptime_timestamp)
           '' else ''
             SELECT
               ${namedExpressions config.tags},
