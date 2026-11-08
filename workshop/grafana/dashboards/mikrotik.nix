@@ -1,5 +1,4 @@
 { config, pkgs, lib, ... }:
-with import ../../../nix/modules/isz-grafana/lib.nix { inherit config pkgs lib; };
 let
   firewallModule = { config, ... }: {
     options.firewall.key = lib.mkOption {
@@ -822,19 +821,23 @@ in {
     panels.wireless-client-devices = {
       spec.title = "Client Devices";
       spec.vizConfig.group = "table";
-      influx.filter._measurement = "mikrotik-/interface/wireless/registration-table";
-      influx.filter._field = [
+      greptime.queryType = "table";
+      greptime.table = ":interface:wireless:registration-table";
+      greptime.tags = [
+        "interface"
+        "authentication-type"
+        "encryption"
+        "group-encryption"
+        "last-ip"
+        "mac-address"
+      ];
+      greptime.fields = [
         "tx-rate-name"
         "rx-rate-name"
         "uptime-ns"
       ];
-      influx.filter.hostname = "\${hostname}";
-      influx.fn = "last1";
-      influx.pivot = true;
-      influx.extra = ''
-        |> drop(columns: ["_measurement", "host", "hostname", "agent_host"])
-        |> group()
-      '';
+      greptime.filter.rate.values = [null];
+      greptime.fn = "last1";
       fieldOrder = [
         "_time"
         "last-ip"
