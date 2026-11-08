@@ -159,16 +159,7 @@ in {
             FROM
               deltas
           '' else if config.fn == "count" then ''
-            WITH timestamps AS (
-              SELECT
-                MAX(greptime_timestamp) AS original_greptime_timestamp,
-                date_bin(interval '$__interval', greptime_timestamp) AS output_timestamp
-              FROM
-                ${sqlIdentifier config.database}.${sqlIdentifier config.table}
-              WHERE
-                ${filters}
-              GROUP BY 2
-            ), data AS (
+            WITH data AS (
               SELECT
                 greptime_timestamp AS original_greptime_timestamp,
                 ${names config.tags},
@@ -180,15 +171,13 @@ in {
               GROUP BY original_greptime_timestamp, ${names config.tags}
             )
             SELECT
-              output_timestamp AS greptime_timestamp,
+              date_bin(interval '$__interval', original_greptime_timestamp) AS greptime_timestamp,
               ${names config.tags},
-              "count"
+              mean("count") as "count"
             FROM
-              timestamps
-            INNER JOIN
               data
-            USING (original_greptime_timestamp)
-            ORDER BY output_timestamp ASC
+            GROUP BY greptime_timestamp, ${names config.tags}
+            ORDER BY greptime_timestamp ASC
           '' else ''
             SELECT
               ${namedExpressions config.tags},
