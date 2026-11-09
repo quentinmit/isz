@@ -63,6 +63,13 @@
     settings.KbdInteractiveAuthentication = false;
   };
 
+  security.pam.services.sshd.rules.account.nologin = {
+    enable = true;
+    order = config.security.pam.services.sshd.rules.account.unix.order - 10000;
+    control = "required";
+    modulePath = "${config.security.pam.package}/lib/security/pam_nologin.so";
+  };
+
   networking.useDHCP = true;
   networking.useNetworkd = true;
   networking.nftables.enable = true;
