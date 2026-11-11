@@ -163,6 +163,13 @@ final: prev:
     Google = prev.vscode-extensions.Google // {
       google-antigravity = final.callPackage ./vscode-extensions/google-antigravity.nix {};
     };
+    cperezabo.routeros-syntax = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "routeros-syntax";
+      publisher = "cperezabo";
+      version = "2.1.0";
+      hash = "sha256-DFDZggcnGd27ffNX6mTPshNn49VTTfqg0anNynW68e4=";
+      meta.license = final.lib.licenses.mit;
+    };
   };
   wd-fw-update = final.callPackage ./python/wd-fw-update {};
   dwex = final.callPackage ./python/dwex {};

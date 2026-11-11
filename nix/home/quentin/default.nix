@@ -252,6 +252,7 @@ in {
             eclipse-cdt.peripheral-inspector
             eclipse-cdt.cdt-gdb-vscode
             ms-vscode.mock-debug
+            cperezabo.routeros-syntax
             #marus25.cortex-debug
             #mcu-debug.debug-tracker-vscode
             #mcu-debug.memory-view
