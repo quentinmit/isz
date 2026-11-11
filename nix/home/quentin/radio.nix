@@ -28,11 +28,12 @@
         nanovna-saver
         xastir
       ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-      csdr
-      fldigi
-      flrig
-      pothos
-      sdrangel
+        csdr
+        fldigi
+        flrig
+        pothos
+        qradiolink
+        sdrangel
       ] ++ lib.optionals (!(pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64)) [
         gqrx-portaudio
       ]
