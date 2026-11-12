@@ -93,7 +93,7 @@
       };
       inherit keybindings;
     };
-    programs.antigravity = {
+    programs.antigravity-ide = {
       enable = true;
       package = if config.isz.quentin.vscode.install then
         (pkgs.unstable.vscode-with-extensions.override {
