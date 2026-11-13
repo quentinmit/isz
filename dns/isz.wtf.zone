@@ -81,6 +81,7 @@ livingroom-10g-sw A 172.30.97.19
 workshop-10g-sw  A 172.30.97.20
 meshradio        A 172.30.97.21
 spare-10g-sw     A 172.30.97.22
+hallway-ap       A 172.30.97.23
 
 workshop-pi      A 172.30.97.32
 bedroom-pi       A 172.30.97.33
