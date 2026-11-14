@@ -170,6 +170,13 @@ final: prev:
       hash = "sha256-DFDZggcnGd27ffNX6mTPshNn49VTTfqg0anNynW68e4=";
       meta.license = final.lib.licenses.mit;
     };
+    Compilenix.vscode-zonefile = final.vscode-utils.extensionFromVscodeMarketplace {
+      name = "vscode-zonefile";
+      publisher = "Compilenix";
+      version = "0.0.4";
+      hash = "sha256-NRjR1mGpK1Rd4eF276Mu9u9wYXS6/pB/tZaDpOpLxaA=";
+      meta.license = final.lib.licenses.mit;
+    };
   };
   wd-fw-update = final.callPackage ./python/wd-fw-update {};
   dwex = final.callPackage ./python/dwex {};

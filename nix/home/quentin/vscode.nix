@@ -10,7 +10,6 @@
     available = pkg: lib.optional pkg.meta.available pkg;
     vscodeExtensions = with pkgs.vscode-extensions; [
       mkhl.direnv
-      jnoortheen.nix-ide
       golang.go
       ms-python.python
       rust-lang.rust-analyzer
@@ -27,6 +26,7 @@
       eclipse-cdt.cdt-gdb-vscode
       ms-vscode.mock-debug
       cperezabo.routeros-syntax
+      Compilenix.vscode-zonefile
       #marus25.cortex-debug
       #mcu-debug.debug-tracker-vscode
       #mcu-debug.memory-view
@@ -40,12 +40,14 @@
       };
       "apklab.jadxDirPath" = pkgs.jadx;
       "apklab.apktoolPath" = "${pkgs.apktool}/libexec/apktool/apktool.jar";
+      "cmake.ignoreCMakeListsMissing" = true;
       "debug.javascript.autoAttachFilter" = "smart";
       "editor.autoClosingBrackets" = "beforeWhitespace";
       "editor.foldingMaximumRegions" = 50000;
       "editor.formatOnSave" = false;
       "editor.renderWhitespace" = "all";
       "go.useLanguageServer" = true;
+      "json.schemaDownload.enable" = false;
       "jupyter.alwaysTrustNotebooks" = true;
       "jupyter.disableJupyterAutoStart" = true;
       #"jupyter.insidersChannel" = "weekly";
@@ -81,7 +83,9 @@
     programs.vscode.package = with pkgs; if config.isz.quentin.vscode.install then
       (vscode-with-extensions.override {
         vscodeExtensions = vscodeExtensions
-          ++ (with unstable.vscode-extensions; [
+          ++ (with vscode-extensions; [
+            jnoortheen.nix-ide
+          ]) ++ (with unstable.vscode-extensions; [
             Google.google-antigravity
           ]);
       })
@@ -98,7 +102,12 @@
       package = if config.isz.quentin.vscode.install then
         (pkgs.unstable.vscode-with-extensions.override {
           vscode = pkgs.unstable.antigravity-ide;
-          inherit vscodeExtensions;
+        vscodeExtensions = vscodeExtensions
+          ++ (with pkgs.vscode-extensions; [
+            # jnoortheen.nix-ide is not supported yet
+            # "Extension is not compatible with Code 1.107.0. Extension requires: >=1.112.0."
+            bbenoist.nix
+          ]);
         })
         else null;
       profiles.default = {
