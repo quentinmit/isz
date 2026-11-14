@@ -77,6 +77,7 @@
                   last_value("last-ip" ORDER BY greptime_timestamp DESC) AS "last-ip",
                   last_value("tx-rate-name" ORDER BY greptime_timestamp DESC) AS "tx-rate",
                   last_value("rx-rate-name" ORDER BY greptime_timestamp DESC) AS "rx-rate",
+                  last_value("authentication-type" ORDER BY greptime_timestamp DESC) AS "authentication-type",
                   last_value("uptime-ns" ORDER BY greptime_timestamp DESC) AS "uptime",
                   last_value("signal-strength" ORDER BY greptime_timestamp DESC) AS "signal-strength",
                   last_value("tx-ccq" ORDER BY greptime_timestamp DESC) AS "tx-ccq",
@@ -99,6 +100,7 @@
               l.comment,
               r."rx-rate",
               r."tx-rate",
+              r."authentication-type",
               r."tx-ccq",
               r."uptime",
               r."signal-strength",
@@ -165,6 +167,7 @@
           "uptime"
           "tx-rate"
           "rx-rate"
+          "authentication-type"
         ];
       };
       tx-rate = {
