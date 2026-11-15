@@ -94,6 +94,44 @@ def to_channel(base: str, value: str) -> dict:
         logging.debug("Unable to parse %s", bands)
     return ret
 
+def to_wifi_channel(base: str, value: str) -> dict:
+    # 5220/n
+    # 5680/be/D
+    # 5680/be/eCee/D
+    # 5640/be/eeeeeeeC/D
+    # 2442/be/eC,5640/be/eeeeeeeC/D,6215/be/eeeeeeeeeeeeeCee/I
+    if "," in value:
+        return {base+"-name": value}
+    freq_mode_bands = value.split("/")
+    dfs = False
+    if freq_mode_bands[-1] == "D":
+        dfs = True
+        freq_mode_bands.pop()
+    center = freq_mode_bands.pop(0)
+    mode = freq_mode_bands.pop(0)
+    bands = "C"
+    if freq_mode_bands:
+        bands = freq_mode_bands.pop(0)
+    center = int(center)
+    ret = {
+        base+"-name": value,
+        base+"-center-frequency": center*1000000,
+        base+"-dfs": dfs,
+    }
+    try:
+        width = 20
+        before, after = bands.split("C")
+        lower = center - width * len(before) - (width // 2)
+        upper = center + width * len(after) + (width // 2)
+        ret.update({
+            base+"-lower-frequency": lower*1000000,
+            base+"-upper-frequency": upper*1000000,
+            base+"-width": (upper-lower)*1000000,
+        })
+    except ValueError:
+        logging.debug("Unable to parse %s", bands)
+    return ret
+
 DURATION_RE = re.compile(r'''
 ^
 (?:(?P<weeks>\d+)w)?
@@ -525,6 +563,45 @@ TAGS = {
             "signal-strength": to_signal,
             "strength-at-rates": to_strength_at_rates,
         },
+    ),
+    "/interface/wifi": Resource(
+        tag_props={
+            "default-name",
+            "name",
+            "comment",
+            "security",
+            "security.authentication-types",
+            "security.wps",
+            "mac-address",
+            "radio-mac",
+            "mld-name",
+            "mld-interface",
+            "radio-name",
+            "configuration",
+            "configuration.ssid",
+            "master",
+            "master-interface",
+            "configuration.mode",
+            "disabled",
+        },
+        field_types={
+            "bound": to_bool,
+            "inactive": to_bool,
+            "running": to_bool,
+            "security.passphrase": None,
+            "arp-timeout": None,
+        },
+        monitor=MonitorRequest(
+            field_types={
+                "channel": to_wifi_channel,
+                "mld-link-id": to_int,
+                "tx-power": to_int,
+                "registered-peers": to_int,
+                "authorized-peers": to_int,
+                "state": to_str,
+                "channel-priorities": None,
+            },
+        ),
     ),
     "/interface/pptp-client": Resource(
         tag_props={
