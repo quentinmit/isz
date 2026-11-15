@@ -68,30 +68,62 @@
               leases AS (
                 ${leasesQuery}
               ),
-              registrations AS (
+              wireless AS (
                 SELECT
-                  hostname,
-                  interface,
-                  "mac-address",
-                  max(greptime_timestamp) AS "last-seen",
-                  last_value("last-ip" ORDER BY greptime_timestamp DESC) AS "last-ip",
-                  last_value("tx-rate-name" ORDER BY greptime_timestamp DESC) AS "tx-rate",
-                  last_value("rx-rate-name" ORDER BY greptime_timestamp DESC) AS "rx-rate",
-                  last_value("authentication-type" ORDER BY greptime_timestamp DESC) AS "authentication-type",
-                  last_value("uptime-ns" ORDER BY greptime_timestamp DESC) AS "uptime",
-                  last_value("signal-strength" ORDER BY greptime_timestamp DESC) AS "signal-strength",
-                  last_value("tx-ccq" ORDER BY greptime_timestamp DESC) AS "tx-ccq",
-                FROM mikrotik.":interface:wireless:registration-table"
-                WHERE
-                  $__timeFilter(greptime_timestamp)
-                  AND rate IS NULL
-                GROUP BY hostname, interface, "mac-address"
-                ORDER BY hostname, interface, "last-seen" DESC
+                  r.*,
+                  i.band,
+                  i.ssid,
+                FROM
+                  (
+                    SELECT
+                      hostname,
+                      interface,
+                      "mac-address",
+                      max(greptime_timestamp) AS "last-seen",
+                      last_value("last-ip" ORDER BY greptime_timestamp DESC) AS "last-ip",
+                      last_value("tx-rate-name" ORDER BY greptime_timestamp DESC) AS "tx-rate",
+                      last_value("rx-rate-name" ORDER BY greptime_timestamp DESC) AS "rx-rate",
+                      last_value("authentication-type" ORDER BY greptime_timestamp DESC) AS "authentication-type",
+                      last_value("uptime-ns" ORDER BY greptime_timestamp DESC) AS "uptime",
+                      last_value("signal-strength" ORDER BY greptime_timestamp DESC) AS "signal-strength",
+                      last_value("tx-ccq" ORDER BY greptime_timestamp DESC) AS "tx-ccq",
+                    FROM mikrotik.":interface:wireless:registration-table"
+                    WHERE
+                      $__timeFilter(greptime_timestamp)
+                      AND rate IS NULL
+                    GROUP BY hostname, interface, "mac-address"
+                    ORDER BY hostname, interface, "last-seen" DESC
+                  ) r
+                LEFT JOIN interfaces i ON i.hostname == r.hostname AND i.name == r.interface
+              ),
+              wifi AS (
+                SELECT
+                    hostname,
+                    interface,
+                    "mac-address",
+                    max(greptime_timestamp) AS "last-seen",
+                    NULL AS "last-ip",
+                    CONCAT(CAST(last_value("tx-rate" ORDER BY greptime_timestamp DESC)/1000000.0 AS STRING), 'Mbps') AS "tx-rate",
+                    CONCAT(CAST(last_value("rx-rate" ORDER BY greptime_timestamp DESC)/1000000.0 AS STRING), 'Mbps') AS "rx-rate",
+                    last_value("auth-type" ORDER BY greptime_timestamp DESC) AS "authentication-type",
+                    last_value("uptime-ns" ORDER BY greptime_timestamp DESC) AS "uptime",
+                    last_value(signal ORDER BY greptime_timestamp DESC) AS "signal-strength",
+                    NULL AS "tx-ccq",
+                    last_value("band" ORDER BY greptime_timestamp DESC) AS "band",
+                    last_value("ssid" ORDER BY greptime_timestamp DESC) AS "ssid",
+                  FROM mikrotik.":interface:wifi:registration-table"
+                  WHERE
+                    $__timeFilter(greptime_timestamp)
+                  GROUP BY hostname, interface, "mac-address"
+                  ORDER BY hostname, interface, "last-seen" DESC
+              ),
+              registrations AS (
+                (SELECT * FROM wireless) UNION (SELECT * FROM wifi)
               )
             SELECT
               r.interface,
-              i.band,
-              i.ssid,
+              r.band,
+              r.ssid,
               r."last-seen",
               r."mac-address",
               r."last-ip",
@@ -103,11 +135,10 @@
               r."authentication-type",
               r."tx-ccq",
               r."uptime",
-              r."signal-strength",
+              r."signal-strength"
             FROM
               registrations r
-            LEFT JOIN leases l USING (hostname, "mac-address")
-            LEFT JOIN interfaces i ON i.hostname == r.hostname AND i.name == r.interface
+            LEFT JOIN leases l USING ("mac-address")
             ORDER BY r.hostname, interface, "last-seen" DESC, comment, "mac-address"
           '';
         };
@@ -190,29 +221,44 @@
           WITH
             leases AS (${leasesQuery}),
             rates AS (
-              SELECT
-                hostname,
-                interface,
-                "mac-address",
-                greptime_timestamp AS "time",
-                mean("tx-rate") RANGE '$__interval' FILL NULL AS "tx-rate",
-              FROM
-                mikrotik.":interface:wireless:registration-table"
-              WHERE
-                $__timeFilter(greptime_timestamp)
-                AND rate IS NULL
-              ALIGN '$__interval' BY (hostname, interface, "mac-address")
-              ORDER BY time ASC
+              (
+                SELECT
+                  hostname,
+                  interface,
+                  "mac-address",
+                  greptime_timestamp AS "time",
+                  mean("tx-rate") RANGE '$__interval' FILL NULL AS "tx-rate",
+                FROM
+                  mikrotik.":interface:wireless:registration-table"
+                WHERE
+                  $__timeFilter(greptime_timestamp)
+                  AND rate IS NULL
+                ALIGN '$__interval' BY (hostname, interface, "mac-address")
+                ORDER BY time ASC
+              ) UNION (
+                  SELECT
+                    hostname,
+                    interface,
+                    "mac-address",
+                    greptime_timestamp AS "time",
+                    mean("tx-rate") RANGE '$__interval' FILL NULL AS "tx-rate",
+                  FROM
+                    mikrotik.":interface:wifi:registration-table"
+                  WHERE
+                    $__timeFilter(greptime_timestamp)
+                  ALIGN '$__interval' BY (hostname, interface, "mac-address")
+                  ORDER BY time ASC
+              )
             )
           SELECT
-            hostname,
-            interface,
+            r.hostname,
+            r.interface,
             "mac-address",
-            comment,
-            "time",
-            "tx-rate"
-          FROM rates
-          LEFT JOIN leases USING (hostname, "mac-address")
+            l.comment,
+            r."time",
+            r."tx-rate"
+          FROM rates r
+          LEFT JOIN leases l USING ("mac-address")
         '';
       };
       throughput = {
@@ -239,6 +285,7 @@
           WITH
             leases AS (${leasesQuery}),
             rates AS (
+            (
               SELECT DISTINCT ON (hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp))
                 hostname,
                 interface,
@@ -253,6 +300,21 @@
                 $__timeFilter(greptime_timestamp)
                 AND rate IS NULL
               ORDER BY hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
+            ) UNION (
+              SELECT DISTINCT ON (hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp))
+                hostname,
+                interface,
+                "mac-address",
+                greptime_timestamp AS "time",
+                date_bin(interval '$__interval', greptime_timestamp) AS time_bucket,
+                "tx-bytes",
+                "rx-bytes",
+              FROM
+                mikrotik.":interface:wifi:registration-table"
+              WHERE
+                $__timeFilter(greptime_timestamp)
+              ORDER BY hostname, interface, "mac-address", date_bin(interval '$__interval', greptime_timestamp), greptime_timestamp DESC
+            )
             ),
             rates2 AS (
               SELECT
