@@ -603,6 +603,29 @@ TAGS = {
             },
         ),
     ),
+    "/interface/wifi/registration-table": Resource(
+        tag_props={
+            "interface",
+            "ssid",
+            "band",
+            "mac-address",
+            "auth-type",
+        },
+        field_types={
+            "uptime": to_duration,
+            "last-activity": to_duration,
+            "signal": to_int,
+            "tx-rate": to_int,
+            "rx-rate": to_int,
+            "packets": to_txrx,
+            "bytes": to_txrx,
+            "tx-bits-per-second": None,
+            "rx-bits-per-second": None,
+            "authorized": to_bool,
+            "mfp": to_bool,
+            "vlan-id": to_int,
+        },
+    ),
     "/interface/pptp-client": Resource(
         tag_props={
             "name",
