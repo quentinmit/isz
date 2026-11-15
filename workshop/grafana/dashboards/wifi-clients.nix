@@ -392,12 +392,21 @@
               $__timeFilter(greptime_timestamp)
             GROUP BY "mac-address"
           ), registrations AS (
-            SELECT DISTINCT
-              "mac-address"
-            FROM
-              mikrotik.":interface:wireless:registration-table"
-            WHERE
-              $__timeFilter(greptime_timestamp)
+            (
+              SELECT DISTINCT
+                "mac-address"
+              FROM
+                mikrotik.":interface:wireless:registration-table"
+              WHERE
+                $__timeFilter(greptime_timestamp)
+            ) UNION DISTINCT (
+              SELECT DISTINCT
+                "mac-address"
+              FROM
+                mikrotik.":interface:wifi:registration-table"
+              WHERE
+                $__timeFilter(greptime_timestamp)
+            )
           )
           SELECT
             CONCAT(
@@ -473,6 +482,13 @@
     panels = let
       interval = config.isz.telegraf.interval.mikrotik;
       nfInterval = config.isz.telegraf.interval.netflow;
+      regTables = args: [
+        ({
+          table = ":interface:wireless:registration-table";
+          filter.rate.values = [null];
+        } // args)
+        ({ table = ":interface:wifi:registration-table"; } // args)
+      ];
     in {
       lease-info = {
         spec.title = "";
@@ -540,20 +556,20 @@
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
         fields.rx-rate.custom.transform = "negative-Y";
-        greptime.database = "mikrotik";
-        greptime.table = ":interface:wireless:registration-table";
-        greptime.tags = [
-          "hostname"
-          "interface"
-          "mac-address"
-        ];
-        greptime.fields = [
-          "tx-rate"
-          "rx-rate"
-        ];
-        greptime.filter.mac-address = "\${macaddress}";
-        greptime.filter.rate.values = [null];
-        greptime.fn = "mean";
+        greptime = regTables {
+          database = "mikrotik";
+          tags = [
+            "hostname"
+            "interface"
+            "mac-address"
+          ];
+          fields = [
+            "tx-rate"
+            "rx-rate"
+          ];
+          filter.mac-address = "\${macaddress}";
+          fn = "mean";
+        };
       };
       throughput = {
         spec.title = "Throughput";
@@ -571,20 +587,20 @@
           displayName = "\${__field.labels.interface} \${__field.labels.mac-address}";
         };
         fields.rx-bytes.custom.transform = "negative-Y";
-        greptime.database = "mikrotik";
-        greptime.table = ":interface:wireless:registration-table";
-        greptime.tags = [
-          "hostname"
-          "interface"
-          "mac-address"
-        ];
-        greptime.fields = [
-          "tx-bytes"
-          "rx-bytes"
-        ];
-        greptime.filter.mac-address = "\${macaddress}";
-        greptime.filter.rate.values = [null];
-        greptime.fn = "derivative";
+        greptime = regTables {
+          database = "mikrotik";
+          tags = [
+            "hostname"
+            "interface"
+            "mac-address"
+          ];
+          fields = [
+            "tx-bytes"
+            "rx-bytes"
+          ];
+          filter.mac-address = "\${macaddress}";
+          fn = "derivative";
+        };
       };
       rssi-at-rate = {
         spec.title = "Signal Strength at Rate";
