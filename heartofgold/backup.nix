@@ -26,9 +26,11 @@
         "zpool/heartofgold/home/quentin/hog-data"
         "zpool/heartofgold/nix"
         "zpool/heartofgold/var/lib/bitmagnet"
+        "zpool/heartofgold/var/lib/postgresql/nobackup"
       ];
       # No need to send hourly snapshots offsite.
       includeSnaps = [
+        ".*_2026-11-06_07:00:06_hourly"
         ".*daily"
         ".*monthly"
       ];
