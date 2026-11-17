@@ -27,6 +27,11 @@
         "zpool/heartofgold/nix"
         "zpool/heartofgold/var/lib/bitmagnet"
       ];
+      # No need to send hourly snapshots offsite.
+      includeSnaps = [
+        ".*daily"
+        ".*monthly"
+      ];
     };
   };
 }

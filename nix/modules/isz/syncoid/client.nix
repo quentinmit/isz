@@ -29,6 +29,14 @@ in {
               type = lib.types.listOf lib.types.str;
               default = lib.mapAttrsToList (name: _: "${name}/nix") config.disko.devices.zpool;
             };
+            includeSnaps = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [
+                ".*hourly"
+                ".*daily"
+                ".*monthly"
+              ];
+            };
           };
         }));
         default = {};
@@ -88,13 +96,10 @@ in {
               "--debug"
               "--no-sync-snap"
               "--use-hold"
-              "--include-snaps=.*hourly"
-              "--include-snaps=.*daily"
-              "--include-snaps=.*monthly"
               #"--create-bookmark"
               #"--force-delete"
               "--identifier" targetName
-            ];
+            ] ++ (lib.map (x: "--include-snaps=${x}") target.includeSnaps);
             sendOptions = "Rw${lib.optionalString target.sendHolds "h"}${lib.concatMapStrings (name: " X ${name}") target.excludeDatasets}";
             recvOptions = "v u o canmount=off o secondarycache=none o mountpoint=/srv/backup/${config.networking.hostName}/${source} o com.sun:auto-snapshot=false o readonly=on";
             inherit source;
