@@ -1,16 +1,16 @@
 diff --git a/homeassistant/components/esphome/entity.py b/homeassistant/components/esphome/entity.py
-index b1c0c92c6e9..6b9ee80bbed 100644
+index 3f1239906d0..7d29aaf546f 100644
 --- a/homeassistant/components/esphome/entity.py
 +++ b/homeassistant/components/esphome/entity.py
-@@ -28,6 +28,7 @@ from homeassistant.helpers import (
- from homeassistant.helpers.device_registry import DeviceInfo
+@@ -30,6 +30,7 @@ from homeassistant.helpers import (
+ from homeassistant.helpers.device_registry import ChildDeviceInfo, DeviceInfo
  from homeassistant.helpers.entity import Entity
  from homeassistant.helpers.entity_platform import AddEntitiesCallback
 +from homeassistant.util import slugify
  
- from .const import DOMAIN
+ from .const import DOMAIN, TEMPERATURE_UNIT_MAP
  
-@@ -102,7 +103,7 @@ def async_static_info_updated(
+@@ -124,7 +125,7 @@ def async_static_info_updated(
      platform: entity_platform.EntityPlatform,
      async_add_entities: AddEntitiesCallback,
      info_type: type[_InfoT],
@@ -19,7 +19,7 @@ index b1c0c92c6e9..6b9ee80bbed 100644
      state_type: type[_StateT],
      infos: list[EntityInfo],
  ) -> None:
-@@ -184,7 +185,7 @@ def async_static_info_updated(
+@@ -206,7 +207,7 @@ def async_static_info_updated(
                  old_info.device_id,
                  info.device_id,
              )
@@ -28,7 +28,7 @@ index b1c0c92c6e9..6b9ee80bbed 100644
              add_entities.append(entity)
              continue
  
-@@ -249,7 +250,7 @@ def async_static_info_updated(
+@@ -278,7 +279,7 @@ def async_static_info_updated(
          )
  
          # Create new entity with the new device_id
@@ -37,7 +37,7 @@ index b1c0c92c6e9..6b9ee80bbed 100644
  
      _move_cached_states(states, moves)
  
-@@ -261,7 +262,7 @@ def async_static_info_updated(
+@@ -290,7 +291,7 @@ def async_static_info_updated(
              renamed_info := current_infos.pop((info.device_id, info.key), None)
          ) is None:
              new_entity_slots.add((info.device_id, info.key))
@@ -46,7 +46,7 @@ index b1c0c92c6e9..6b9ee80bbed 100644
              continue
          async_migrate_unique_id(
              ent_reg,
-@@ -308,7 +309,7 @@ async def platform_async_setup_entry(
+@@ -337,7 +338,7 @@ async def platform_async_setup_entry(
      async_add_entities: AddEntitiesCallback,
      *,
      info_type: type[_InfoT],
@@ -55,15 +55,15 @@ index b1c0c92c6e9..6b9ee80bbed 100644
      state_type: type[_StateT],
      info_filter: Callable[[_InfoT], bool] | None = None,
  ) -> None:
-@@ -451,7 +452,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
+@@ -480,7 +481,6 @@ ENTITY_CATEGORIES: EsphomeEnumMapper[EsphomeEntityCategory, EntityCategory | Non
  class EsphomeBaseEntity(Entity):
      """Define a base esphome entity."""
  
 -    _attr_has_entity_name = True
      _attr_should_poll = False
      _device_info: EsphomeDeviceInfo
-     device_entry: dr.DeviceEntry
-@@ -468,6 +468,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
+     device_entry: dr.AnyDeviceEntry
+@@ -497,6 +497,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
      def __init__(
          self,
          entry_data: RuntimeEntryData,
@@ -71,15 +71,15 @@ index b1c0c92c6e9..6b9ee80bbed 100644
          entity_info: EntityInfo,
          state_type: type[_StateT],
      ) -> None:
-@@ -484,6 +485,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
+@@ -513,6 +514,7 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
          self._key_unsubs: list[CALLBACK_TYPE] = []
          self._on_static_info_update(entity_info)
  
 +        device_name = device_info.name
-         # Determine the device connection based on whether this
-         # entity belongs to a sub device
-         if entity_info.device_id:
-@@ -493,11 +495,46 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
+         if entity_info.device_id in entry_data.child_device_ids:
+             # Entity belongs to a child of the main device
+             if TYPE_CHECKING:
+@@ -530,11 +532,46 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
                      (DOMAIN, f"{device_info.mac_address}_{entity_info.device_id}")
                  }
              )
@@ -126,7 +126,7 @@ index b1c0c92c6e9..6b9ee80bbed 100644
  
      @override
      async def async_added_to_hass(self) -> None:
-@@ -641,6 +678,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
+@@ -678,6 +715,8 @@ class EsphomeEntity(EsphomeBaseEntity, Generic[_InfoT, _StateT]):  # noqa: UP046
  class EsphomeAssistEntity(EsphomeBaseEntity):
      """Define a base entity for Assist Pipeline entities."""
  
@@ -136,10 +136,10 @@ index b1c0c92c6e9..6b9ee80bbed 100644
          """Initialize the binary sensor."""
          self._entry_data = entry_data
 diff --git a/homeassistant/components/esphome/manager.py b/homeassistant/components/esphome/manager.py
-index 2ea14059410..eb9e3b944d6 100644
+index 6b4a70dfc6c..5bee970aebf 100644
 --- a/homeassistant/components/esphome/manager.py
 +++ b/homeassistant/components/esphome/manager.py
-@@ -680,15 +680,6 @@ class ESPHomeManager:
+@@ -786,15 +786,6 @@ class ESPHomeManager:
          if device_info.name:
              reconnect_logic.name = device_info.name
  
@@ -152,10 +152,10 @@ index 2ea14059410..eb9e3b944d6 100644
 -                device_info.name,
 -                device_mac,
 -            )
-         # Build device_id_to_name mapping for efficient lookup
-         entry_data.device_id_to_name = {
-             sub_device.device_id: sub_device.name or device_info.name
-@@ -1263,7 +1254,7 @@ def _async_setup_device_registry(
+         _async_setup_device_registry(hass, entry, entry_data)
+ 
+         entry_data.async_update_device_state()
+@@ -1404,7 +1395,7 @@ def _async_setup_device_registry(
          config_entry_id=entry.entry_id,
          configuration_url=configuration_url,
          connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac_address)},
@@ -344,10 +344,10 @@ index b85dd04e6b7..c9ab2d537ea 100644
      assert state is not None
      assert state.state == STATE_UNAVAILABLE
 diff --git a/tests/components/esphome/test_camera.py b/tests/components/esphome/test_camera.py
-index 2f3966fe1f6..0989edc1c3d 100644
+index 0528b30b8e9..fca1bd2db83 100644
 --- a/tests/components/esphome/test_camera.py
 +++ b/tests/components/esphome/test_camera.py
-@@ -40,7 +40,7 @@ async def test_camera_single_image(
+@@ -39,7 +39,7 @@ async def test_camera_single_image(
          user_service=user_service,
          states=states,
      )
@@ -356,7 +356,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == CameraState.IDLE
  
-@@ -50,9 +50,9 @@ async def test_camera_single_image(
+@@ -49,9 +49,9 @@ async def test_camera_single_image(
      mock_client.request_single_image = _mock_camera_image
  
      client = await hass_client()
@@ -368,7 +368,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == CameraState.IDLE
  
-@@ -84,15 +84,15 @@ async def test_camera_single_image_unavailable_before_requested(
+@@ -83,15 +83,15 @@ async def test_camera_single_image_unavailable_before_requested(
          user_service=user_service,
          states=states,
      )
@@ -387,7 +387,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == STATE_UNAVAILABLE
  
-@@ -121,7 +121,7 @@ async def test_camera_single_image_unavailable_during_request(
+@@ -120,7 +120,7 @@ async def test_camera_single_image_unavailable_during_request(
          user_service=user_service,
          states=states,
      )
@@ -396,7 +396,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == CameraState.IDLE
  
-@@ -131,9 +131,9 @@ async def test_camera_single_image_unavailable_during_request(
+@@ -130,9 +130,9 @@ async def test_camera_single_image_unavailable_during_request(
      mock_client.request_single_image = _mock_camera_image
  
      client = await hass_client()
@@ -408,7 +408,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == STATE_UNAVAILABLE
  
-@@ -162,7 +162,7 @@ async def test_camera_stream(
+@@ -161,7 +161,7 @@ async def test_camera_stream(
          user_service=user_service,
          states=states,
      )
@@ -417,7 +417,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == CameraState.IDLE
      remaining_responses = 3
-@@ -178,9 +178,9 @@ async def test_camera_stream(
+@@ -177,9 +177,9 @@ async def test_camera_stream(
      mock_client.request_single_image = _mock_camera_image
  
      client = await hass_client()
@@ -429,7 +429,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == CameraState.IDLE
  
-@@ -218,16 +218,16 @@ async def test_camera_stream_unavailable(
+@@ -217,16 +217,16 @@ async def test_camera_stream_unavailable(
          user_service=user_service,
          states=states,
      )
@@ -449,7 +449,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == STATE_UNAVAILABLE
  
-@@ -254,7 +254,7 @@ async def test_camera_stream_with_disconnection(
+@@ -253,7 +253,7 @@ async def test_camera_stream_with_disconnection(
          user_service=user_service,
          states=states,
      )
@@ -458,7 +458,7 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == CameraState.IDLE
      remaining_responses = 3
-@@ -272,8 +272,8 @@ async def test_camera_stream_with_disconnection(
+@@ -271,8 +271,8 @@ async def test_camera_stream_with_disconnection(
      mock_client.request_single_image = _mock_camera_image
  
      client = await hass_client()
@@ -470,10 +470,10 @@ index 2f3966fe1f6..0989edc1c3d 100644
      assert state is not None
      assert state.state == STATE_UNAVAILABLE
 diff --git a/tests/components/esphome/test_climate.py b/tests/components/esphome/test_climate.py
-index 94b10a13377..437b6a04b7c 100644
+index cf655aeedfb..b354cb3b86d 100644
 --- a/tests/components/esphome/test_climate.py
 +++ b/tests/components/esphome/test_climate.py
-@@ -81,14 +81,14 @@ async def test_climate_entity(
+@@ -87,14 +87,14 @@ async def test_climate_entity(
          entity_info=entity_info,
          states=states,
      )
@@ -490,7 +490,7 @@ index 94b10a13377..437b6a04b7c 100644
          blocking=True,
      )
      mock_client.climate_command.assert_has_calls(
-@@ -133,14 +133,14 @@ async def test_climate_entity_with_step_and_two_point(
+@@ -180,14 +180,14 @@ async def test_climate_entity_with_step_and_two_point(
          entity_info=entity_info,
          states=states,
      )
@@ -507,7 +507,7 @@ index 94b10a13377..437b6a04b7c 100644
          blocking=True,
      )
  
-@@ -159,7 +159,7 @@ async def test_climate_entity_with_step_and_two_point(
+@@ -206,7 +206,7 @@ async def test_climate_entity_with_step_and_two_point(
          CLIMATE_DOMAIN,
          SERVICE_SET_TEMPERATURE,
          {
@@ -516,7 +516,7 @@ index 94b10a13377..437b6a04b7c 100644
              ATTR_HVAC_MODE: HVACMode.AUTO,
              ATTR_TARGET_TEMP_LOW: 20,
              ATTR_TARGET_TEMP_HIGH: 30,
-@@ -221,7 +221,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -268,7 +268,7 @@ async def test_climate_entity_with_step_and_target_temp(
          entity_info=entity_info,
          states=states,
      )
@@ -525,7 +525,7 @@ index 94b10a13377..437b6a04b7c 100644
      assert state is not None
      assert state.state == HVACMode.COOL
  
-@@ -229,7 +229,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -276,7 +276,7 @@ async def test_climate_entity_with_step_and_target_temp(
          CLIMATE_DOMAIN,
          SERVICE_SET_TEMPERATURE,
          {
@@ -534,7 +534,7 @@ index 94b10a13377..437b6a04b7c 100644
              ATTR_HVAC_MODE: HVACMode.AUTO,
              ATTR_TEMPERATURE: 25,
          },
-@@ -245,7 +245,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -292,7 +292,7 @@ async def test_climate_entity_with_step_and_target_temp(
              CLIMATE_DOMAIN,
              SERVICE_SET_TEMPERATURE,
              {
@@ -543,7 +543,7 @@ index 94b10a13377..437b6a04b7c 100644
                  ATTR_HVAC_MODE: HVACMode.AUTO,
                  ATTR_TARGET_TEMP_LOW: 20,
                  ATTR_TARGET_TEMP_HIGH: 30,
-@@ -257,7 +257,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -304,7 +304,7 @@ async def test_climate_entity_with_step_and_target_temp(
          CLIMATE_DOMAIN,
          SERVICE_SET_HVAC_MODE,
          {
@@ -552,7 +552,7 @@ index 94b10a13377..437b6a04b7c 100644
              ATTR_HVAC_MODE: HVACMode.HEAT,
          },
          blocking=True,
-@@ -276,7 +276,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -323,7 +323,7 @@ async def test_climate_entity_with_step_and_target_temp(
      await hass.services.async_call(
          CLIMATE_DOMAIN,
          SERVICE_SET_PRESET_MODE,
@@ -561,7 +561,7 @@ index 94b10a13377..437b6a04b7c 100644
          blocking=True,
      )
      mock_client.climate_command.assert_has_calls(
-@@ -293,7 +293,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -340,7 +340,7 @@ async def test_climate_entity_with_step_and_target_temp(
      await hass.services.async_call(
          CLIMATE_DOMAIN,
          SERVICE_SET_PRESET_MODE,
@@ -570,7 +570,7 @@ index 94b10a13377..437b6a04b7c 100644
          blocking=True,
      )
      mock_client.climate_command.assert_has_calls(
-@@ -304,7 +304,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -351,7 +351,7 @@ async def test_climate_entity_with_step_and_target_temp(
      await hass.services.async_call(
          CLIMATE_DOMAIN,
          SERVICE_SET_FAN_MODE,
@@ -579,7 +579,7 @@ index 94b10a13377..437b6a04b7c 100644
          blocking=True,
      )
      mock_client.climate_command.assert_has_calls(
-@@ -315,7 +315,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -362,7 +362,7 @@ async def test_climate_entity_with_step_and_target_temp(
      await hass.services.async_call(
          CLIMATE_DOMAIN,
          SERVICE_SET_FAN_MODE,
@@ -588,7 +588,7 @@ index 94b10a13377..437b6a04b7c 100644
          blocking=True,
      )
      mock_client.climate_command.assert_has_calls(
-@@ -326,7 +326,7 @@ async def test_climate_entity_with_step_and_target_temp(
+@@ -373,7 +373,7 @@ async def test_climate_entity_with_step_and_target_temp(
      await hass.services.async_call(
          CLIMATE_DOMAIN,
          SERVICE_SET_SWING_MODE,
@@ -597,7 +597,7 @@ index 94b10a13377..437b6a04b7c 100644
          blocking=True,
      )
      mock_client.climate_command.assert_has_calls(
-@@ -375,7 +375,7 @@ async def test_climate_entity_with_humidity(
+@@ -422,7 +422,7 @@ async def test_climate_entity_with_humidity(
          entity_info=entity_info,
          states=states,
      )
@@ -606,7 +606,7 @@ index 94b10a13377..437b6a04b7c 100644
      assert state is not None
      assert state.state == HVACMode.AUTO
      attributes = state.attributes
-@@ -387,7 +387,7 @@ async def test_climate_entity_with_humidity(
+@@ -434,7 +434,7 @@ async def test_climate_entity_with_humidity(
      await hass.services.async_call(
          CLIMATE_DOMAIN,
          SERVICE_SET_HUMIDITY,
@@ -615,7 +615,7 @@ index 94b10a13377..437b6a04b7c 100644
          blocking=True,
      )
      mock_client.climate_command.assert_has_calls(
-@@ -592,7 +592,7 @@ async def test_climate_entity_with_inf_value(
+@@ -639,7 +639,7 @@ async def test_climate_entity_with_inf_value(
          entity_info=entity_info,
          states=states,
      )
@@ -624,7 +624,7 @@ index 94b10a13377..437b6a04b7c 100644
      assert state is not None
      assert state.state == HVACMode.AUTO
      attributes = state.attributes
-@@ -651,7 +651,7 @@ async def test_climate_entity_attributes(
+@@ -698,7 +698,7 @@ async def test_climate_entity_attributes(
          entity_info=entity_info,
          states=states,
      )
@@ -633,7 +633,7 @@ index 94b10a13377..437b6a04b7c 100644
      assert state is not None
      assert state.state == HVACMode.COOL
      assert state.attributes == snapshot(name="climate-entity-attributes")
-@@ -682,7 +682,7 @@ async def test_climate_entity_attribute_current_temperature_unsupported(
+@@ -729,7 +729,7 @@ async def test_climate_entity_attribute_current_temperature_unsupported(
          entity_info=entity_info,
          states=states,
      )
@@ -814,10 +814,10 @@ index 940fae5cfef..f752105e18b 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
 diff --git a/tests/components/esphome/test_entity.py b/tests/components/esphome/test_entity.py
-index 40c1a8c78ee..9491962751a 100644
+index e7cc7c9d400..0b071ee06e6 100644
 --- a/tests/components/esphome/test_entity.py
 +++ b/tests/components/esphome/test_entity.py
-@@ -115,10 +115,10 @@ async def test_entities_removed(
+@@ -120,10 +120,10 @@ async def test_entities_removed(
      entry = mock_device.entry
      entry_id = entry.entry_id
      storage_key = f"esphome.{entry_id}"
@@ -830,7 +830,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert state is not None
      assert state.state == STATE_ON
  
-@@ -127,13 +127,13 @@ async def test_entities_removed(
+@@ -132,13 +132,13 @@ async def test_entities_removed(
  
      assert len(hass_storage[storage_key]["data"]["binary_sensor"]) == 2
  
@@ -847,7 +847,7 @@ index 40c1a8c78ee..9491962751a 100644
      )
      assert reg_entry is not None
      assert state.attributes[ATTR_RESTORED] is True
-@@ -155,13 +155,13 @@ async def test_entities_removed(
+@@ -160,13 +160,13 @@ async def test_entities_removed(
          entry=entry,
      )
      assert mock_device.entry.entry_id == entry_id
@@ -864,7 +864,7 @@ index 40c1a8c78ee..9491962751a 100644
      )
      assert reg_entry is None
      await hass.config_entries.async_unload(entry.entry_id)
-@@ -201,15 +201,15 @@ async def test_entities_removed_after_reload(
+@@ -206,15 +206,15 @@ async def test_entities_removed_after_reload(
      entry = mock_device.entry
      entry_id = entry.entry_id
      storage_key = f"esphome.{entry_id}"
@@ -883,7 +883,7 @@ index 40c1a8c78ee..9491962751a 100644
      )
      assert reg_entry is not None
  
-@@ -218,15 +218,15 @@ async def test_entities_removed_after_reload(
+@@ -223,15 +223,15 @@ async def test_entities_removed_after_reload(
  
      assert len(hass_storage[storage_key]["data"]["binary_sensor"]) == 2
  
@@ -902,7 +902,7 @@ index 40c1a8c78ee..9491962751a 100644
      )
      assert reg_entry is not None
  
-@@ -235,14 +235,14 @@ async def test_entities_removed_after_reload(
+@@ -240,14 +240,14 @@ async def test_entities_removed_after_reload(
  
      assert len(hass_storage[storage_key]["data"]["binary_sensor"]) == 2
  
@@ -920,7 +920,7 @@ index 40c1a8c78ee..9491962751a 100644
      )
      assert reg_entry is not None
  
-@@ -272,23 +272,23 @@ async def test_entities_removed_after_reload(
+@@ -277,23 +277,23 @@ async def test_entities_removed_after_reload(
              on_future.set_result(None)
  
      async_track_state_change_event(
@@ -948,7 +948,7 @@ index 40c1a8c78ee..9491962751a 100644
      )
      assert reg_entry is None
      assert await hass.config_entries.async_unload(entry.entry_id)
-@@ -322,7 +322,7 @@ async def test_entities_for_entire_platform_removed(
+@@ -327,7 +327,7 @@ async def test_entities_for_entire_platform_removed(
      entry = mock_device.entry
      entry_id = entry.entry_id
      storage_key = f"esphome.{entry_id}"
@@ -957,7 +957,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert state is not None
      assert state.state == STATE_ON
  
-@@ -331,10 +331,10 @@ async def test_entities_for_entire_platform_removed(
+@@ -336,10 +336,10 @@ async def test_entities_for_entire_platform_removed(
  
      assert len(hass_storage[storage_key]["data"]["binary_sensor"]) == 1
  
@@ -970,7 +970,7 @@ index 40c1a8c78ee..9491962751a 100644
      )
      assert reg_entry is not None
      assert state.attributes[ATTR_RESTORED] is True
-@@ -344,10 +344,10 @@ async def test_entities_for_entire_platform_removed(
+@@ -349,10 +349,10 @@ async def test_entities_for_entire_platform_removed(
          entry=entry,
      )
      assert mock_device.entry.entry_id == entry_id
@@ -983,7 +983,7 @@ index 40c1a8c78ee..9491962751a 100644
      )
      assert reg_entry is None
      await hass.config_entries.async_unload(entry.entry_id)
-@@ -374,7 +374,7 @@ async def test_entity_info_object_ids(
+@@ -379,7 +379,7 @@ async def test_entity_info_object_ids(
          entity_info=entity_info,
          states=states,
      )
@@ -992,7 +992,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert state is not None
  
  
-@@ -392,7 +392,7 @@ async def test_deep_sleep_device(
+@@ -397,7 +397,7 @@ async def test_deep_sleep_device(
              name="my binary_sensor",
          ),
          SensorInfo(
@@ -1001,7 +1001,7 @@ index 40c1a8c78ee..9491962751a 100644
              key=3,
              name="my sensor",
          ),
-@@ -408,29 +408,29 @@ async def test_deep_sleep_device(
+@@ -413,29 +413,29 @@ async def test_deep_sleep_device(
          states=states,
          device_info={"has_deep_sleep": True},
      )
@@ -1037,7 +1037,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert state is not None
      assert state.state == "123.0"
  
-@@ -441,19 +441,19 @@ async def test_deep_sleep_device(
+@@ -446,19 +446,19 @@ async def test_deep_sleep_device(
      mock_device.set_state(BinarySensorState(key=1, state=False, missing_state=False))
      mock_device.set_state(SensorState(key=3, state=56, missing_state=False))
      await hass.async_block_till_done()
@@ -1061,7 +1061,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert state is not None
      assert state.state == "56"
  
-@@ -461,23 +461,23 @@ async def test_deep_sleep_device(
+@@ -466,23 +466,23 @@ async def test_deep_sleep_device(
      await hass.async_block_till_done()
      await mock_device.mock_disconnect(False)
      await hass.async_block_till_done()
@@ -1089,7 +1089,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert state is not None
      assert state.state == STATE_ON
  
-@@ -506,7 +506,7 @@ async def test_esphome_device_without_friendly_name(
+@@ -511,7 +511,7 @@ async def test_esphome_device_without_friendly_name(
          states=states,
          device_info={"friendly_name": None},
      )
@@ -1098,18 +1098,16 @@ index 40c1a8c78ee..9491962751a 100644
      assert state is not None
      assert state.state == STATE_ON
  
-@@ -920,8 +920,8 @@ async def test_entity_friendly_names_with_empty_device_names(
+@@ -980,7 +980,7 @@ async def test_entity_friendly_names_with_empty_device_names(
      )
  
      # Check entity friendly name on sub-device with empty name
 -    # Since sub device has empty name, it falls back to main device name "Main device"
--    state_1 = hass.states.get("binary_sensor.main_device_motion_detected")
 +    # Since sub device has empty name, it falls back to main device name "test"
-+    state_1 = hass.states.get("binary_sensor.test_motion")
+     state_1 = hass.states.get(motion_entity_id)
      assert state_1 is not None
      # With has_entity_name, friendly name is "{device_name} {entity_name}"
-     # Since sub-device falls back to main device name: "Main Device Motion Detected"
-@@ -991,7 +991,7 @@ async def test_entity_switches_between_devices(
+@@ -1058,7 +1058,7 @@ async def test_entity_switches_between_devices(
      )
      assert main_device is not None
  
@@ -1118,7 +1116,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert sensor_entity is not None
      assert sensor_entity.device_id == main_device.id
  
-@@ -1022,7 +1022,7 @@ async def test_entity_switches_between_devices(
+@@ -1091,7 +1091,7 @@ async def test_entity_switches_between_devices(
      )
      assert sub_device_1 is not None
  
@@ -1127,7 +1125,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert sensor_entity is not None
      assert sensor_entity.device_id == sub_device_1.id
  
-@@ -1051,7 +1051,7 @@ async def test_entity_switches_between_devices(
+@@ -1122,7 +1122,7 @@ async def test_entity_switches_between_devices(
      )
      assert sub_device_2 is not None
  
@@ -1136,7 +1134,7 @@ index 40c1a8c78ee..9491962751a 100644
      assert sensor_entity is not None
      assert sensor_entity.device_id == sub_device_2.id
  
-@@ -1075,7 +1075,7 @@ async def test_entity_switches_between_devices(
+@@ -1146,7 +1146,7 @@ async def test_entity_switches_between_devices(
      await device.mock_connect()
  
      # Verify entity is back on main device
@@ -1145,7 +1143,20 @@ index 40c1a8c78ee..9491962751a 100644
      assert sensor_entity is not None
      assert sensor_entity.device_id == main_device.id
  
-@@ -1781,6 +1781,7 @@ async def test_entity_move_between_devices_carries_cached_state(
+@@ -1163,9 +1163,9 @@ async def test_entity_switches_between_devices(
+         ),
+         pytest.param(
+             DeviceRelation.CHILD,
+-            "binary_sensor.main_device_motion_sensor_motion",
+-            "binary_sensor.main_device_door_sensor_door",
+-            "binary_sensor.main_device_motion_sensor",
++            "binary_sensor.test_motion_sensor_motion",
++            "binary_sensor.test_door_sensor_door",
++            "binary_sensor.test_motion_sensor",
+             id="child",
+         ),
+     ],
+@@ -1871,6 +1871,7 @@ async def test_entity_move_between_devices_carries_cached_state(
          ("τιμή αισθητήρα", "binary_sensor.test_time_aisthetera"),
      ],
  )
@@ -1184,7 +1195,7 @@ index de3ccf28417..796b79ccdd9 100644
      assert state.state == "2024-04-24T00:00:00.001+00:00"
      assert state.attributes["event_type"] == "type1"
 diff --git a/tests/components/esphome/test_fan.py b/tests/components/esphome/test_fan.py
-index 763e95d3e6f..b2aff4d45d7 100644
+index 16af8d728f3..9f96bc42375 100644
 --- a/tests/components/esphome/test_fan.py
 +++ b/tests/components/esphome/test_fan.py
 @@ -65,14 +65,14 @@ async def test_fan_entity_with_all_features_old_api(
@@ -1365,7 +1376,7 @@ index 763e95d3e6f..b2aff4d45d7 100644
          blocking=True,
      )
      mock_client.fan_command.assert_has_calls(
-@@ -329,14 +329,14 @@ async def test_fan_entity_with_no_features_new_api(
+@@ -340,14 +340,14 @@ async def test_fan_entity_with_no_features_new_api(
          user_service=user_service,
          states=states,
      )
@@ -1382,7 +1393,7 @@ index 763e95d3e6f..b2aff4d45d7 100644
          blocking=True,
      )
      mock_client.fan_command.assert_has_calls([call(key=1, state=True, device_id=0)])
-@@ -345,7 +345,7 @@ async def test_fan_entity_with_no_features_new_api(
+@@ -356,7 +356,7 @@ async def test_fan_entity_with_no_features_new_api(
      await hass.services.async_call(
          FAN_DOMAIN,
          SERVICE_TURN_OFF,
@@ -1392,7 +1403,7 @@ index 763e95d3e6f..b2aff4d45d7 100644
      )
      mock_client.fan_command.assert_has_calls([call(key=1, state=False, device_id=0)])
 diff --git a/tests/components/esphome/test_light.py b/tests/components/esphome/test_light.py
-index 824d1e99391..8a7924a00bc 100644
+index 87d8690bbe1..a7e8be718ec 100644
 --- a/tests/components/esphome/test_light.py
 +++ b/tests/components/esphome/test_light.py
 @@ -69,14 +69,14 @@ async def test_light_on_off(
@@ -2138,10 +2149,10 @@ index 53639353f59..0b69826c181 100644
      )
      mock_client.lock_command.assert_has_calls([call(1, LockCommand.OPEN, device_id=0)])
 diff --git a/tests/components/esphome/test_manager.py b/tests/components/esphome/test_manager.py
-index 566a15ff7a6..562fe9a846a 100644
+index b133c01fa8d..793e90d57a7 100644
 --- a/tests/components/esphome/test_manager.py
 +++ b/tests/components/esphome/test_manager.py
-@@ -2400,10 +2400,6 @@ async def test_device_adds_friendly_name(
+@@ -2510,10 +2510,6 @@ async def test_device_adds_friendly_name(
          (dr.CONNECTION_NETWORK_MAC, device.entry.unique_id), device.entry.entry_id
      )
      assert dev.name == "Nofriendlyname"
@@ -2153,10 +2164,10 @@ index 566a15ff7a6..562fe9a846a 100644
  
      await device.mock_disconnect(True)
 diff --git a/tests/components/esphome/test_media_player.py b/tests/components/esphome/test_media_player.py
-index dc2936d32b2..3bac328c8e7 100644
+index e26ea919bc1..c373fd40e62 100644
 --- a/tests/components/esphome/test_media_player.py
 +++ b/tests/components/esphome/test_media_player.py
-@@ -86,7 +86,7 @@ async def test_media_player_entity(
+@@ -98,7 +98,7 @@ async def test_media_player_entity(
          user_service=user_service,
          states=states,
      )
@@ -2165,7 +2176,7 @@ index dc2936d32b2..3bac328c8e7 100644
      assert state is not None
      assert state.state == "paused"
  
-@@ -94,7 +94,7 @@ async def test_media_player_entity(
+@@ -106,7 +106,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_VOLUME_MUTE,
          {
@@ -2174,7 +2185,7 @@ index dc2936d32b2..3bac328c8e7 100644
              ATTR_MEDIA_VOLUME_MUTED: True,
          },
          blocking=True,
-@@ -108,7 +108,7 @@ async def test_media_player_entity(
+@@ -120,7 +120,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_VOLUME_MUTE,
          {
@@ -2183,7 +2194,7 @@ index dc2936d32b2..3bac328c8e7 100644
              ATTR_MEDIA_VOLUME_MUTED: True,
          },
          blocking=True,
-@@ -122,7 +122,7 @@ async def test_media_player_entity(
+@@ -134,7 +134,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_VOLUME_SET,
          {
@@ -2192,7 +2203,7 @@ index dc2936d32b2..3bac328c8e7 100644
              ATTR_MEDIA_VOLUME_LEVEL: 0.5,
          },
          blocking=True,
-@@ -136,7 +136,7 @@ async def test_media_player_entity(
+@@ -148,7 +148,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_MEDIA_PAUSE,
          {
@@ -2201,7 +2212,7 @@ index dc2936d32b2..3bac328c8e7 100644
          },
          blocking=True,
      )
-@@ -149,7 +149,7 @@ async def test_media_player_entity(
+@@ -161,7 +161,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_MEDIA_PLAY,
          {
@@ -2210,7 +2221,7 @@ index dc2936d32b2..3bac328c8e7 100644
          },
          blocking=True,
      )
-@@ -162,7 +162,7 @@ async def test_media_player_entity(
+@@ -174,7 +174,7 @@ async def test_media_player_entity(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_MEDIA_STOP,
          {
@@ -2219,7 +2230,7 @@ index dc2936d32b2..3bac328c8e7 100644
          },
          blocking=True,
      )
-@@ -340,7 +340,7 @@ async def test_media_player_entity_with_source(
+@@ -714,7 +714,7 @@ async def test_media_player_entity_with_source(
          user_service=user_service,
          states=states,
      )
@@ -2228,7 +2239,7 @@ index dc2936d32b2..3bac328c8e7 100644
      assert state is not None
      assert state.state == "playing"
  
-@@ -349,7 +349,7 @@ async def test_media_player_entity_with_source(
+@@ -723,7 +723,7 @@ async def test_media_player_entity_with_source(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2237,7 +2248,7 @@ index dc2936d32b2..3bac328c8e7 100644
                  ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
                  ATTR_MEDIA_CONTENT_ID: "media-source://local/xz",
              },
-@@ -373,7 +373,7 @@ async def test_media_player_entity_with_source(
+@@ -747,7 +747,7 @@ async def test_media_player_entity_with_source(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2246,7 +2257,7 @@ index dc2936d32b2..3bac328c8e7 100644
                  ATTR_MEDIA_CONTENT_TYPE: "audio/mp3",
                  ATTR_MEDIA_CONTENT_ID: "media-source://local/xy",
              },
-@@ -396,7 +396,7 @@ async def test_media_player_entity_with_source(
+@@ -771,7 +771,7 @@ async def test_media_player_entity_with_source(
          {
              "id": 1,
              "type": "media_player/browse_media",
@@ -2255,7 +2266,7 @@ index dc2936d32b2..3bac328c8e7 100644
          }
      )
      response = await client.receive_json()
-@@ -406,7 +406,7 @@ async def test_media_player_entity_with_source(
+@@ -781,7 +781,7 @@ async def test_media_player_entity_with_source(
          MEDIA_PLAYER_DOMAIN,
          SERVICE_PLAY_MEDIA,
          {
@@ -2264,7 +2275,7 @@ index dc2936d32b2..3bac328c8e7 100644
              ATTR_MEDIA_CONTENT_TYPE: MediaType.URL,
              ATTR_MEDIA_CONTENT_ID: "media-source://tts?message=hello",
              ATTR_MEDIA_ANNOUNCE: True,
-@@ -478,7 +478,7 @@ async def test_media_player_proxy(
+@@ -854,7 +854,7 @@ async def test_media_player_proxy(
          mock_device.entry.entry_id,
      )
      assert dev is not None
@@ -2273,7 +2284,7 @@ index dc2936d32b2..3bac328c8e7 100644
      assert state is not None
      assert state.state == "paused"
  
-@@ -495,7 +495,7 @@ async def test_media_player_proxy(
+@@ -871,7 +871,7 @@ async def test_media_player_proxy(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2282,7 +2293,7 @@ index dc2936d32b2..3bac328c8e7 100644
                  ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
                  ATTR_MEDIA_CONTENT_ID: media_url,
              },
-@@ -526,7 +526,7 @@ async def test_media_player_proxy(
+@@ -902,7 +902,7 @@ async def test_media_player_proxy(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2291,7 +2302,7 @@ index dc2936d32b2..3bac328c8e7 100644
                  ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
                  ATTR_MEDIA_CONTENT_ID: media_url,
                  ATTR_MEDIA_ANNOUNCE: True,
-@@ -556,7 +556,7 @@ async def test_media_player_proxy(
+@@ -932,7 +932,7 @@ async def test_media_player_proxy(
              MEDIA_PLAYER_DOMAIN,
              SERVICE_PLAY_MEDIA,
              {
@@ -2349,10 +2360,10 @@ index 02b58649fec..b0ef353086c 100644
          )
      mock_client.number_command.reset_mock()
 diff --git a/tests/components/esphome/test_repairs.py b/tests/components/esphome/test_repairs.py
-index 0dcabf0cd3a..83b455b2b74 100644
+index 8bb72077556..ab43bf48c6c 100644
 --- a/tests/components/esphome/test_repairs.py
 +++ b/tests/components/esphome/test_repairs.py
-@@ -132,12 +132,12 @@ async def test_device_conflict_migration(
+@@ -153,12 +153,12 @@ async def test_device_conflict_migration(
          user_service=user_service,
          states=states,
      )
@@ -2367,7 +2378,7 @@ index 0dcabf0cd3a..83b455b2b74 100644
      assert ent_reg_entry
      assert (
          ent_reg_entry.unique_id == "11:22:33:44:55:AA/0/binary_sensor/my binary_sensor"
-@@ -201,7 +201,7 @@ async def test_device_conflict_migration(
+@@ -229,7 +229,7 @@ async def test_device_conflict_migration(
      assert issue_registry.async_get_issue(DOMAIN, issue_id) is None
  
      assert mock_config_entry.unique_id == "11:22:33:44:55:ab"
@@ -2377,10 +2388,10 @@ index 0dcabf0cd3a..83b455b2b74 100644
      assert (
          ent_reg_entry.unique_id == "11:22:33:44:55:AB/0/binary_sensor/my binary_sensor"
 diff --git a/tests/components/esphome/test_select.py b/tests/components/esphome/test_select.py
-index 7de4dcd6aca..ec56c033f23 100644
+index 5238f32fb56..9202da4cbeb 100644
 --- a/tests/components/esphome/test_select.py
 +++ b/tests/components/esphome/test_select.py
-@@ -100,14 +100,14 @@ async def test_select_generic_entity(
+@@ -328,14 +328,14 @@ async def test_select_generic_entity(
          user_service=user_service,
          states=states,
      )
@@ -2398,10 +2409,10 @@ index 7de4dcd6aca..ec56c033f23 100644
      )
      mock_client.select_command.assert_has_calls([call(1, "b", device_id=0)])
 diff --git a/tests/components/esphome/test_sensor.py b/tests/components/esphome/test_sensor.py
-index adea7007c2c..98b9d4f1f77 100644
+index 2fa9d83c57d..e334ef0cf9d 100644
 --- a/tests/components/esphome/test_sensor.py
 +++ b/tests/components/esphome/test_sensor.py
-@@ -64,35 +64,35 @@ async def test_generic_numeric_sensor(
+@@ -68,35 +68,35 @@ async def test_generic_numeric_sensor(
          user_service=user_service,
          states=states,
      )
@@ -2442,7 +2453,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == "70"
  
-@@ -121,11 +121,11 @@ async def test_generic_numeric_sensor_with_entity_category_and_icon(
+@@ -125,11 +125,11 @@ async def test_generic_numeric_sensor_with_entity_category_and_icon(
          user_service=user_service,
          states=states,
      )
@@ -2456,7 +2467,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert entry is not None
      # Note that ESPHome includes the EntityInfo type in the unique id
      # as this is not a 1:1 mapping to the entity platform (ie. text_sensor)
-@@ -158,13 +158,13 @@ async def test_generic_numeric_sensor_state_class_measurement(
+@@ -162,13 +162,13 @@ async def test_generic_numeric_sensor_state_class_measurement(
          user_service=user_service,
          states=states,
      )
@@ -2472,7 +2483,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert entry is not None
      # Note that ESPHome includes the EntityInfo type in the unique id
      # as this is not a 1:1 mapping to the entity platform (ie. text_sensor)
-@@ -196,12 +196,12 @@ async def test_generic_numeric_sensor_state_class_measurement_angle(
+@@ -200,12 +200,12 @@ async def test_generic_numeric_sensor_state_class_measurement_angle(
          user_service=user_service,
          states=states,
      )
@@ -2487,7 +2498,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert entry is not None
      # Note that ESPHome includes the EntityInfo type in the unique id
      # as this is not a 1:1 mapping to the entity platform (ie. text_sensor)
-@@ -231,7 +231,7 @@ async def test_generic_numeric_sensor_device_class_timestamp(
+@@ -235,7 +235,7 @@ async def test_generic_numeric_sensor_device_class_timestamp(
          user_service=user_service,
          states=states,
      )
@@ -2496,7 +2507,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == "2023-06-22T18:43:52+00:00"
  
-@@ -286,7 +286,7 @@ async def test_generic_numeric_sensor_legacy_last_reset_convert(
+@@ -290,7 +290,7 @@ async def test_generic_numeric_sensor_legacy_last_reset_convert(
          user_service=user_service,
          states=states,
      )
@@ -2505,7 +2516,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == "50"
      assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL_INCREASING
-@@ -313,7 +313,7 @@ async def test_generic_numeric_sensor_no_state(
+@@ -317,7 +317,7 @@ async def test_generic_numeric_sensor_no_state(
          user_service=user_service,
          states=states,
      )
@@ -2514,7 +2525,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -339,7 +339,7 @@ async def test_generic_numeric_sensor_nan_state(
+@@ -343,7 +343,7 @@ async def test_generic_numeric_sensor_nan_state(
          user_service=user_service,
          states=states,
      )
@@ -2523,7 +2534,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -365,7 +365,7 @@ async def test_generic_numeric_sensor_missing_state(
+@@ -369,7 +369,7 @@ async def test_generic_numeric_sensor_missing_state(
          user_service=user_service,
          states=states,
      )
@@ -2532,7 +2543,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -391,7 +391,7 @@ async def test_generic_text_sensor(
+@@ -395,7 +395,7 @@ async def test_generic_text_sensor(
          user_service=user_service,
          states=states,
      )
@@ -2541,7 +2552,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == "i am a teapot"
  
-@@ -417,7 +417,7 @@ async def test_generic_text_sensor_missing_state(
+@@ -421,7 +421,7 @@ async def test_generic_text_sensor_missing_state(
          user_service=user_service,
          states=states,
      )
@@ -2550,7 +2561,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
  
-@@ -444,7 +444,7 @@ async def test_generic_text_sensor_device_class_timestamp(
+@@ -448,7 +448,7 @@ async def test_generic_text_sensor_device_class_timestamp(
          user_service=user_service,
          states=states,
      )
@@ -2559,7 +2570,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == "2023-06-22T18:43:52+00:00"
      assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TIMESTAMP
-@@ -472,7 +472,7 @@ async def test_generic_text_sensor_device_class_date(
+@@ -476,7 +476,7 @@ async def test_generic_text_sensor_device_class_date(
          user_service=user_service,
          states=states,
      )
@@ -2568,7 +2579,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == "2023-06-22"
      assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.DATE
-@@ -500,7 +500,7 @@ async def test_generic_numeric_sensor_empty_string_uom(
+@@ -504,7 +504,7 @@ async def test_generic_numeric_sensor_empty_string_uom(
          user_service=user_service,
          states=states,
      )
@@ -2577,7 +2588,7 @@ index adea7007c2c..98b9d4f1f77 100644
      assert state is not None
      assert state.state == "123"
      assert ATTR_UNIT_OF_MEASUREMENT not in state.attributes
-@@ -558,8 +558,8 @@ async def test_suggested_display_precision_by_device_class(
+@@ -562,10 +562,10 @@ async def test_suggested_display_precision_by_device_class(
          states=states,
      )
  
@@ -2588,6 +2599,8 @@ index adea7007c2c..98b9d4f1f77 100644
 -        async_rounded_state(hass, "sensor.test_my_sensor", state)
 +        async_rounded_state(hass, "sensor.test_mysensor", state)
      ) == pytest.approx(round(state_value, expected_precision))
+ 
+ 
 diff --git a/tests/components/esphome/test_switch.py b/tests/components/esphome/test_switch.py
 index 2d054a7317d..b3238445bb5 100644
 --- a/tests/components/esphome/test_switch.py
@@ -2686,10 +2699,10 @@ index 176510d4e65..812faeeb2c1 100644
      assert state is not None
      assert state.state == STATE_UNKNOWN
 diff --git a/tests/components/esphome/test_update.py b/tests/components/esphome/test_update.py
-index c29606fdff1..2bf635b5593 100644
+index 24b34bc74e5..7a29cc88d4a 100644
 --- a/tests/components/esphome/test_update.py
 +++ b/tests/components/esphome/test_update.py
-@@ -38,7 +38,7 @@ from tests.typing import WebSocketGenerator
+@@ -52,7 +52,7 @@ async def _async_dashboard_poll(hass: HomeAssistant) -> None:
  
  RELEASE_SUMMARY = "This is a release summary"
  RELEASE_URL = "https://esphome.io/changelog"
