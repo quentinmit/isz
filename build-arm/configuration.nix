@@ -71,7 +71,9 @@
   boot = {
     # TODO: Add config from https://github.com/armbian/build/blob/ca4dc8085a50e65158fc788800b1423cd7334fb5/config/kernel/linux-rockchip-rk3588-edge.config
 
-    kernelPackages = pkgs.linuxKernel.packages.linux_7_2;
+    kernelPackages = pkgs.linuxKernel.packages.linux_7_3;
+
+    zfs.package = pkgs.zfs_patched;
 
     zfs.forceImportRoot = false;
 

@@ -239,4 +239,23 @@ in {
         hash = "sha256-2E6Z7s/ZQuEbufroKiwHxK1pjUO/hdJ1F29cTfHtNcA=";
       };
     });
+  zfs_patched = final.callPackage ./zfs_patched {
+    configFile = "user";
+  };
+  kernelPackagesExtensions = prev.kernelPackagesExtensions ++ [(kernel-final: kernel-prev: {
+    zfs_patched = final.callPackage ./zfs_patched {
+      configFile = "kernel";
+      pkgs = final;
+      inherit (kernel-final) kernel;
+    };
+  })];
+  nixosTests = prev.nixosTests // {
+    zfs = prev.nixosTests.zfs // {
+      patched = prev.nixosTests.zfs.unstable.extendNixOS {
+        module = {
+          boot.zfs.package = lib.mkForce final.zfs_patched;
+        };
+      };
+    };
+  };
 }
