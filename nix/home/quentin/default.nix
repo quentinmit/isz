@@ -451,7 +451,7 @@ in {
         # Add secrets with
         # envchain --set hass-cli HASS_SERVER HASS_TOKEN
         (writeShellScriptBin "hass-cli" ''
-          exec ${lib.getExe envchain} ${lib.getExe home-assistant-cli} "$@"
+          exec ${lib.getExe envchain} hass-cli ${lib.getExe home-assistant-cli} "$@"
         '')
       ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         sockdump
