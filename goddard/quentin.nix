@@ -39,7 +39,6 @@
         xgpro
         (
           (pkgs.extend affinity-nix.overlays.default)
-            .extend (self: super: { inherit (self.unstable) msitools; })
         ).affinity-v3
         mathematica
       ];
