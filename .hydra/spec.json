@@ -1,0 +1,35 @@
+{
+  "enabled": 1,
+  "hidden": false,
+  "description": "jobset evaluation",
+  "nixexprinput": "nixexpr",
+  "nixexprpath": ".hydra/jobsets.nix",
+  "checkinterval": 1200,
+  "schedulingshares": 100,
+  "enableemail": false,
+  "emailoverride": "",
+  "keepnr": 1,
+  "type": 0,
+  "inputs": {
+    "nixexpr": {
+      "value": "https://github.com/quentinmit/isz main",
+      "type": "git",
+      "emailresponsible": false
+    },
+    "nixpkgs": {
+        "value": "https://github.com/NixOS/nixpkgs ab5c18fdedfc8f9bbc9d773f10a540790e2787a7",
+      "type": "git",
+      "emailresponsible": false
+    },
+    "refs": {
+      "type": "github_refs",
+      "value": "quentinmit isz heads",
+      "emailresponsible": false
+    },
+    "pulls": {
+      "type": "githubpulls",
+      "value": "quentinmit isz",
+      "emailresponsible": false
+    }
+  }
+}
