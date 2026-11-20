@@ -227,6 +227,22 @@ in {
             (findSource "google")
           ];
         }
+        {
+          model = "authentik_providers_oauth2.scopemapping";
+          identifiers.managed = "isz.wtf/email";
+          attrs.name = "ISZ email claim";
+          attrs.scope_name = "email";
+          attrs.description = "Email address";
+          attrs.expression = ''return {"email": request.user.email}'';
+        }
+        {
+          model = "authentik_providers_oauth2.scopemapping";
+          identifiers.managed = "isz.wtf/nbf/zero";
+          attrs.name = "ISZ zero nbf value";
+          attrs.scope_name = "openid";
+          attrs.description = "";
+          attrs.expression = ''return {"nbf": 0}'';
+        }
         # Applications
       ]
       ++ lib.mapAttrsToList (managed: attrs: {

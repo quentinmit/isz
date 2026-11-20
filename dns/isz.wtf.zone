@@ -26,6 +26,7 @@ homebox          CNAME workshop.mgmt
 arr              CNAME heartofgold
 greptimedb       CNAME workshop.mgmt
 spoolman         CNAME workshop.mgmt
+hydra            CNAME workshop.mgmt
 
 mnemosyne        CNAME quentin.zfs.rent.
 

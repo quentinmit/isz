@@ -172,6 +172,16 @@ in {
                   client_secret = lib.mkIf (sopsPlaceholder ? "authentik/apps/${config.slug}/client_secret") sopsPlaceholder."authentik/apps/${config.slug}/client_secret";
                   client_type = "confidential";
 
+                  grant_types = [
+                    "authorization_code"
+                    "implicit"
+                    "hybrid"
+                    "refresh_token"
+                    "client_credentials"
+                    "password"
+                    "urn:ietf:params:oauth:grant-type:device_code"
+                  ];
+
                   include_claims_in_id_token = true;
                   issuer_mode = "per_provider";
                   property_mappings = map findScope config.properties;

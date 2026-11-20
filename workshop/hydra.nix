@@ -1,76 +1,33 @@
-{ config, lib, pkgs, ...}:
-let
-  # From nixos/modules/config/nix-remote-build.nix
-  mkBuildMachinesText = let
-    inherit (lib) concatMapStrings concatStringsSep optional optionalString;
-    isNixAtLeast = lib.versionAtLeast (lib.getVersion config.nix.package);
-  in concatMapStrings (
-    machine:
-    (concatStringsSep " " (
-      [
-        "${optionalString (machine.protocol != null) "${machine.protocol}://"}${
-          optionalString (machine.sshUser != null) "${machine.sshUser}@"
-        }${machine.hostName}"
-        (
-          if machine.system != null then
-            machine.system
-          else if machine.systems != [ ] then
-            concatStringsSep "," machine.systems
-          else
-            "-"
-        )
-        (if machine.sshKey != null then machine.sshKey else "-")
-        (toString machine.maxJobs)
-        (toString machine.speedFactor)
-        (
-          let
-            res = (machine.supportedFeatures ++ machine.mandatoryFeatures);
-          in
-          if (res == [ ]) then "-" else (concatStringsSep "," res)
-        )
-        (
-          let
-            res = machine.mandatoryFeatures;
-          in
-          if (res == [ ]) then "-" else (concatStringsSep "," machine.mandatoryFeatures)
-        )
-      ]
-      ++ optional (isNixAtLeast "2.4pre") (
-        if machine.publicHostKey != null then machine.publicHostKey else "-"
-      )
-    ))
-    + "\n"
-  );
-in {
-  sops.secrets."nix/builders/build-arm/id_ed25519" = {};
+{ config, lib, pkgs, channels, ...}:
+{
+  # Remove unstable overrides when nixpkgs is 26.11
+  disabledModules = [
+    "services/continuous-integration/hydra/default.nix"
+  ];
+  imports = [
+    "${channels.unstable}/nixos/modules/services/continuous-integration/hydra/default.nix"
+    "${channels.unstable}/nixos/modules/services/continuous-integration/hydra/builder.nix"
+  ];
+  services.hydra.package = assert (!lib.versionAtLeast pkgs.hydra.version "0-unstable-2026-11-03"); pkgs.unstable.hydra;
+  services.hydra.evaluatorPackage = pkgs.unstable.hydra-evaluator;
+  services.hydra.queueRunner.package = pkgs.unstable.hydra-queue-runner;
+  services.hydra.ws.package = pkgs.unstable.hydra-ws;
+  services.hydra-builder.package = pkgs.unstable.hydra-builder;
+
+  sops.secrets."hydra/tokens/workshop".owner = "hydra-queue-runner";
+  sops.secrets."hydra/tokens/build-arm" = {
+    owner = "hydra-queue-runner";
+    sopsFile = ../build-arm/shared-secrets.yaml;
+  };
+
   services.hydra = {
     enable = true;
     hydraURL = "https://hydra.isz.wtf";
-    listenHost = "localhost";
     notificationSender = "hydra@isz.wtf";
-    minimumDiskFree = 250;
     useSubstitutes = true;
-    buildMachinesFiles = [
-      (pkgs.writeText "hydra-build-machines" (mkBuildMachinesText [
-        {
-          hostName = "build-arm.isz.wtf";
-          sshUser = "hydra-workshop";
-          sshKey = config.sops.secrets."nix/builders/build-arm/id_ed25519".path;
-          publicHostKey = "c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUxlZ1prVTBwNGtQTzdXNFZUdE1RaWRJTERoNzJPRFBFTXZoQWJDUnJHKzEgcm9vdEBidWlsZC1hcm0K";
-          protocol = "ssh-ng";
-          systems = [
-            "aarch64-linux"
-            "armv7l-linux"
-            "armv8l-linux"
-          ];
-          maxJobs = 4;
-          supportedFeatures = [
-            "big-parallel"
-          ];
-        }
-      ]))
-    ];
+    minimumDiskFree = 250; # GiB
     extraConfig = ''
+      ws_endpoint = "wss://hydra.isz.wtf/ws"
       <hydra_notify>
         <prometheus>
           listen_address = 127.0.0.1
@@ -78,18 +35,42 @@ in {
         </prometheus>
       </hydra_notify>
     '';
+    queueRunner.grpc.address = "[::]";
+    ws.enable = true;
+    ws.bind.unixSocket = "/run/hydra-ws.sock";
+    queueRunner.settings.tokenPaths = lib.map (x: config.sops.secrets."hydra/tokens/${x}".path) [
+      "workshop"
+      "build-arm"
+    ];
   };
+  systemd.sockets.hydra-ws.socketConfig = {
+    SocketUser = "nginx";
+    SocketMode = "0600";
+  };
+  sops.secrets."hydra-builder/token" = {
+    owner = "hydra-builder";
+    key = "hydra/tokens/workshop";
+  };
+  services.hydra-builder = {
+    enable = true;
+    settings.buildDirAvailThreshold = 25.0; # percent
+    authorizationFile = config.sops.secrets."hydra-builder/token".path;
+    queueRunnerAddr = "http://hydra.isz.wtf:50051";
+  };
+  # TODO: Consider collecting statsd info from Hydra
   isz.telegraf.prometheus.apps = {
     hydra-notify.url = "http://localhost:9199/metrics";
-    hydra-queue-runner.port = "http://localhost:9198/metrics";
+    hydra-queue-runner.url = "http://localhost:9198/metrics";
   };
-  nix.trustedUsers = ["hydra" "hydra-evaluator" "hydra-queue-runner"];
+  nix.settings.trusted-users = ["hydra" "hydra-evaluator" "hydra-queue-runner"];
   services.nginx = {
     upstreams.hydra.servers."localhost:${toString config.services.hydra.port}" = {};
+    upstreams.hydra-ws.servers."unix:${config.services.hydra.ws.bind.unixSocket}" = {};
     virtualHosts."hydra.isz.wtf" = {
       forceSSL = true;
       enableACME = true;
       locations."/".proxyPass = "http://hydra";
+      locations."/ws".proxyPass = "http://hydra-ws";
     };
   };
 }
