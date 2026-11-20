@@ -3,6 +3,7 @@
   imports = [
     ./disko.nix
     ./nix-daemon.nix
+    ./hydra.nix
     disko.nixosModules.disko
   ];
 
