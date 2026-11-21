@@ -2,13 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, nixos-hardware, disko, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      disko.nixosModules.disko
       ./disko.nix
       ./nginx.nix
       ./mail.nix
@@ -36,8 +35,8 @@
       ./greptimedb.nix
       ./spoolman.nix
       ./hydra.nix
-      nixos-hardware.nixosModules.common-cpu-amd
-      nixos-hardware.nixosModules.common-cpu-amd-pstate
+      inputs.nixos-hardware.nixosModules.common-cpu-amd
+      inputs.nixos-hardware.nixosModules.common-cpu-amd-pstate
     ];
 
   sops.defaultSopsFile = ./secrets.yaml;

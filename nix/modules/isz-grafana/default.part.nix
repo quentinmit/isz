@@ -1,4 +1,5 @@
-{ config, options, pkgs, channels, lib, ... }:
+{ inputs, ... }:
+{ config, options, pkgs, lib, ... }:
 with import ./lib.nix { inherit config pkgs lib; };
 let
   cfg = config.isz.grafana;
@@ -6,7 +7,7 @@ in {
   imports = [
     ./V2.nix
     ./munin.nix
-    "${channels.unstable}/nixos/modules/services/monitoring/grafana.nix"
+    "${inputs.unstable}/nixos/modules/services/monitoring/grafana.nix"
   ];
   disabledModules = [
     "services/monitoring/grafana.nix"

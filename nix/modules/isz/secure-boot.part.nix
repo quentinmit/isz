@@ -1,7 +1,8 @@
-{ config, lib, pkgs, lanzaboote, ... }:
+{ inputs, ... }:
+{ config, lib, pkgs, ... }:
 {
   imports = [
-    lanzaboote.nixosModules.lanzaboote
+    inputs.lanzaboote.nixosModules.lanzaboote
   ];
   options = with lib; {
     isz.secureBoot.enable = mkEnableOption "secure boot";

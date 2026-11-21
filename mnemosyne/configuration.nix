@@ -1,8 +1,7 @@
-{ config, lib, pkgs, disko, modulesPath, ... }:
+{ config, lib, pkgs, modulesPath, ... }:
 {
   imports = [
     (modulesPath + "/profiles/qemu-guest.nix")
-    disko.nixosModules.disko
     ./disko.nix
     ./wireguard.nix
     ./backup.nix

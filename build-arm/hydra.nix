@@ -1,8 +1,8 @@
-{ config, lib, pkgs, channels, ...}:
+{ config, lib, pkgs, inputs, ...}:
 {
   # Remove unstable overrides when nixpkgs is 26.11
   imports = [
-    "${channels.unstable}/nixos/modules/services/continuous-integration/hydra/builder.nix"
+    "${inputs.unstable}/nixos/modules/services/continuous-integration/hydra/builder.nix"
   ];
   services.hydra-builder.package = assert (!lib.versionAtLeast pkgs.hydra.version "0-unstable-2026-11-03"); pkgs.unstable.hydra-builder;
 

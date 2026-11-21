@@ -1,12 +1,12 @@
 {
   inputs = {
+    flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
     };
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-26.05";
-    nixpkgs-23_05.url = "nixpkgs/nixos-23.05";
     nixpkgs-25_05.url = "nixpkgs/nixos-25.05";
     unstable.url = "nixpkgs/nixos-unstable";
     #"github:quentinmit/nixpkgs/xquartz";
@@ -47,6 +47,7 @@
     authentik.url = "github:nix-community/authentik-nix";
     authentik.inputs.flake-utils.follows = "flake-utils";
     authentik.inputs.flake-compat.follows = "flake-compat";
+    authentik.inputs.flake-parts.follows = "flake-parts";
     bluechips.url = "github:quentinmit/bluechips";
     bluechips.inputs.nixpkgs.follows = "nixpkgs";
     bluechips.inputs.flake-utils.follows = "flake-utils";
@@ -61,6 +62,7 @@
     oom-hardware.url = "github:robertjakub/oom-hardware/main";
     nixos-inventree.url = "github:Gigahawk/nixos-inventree";
     nixos-inventree.inputs.nixpkgs.follows = "unstable";
+    nixos-inventree.inputs.flake-parts.follows = "flake-parts";
     chemacs2nix.url = "github:league/chemacs2nix";
     chemacs2nix.inputs.home-manager.follows = "home-manager";
     chemacs2nix.inputs.pre-commit-hooks.follows = "";
@@ -69,79 +71,215 @@
     nixos-avf.url = "github:nix-community/nixos-avf";
     nixos-avf.inputs.nixpkgs.follows = "nixpkgs";
     affinity-nix.url = "github:mrshmllow/affinity-nix";
+    affinity-nix.inputs.flake-parts.follows = "flake-parts";
     dsd-fme.url = "github:lwvmobile/dsd-fme";
+    dsd-fme.inputs.flake-parts.follows = "flake-parts";
     wrap.url = "github:rti/nixwrap";
     wrap.inputs.nixpkgs.follows = "nixpkgs";
     wrap.inputs.flake-utils.follows = "flake-utils";
   };
-  outputs = { self, darwin, nixpkgs, nixpkgs-23_05, nixpkgs-25_05, unstable, sops-nix, flake-compat, flake-utils, home-manager, nixos-hardware, deploy-rs, cargo2nix, py-profinet, Jovian-NixOS, bluechips, mosh-server-upnp, gradle2nix, ... }@args:
-    let
-      overlay = final: prev: {
-        pkgsNativeGnu64 = import nixpkgs { system = "x86_64-linux"; };
-        unstable = import unstable {
-          inherit (final.stdenv.hostPlatform) system;
-          inherit (final) config;
-          overlays = [
-            self.overlays.new
-            #self.overlays.stable
-            self.overlays.unstable
-            py-profinet.overlays.default
-            Jovian-NixOS.overlays.default
-            bluechips.overlays.default
-          ];
-        };
-        nixpkgs-25_05 = import nixpkgs-25_05 {
-          inherit (final.stdenv.hostPlatform) system;
-          overlays = [(final: prev: {
-            inherit (gradle2nix.packages.${final.stdenv.hostPlatform.system or "x86_64-linux"}) gradle2nix;
-          })];
-        };
-        inherit (gradle2nix.packages.${final.stdenv.hostPlatform.system or "x86_64-linux"}) gradle2nix;
+  outputs = inputs@{ flake-parts, ... }:
+    # https://flake.parts/module-arguments.html
+    flake-parts.lib.mkFlake { inherit inputs; } (top@{ config, withSystem, moduleWithSystem, lib, self, ... }: let
+      importArgs = {
+        inherit
+          self
+          inputs
+          top
+          moduleWithSystem
+          importFlakeModule
+        ;
       };
-      overlays = [
-        overlay
-        self.overlays.new
-        self.overlays.stable
-        self.overlays.stable-darwin
-        self.overlays.mosh-server-upnp
-        cargo2nix.overlays.default
-        deploy-rs.overlays.default
-      ];
-      # Overlays-module makes "pkgs.unstable" available in configuration.nix
-      overlayModule = { config, pkgs, ... }: {
-        nixpkgs.overlays = overlays;
-      };
-      specialArgs = args // {
-        channels = { inherit nixpkgs unstable; };
-      };
+      importFlakeModule = path: lib.modules.importApply path importArgs;
       findModules = dir:
         builtins.concatLists (builtins.attrValues (builtins.mapAttrs
           (name: type:
-            if type == "regular" then let
-              m = builtins.match "(.*)\\.nix" name;
-            in nixpkgs.lib.optional (m != null) {
-              name = builtins.elemAt m 0;
-              value = dir + "/${name}";
-            } else if (
-              builtins.readDir (dir + "/${name}"))
-            ? "default.nix" then [{
-              inherit name;
-              value = dir + "/${name}";
-            }]
-            else
-              (map
-                (e: e // {name = "${name}/${e.name}";})
-                (findModules (dir + "/${name}"))
-              )
+            if type == "regular" then (
+              if lib.hasSuffix ".part.nix" name then
+                [{
+                  name = lib.removeSuffix ".part.nix" name;
+                  value = importFlakeModule (dir + "/${name}");
+                }]
+              else if lib.hasSuffix ".nix" name then
+                [{
+                  name = lib.removeSuffix ".nix" name;
+                  value = dir + "/${name}";
+                }]
+              else null
+            ) else if type == "directory" then (let
+              contents = builtins.readDir (dir + "/${name}");
+              in if contents ? "default.nix" then [{
+                inherit name;
+                value = dir + "/${name}";
+              }] else if contents ? "default.part.nix" then [{
+                inherit name;
+                value = importFlakeModule (dir + "/${name}/default.part.nix");
+              }]
+              else
+                (map
+                  (e: e // {name = "${name}/${e.name}";})
+                  (findModules (dir + "/${name}"))
+                )
+            ) else []
           ) (builtins.readDir dir)));
-    in (flake-utils.lib.eachDefaultSystem (system:
-      let inherit ((
-            import nixpkgs {
-              inherit system;
-              inherit overlays;
-              config.allowUnfree = true;
-            })) pkgs;
-      in {
+    in {
+      debug = true;
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+      flake = {
+        overlays.multiVersion = final: prev: {
+          pkgsNativeGnu64 = import inputs.nixpkgs { system = "x86_64-linux"; };
+          unstable = import inputs.unstable {
+            inherit (final.stdenv.hostPlatform) system;
+            inherit (final) config;
+            overlays = [
+              self.overlays.newPackages
+              #self.overlays.stable
+              self.overlays.unstable
+              inputs.py-profinet.overlays.default
+              inputs.Jovian-NixOS.overlays.default
+              inputs.bluechips.overlays.default
+            ];
+          };
+          inherit (inputs.gradle2nix.packages.${final.stdenv.hostPlatform.system or "x86_64-linux"}) gradle2nix;
+        };
+        overlays.newPackages = import ./nix/pkgs/all-packages.nix;
+        overlays.stable = import ./nix/pkgs/overlays.nix;
+        overlays.stable-darwin = import ./nix/pkgs/darwin-overlays.nix;
+        overlays.mosh-server-upnp = final: prev: {
+          mosh-server-upnp = final.callPackage inputs.mosh-server-upnp.flakes.args.packages.mosh-server-upnp {};
+        };
+        overlays.default = lib.composeManyExtensions [
+          self.overlays.multiVersion
+          self.overlays.newPackages
+          self.overlays.stable
+          self.overlays.stable-darwin
+          self.overlays.mosh-server-upnp
+          inputs.cargo2nix.overlays.default
+          inputs.deploy-rs.overlays.default
+        ];
+        overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
+        nixosModules = {
+          overlays = { ... }: {
+            nixpkgs.overlays = [
+              self.overlays.default
+            ];
+          };
+        } // builtins.listToAttrs (findModules ./nix/modules);
+        darwinModules = builtins.listToAttrs (findModules ./nix/darwin);
+        homeModules = builtins.listToAttrs (findModules ./nix/home);
+
+        nixosConfigurations = (lib.genAttrs [
+          "atlas.comclub.org"
+          "bedroom-pi"
+          "build-arm"
+          "droid"
+          "goddard"
+          "goddard/afs"
+          "heartofgold"
+          "mnemosyne"
+          "rascsi"
+          "uconsole"
+          "workshop"
+        ] (name: inputs.nixpkgs.lib.nixosSystem {
+          modules = (builtins.attrValues self.nixosModules) ++ [
+            ./${name}/configuration.nix
+            inputs.disko.nixosModules.disko
+          ];
+          specialArgs = {
+            inherit self inputs;
+          };
+        })) // {
+          atlas = self.nixosConfigurations."atlas.comclub.org";
+          uconsole-unstable = inputs.unstable.lib.nixosSystem {
+            modules = [ #(builtins.attrValues self.nixosModules) ++ [
+              self.nixosModules.base
+              self.nixosModules.sshd-sops
+              self.nixosModules.telegraf
+              {
+                nixpkgs.overlays = [
+                  self.overlays.multiVersion
+                  self.overlays.new
+                  self.overlays.stable
+                  self.overlays.unstable
+                  self.overlays.mosh-server-upnp
+                ];
+              }
+              ./uconsole/configuration.nix
+            ];
+          };
+        };
+        darwinConfigurations.mac = inputs.darwin.lib.darwinSystem {
+          system = "x86_64-darwin";
+          modules = (builtins.attrValues self.darwinModules) ++ [
+            self.nixosModules.overlays
+            ./mac/configuration.nix
+          ];
+        };
+        homeConfigurations.deck = inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = import inputs.nixpkgs {
+            system = "x86_64-linux";
+          };
+          modules = (builtins.attrValues self.homeModules) ++ [
+            self.nixosModules.overlays
+            ./steamdeck/deck.nix
+          ];
+        };
+        deploy.nodes = (lib.genAttrs [
+          "atlas"
+          "atlas.comclub.org"
+          "bedroom-pi"
+          "build-arm"
+          "droid"
+          "heartofgold"
+          "mnemosyne"
+          "rascsi"
+          "uconsole"
+          "workshop"
+        ] (name: let
+          cfg = self.nixosConfigurations.${name};
+          in {
+            sshUser = "root";
+            hostname = cfg.config.networking.fqdn;
+            profiles.system.path = inputs.deploy-rs.lib.${cfg.pkgs.stdenv.hostPlatform.system}.activate.nixos cfg;
+          })) // {
+            steamdeck = {
+              hostname = "steamdeck.isz.wtf";
+              # sshOpts doesn't work because of https://github.com/NixOS/nix/issues/8292
+              #sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];
+              #profiles.sys = {
+              #  sshUser = "root";
+              #  path = deploy-rs.lib.x86_64-linux.activate.custom self.steamdeckSys "./bin/nix-sys";
+              #};
+              profiles.deck = {
+                sshUser = "deck";
+                path = inputs.deploy-rs.lib.${self.homeConfigurations.deck.pkgs.stdenv.hostPlatform.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
+              };
+            };
+          };
+        steamdeckSys = import ./steamdeck/sys.nix { inherit self; inherit (inputs) nixpkgs; };
+        steamdeckSysext = import ./nix/sysext.nix {
+          inherit self;
+          inherit (inputs) nixpkgs;
+          system = "x86_64-linux";
+          modules = [
+            ./steamdeck/configuration.nix
+          ];
+        };
+        checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
+      };
+      perSystem = { system, config, pkgs, ... }: {
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          overlays = [
+            self.overlays.default
+          ];
+          config.allowUnfree = true;
+        };
         legacyPackages = pkgs;
         devShells.systemd-metrics = import ./nix/modules/telegraf/systemd-metrics/shell.nix { inherit pkgs; };
         devShells.esphome = pkgs.callPackage ./workshop/esphome/shell.nix { inherit (pkgs.unstable) esphome; };
@@ -158,124 +296,6 @@
             export PICO_SDK_PATH=${pkgs.pico-sdk-full}/lib/pico-sdk
           '';
         };
-      })) // {
-        inherit overlayModule;
-        inherit self args;
-        overlays.new = import ./nix/pkgs/all-packages.nix;
-        overlays.stable = import ./nix/pkgs/overlays.nix;
-        overlays.stable-darwin = import ./nix/pkgs/darwin-overlays.nix;
-        overlays.mosh-server-upnp = final: prev: {
-          mosh-server-upnp = final.callPackage mosh-server-upnp.flakes.args.packages.mosh-server-upnp {};
-        };
-        overlays.default = nixpkgs.lib.composeManyExtensions overlays;
-        overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
-        nixosConfigurations = let
-          inherit (nixpkgs) lib;
-        in (lib.genAttrs [
-          "atlas.comclub.org"
-          "bedroom-pi"
-          "build-arm"
-          "droid"
-          "goddard"
-          "goddard/afs"
-          "heartofgold"
-          "mnemosyne"
-          "rascsi"
-          "uconsole"
-          "workshop"
-        ] (name: lib.nixosSystem {
-          inherit specialArgs;
-          modules = (builtins.attrValues self.nixosModules) ++ [
-            overlayModule
-            ./${name}/configuration.nix
-          ];
-        })) // {
-          atlas = self.nixosConfigurations."atlas.comclub.org";
-          uconsole-unstable = unstable.lib.nixosSystem {
-            inherit specialArgs;
-            modules = [ #(builtins.attrValues self.nixosModules) ++ [
-              self.nixosModules.base
-              self.nixosModules.sshd-sops
-              self.nixosModules.telegraf
-              {
-                nixpkgs.overlays = [
-                  overlay
-                  self.overlays.new
-                  self.overlays.stable
-                  self.overlays.unstable
-                  self.overlays.mosh-server-upnp
-                ];
-              }
-              ./uconsole/configuration.nix
-            ];
-          };
-        };
-        darwinConfigurations.mac = darwin.lib.darwinSystem {
-          system = "x86_64-darwin";
-          inherit specialArgs;
-          modules = (builtins.attrValues self.darwinModules) ++ [
-            overlayModule
-            (final: prev: {
-              nixpkgs-23_05 = import nixpkgs-23_05 {
-                inherit (final) system config;
-              };
-            })
-            ./mac/configuration.nix
-          ];
-        };
-        homeConfigurations.deck = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            system = "x86_64-linux";
-          };
-          modules = (builtins.attrValues self.homeModules) ++ [
-            overlayModule
-            ./steamdeck/deck.nix
-          ];
-          extraSpecialArgs = specialArgs;
-        };
-        nixosModules = builtins.listToAttrs (findModules ./nix/modules);
-        darwinModules = builtins.listToAttrs (findModules ./nix/darwin);
-        homeModules = builtins.listToAttrs (findModules ./nix/home);
-        deploy.nodes = (nixpkgs.lib.genAttrs [
-          "atlas"
-          "atlas.comclub.org"
-          "bedroom-pi"
-          "build-arm"
-          "droid"
-          "heartofgold"
-          "mnemosyne"
-          "rascsi"
-          "uconsole"
-          "workshop"
-        ] (name: let
-          cfg = self.nixosConfigurations.${name};
-          in {
-            sshUser = "root";
-            hostname = cfg.config.networking.fqdn;
-            profiles.system.path = deploy-rs.lib.${cfg.pkgs.stdenv.hostPlatform.system}.activate.nixos cfg;
-          })) // {
-            steamdeck = {
-              hostname = "steamdeck.isz.wtf";
-              # sshOpts doesn't work because of https://github.com/NixOS/nix/issues/8292
-              #sshOpts = [ "source" "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;" ];
-              #profiles.sys = {
-              #  sshUser = "root";
-              #  path = deploy-rs.lib.x86_64-linux.activate.custom self.steamdeckSys "./bin/nix-sys";
-              #};
-              profiles.deck = {
-                sshUser = "deck";
-                path = deploy-rs.lib.${self.homeConfigurations.deck.pkgs.stdenv.hostPlatform.system}.activate.home-manager self.homeConfigurations.steamdeck-deck;
-              };
-            };
-          };
-        steamdeckSys = import ./steamdeck/sys.nix { inherit self nixpkgs specialArgs; };
-        steamdeckSysext = import ./nix/sysext.nix {
-          inherit self nixpkgs specialArgs;
-          system = "x86_64-linux";
-          modules = [
-            ./steamdeck/configuration.nix
-          ];
-        };
-        checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
-    };
+      };
+    });
 }

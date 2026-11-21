@@ -1,10 +1,9 @@
-{ config, pkgs, disko, lib, ... }:
+{ config, pkgs, lib, ... }:
 {
   imports = [
     ./disko.nix
     ./nix-daemon.nix
     ./hydra.nix
-    disko.nixosModules.disko
   ];
 
   nixpkgs.hostPlatform = { system = "aarch64-linux"; };

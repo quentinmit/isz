@@ -1,7 +1,7 @@
-{ authentik, ... }:
+{ inputs, ... }:
 {
   imports = [
-    authentik.nixosModules.default
+    inputs.authentik.nixosModules.default
     ./blueprint-install.nix
     ./nginx.nix
   ];

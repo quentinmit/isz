@@ -1,18 +1,17 @@
-{ config, pkgs, lib, disko, nixos-hardware, ... }:
+{ config, pkgs, inputs, ... }:
 {
   imports = [
-    nixos-hardware.nixosModules.common-cpu-amd
-    nixos-hardware.nixosModules.common-cpu-amd-pstate
-    nixos-hardware.nixosModules.common-cpu-amd-zenpower
-    nixos-hardware.nixosModules.common-cpu-amd-raphael-igpu
-    nixos-hardware.nixosModules.common-gpu-amd
+    inputs.nixos-hardware.nixosModules.common-cpu-amd
+    inputs.nixos-hardware.nixosModules.common-cpu-amd-pstate
+    inputs.nixos-hardware.nixosModules.common-cpu-amd-zenpower
+    inputs.nixos-hardware.nixosModules.common-cpu-amd-raphael-igpu
+    inputs.nixos-hardware.nixosModules.common-gpu-amd
     ./disko.nix
     ./quentin.nix
     ./openvpn
     ./jellyfin.nix
     ./media
     ./backup.nix
-    disko.nixosModules.disko
   ];
   nixpkgs.hostPlatform = "x86_64-linux";
 

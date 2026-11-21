@@ -1,11 +1,11 @@
-{ config, pkgs, lib, modulesPath, nixos-hardware, ... }:
+{ config, pkgs, lib, modulesPath, inputs, ... }:
 
 {
   disabledModules = [
     "system/boot/loader/generic-extlinux-compatible"
   ];
   imports = [
-    nixos-hardware.nixosModules.raspberry-pi-4
+    inputs.nixos-hardware.nixosModules.raspberry-pi-4
     "${modulesPath}/installer/sd-card/sd-image.nix"
   ];
 

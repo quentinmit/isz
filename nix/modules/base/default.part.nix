@@ -1,9 +1,10 @@
-{ lib, pkgs, config, home-manager, sops-nix, self, ... }:
+{ importFlakeModule, inputs, ... }:
+{ lib, pkgs, config, ... }:
 {
   imports = [
-    ./common.nix
-    home-manager.nixosModules.home-manager
-    sops-nix.nixosModules.sops
+    (importFlakeModule ./common.nix)
+    inputs.home-manager.nixosModules.home-manager
+    inputs.sops-nix.nixosModules.sops
   ];
   config = lib.mkMerge [
     (lib.mkIf (!config.boot.isContainer) {

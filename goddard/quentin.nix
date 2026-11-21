@@ -2,6 +2,13 @@
 
 {
   home-manager.users.quentin = lib.mkMerge [
+    ({ affinity-nix, ... }: {
+      home.packages = [
+        (
+          (pkgs.extend affinity-nix.overlays.default)
+        ).affinity-v3
+      ];
+    })
     {
       imports = [
         ./quentin-emacs.nix
@@ -37,9 +44,6 @@
         plasma-homeassistant
         zapzap
         xgpro
-        (
-          (pkgs.extend affinity-nix.overlays.default)
-        ).affinity-v3
         mathematica
       ];
 

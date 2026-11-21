@@ -1,7 +1,7 @@
-{ config, lib, pkgs, authentik, nixpkgs-authentik, ... }:
+{ config, lib, pkgs, inputs, ... }:
 {
   imports = [
-    authentik.nixosModules.default
+    inputs.authentik.nixosModules.default
     ./blueprint.nix
     ./apps
   ];
@@ -31,8 +31,8 @@
       };
 
       authentikComponents = let
-        scope = (authentik.lib.mkAuthentikScope {
-          pkgs = authentik.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.system};
+        scope = (inputs.authentik.lib.mkAuthentikScope {
+          pkgs = inputs.authentik.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.system};
         }).overrideScope (final: prev: {
           authentikComponents = prev.authentikComponents // {
             manage = prev.authentikComponents.manage.override (old: {

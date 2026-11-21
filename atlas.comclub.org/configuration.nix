@@ -1,8 +1,7 @@
-{ config, pkgs, disko, lib, modulesPath, nixos-hardware, ... }:
+{ config, pkgs, lib, modulesPath, inputs, ... }:
 {
   imports = [
     ./disko.nix
-    disko.nixosModules.disko
     ./networking.nix
     ./libvirt.nix
     ./users.nix
@@ -13,7 +12,7 @@
     ./postfix.nix
     ./ddclient.nix
     ./timecapsule.nix
-    "${nixos-hardware}/common/cpu/intel/coffee-lake"
+    "${inputs.nixos-hardware}/common/cpu/intel/coffee-lake"
   ];
 
   nixpkgs.hostPlatform = { system = "x86_64-linux"; };

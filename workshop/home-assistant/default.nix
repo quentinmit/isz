@@ -1,4 +1,4 @@
-{ lib, pkgs, config, channels, ... }:
+{ lib, pkgs, config, inputs, ... }:
 let
   dashboardFormat = pkgs.formats.yaml {};
 in {
@@ -6,7 +6,7 @@ in {
     "services/home-automation/home-assistant.nix"
   ];
   imports = [
-    "${channels.unstable}/nixos/modules/services/home-automation/home-assistant.nix"
+    "${inputs.unstable}/nixos/modules/services/home-automation/home-assistant.nix"
     ./dashboards.nix
     ./scenes.nix
     ./automations.nix

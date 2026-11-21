@@ -52,7 +52,7 @@
     inherit specialArgs;
     config = { config, pkgs, lib, ... }: {
       imports = [
-        self.overlayModule
+        self.nixosModules.overlays
         self.nixosModules.base
       ];
       networking.useHostResolvConf = false;

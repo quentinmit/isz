@@ -1,10 +1,10 @@
-{ config, channels, lib, pkgs, ... }:
+{ inputs, pkgs, ... }:
 {
   disabledModules = [
     "virtualisation/libvirtd.nix"
   ];
   imports = [
-    "${channels.unstable}/nixos/modules/virtualisation/libvirtd.nix"
+    "${inputs.unstable}/nixos/modules/virtualisation/libvirtd.nix"
   ];
   isz.networking.vlans = [981];
   systemd.network.networks.vm-plc-guest = {

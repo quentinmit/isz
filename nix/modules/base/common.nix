@@ -1,10 +1,9 @@
-{ lib, pkgs, config, nix-index-database, home-manager, options, sops-nix, self, ... }:
+{ inputs, self, ... }:
+{ lib, pkgs, config, options, ... }:
 # This config file is loaded by both nixos and nix-darwin, so only options that
 # exist on both can be placed here. See ./default.nix and ../darwin/base.nix for
 # OS-specific options.
 {
-  options = with lib; {
-  };
   config = {
     time.timeZone = "America/New_York";
 
@@ -30,7 +29,8 @@
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
     home-manager.extraSpecialArgs = {
-      inherit (options._module.specialArgs.value)
+      inherit (inputs)
+        affinity-nix
         chemacs2nix
         deploy-rs
         dsd-fme

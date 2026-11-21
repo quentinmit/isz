@@ -1,9 +1,8 @@
-{ config, pkgs, lib, nixpkgs, disko, nixos-hardware, self, specialArgs, ... }:
+{ config, pkgs, lib, inputs, self, specialArgs, ... }:
 {
   imports = [
-    nixos-hardware.nixosModules.framework-16-7040-amd
+    inputs.nixos-hardware.nixosModules.framework-16-7040-amd
     ./disko.nix
-    disko.nixosModules.disko
     ./quentin.nix
     ./opensnitch.nix
     ./ssh.nix
@@ -269,7 +268,6 @@
   vms.goddard-afs = {
     config = {
       imports = (builtins.attrValues self.nixosModules) ++ [
-        self.overlayModule
         ./afs/configuration.nix
       ];
       fileSystems."/var/cache/openafs" = {

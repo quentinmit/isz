@@ -1,10 +1,10 @@
-{ config, options, lib, pkgs, nixos-inventree, ... }:
+{ config, options, lib, inputs, ... }:
 {
   disabledModules = [
     "services/misc/inventree.nix"
   ];
   imports = [
-    nixos-inventree.nixosModules.default
+    inputs.nixos-inventree.nixosModules.default
   ];
   config = {
     services.inventree = {

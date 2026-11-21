@@ -1,8 +1,9 @@
-{ config, pkgs, lib, py-profinet, ... }: let
+{ inputs, ... }:
+{ config, pkgs, lib, ... }: let
   cfg = config.isz.pnio2mqtt;
   configFormat = pkgs.formats.yaml {};
   configYaml = configFormat.generate "pnio2mqtt.yaml" cfg.settings;
-  pkg = py-profinet.packages.${pkgs.stdenv.hostPlatform.system}.py-profinet;
+  pkg = inputs.py-profinet.packages.${pkgs.stdenv.hostPlatform.system}.py-profinet;
 in {
   options = with lib; {
     isz.pnio2mqtt = {
