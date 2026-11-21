@@ -18,7 +18,7 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     nixos-hardware.inputs.nixpkgs.follows = "unstable";
-    darwin.url = "github:LnL7/nix-darwin/master";
+    darwin.url = "github:LnL7/nix-darwin/nix-darwin-26.05";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
@@ -77,6 +77,7 @@
     wrap.url = "github:rti/nixwrap";
     wrap.inputs.nixpkgs.follows = "nixpkgs";
     wrap.inputs.flake-utils.follows = "flake-utils";
+    easy-hosts.url = "github:tgirlcloud/easy-hosts";
   };
   outputs = inputs@{ flake-parts, ... }:
     # https://flake.parts/module-arguments.html
@@ -91,39 +92,14 @@
         ;
       };
       importFlakeModule = path: lib.modules.importApply path importArgs;
-      findModules = dir:
-        builtins.concatLists (builtins.attrValues (builtins.mapAttrs
-          (name: type:
-            if type == "regular" then (
-              if lib.hasSuffix ".part.nix" name then
-                [{
-                  name = lib.removeSuffix ".part.nix" name;
-                  value = importFlakeModule (dir + "/${name}");
-                }]
-              else if lib.hasSuffix ".nix" name then
-                [{
-                  name = lib.removeSuffix ".nix" name;
-                  value = dir + "/${name}";
-                }]
-              else null
-            ) else if type == "directory" then (let
-              contents = builtins.readDir (dir + "/${name}");
-              in if contents ? "default.nix" then [{
-                inherit name;
-                value = dir + "/${name}";
-              }] else if contents ? "default.part.nix" then [{
-                inherit name;
-                value = importFlakeModule (dir + "/${name}/default.part.nix");
-              }]
-              else
-                (map
-                  (e: e // {name = "${name}/${e.name}";})
-                  (findModules (dir + "/${name}"))
-                )
-            ) else []
-          ) (builtins.readDir dir)));
     in {
       debug = true;
+      imports = [
+        inputs.easy-hosts.flakeModule
+        inputs.home-manager.flakeModules.home-manager
+        (importFlakeModule ./parts/hosts.nix)
+        (importFlakeModule ./parts/modules.nix)
+      ];
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -163,63 +139,7 @@
           inputs.deploy-rs.overlays.default
         ];
         overlays.unstable = import ./nix/pkgs/unstable-overlays.nix;
-        nixosModules = {
-          overlays = { ... }: {
-            nixpkgs.overlays = [
-              self.overlays.default
-            ];
-          };
-        } // builtins.listToAttrs (findModules ./nix/modules);
-        darwinModules = builtins.listToAttrs (findModules ./nix/darwin);
-        homeModules = builtins.listToAttrs (findModules ./nix/home);
 
-        nixosConfigurations = (lib.genAttrs [
-          "atlas.comclub.org"
-          "bedroom-pi"
-          "build-arm"
-          "droid"
-          "goddard"
-          "goddard/afs"
-          "heartofgold"
-          "mnemosyne"
-          "rascsi"
-          "uconsole"
-          "workshop"
-        ] (name: inputs.nixpkgs.lib.nixosSystem {
-          modules = (builtins.attrValues self.nixosModules) ++ [
-            ./${name}/configuration.nix
-            inputs.disko.nixosModules.disko
-          ];
-          specialArgs = {
-            inherit self inputs;
-          };
-        })) // {
-          atlas = self.nixosConfigurations."atlas.comclub.org";
-          uconsole-unstable = inputs.unstable.lib.nixosSystem {
-            modules = [ #(builtins.attrValues self.nixosModules) ++ [
-              self.nixosModules.base
-              self.nixosModules.sshd-sops
-              self.nixosModules.telegraf
-              {
-                nixpkgs.overlays = [
-                  self.overlays.multiVersion
-                  self.overlays.new
-                  self.overlays.stable
-                  self.overlays.unstable
-                  self.overlays.mosh-server-upnp
-                ];
-              }
-              ./uconsole/configuration.nix
-            ];
-          };
-        };
-        darwinConfigurations.mac = inputs.darwin.lib.darwinSystem {
-          system = "x86_64-darwin";
-          modules = (builtins.attrValues self.darwinModules) ++ [
-            self.nixosModules.overlays
-            ./mac/configuration.nix
-          ];
-        };
         homeConfigurations.deck = inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = import inputs.nixpkgs {
             system = "x86_64-linux";

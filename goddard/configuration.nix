@@ -267,7 +267,8 @@
 
   vms.goddard-afs = {
     config = {
-      imports = (builtins.attrValues self.nixosModules) ++ [
+      imports = [
+        self.nixosModules.default
         ./afs/configuration.nix
       ];
       fileSystems."/var/cache/openafs" = {

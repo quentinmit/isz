@@ -37,16 +37,19 @@
         plasma-manager
         wrap;
     };
-    home-manager.sharedModules = [({ lib, ... }: {
-      # Don't let home-manager set LOCALE_ARCHIVE_2_27, so apps will fall back to LOCALE_ARCHIVE from the OS.
-      disabledModules = [ "config/i18n.nix" ];
-      # The option needs to exist because it is always set. :(
-      options.i18n.glibcLocales = lib.mkOption {
-        type = lib.types.package;
-        default = config.i18n.glibcLocales;
-        readOnly = true;
-      };
-    })] ++ builtins.attrValues self.homeModules;
+    home-manager.sharedModules = [
+      ({ lib, ... }: {
+        # Don't let home-manager set LOCALE_ARCHIVE_2_27, so apps will fall back to LOCALE_ARCHIVE from the OS.
+        disabledModules = [ "config/i18n.nix" ];
+        # The option needs to exist because it is always set. :(
+        options.i18n.glibcLocales = lib.mkOption {
+          type = lib.types.package;
+          default = config.i18n.glibcLocales;
+          readOnly = true;
+        };
+      })
+      self.homeModules.default
+    ];
 
     environment.systemPackages = with pkgs; import ./packages.nix { inherit pkgs; graphical = config.hardware.graphics.enable or true; } ++ [
       # Editors
