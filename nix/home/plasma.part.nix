@@ -1,4 +1,5 @@
-{ config, pkgs, lib, isz, plasma-manager, ... }:
+{ inputs, ... }:
+{ config, pkgs, lib, ... }:
 let
   arrayValue = items:
     lib.concatMapStringsSep
@@ -7,7 +8,7 @@ let
       items;
 in {
   imports = [
-    plasma-manager.homeModules.plasma-manager
+    inputs.plasma-manager.homeModules.plasma-manager
   ];
   options = with lib; {
     isz.plasma = {

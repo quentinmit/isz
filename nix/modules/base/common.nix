@@ -29,12 +29,12 @@
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
     home-manager.extraSpecialArgs = {
+      inherit inputs;
       inherit (inputs)
         affinity-nix
         chemacs2nix
         deploy-rs
         dsd-fme
-        plasma-manager
         wrap;
     };
     home-manager.sharedModules = [

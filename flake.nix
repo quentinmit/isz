@@ -144,10 +144,18 @@
           pkgs = import inputs.nixpkgs {
             system = "x86_64-linux";
           };
-          modules = (builtins.attrValues self.homeModules) ++ [
-            self.nixosModules.overlays
+          modules = [
+            self.homeModules.default
+            {
+              nixpkgs.overlays = [
+                self.overlays.default
+              ];
+            }
             ./steamdeck/deck.nix
           ];
+          extraSpecialArgs = {
+            inherit self inputs;
+          };
         };
         deploy.nodes = (lib.genAttrs [
           "atlas"
@@ -191,6 +199,16 @@
           ];
         };
         checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
+        hydraJobs = {
+          checks = withSystem "x86_64-linux" (ctx@{ self', pkgs, ...}: self'.checks);
+          nixos = lib.mapAttrs (
+            _: cfg: cfg.config.system.build.toplevel
+          ) self.nixosConfigurations;
+          # pkgs.releaseTools.aggregate {
+          #   name = "checks";
+          #   constituents = builtins.attrValues self'.checks;
+          # });
+        };
       };
       perSystem = { system, config, pkgs, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {

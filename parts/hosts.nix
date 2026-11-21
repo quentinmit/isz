@@ -50,6 +50,7 @@
           self.nixosModules.overlays
         ];
       };
+      flake.nixosConfigurations.atlas = self.nixosConfigurations."atlas.comclub.org";
     }
   ];
 }

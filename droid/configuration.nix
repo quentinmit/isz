@@ -1,7 +1,7 @@
-{ config, pkgs, lib, nixpkgs, nixos-avf, ... }:
+{ config, lib, inputs, ... }:
 {
   imports = [
-    nixos-avf.nixosModules.avf
+    inputs.nixos-avf.nixosModules.avf
   ];
 
   nixpkgs.hostPlatform = "aarch64-linux";

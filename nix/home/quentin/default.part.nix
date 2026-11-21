@@ -1,4 +1,5 @@
-{ config, lib, pkgs, deploy-rs, ... }:
+{ inputs, importFlakeModule, ... }:
+{ config, lib, pkgs, ... }:
 let
   isAarch64Darwin = pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64;
   open = if pkgs.stdenv.hostPlatform.isDarwin then "open" else "${pkgs.xdg-utils}/bin/xdg-open";
@@ -15,10 +16,10 @@ in {
       default = config.isz.quentin.enable;
     };
   };
-  imports = builtins.map (name: ./${name}) (
+  imports = builtins.map (name: if lib.hasSuffix ".part.nix" name then importFlakeModule ./${name} else ./${name}) (
     builtins.attrNames (
       lib.filterAttrs
-        (name: type: type == "regular" && name != "default.nix")
+        (name: type: type == "regular" && name != "default.part.nix")
         (builtins.readDir ./.)
     )
   );
@@ -30,7 +31,7 @@ in {
     {
       home.packages = with pkgs; [
         statix
-        (pkgs.extend deploy-rs.overlays.default).deploy-rs.deploy-rs
+        (pkgs.extend inputs.deploy-rs.overlays.default).deploy-rs.deploy-rs
       ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         nix-du
       ];

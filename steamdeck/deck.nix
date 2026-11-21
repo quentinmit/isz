@@ -1,4 +1,4 @@
-{ config, pkgs, lib, self, Jovian-NixOS, nixgl, ... }:
+{ config, pkgs, inputs, lib, ... }:
 
 {
   home.username = "deck";
@@ -7,8 +7,8 @@
   home.stateVersion = "23.05";
 
   nixpkgs.overlays = [
-    Jovian-NixOS.overlays.default
-    nixgl.overlay
+    inputs.Jovian-NixOS.overlays.default
+    inputs.nixgl.overlay
     (final: prev: {
       inherit (final.unstable) gamescope;
       bottles = final.bottles-unwrapped;
@@ -16,6 +16,10 @@
   ];
 
   nixpkgs.config.allowUnfree = true;
+
+  nixpkgs.config.permittedInsecurePackages = [
+    "olm-3.2.16"
+  ];
 
   home.packages = with pkgs; [
     # Network
@@ -31,9 +35,9 @@
     calibre
     foliate
     kile
-    libsForQt5.ghostwriter
+    kdePackages.ghostwriter
     marktext
-    onlyoffice-bin
+    onlyoffice-desktopeditors
     retext
     rnote
     setzer
@@ -63,8 +67,8 @@
 
     # Multimedia
     easyeffects
-    helvum
-    libsForQt5.kdenlive
+    crosspipe
+    kdePackages.kdenlive
     #natron
     qpwgraph
     timidity
@@ -83,11 +87,11 @@
     appeditor
     CuboCore.corekeyboard
     #fingerterm
-    gnome.dconf-editor
+    dconf-editor
     inotify-tools
     jstest-gtk
-    kwalletcli
-    kwalletmanager
+    kdePackages.kwallet
+    kdePackages.kwalletmanager
     pkgs.nixgl.nixGLIntel
     telegraf
     unar
@@ -101,7 +105,7 @@
     Unit.Description = "Cemuhook DSU server for the Steam Deck Gyroscope";
     Unit.WantedBy = [ "graphical-session.target" ];
     Service = {
-      ExecStart = "${pkgs.sdgyrodsu}/bin/sdgyrodsu";
+      ExecStart = "${pkgs.jovianPackages.sdgyrodsu}/bin/sdgyrodsu";
       PrivateTmp = true;
       ProtectSystem = "strict";
       ProtectHome = true;

@@ -1,4 +1,5 @@
-{ config, lib, pkgs, wrap, ... }:
+{ inputs, ... }:
+{ config, lib, pkgs, ... }:
 {
   options.isz.quentin.utilities.enable = lib.mkOption {
     type = lib.types.bool;
@@ -69,7 +70,7 @@
       yj
       yq
     ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-      wrap.packages.${stdenv.system}.wrap
+      inputs.wrap.packages.${stdenv.system}.wrap
     ] ++ lib.optionals (config.isz.graphical && pkgs.stdenv.hostPlatform.isLinux) ([
       d-spy
       devtoolbox

@@ -39,7 +39,7 @@ in {
     {
       flake.nixosModules = defaultNixosModules;
       flake.darwinModules = defaultDarwinModules;
-      flake.homeModules = defaultNixosModules;
+      flake.homeModules = defaultHomeModules;
     }
     {
       flake.nixosModules.overlays = { ... }: {
